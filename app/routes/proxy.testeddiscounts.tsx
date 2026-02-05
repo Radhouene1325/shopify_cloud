@@ -85,10 +85,10 @@ const variants =
   json?.data?.productVariants?.edges ?? [];
   console.log("Shopify variants is her hello:", variants);
 const continueVariants = variants
-.filter(({ node }: any) => node.inventoryPolicy === "DENY")
+.filter(({ node }: any) => node.inventoryPolicy === "CONTINUE")
 .map(({ node }:any) => ({
   id: node.id,
-  inventoryPolicy: "CONTINUE"
+  inventoryPolicy: "DENY"
 }));
 console.log('varients coninu',continueVariants)
 
@@ -121,8 +121,10 @@ if (continueVariants.length > 0) {
         {
           variables: {
             productId: node.product.id,
-            variants: continueVariants
-
+            variants: {
+               id: node.id,
+              inventoryPolicy: "CONTINUE"
+            }
           }
         }
       );
