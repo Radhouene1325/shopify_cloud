@@ -78,7 +78,7 @@ const response = await admin?.graphql(
   `,
   {
     variables: {
-      query: "sku:1005008772914299-Naked color 8cm-36"
+      query: "1005008772914299-Naked color 8cm-39"
     }
   }
 );
@@ -89,56 +89,57 @@ console.log("Shopify variants:", json.data);
 const variants =
   json?.data?.productVariants?.edges ?? [];
   console.log("Shopify variants is her hello:", variants);
-const continueVariants = variants.filter(
-  ({ node }: any) => node.inventoryPolicy === "CONTINUE"
-);
-console.log('varients coninu',continueVariants)
+// const continueVariants = variants.filter(
+//   ({ node }: any) => node.inventoryPolicy === "CONTINUE"
+// );
+// console.log('varients coninu',continueVariants)
 
-let results: any[] = [];
+// let results: any[] = [];
 
-if (continueVariants.length > 0) {
-  results = await Promise.all(
-    continueVariants.map(async ({ node }: any) => {
-      console.log('node is hrer',node)
-      const mutationResponse = await admin?.graphql(
-        `#graphql
-        mutation UpdateContinueToDeny($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
-          productVariantsBulkUpdate(
+// if (continueVariants.length > 0) {
+//   results = await Promise.all(
+//     continueVariants.map(async ({ node }: any) => {
+//       console.log('node is hrer',node)
+//       const mutationResponse = await admin?.graphql(
+//         `#graphql
+//         mutation UpdateContinueToDeny($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
+//           productVariantsBulkUpdate(
            
-            productId: $productId
-            variants: $variants
+//             productId: $productId
+//             variants: $variants
             
-          ) {
-            productVariants {
-              id
-              inventoryPolicy
-            }
-            userErrors {
-              field
-              message
-            }
-          }
-        }
-        `,
-        {
-          variables: {
-            productId: node.product.id,
-            variants: {
-               id: node.id,
-              inventoryPolicy: "DENY"
-            }
-          }
-        }
-      );
+//           ) {
+//             productVariants {
+//               id
+//               inventoryPolicy
+//             }
+//             userErrors {
+//               field
+//               message
+//             }
+//           }
+//         }
+//         `,
+//         {
+//           variables: {
+//             productId: node.product.id,
+//             variants: {
+//                id: node.id,
+//               inventoryPolicy: "DENY"
+//             }
+//           }
+//         }
+//       );
 
-      return mutationResponse?.json();
-    })
-  );
-}
+//       return mutationResponse?.json();
+//     })
+//   );
+// }
 
 return Response.json({
-  updatedCount: results.length,
-  results
+  // updatedCount: results.length,
+  // results,
+  variants
 });
 
 
