@@ -1,0 +1,27 @@
+{
+    "name": "cloudflare-workers-app",
+    "compatibility_date": "2024-11-11",
+    "env": {
+      "dev": {
+        "name": "shopify-proxy-dev"
+      },
+      "production": {
+        "name": "shopify-proxy-prod"
+      }
+    },
+    "main": "./server.ts",
+    "assets": {
+      "directory": "./build/client"
+    },
+    "observability": {
+      "enabled": true
+    },
+    "upload_source_maps": false,
+    "compatibility_flags": [
+      "nodejs_compat_v2"
+    ],
+    "vars": {
+      "SHOPIFY_APP_URL": "https://cloudflare-workers-app.radhouenekhalfa.workers.dev",
+      "SCOPES": "write_app_proxy,read_app_proxy,read_discounts,write_discounts,read_price_rules,write_price_rules,read_products,write_products,read_customers,write_customers,read_orders,write_orders,read_analytics,read_inventory,read_locations,read_metaobjects,write_metaobjects"
+    }
+  }
