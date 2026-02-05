@@ -60,7 +60,7 @@ console.log('shop', session?.shop);
 const response = await admin?.graphql(
   `#graphql
   query GetVariantsWithContinuePolicy($query: String!) {
-    productVariants(first: 250, query: $query) {
+    productVariants(first: 10) {
       edges {
         node {
           id
@@ -75,16 +75,11 @@ const response = await admin?.graphql(
       }
     }
   }
-  `,
-  {
-    variables: {
-      query: "1005008772914299-Naked color 8cm-39"
-    }
-  }
+  `
 );
 
 const json = await response?.json();
-console.log("Shopify variants:", json.data);
+console.log("Shopify variants:", json?.data);
 
 const variants =
   json?.data?.productVariants?.edges ?? [];
