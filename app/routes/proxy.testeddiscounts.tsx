@@ -59,7 +59,7 @@ console.log('shop', session?.shop);
 /////////////////
 const response = await admin?.graphql(
   `#graphql
-  query GetVariantsWithContinuePolicy($query: String!) {
+  query GetVariantsWithContinuePolicy {
     productVariants(first: 10) {
       edges {
         node {
