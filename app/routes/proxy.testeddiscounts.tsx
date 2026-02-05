@@ -138,8 +138,7 @@ if (continueVariants.length > 0) {
 
 return Response.json({
   updatedCount: results.length,
-  results,
-  variants
+  results
 });
 
 
