@@ -122,11 +122,11 @@ if (continueVariants.length > 0) {
         `,
         {
           variables: {
-            productId: node.id,
-            variants: continueVariants?.node?.product.map((variant: any) => ({
-              id: variant.id,
+            productId: node.product.id,
+            variants: {
+               id: node.id,
               inventoryPolicy: "DENY"
-            }))
+            }
           }
         }
       );
