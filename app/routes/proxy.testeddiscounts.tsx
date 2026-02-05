@@ -85,12 +85,12 @@ const variants =
   json?.data?.productVariants?.edges ?? [];
   console.log("Shopify variants is her hello:", variants);
 const continueVariants = variants
-.filter(({ node }: any) => node.inventoryPolicy === "CONTINUE")
-.map(({ node }:any) => ({
-  id: node.id,
-  inventoryPolicy: "DENY"
-}));
-console.log('varients coninu',continueVariants)
+.filter(({ node }: any) => node.inventoryPolicy === "DENY")
+// .map(({ node }:any) => ({
+//   id: node.id,
+//   inventoryPolicy: "CONTINUE"
+// }));
+console.log('varients coninuQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ',continueVariants)
 
 let results: any[] = [];
 
