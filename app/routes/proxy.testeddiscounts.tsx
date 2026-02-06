@@ -100,7 +100,7 @@ requestCount++;
 console.log(`Richiesta ${requestCount} varianti (totale: ${resultdata?.data.length})`);
 
 // Delay di 100ms tra richieste per evitare rate limits
-if (hasNextPage) {
+if (hasNextPage===true) {
   await new Promise(resolve => setTimeout(resolve, 100));
 }
 
