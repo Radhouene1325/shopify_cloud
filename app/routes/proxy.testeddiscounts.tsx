@@ -229,7 +229,7 @@ while (hasNextPage === true) {
   if (hasNextPage === true) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
-  if(variants.length===500)return variants
+  if(variants.length===400)return variants
 
 }
 
