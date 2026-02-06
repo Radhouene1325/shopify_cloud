@@ -59,7 +59,7 @@ console.log('shop', session?.shop);
 let response
 let requestCount = 0;
 /////////////////
-while (hasNextPage) {
+while (hasNextPage===true) {
  return response = await admin?.graphql(
   `#graphql
   query GetVariantsWithContinuePolicy($cursor:String) {
