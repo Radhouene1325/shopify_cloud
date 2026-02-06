@@ -114,7 +114,7 @@ let results: Record<string,any> = {};
 if (continueVariants.length > 0) {
   results = await Promise.all(
     continueVariants.map(async ({ node }: any) => {
-      // console.log('node is hrer',node)
+       console.log('node is hrer',node)
       const mutationResponse = await admin?.graphql(
         `#graphql
         mutation UpdateContinueToDeny($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
