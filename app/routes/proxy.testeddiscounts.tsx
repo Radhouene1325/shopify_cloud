@@ -140,7 +140,7 @@ if (continueVariants.length > 0) {
 
 return Response.json({
   updatedCount: results.length,
-  result:results?.productVariantsBulkUpdate.productVariants
+  result:results?.productVariantsBulkUpdate
   
 });
 
