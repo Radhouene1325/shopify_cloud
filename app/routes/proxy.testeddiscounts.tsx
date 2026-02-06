@@ -54,14 +54,14 @@ console.log('shop', session?.shop);
   //   }
   // });
 
-  let cursor = 1;
+  let cursor = null;
 
 
 /////////////////
 const response = await admin?.graphql(
   `#graphql
   query GetVariantsWithContinuePolicy($cursor:String) {
-    productVariants(first: 250,after: $cursor,query: "inventory_policy:continue") {
+    productVariants(first: 250,after: $cursor,query: "inventory_policy:CONTINUE") {
       edges {
         node {
           id
