@@ -188,7 +188,7 @@ while (hasNextPage === true) {
   const response = await admin?.graphql(  // ← RIMUOVI "return"
     `#graphql
     query GetVariantsWithContinuePolicy($cursor: String) {
-      productVariants(first: 250, after: $cursor, query: "inventory_policy:continue") {
+      productVariants(first: 100, after: $cursor, query: "inventory_policy:continue") {
         edges {
           node {
             id
