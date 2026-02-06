@@ -59,8 +59,8 @@ console.log('shop', session?.shop);
 let response
 
 /////////////////
-while (hasNextPage) {
-return  response = await admin?.graphql(
+
+  response = await admin?.graphql(
   `#graphql
   query GetVariantsWithContinuePolicy($cursor:String) {
     productVariants(first: 250,after: $cursor,query: "inventoryPolicy:CONTINUE") {
@@ -86,7 +86,7 @@ return  response = await admin?.graphql(
     }
   }
 );
-}
+
 
 const resultdata = await response?.json();
 console.log("Shopify variants:", resultdata?.data);
