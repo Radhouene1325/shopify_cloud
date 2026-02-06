@@ -63,7 +63,7 @@ let response
   response = await admin?.graphql(
   `#graphql
   query GetVariantsWithContinuePolicy($cursor:String) {
-    productVariants(first: 250,after: $cursor,query: "inventoryPolicy:CONTINUE") {
+    productVariants(first: 10,after: $cursor,query: "inventoryPolicy:CONTINUE") {
       edges {
         node {
           id
@@ -98,7 +98,7 @@ const variants =
 resultdata?.data?.productVariants?.edges ?? [];
   console.log("Shopify variants is her hello:", variants);
 const continueVariants = variants
-.filter(({ node }: any) => node.inventoryPolicy === "CONTINUE")
+.filter(({ node }: any) => node.inventoryPolicy === "DENY")
 // .map(({ node }:any) => ({
 //   id: node.id,
 //   inventoryPolicy: "CONTINUE"
@@ -137,7 +137,7 @@ if (continueVariants.length > 0) {
             variants:[
               {
                 id: node.id,
-               inventoryPolicy: "DENY"
+               inventoryPolicy: "CONTINUE"
              }
             ]
           }
