@@ -59,11 +59,11 @@ console.log('shop', session?.shop);
 let response
 
 /////////////////
-
-  response = await admin?.graphql(
+while (hasNextPage) {
+ return response = await admin?.graphql(
   `#graphql
   query GetVariantsWithContinuePolicy($cursor:String) {
-    productVariants(first: 10,after: $cursor,query: "inventoryPolicy:CONTINUE") {
+    productVariants(first: 250,after: $cursor,query: "inventoryPolicy:CONTINUE") {
       edges {
         node {
           id
@@ -90,12 +90,13 @@ let response
     }
   }
 );
+}
 
 
 const resultdata = await response?.json();
 console.log("Shopify variants:", resultdata?.data);
-hasNextPage = resultdata?.extensions?.cost
-    cursor = resultdata?.extensions?.search;
+hasNextPage = resultdata?.data?.productVariants.pageInfo.hasNextPage
+    cursor = resultdata?.data.productVariants.pageInfo.endCursor;
 console.log('hex and cursor',hasNextPage,cursor)
 
 const variants =
