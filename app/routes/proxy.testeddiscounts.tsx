@@ -218,7 +218,6 @@ while (hasNextPage === true) {
   // Aggiungi le varianti di questa pagina all'array totale
   const variants = resultdata?.data?.productVariants?.edges ?? [];
   allVariants.push(...variants);  // ← Salva TUTTE le varianti
-  if(allVariants.length===6000)return
   // Aggiorna cursor e hasNextPage per la prossima iterazione
   hasNextPage = resultdata?.data?.productVariants?.pageInfo?.hasNextPage;
   cursor = resultdata?.data?.productVariants?.pageInfo?.endCursor;
@@ -230,6 +229,8 @@ while (hasNextPage === true) {
   if (hasNextPage === true) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
+  if(allVariants.length===6000)return allVariants
+
 }
 
 // ORA hai TUTTE le varianti in allVariants
