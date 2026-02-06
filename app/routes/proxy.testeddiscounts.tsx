@@ -98,7 +98,7 @@ const variants =
 resultdata?.data?.productVariants?.edges ?? [];
   console.log("Shopify variants is her hello:", variants);
 const continueVariants = variants
-.filter(({ node }: any) => node.inventoryPolicy === "DENY")
+.filter(({ node }: any) => node.inventoryPolicy === "CONTINUE")
 // .map(({ node }:any) => ({
 //   id: node.id,
 //   inventoryPolicy: "CONTINUE"
@@ -137,7 +137,7 @@ if (continueVariants.length > 0) {
             variants:[
               {
                 id: node.id,
-               inventoryPolicy: "CONTINUE"
+               inventoryPolicy: "DENY"
              }
             ]
           }
@@ -145,7 +145,7 @@ if (continueVariants.length > 0) {
       );
       let data= await mutationResponse?.json();
       console.log('hello updaed labes alikom',data?.data)
-      return data?.data
+      return data
 
     })
   );
@@ -153,7 +153,8 @@ if (continueVariants.length > 0) {
 
 return Response.json({
   updatedCount: results.length,
-  result:results
+  result:results.data,
+  all:results
   
 });
 
