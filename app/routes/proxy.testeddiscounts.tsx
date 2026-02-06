@@ -185,6 +185,9 @@ let requestCount = 0;
 let  variants :Record<string,any>[] =[]
 // LOOP per prendere tutte le pagine
 while (hasNextPage === true) {
+  if(variants.length>=400){
+
+  
   const response = await admin?.graphql(  // ← RIMUOVI "return"
     `#graphql
     query GetVariantsWithContinuePolicy($cursor: String) {
@@ -229,7 +232,8 @@ while (hasNextPage === true) {
   if (hasNextPage === true) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
-  if(variants.length===400)return variants
+  return variants
+}
 
 }
 
@@ -279,7 +283,7 @@ for (const [productId, variants] of Object.entries(variantsByProduct)) {
             userErrors {
               field
               message
-            }
+            }if(variants.length===400)
           }
         }
         `,
