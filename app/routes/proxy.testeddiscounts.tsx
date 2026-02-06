@@ -57,7 +57,7 @@ console.log('shop', session?.shop);
   let hasNextPage = true;
   let cursor = null;
 let response
-
+let requestCount = 0;
 /////////////////
 while (hasNextPage) {
  return response = await admin?.graphql(
@@ -98,6 +98,13 @@ console.log("Shopify variants:", resultdata?.data);
 hasNextPage = resultdata?.data?.productVariants.pageInfo.hasNextPage
     cursor = resultdata?.data.productVariants.pageInfo.endCursor;
 console.log('hex and cursor',hasNextPage,cursor)
+requestCount++;
+console.log(`Richiesta ${requestCount} varianti (totale: ${resultdata?.data.length})`);
+
+// Delay di 100ms tra richieste per evitare rate limits
+if (hasNextPage) {
+  await new Promise(resolve => setTimeout(resolve, 100));
+}
 
 const variants =
 resultdata?.data?.productVariants?.edges ?? [];
