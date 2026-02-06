@@ -54,7 +54,7 @@ console.log('shop', session?.shop);
   //   }
   // });
 
-  let cursor = null;
+  let cursor = 1;
 
 
 /////////////////
