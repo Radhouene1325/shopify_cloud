@@ -85,7 +85,7 @@ const variants =
   json?.data?.productVariants?.edges ?? [];
   console.log("Shopify variants is her hello:", variants);
 const continueVariants = variants
-.filter(({ node }: any) => node.inventoryPolicy === "CONTINUE")
+.filter(({ node }: any) => node.inventoryPolicy === "DENY")
 // .map(({ node }:any) => ({
 //   id: node.id,
 //   inventoryPolicy: "CONTINUE"
@@ -121,22 +121,26 @@ if (continueVariants.length > 0) {
         {
           variables: {
             productId: node.product.id,
-            variants: {
-               id: node.id,
-              inventoryPolicy: "DENY"
-            }
+            variants:[
+              {
+                id: node.id,
+               inventoryPolicy: "CONTINUE"
+             }
+            ]
           }
         }
       );
-console.log('hello updaed labes alikom',await mutationResponse?.json())
-      return await mutationResponse?.json();
+      let data= await mutationResponse?.json();
+      console.log('hello updaed labes alikom',data)
+      return data?.data
+
     })
   );
 }
 
 return Response.json({
   updatedCount: results.length,
-  result:results?.data?.productVariantsBulkUpdate.productVariants
+  result:results?.productVariantsBulkUpdate.productVariants
   
 });
 
