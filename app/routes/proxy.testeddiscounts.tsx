@@ -185,7 +185,7 @@ let requestCount = 0;
 let  variants :Record<string,any>[] =[]
 // LOOP per prendere tutte le pagine
 while (hasNextPage === true) {
-  if(variants.length>=400){
+  
 
   
   const response = await admin?.graphql(  // ← RIMUOVI "return"
@@ -232,8 +232,8 @@ while (hasNextPage === true) {
   if (hasNextPage === true) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
-  return variants
-}
+ if (variants.length===500) return variants
+
 
 }
 
