@@ -63,7 +63,7 @@ while (hasNextPage===true) {
  return response = await admin?.graphql(
   `#graphql
   query GetVariantsWithContinuePolicy($cursor:String) {
-    productVariants(first: 250,after: $cursor,query: "inventoryPolicy:CONTINUE") {
+    productVariants(first: 250,after: $cursor,query: "inventory_policy:continue") {
       edges {
         node {
           id
