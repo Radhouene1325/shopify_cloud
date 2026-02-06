@@ -128,7 +128,7 @@ if (continueVariants.length > 0) {
           }
         }
       );
-
+console.log('hello updaed labes alikom',mutationResponse?.json())
       return mutationResponse?.json();
     })
   );
