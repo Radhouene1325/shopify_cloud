@@ -85,7 +85,7 @@ const variants =
   json?.data?.productVariants?.edges ?? [];
   console.log("Shopify variants is her hello:", variants);
 const continueVariants = variants
-.filter(({ node }: any) => node.inventoryPolicy === "DENY")
+.filter(({ node }: any) => node.inventoryPolicy === "CONTINUE")
 // .map(({ node }:any) => ({
 //   id: node.id,
 //   inventoryPolicy: "CONTINUE"
@@ -124,7 +124,7 @@ if (continueVariants.length > 0) {
             variants:[
               {
                 id: node.id,
-               inventoryPolicy: "CONTINUE"
+               inventoryPolicy: "DENY"
              }
             ]
           }
