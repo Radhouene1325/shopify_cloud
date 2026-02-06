@@ -223,13 +223,13 @@ while (hasNextPage === true) {
   cursor = resultdata?.data?.productVariants?.pageInfo?.endCursor;
   
   requestCount++;
-  console.log(`Richiesta ${requestCount}: caricati ${variants.length} varianti (totale: ${allVariants.length})`);
+  console.log(`Richiesta ${requestCount}: caricati ${variants.length} varianti (totale: ${variants.length})`);
   
   // Delay per evitare rate limits
   if (hasNextPage === true) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
-  if(allVariants.length===6000)return variants
+  if(allVariants.length===5000)return variants
 
 }
 
