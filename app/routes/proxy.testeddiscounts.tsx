@@ -93,7 +93,7 @@ let response
 
 
 const resultdata = await response?.json();
-// console.log("Shopify variants:", resultdata?.data);
+ console.log("Shopify variants:", resultdata?.data);
 hasNextPage = resultdata?.data?.productVariants.pageInfo.hasNextPage
     cursor = resultdata?.data.productVariants.pageInfo.endCursor;
 console.log('hex and cursor',hasNextPage,cursor)
