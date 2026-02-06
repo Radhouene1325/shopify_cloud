@@ -63,7 +63,7 @@ let response
   response = await admin?.graphql(
   `#graphql
   query GetVariantsWithContinuePolicy($cursor:String) {
-    productVariants(first: 10,after: $cursor,query: "inventory_quantity:0") {
+    productVariants(first: 100,after: $cursor,query: "inventory_quantity:0") {
       edges {
         node {
           id
