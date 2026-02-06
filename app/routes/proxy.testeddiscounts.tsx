@@ -188,7 +188,7 @@ while (hasNextPage === true) {
   const response = await admin?.graphql(  // ← RIMUOVI "return"
     `#graphql
     query GetVariantsWithContinuePolicy($cursor: String) {
-      productVariants(first: 100, after: $cursor, query: "inventory_policy:continue") {
+      productVariants(first: 250, after: $cursor, query: "inventory_policy:continue") {
         edges {
           node {
             id
@@ -218,7 +218,7 @@ while (hasNextPage === true) {
   // Aggiungi le varianti di questa pagina all'array totale
   const variants = resultdata?.data?.productVariants?.edges ?? [];
   allVariants.push(...variants);  // ← Salva TUTTE le varianti
-  
+  if(allVariants.length===6000)return
   // Aggiorna cursor e hasNextPage per la prossima iterazione
   hasNextPage = resultdata?.data?.productVariants?.pageInfo?.hasNextPage;
   cursor = resultdata?.data?.productVariants?.pageInfo?.endCursor;
