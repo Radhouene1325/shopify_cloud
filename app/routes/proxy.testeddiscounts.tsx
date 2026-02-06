@@ -85,9 +85,7 @@ while (hasNextPage===true) {
   }
   `,
   {
-    variables:{
-     variables: { cursor } 
-    }
+    variables:{cursor }
   }
 );
 }
