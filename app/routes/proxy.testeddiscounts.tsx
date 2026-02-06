@@ -241,12 +241,27 @@ const continueVariants = allVariants.filter(
 );
 
 console.log(`Varianti da aggiornare: ${continueVariants.length}`);
+// Raggruppa varianti per prodotto
+const variantsByProduct = continueVariants.reduce((acc: any, { node }: any) => {
+  const productId = node.product.id;
+  if (!acc[productId]) {
+    acc[productId] = [];
+  }
+  acc[productId].push({
+    id: node.id,
+    inventoryPolicy: "DENY"
+  });
+  return acc;
+}, {});
+
+console.log(`Aggiornamento di ${Object.keys(variantsByProduct).length} prodotti...`);
 
 // Aggiorna TUTTE le varianti
 let results: Record<string, any>[] = [];
 
-if (continueVariants.length > 0) {
-  results = await Promise.all(
+for (const [productId, variants] of Object.entries(variantsByProduct)) {
+
+ 
     continueVariants.map(async ({ node }: any) => {
       console.log('Aggiornamento variante:', node.id);
       
@@ -268,31 +283,32 @@ if (continueVariants.length > 0) {
           }
         }
         `,
-        {
+         {
           variables: {
-            productId: node.product.id,
-            variants: [
-              {
-                id: node.id,
-                inventoryPolicy: "DENY"
-              }
-            ]
+            productId: productId,
+            variants: variants as any
           }
         }
+    
       );
       
       const data = await mutationResponse?.json();
-      console.log('Aggiornato:', data?.data);
-      return data;
+      results.push(data);
+      
+      console.log(`Aggiornato prodotto ${productId}: ${(variants as any[]).length} varianti`);
+      
+      // Delay tra prodotti
+      await new Promise(resolve => setTimeout(resolve, 200));
     })
-  );
-}
+  
 
-return Response.json({
-  totalVariantsFound: allVariants.length,
-  updatedCount: results.length,
-  results: results
-});
+  }
+  return Response.json({
+    totalVariantsFound: allVariants.length,
+    totalProductsUpdated: results.length,
+    updatedCount: continueVariants.length,
+    results: results
+  });
 
 
 
