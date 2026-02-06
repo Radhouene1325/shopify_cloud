@@ -86,7 +86,7 @@ let response
   `,
   {
     variables:{
-     variables: { cursor } 
+     cursor 
     }
   }
 );
@@ -109,12 +109,25 @@ const continueVariants = variants
 // }));
 // console.log('varients coninuQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ',continueVariants)
 
-let results: Record<string,any> = {};
+const variantsByProduct: Record<string, any[]> = {};
 
-if (continueVariants.length > 0) {
-  results = await Promise.all(
-    continueVariants.map(async ({ node }: any) => {
-       console.log('node is hrer',node)
+for (const { node } of continueVariants) {
+  if (!variantsByProduct[node.product.id]) {
+    variantsByProduct[node.product.id] = [];
+  }
+
+  variantsByProduct[node.product.id].push({
+    id: node.id,
+    inventoryPolicy: "DENY"
+  });
+}
+
+
+const results = [];
+
+ 
+  for (const productId of Object.keys(variantsByProduct)) {
+       console.log('node is hrer',productId)
       const mutationResponse = await admin?.graphql(
         `#graphql
         mutation UpdateContinueToDeny($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
@@ -139,29 +152,23 @@ if (continueVariants.length > 0) {
           }
         }
         `,
-        {
-          variables: {
-            productId: node.product.id,
-            variants:[
-              {
-                id: node.id,
-               inventoryPolicy: "DENY"
-             }
-            ]
-          }
-        }
+     {
+      variables: {
+        productId,
+        variants: variantsByProduct[productId]
+      }
+    }
       );
-      let data= await mutationResponse?.json();
-      // console.log('hello updaed labes alikom',data?.data)
-      return data
+      
 
-    })
-  );
-}
+
+    
+    results.push(await mutationResponse?.json());
+
 
 return Response.json({
   updatedCount: results.length,
-  result:results.data,
+  result:results?.data,
   all:results
   
 });
