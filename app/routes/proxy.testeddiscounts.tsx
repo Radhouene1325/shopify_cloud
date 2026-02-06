@@ -262,8 +262,7 @@ let results: Record<string, any>[] = [];
 for (const [productId, variants] of Object.entries(variantsByProduct)) {
 
  
-    continueVariants.map(async ({ node }: any) => {
-      console.log('Aggiornamento variante:', node.id);
+  
       
       const mutationResponse = await admin?.graphql(
         `#graphql
@@ -298,8 +297,8 @@ for (const [productId, variants] of Object.entries(variantsByProduct)) {
       console.log(`Aggiornato prodotto ${productId}: ${(variants as any[]).length} varianti`);
       
       // Delay tra prodotti
-      await new Promise(resolve => setTimeout(resolve, 200));
-    })
+      await new Promise(resolve => setTimeout(resolve, 300));
+    
   
 
   }
