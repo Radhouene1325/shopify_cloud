@@ -224,7 +224,7 @@ while (hasNextPage === true) {
   
   requestCount++;
   console.log(`Richiesta ${requestCount}: caricati ${variants.length} varianti (totale: ${variants.length})`);
-  if(allVariants.length===5000)return variants
+  if(variants.length===5000)return variants
 
   // Delay per evitare rate limits
   if (hasNextPage === true) {
