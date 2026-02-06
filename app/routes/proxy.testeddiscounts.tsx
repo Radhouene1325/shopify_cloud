@@ -224,12 +224,12 @@ while (hasNextPage === true) {
   
   requestCount++;
   console.log(`Richiesta ${requestCount}: caricati ${variants.length} varianti (totale: ${variants.length})`);
-  if(variants.length===500)return variants
 
   // Delay per evitare rate limits
   if (hasNextPage === true) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
+  if(variants.length===500)return variants
 
 }
 
