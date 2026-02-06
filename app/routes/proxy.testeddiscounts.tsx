@@ -182,7 +182,7 @@ let allVariants = [];  // Array per salvare TUTTE le varianti
 let hasNextPage = true;
 let cursor = null;
 let requestCount = 0;
-
+let  variants :Record<string,any>[] =[]
 // LOOP per prendere tutte le pagine
 while (hasNextPage === true) {
   const response = await admin?.graphql(  // ← RIMUOVI "return"
@@ -216,8 +216,8 @@ while (hasNextPage === true) {
   const resultdata = await response?.json();
   
   // Aggiungi le varianti di questa pagina all'array totale
-  const variants = resultdata?.data?.productVariants?.edges ?? [];
-  allVariants.push(...variants);  // ← Salva TUTTE le varianti
+   variants = resultdata?.data?.productVariants?.edges ?? [];
+  // allVariants.push(...variants);  // ← Salva TUTTE le varianti
   // Aggiorna cursor e hasNextPage per la prossima iterazione
   hasNextPage = resultdata?.data?.productVariants?.pageInfo?.hasNextPage;
   cursor = resultdata?.data?.productVariants?.pageInfo?.endCursor;
@@ -229,7 +229,7 @@ while (hasNextPage === true) {
   if (hasNextPage === true) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
-  if(allVariants.length===6000)return allVariants
+  if(allVariants.length===6000)return variants
 
 }
 
@@ -237,7 +237,7 @@ while (hasNextPage === true) {
 console.log(`✓ Totale varianti CONTINUE caricate: ${allVariants.length}`);
 
 // Filtra solo quelle con CONTINUE (già filtrato nella query, ma per sicurezza)
-const continueVariants = allVariants.filter(
+const continueVariants = variants.filter(
   ({ node }: any) => node.inventoryPolicy === "CONTINUE"
 );
 
