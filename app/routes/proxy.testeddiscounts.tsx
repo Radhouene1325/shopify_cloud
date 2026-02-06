@@ -75,7 +75,11 @@ let response
             id
           }
         }
-      }
+      },
+      pageInfo {
+      hasNextPage
+      endCursor
+    }
     }
     
   }
@@ -128,6 +132,10 @@ if (continueVariants.length > 0) {
               field
               message
             }
+            pageInfo {
+                hasNextPage
+                  endCursor
+                 }
           }
         }
         `,
