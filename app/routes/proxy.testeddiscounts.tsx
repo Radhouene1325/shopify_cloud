@@ -145,10 +145,7 @@ const results = [];
               field
               message
             }
-            pageInfo {
-                hasNextPage
-                  endCursor
-                 }
+           
           }
         }
         `,
