@@ -53,227 +53,76 @@ console.log('shop', session?.shop);
   //     accessToken: sessionData.accessToken,
   //   }
   // });
-//   let allVariants = [];  // Array per salvare TUTTE le varianti
 
-//   let hasNextPage = true;
-//   let cursor = null;
-// // let response
-// let requestCount = 0;
-// /////////////////
-// while (hasNextPage===true) {
-//  const  response = await admin?.graphql(
-//   `#graphql
-//   query GetVariantsWithContinuePolicy($cursor:String) {
-//     productVariants(first: 250,after: $cursor) {
-//       edges {
-//         node {
-//           id
-//           title
-//           inventoryPolicy
-//           inventoryQuantity
-//           product {
-//             title,
-//             id
-//           }
-//         }
-//       },
-//       pageInfo {
-//       hasNextPage
-//       endCursor
-//     }
-//     }
-    
-//   }
-//   `,
-//   {
-//     variables:{cursor }
-//   }
-// );
-// }
+  let hasNextPage = true;
+  let cursor = null;
+let response
 
+/////////////////
 
-// const resultdata = await response?.json();
-// console.log("Shopify variants:", resultdata?.data);
-
-// const variants = resultdata?.data?.productVariants?.edges ?? [];
-// allVariants.push(...variants);  // ← Salva TUTTE le varianti
-
-
-// hasNextPage = resultdata?.data?.productVariants.pageInfo.hasNextPage
-//     cursor = resultdata?.data.productVariants.pageInfo.endCursor;
-// console.log('hex and cursor',hasNextPage,cursor)
-// requestCount++;
-// console.log(`Richiesta ${requestCount} varianti (totale: ${resultdata?.data.length})`);
-
-// // Delay di 100ms tra richieste per evitare rate limits
-// if (hasNextPage===true) {
-//   await new Promise(resolve => setTimeout(resolve, 100));
-// }
-
-// const variants =
-// resultdata?.data?.productVariants?.edges ?? [];
-//   console.log("Shopify variants is her hello:", variants);
-// const continueVariants = variants
-// .filter(({ node }: any) => node.inventoryPolicy === "CONTINUE")
-// // .map(({ node }:any) => ({
-// //   id: node.id,
-// //   inventoryPolicy: "CONTINUE"
-// // }));
-// console.log('varients coninuQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ',continueVariants)
-
-// let results: Record<string,any> = {};
-
-// if (continueVariants.length > 0) {
-//   results = await Promise.all(
-//     continueVariants.map(async ({ node }: any) => {
-//       console.log('node is hrer',node)
-//       const mutationResponse = await admin?.graphql(
-//         `#graphql
-//         mutation UpdateContinueToDeny($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
-//           productVariantsBulkUpdate(
-           
-//             productId: $productId
-//             variants: $variants
-            
-//           ) {
-//             productVariants {
-//               id
-//               inventoryPolicy
-//             }
-//             userErrors {
-//               field
-//               message
-//             }
-//             pageInfo {
-//                 hasNextPage
-//                   endCursor
-//                  }
-//           }
-//         }
-//         `,
-//         {
-//           variables: {
-//             productId: node.product.id,
-//             variants:[
-//               {
-//                 id: node.id,
-//                inventoryPolicy: "DENY"
-//              }
-//             ]
-//           }
-//         }
-//       );
-//       let data= await mutationResponse?.json();
-//       console.log('hello updaed labes alikom',data?.data)
-//       return data
-
-//     })
-//   );
-// }
-
-// return Response.json({
-//   updatedCount: results.length,
-//   result:results.data,
-//   all:results
-  
-// });
-
-let allVariants = [];  // Array per salvare TUTTE le varianti
-let hasNextPage = true;
-let cursor = null;
-let requestCount = 0;
-let  variants :Record<string,any>[] =[]
-// LOOP per prendere tutte le pagine
-
-  
-
-  
-  const response = await admin?.graphql(  // ← RIMUOVI "return"
-    `#graphql
-    query GetVariantsWithContinuePolicy($cursor: String) {
-      productVariants(first: 250, after: $cursor, query: "inventory_quantity:0") {
-        edges {
-          node {
+  response = await admin?.graphql(
+  `#graphql
+  query GetVariantsWithContinuePolicy($cursor:String) {
+    productVariants(first: 250,after: $cursor,query: "inventory_quantity:0") {
+      edges {
+        node {
+          id
+          title
+          inventoryPolicy
+          inventoryQuantity
+          product {
+            title,
             id
-            title
-            inventoryPolicy
-            inventoryQuantity
-            product {
-              title
-              id
-            }
           }
         }
-        pageInfo {
-          hasNextPage
-          endCursor
-        }
-      }
+      },
+      pageInfo {
+      hasNextPage
+      endCursor
     }
-    `,
-    {
-      variables: { cursor }
     }
-  );
-
-  const resultdata = await response?.json();
-  
-  // Aggiungi le varianti di questa pagina all'array totale
-   variants = resultdata?.data?.productVariants?.edges ?? [];
-  // allVariants.push(...variants);  // ← Salva TUTTE le varianti
-  // Aggiorna cursor e hasNextPage per la prossima iterazione
-  hasNextPage = resultdata?.data?.productVariants?.pageInfo?.hasNextPage;
-  cursor = resultdata?.data?.productVariants?.pageInfo?.endCursor;
-  
-  console.log(`Richiesta ${requestCount}: caricati ${variants.length} varianti (totale: ${variants.length})`);
-
-  // Delay per evitare rate limits
-  if (hasNextPage === true) {
-    await new Promise(resolve => setTimeout(resolve, 100));
+    
   }
-
-
-
-
-
-// ORA hai TUTTE le varianti in allVariants
-console.log(`✓ Totale varianti CONTINUE caricate: ${variants.length}`);
-
-// Filtra solo quelle con CONTINUE (già filtrato nella query, ma per sicurezza)
-const continueVariants = variants.filter(
-  ({ node }: any) => node.inventoryPolicy === "CONTINUE"
+  `,
+  {
+    variables:{
+     variables: { cursor } 
+    }
+  }
 );
 
-console.log(`Varianti da aggiornare: ${continueVariants.length}`);
-// Raggruppa varianti per prodotto
-const variantsByProduct = continueVariants.reduce((acc: any, { node }: any) => {
-  const productId = node.product.id;
-  if (!acc[productId]) {
-    acc[productId] = [];
-  }
-  acc[productId].push({
-    id: node.id,
-    inventoryPolicy: "DENY"
-  });
-  return acc;
-}, {});
 
-console.log(`Aggiornamento di ${Object.keys(variantsByProduct).length} prodotti...`);
+const resultdata = await response?.json();
+console.log("Shopify variants:", resultdata?.data);
+hasNextPage = resultdata?.data?.productVariants.pageInfo.hasNextPage
+    cursor = resultdata?.data.productVariants.pageInfo.endCursor;
+console.log('hex and cursor',hasNextPage,cursor)
 
-// Aggiorna TUTTE le varianti
-let results: Record<string, any>[] = [];
+const variants =
+resultdata?.data?.productVariants?.edges ?? [];
+  console.log("Shopify variants is her hello:", variants);
+const continueVariants = variants
+.filter(({ node }: any) => node.inventoryPolicy === "CONTINUE")
+// .map(({ node }:any) => ({
+//   id: node.id,
+//   inventoryPolicy: "CONTINUE"
+// }));
+console.log('varients coninuQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ',continueVariants)
 
-for (const [productId, variants] of Object.entries(variantsByProduct)) {
+let results: Record<string,any> = {};
 
- 
-  
-      
+if (continueVariants.length > 0) {
+  results = await Promise.all(
+    continueVariants.map(async ({ node }: any) => {
+      console.log('node is hrer',node)
       const mutationResponse = await admin?.graphql(
         `#graphql
         mutation UpdateContinueToDeny($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
           productVariantsBulkUpdate(
+           
             productId: $productId
             variants: $variants
+            
           ) {
             productVariants {
               id
@@ -282,36 +131,41 @@ for (const [productId, variants] of Object.entries(variantsByProduct)) {
             userErrors {
               field
               message
-            }if(variants.length===400)
+            }
+            pageInfo {
+                hasNextPage
+                  endCursor
+                 }
           }
         }
         `,
-         {
+        {
           variables: {
-            productId: productId,
-            variants: variants as any
+            productId: node.product.id,
+            variants:[
+              {
+                id: node.id,
+               inventoryPolicy: "DENY"
+             }
+            ]
           }
         }
-    
       );
-      
-      const data = await mutationResponse?.json();
-      results.push(data);
-      
-      console.log(`Aggiornato prodotto ${productId}: ${(variants as any[]).length} varianti`);
-      
-      // Delay tra prodotti
-      await new Promise(resolve => setTimeout(resolve, 300));
-    
-  
+      let data= await mutationResponse?.json();
+      console.log('hello updaed labes alikom',data?.data)
+      return data
 
-  }
-  return Response.json({
-    totalVariantsFound: allVariants.length,
-    totalProductsUpdated: results.length,
-    updatedCount: continueVariants.length,
-    results: results
-  });
+    })
+  );
+}
+
+return Response.json({
+  updatedCount: results.length,
+  result:results.data,
+  all:results
+  
+});
+
 
 
 
