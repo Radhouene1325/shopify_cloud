@@ -184,14 +184,14 @@ let cursor = null;
 let requestCount = 0;
 let  variants :Record<string,any>[] =[]
 // LOOP per prendere tutte le pagine
-while (hasNextPage === true) {
+
   
 
   
   const response = await admin?.graphql(  // ← RIMUOVI "return"
     `#graphql
     query GetVariantsWithContinuePolicy($cursor: String) {
-      productVariants(first: 250, after: $cursor, query: "inventory_policy:continue") {
+      productVariants(first: 250, after: $cursor, query: "inventory_quantity:0") {
         edges {
           node {
             id
@@ -225,20 +225,19 @@ while (hasNextPage === true) {
   hasNextPage = resultdata?.data?.productVariants?.pageInfo?.hasNextPage;
   cursor = resultdata?.data?.productVariants?.pageInfo?.endCursor;
   
-  requestCount++;
   console.log(`Richiesta ${requestCount}: caricati ${variants.length} varianti (totale: ${variants.length})`);
 
   // Delay per evitare rate limits
   if (hasNextPage === true) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
- if (variants.length===500) return variants
 
 
-}
+
+
 
 // ORA hai TUTTE le varianti in allVariants
-console.log(`✓ Totale varianti CONTINUE caricate: ${allVariants.length}`);
+console.log(`✓ Totale varianti CONTINUE caricate: ${variants.length}`);
 
 // Filtra solo quelle con CONTINUE (già filtrato nella query, ma per sicurezza)
 const continueVariants = variants.filter(
