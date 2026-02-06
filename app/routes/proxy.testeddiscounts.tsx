@@ -93,28 +93,28 @@ let response
 
 
 const resultdata = await response?.json();
-console.log("Shopify variants:", resultdata?.data);
+// console.log("Shopify variants:", resultdata?.data);
 hasNextPage = resultdata?.data?.productVariants.pageInfo.hasNextPage
     cursor = resultdata?.data.productVariants.pageInfo.endCursor;
 console.log('hex and cursor',hasNextPage,cursor)
 
 const variants =
 resultdata?.data?.productVariants?.edges ?? [];
-  console.log("Shopify variants is her hello:", variants);
+  // console.log("Shopify variants is her hello:", variants);
 const continueVariants = variants
 .filter(({ node }: any) => node.inventoryPolicy === "CONTINUE")
 // .map(({ node }:any) => ({
 //   id: node.id,
 //   inventoryPolicy: "CONTINUE"
 // }));
-console.log('varients coninuQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ',continueVariants)
+// console.log('varients coninuQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ',continueVariants)
 
 let results: Record<string,any> = {};
 
 if (continueVariants.length > 0) {
   results = await Promise.all(
     continueVariants.map(async ({ node }: any) => {
-      console.log('node is hrer',node)
+      // console.log('node is hrer',node)
       const mutationResponse = await admin?.graphql(
         `#graphql
         mutation UpdateContinueToDeny($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
@@ -152,7 +152,7 @@ if (continueVariants.length > 0) {
         }
       );
       let data= await mutationResponse?.json();
-      console.log('hello updaed labes alikom',data?.data)
+      // console.log('hello updaed labes alikom',data?.data)
       return data
 
     })
