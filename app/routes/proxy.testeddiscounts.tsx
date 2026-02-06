@@ -54,11 +54,13 @@ console.log('shop', session?.shop);
   //   }
   // });
 
+  let hasNextPage = true;
   let cursor = null;
-
+let response
 
 /////////////////
-const response = await admin?.graphql(
+while (hasNextPage) {
+return  response = await admin?.graphql(
   `#graphql
   query GetVariantsWithContinuePolicy($cursor:String) {
     productVariants(first: 250,after: $cursor,query: "inventoryPolicy:CONTINUE") {
@@ -84,12 +86,16 @@ const response = await admin?.graphql(
     }
   }
 );
+}
 
-const json = await response?.json();
-console.log("Shopify variants:", json?.data);
+const resultdata = await response?.json();
+console.log("Shopify variants:", resultdata?.data);
+hasNextPage = resultdata?.data?.productVariants?.pageInfo?.hasNextPage;
+    cursor = resultdata?.data?.productVariants?.pageInfo?.endCursor;
+console.log('hex and cursor',hasNextPage,cursor)
 
 const variants =
-  json?.data?.productVariants?.edges ?? [];
+resultdata?.data?.productVariants?.edges ?? [];
   console.log("Shopify variants is her hello:", variants);
 const continueVariants = variants
 .filter(({ node }: any) => node.inventoryPolicy === "CONTINUE")
