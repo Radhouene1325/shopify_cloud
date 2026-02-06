@@ -164,6 +164,7 @@ const results = [];
 
     
     results.push(await mutationResponse?.json());
+  }
 console.log('hekop')
 
 return Response.json({
