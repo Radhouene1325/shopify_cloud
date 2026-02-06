@@ -61,7 +61,7 @@ console.log('shop', session?.shop);
 const response = await admin?.graphql(
   `#graphql
   query GetVariantsWithContinuePolicy($cursor:String) {
-    productVariants(first: 250,after: $cursor,query: "inventory_policy:CONTINUE") {
+    productVariants(first: 250,after: $cursor,query: "inventoryPolicy:CONTINUE") {
       edges {
         node {
           id
