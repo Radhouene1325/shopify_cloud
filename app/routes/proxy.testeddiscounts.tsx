@@ -168,7 +168,7 @@ console.log('hekop')
 
 return Response.json({
   updatedCount: results.length,
-  result:results?.data,
+  result:results,
   all:results
   
 });
