@@ -60,7 +60,7 @@ console.log('shop', session?.shop);
 const response = await admin?.graphql(
   `#graphql
   query GetVariantsWithContinuePolicy {
-    productVariants(first: 10) {
+    productVariants(first: 250,query: "inventory_policy:continue") {
       edges {
         node {
           id
@@ -73,7 +73,12 @@ const response = await admin?.graphql(
           }
         }
       }
-    }
+    },
+    # {
+    #   variables:{
+
+    #   }
+    # }
   }
   `
 );
