@@ -39,6 +39,7 @@ const url = new URL(request.url);
             title
             inventoryPolicy
             inventoryQuantity
+            sku
             product {
               id
               title
@@ -110,8 +111,19 @@ const url = new URL(request.url);
       }
     }, [fetcher.data]);
     const prevCursor = cursorStack[cursorStack.length - 2];
-
-  
+    
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    
+    useEffect(() => {
+      const autoSelected = new Set(
+        rows
+          .filter((v: any) => v.inventoryPolicy === "CONTINUE")
+          .map((v: any) => v.id)
+      );
+    
+      setSelectedIds(autoSelected);
+    }, [rows]);
+    
     return (
       <div style={{ padding: 24 }}>
         <h1>Out of stock variants</h1>
@@ -123,13 +135,52 @@ const url = new URL(request.url);
               <th>Variant</th>
               <th>Inventory</th>
               <th>Policy</th>
+              <th>
+  <input
+    type="checkbox"
+    checked={
+      rows.length > 0 &&
+      rows
+        .filter(v => v.inventoryPolicy === "CONTINUE")
+        .every(v => selectedIds.has(v.id))
+    }
+    onChange={(e) => {
+      if (e.target.checked) {
+        setSelectedIds(
+          new Set(
+            rows
+              .filter(v => v.inventoryPolicy === "CONTINUE")
+              .map(v => v.id)
+          )
+        );
+      } else {
+        setSelectedIds(new Set());
+      }
+    }}
+  />
+</th>
+
             </tr>
           </thead>
   
           <tbody>
             {rows.map((v: any) => (
               <tr key={v.id}>
+                 <td>
+          <input
+            type="checkbox"
+            checked={selectedIds.has(v.id)}
+            onChange={(e) => {
+              setSelectedIds(prev => {
+                const next = new Set(prev);
+                e.target.checked ? next.add(v.id) : next.delete(v.id);
+                return next;
+              });
+            }}
+          />
+        </td>
                 <td>{v.product.sku}</td>
+                <td>{v.sku}</td>
                 <td>{v.title}</td>
                 <td>{v.inventoryQuantity}</td>
                 <td>{v.inventoryPolicy}</td>
