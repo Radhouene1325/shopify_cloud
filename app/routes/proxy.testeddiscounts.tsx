@@ -98,8 +98,8 @@ let response
 const resultdata = await response?.json();
  console.log("Shopify variants:", resultdata?.data.productVariants.edges);
 hasNextPage = resultdata?.data?.productVariants.pageInfo.hasNextPage
-    cursor = resultdata?.data.productVariants.pageInfo.endCursor;
-console.log('hex and cursor',hasNextPage,cursor)
+    // cursor = resultdata?.data.productVariants.pageInfo.endCursor;
+console.log('hex and cursor',hasNextPage)
 
 const variants =
 resultdata?.data?.productVariants?.edges ?? [];
