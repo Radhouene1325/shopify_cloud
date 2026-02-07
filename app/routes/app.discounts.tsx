@@ -96,13 +96,20 @@ const url = new URL(request.url);
   
     const [rows, setRows] = useState(initial.variants);
     const [pageInfo, setPageInfo] = useState(initial.pageInfo);
+
+    const [cursorStack, setCursorStack] = useState<string[]>([]);
+
   
     useEffect(() => {
       if (fetcher.data) {
         setRows(fetcher.data.variants);
         setPageInfo(fetcher.data.pageInfo);
+        setCursorStack(prev => [...prev, pageInfo.endCursor]);
+
       }
     }, [fetcher.data]);
+    const prevCursor = cursorStack[cursorStack.length - 2];
+
   
     return (
       <div style={{ padding: 24 }}>
@@ -139,6 +146,20 @@ const url = new URL(request.url);
          }
        >
          {fetcher.state === "loading" ? "Loading..." : "Next page →"}
+       </button>
+          )}
+        </div>
+
+        <div style={{ marginTop: 16 }}>
+          {pageInfo.hasNextPage && (
+         <button
+         disabled={fetcher.state === "loading"}
+         onClick={() =>
+          fetcher.load(`?cursor=${prevCursor}`)
+
+         }
+       >
+         {fetcher.state === "loading" ? "Loading..." : "old page →"}
        </button>
           )}
         </div>
