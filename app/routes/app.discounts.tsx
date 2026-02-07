@@ -123,7 +123,8 @@ const url = new URL(request.url);
     
       setSelectedIds(autoSelected);
     }, [rows]);
-    
+    console.log("selectedIds",selectedIds)
+    console.log("rows is her",rows)
     return (
       <div style={{ padding: 24 }}>
         <h1>Out of stock variants</h1>
@@ -134,7 +135,7 @@ const url = new URL(request.url);
             <th>Select</th>
             <th>ProductTiTLE</th>
             <th>ProductID</th>
-              <th>SKU</th>
+              <th>IDSKU</th>
               <th>Variant</th>
               <th>Inventory</th>
               <th>Policy</th>
@@ -184,7 +185,7 @@ const url = new URL(request.url);
         </td>
                 <td>{v.product.title}</td>
                 <td>{v.product.id}</td>
-                <td>{v.sku}</td>
+                <td>{v.id}</td>
                 <td>{v.title}</td>
                 <td>{v.inventoryQuantity}</td>
                 <td>{v.inventoryPolicy}</td>
