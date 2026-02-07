@@ -128,7 +128,7 @@ const url = new URL(request.url);
           <tbody>
             {rows.map((v: any) => (
               <tr key={v.id}>
-                <td>{v.product.title}</td>
+                <td>{v.product.sku}</td>
                 <td>{v.title}</td>
                 <td>{v.inventoryQuantity}</td>
                 <td>{v.inventoryPolicy}</td>
