@@ -131,7 +131,10 @@ const url = new URL(request.url);
         <table width="100%" border={1} cellPadding={8}>
           <thead>
             <tr>
-              <th>Product</th>
+            <th>Select</th>
+            <th>ProductTiTLE</th>
+            <th>ProductID</th>
+              <th>SKU</th>
               <th>Variant</th>
               <th>Inventory</th>
               <th>Policy</th>
