@@ -91,142 +91,125 @@ const url = new URL(request.url);
 }
 
 
-  export default function Dsicounts(){
+export default function Discounts() {
+  const initial = useLoaderData<typeof loader>();
+  const fetcher = useFetcher();
 
-    const initial = useLoaderData<typeof loader>();
-    const fetcher = useFetcher();
-  
-    const [rows, setRows] = useState(initial.variants);
-    const [pageInfo, setPageInfo] = useState(initial.pageInfo);
+  const [rows, setRows] = useState(initial.variants);
+  const [pageInfo, setPageInfo] = useState(initial.pageInfo);
 
-    const [cursorStack, setCursorStack] = useState<string[]>([]);
+  // cursor history
+  const [cursorStack, setCursorStack] = useState<string[]>([]);
 
-  
-    useEffect(() => {
-      if (fetcher.data) {
-        setRows(fetcher.data.variants);
-        setPageInfo(fetcher.data.pageInfo);
-        setCursorStack(prev => [...prev, pageInfo.endCursor]);
-
-      }
-    }, [fetcher.data]);
-    const prevCursor = cursorStack.length > 1 ? cursorStack[cursorStack.length - 2] : undefined;
-
-    interface SelectedVariant {
-      id: string;
-      product: { id: string };
-    }
-
-    const [selected, setSelected] = useState<SelectedVariant[]>([]);
-
-    useEffect(() => {
-      const autoSelected = new Map<string, SelectedVariant>(
-        rows
-          .filter((v: any) => v.inventoryPolicy === "CONTINUE")
-          .map((v: any) => [
-            v.id,
-            {
-              id: v.id,
-              product: { id: v.product.id }
-            }
-          ])
-      );
-    
-      setSelected([...autoSelected.values()]);
-    }, [rows]);
-    console.log("selectedIds",selected)
-    console.log("rows is her",rows)
-    return (
-      <div style={{ padding: 24 }}>
-        <h1>Out of stock variants</h1>
-  
-        <table width="100%" border={1} cellPadding={8}>
-          <thead>
-            <tr>
-            <th>Select</th>
-            <th>ProductTiTLE</th>
-            <th>ProductID</th>
-              <th>IDSKU</th>
-              <th>Variant</th>
-              <th>Inventory</th>
-              <th>Policy</th>
-              <th>
-              <input
-  type="checkbox"
-  checked={selected.some(s => s.id === v.id)}
-  onChange={(e) => {
-    if (e.target.checked) {
-      setSelected(prev => [
-        ...prev,
-        { id: v.id, product: { id: v.product.id } }
-      ]);
-    } else {
-      setSelected(prev => prev.filter(s => s.id !== v.id));
-    }
-  }}
-/>
-
-</th>
-
-            </tr>
-          </thead>
-  
-          <tbody>
-            {rows.map((v: any) => (
-              <tr key={v.id}>
-                 <td>
-          <input
-            type="checkbox"
-            checked={selectedIds.has(v.id)}
-            onChange={(e) => {
-              setSelectedIds(prev => {
-                const next = new Set(prev);
-                e.target.checked ? next.add(v.id) : next.delete(v.id);
-                return next;
-              });
-            }}
-          />
-        </td>
-                <td>{v.product.title}</td>
-                <td>{v.product.id}</td>
-                <td>{v.id}</td>
-                <td>{v.title}</td>
-                <td>{v.inventoryQuantity}</td>
-                <td>{v.inventoryPolicy}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-  
-        <div style={{ marginTop: 16 }}>
-          {pageInfo.hasNextPage && (
-         <button
-         disabled={fetcher.state === "loading"}
-         onClick={() =>
-           fetcher.load(`?cursor=${pageInfo.endCursor}`)
-         }
-       >
-         {fetcher.state === "loading" ? "Loading..." : "Next page →"}
-       </button>
-          )}
-        </div>
-
-        <div style={{ marginTop: 16 }}>
-          {pageInfo.hasNextPage && (
-         <button
-         disabled={fetcher.state === "loading"}
-         onClick={() =>
-          fetcher.load(`?cursor=${prevCursor}`)
-
-         }
-       >
-         {fetcher.state === "loading" ? "Loading..." : "old page →"}
-       </button>
-          )}
-        </div>
-      </div>
-    );
+  interface SelectedVariant {
+    id: string;
+    product: { id: string };
   }
+
+  const [selected, setSelected] = useState<SelectedVariant[]>([]);
+
+  // Handle pagination result
+  useEffect(() => {
+    if (fetcher.data) {
+      setRows(fetcher.data.variants);
+      setPageInfo(fetcher.data.pageInfo);
+    }
+  }, [fetcher.data]);
+
+  // Auto-select CONTINUE variants on each page
+  useEffect(() => {
+    const autoSelected: SelectedVariant[] = rows
+      .filter((v: any) => v.inventoryPolicy === "CONTINUE")
+      .map((v: any) => ({
+        id: v.id,
+        product: { id: v.product.id }
+      }));
+
+    setSelected(autoSelected);
+  }, [rows]);
+
+  const prevCursor =
+    cursorStack.length > 1
+      ? cursorStack[cursorStack.length - 2]
+      : undefined;
+
+  return (
+    <div style={{ padding: 24 }}>
+      <h1>Out of stock variants</h1>
+
+      <table width="100%" border={1} cellPadding={8}>
+        <thead>
+          <tr>
+            <th>Select</th>
+            <th>Product Title</th>
+            <th>Product ID</th>
+            <th>Variant ID</th>
+            <th>Variant</th>
+            <th>Inventory</th>
+            <th>Policy</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {rows.map((v: any) => (
+            <tr key={v.id}>
+              <td>
+                <input
+                  type="checkbox"
+                  checked={selected.some(s => s.id === v.id)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelected(prev => [
+                        ...prev,
+                        { id: v.id, product: { id: v.product.id } }
+                      ]);
+                    } else {
+                      setSelected(prev =>
+                        prev.filter(s => s.id !== v.id)
+                      );
+                    }
+                  }}
+                />
+              </td>
+              <td>{v.product.title}</td>
+              <td>{v.product.id}</td>
+              <td>{v.id}</td>
+              <td>{v.title}</td>
+              <td>{v.inventoryQuantity}</td>
+              <td>{v.inventoryPolicy}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Next page */}
+      {pageInfo.hasNextPage && (
+        <button
+          disabled={fetcher.state === "loading"}
+          onClick={() => {
+            setCursorStack(prev => [...prev, pageInfo.endCursor]);
+            fetcher.load(`?cursor=${pageInfo.endCursor}`);
+          }}
+        >
+          {fetcher.state === "loading" ? "Loading..." : "Next page →"}
+        </button>
+      )}
+
+      {/* Previous page */}
+      {prevCursor && (
+        <button
+          disabled={fetcher.state === "loading"}
+          onClick={() => {
+            setCursorStack(prev => prev.slice(0, -1));
+            fetcher.load(`?cursor=${prevCursor}`);
+          }}
+        >
+          ← Previous page
+        </button>
+      )}
+    </div>
+  );
+}
 
 
 
