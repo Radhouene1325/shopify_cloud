@@ -119,7 +119,7 @@ console.log('ddddddddddddddddddd',admin)
 }
 
 
-  export const Dsicounts=()=>{
+  export default function Dsicounts(){
 
     const data=useLoaderData()
 
