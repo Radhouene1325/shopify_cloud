@@ -43,7 +43,7 @@ const url = new URL(request.url);
             product {
               id
               title
-              sku
+              
             }
           }
         }
@@ -179,7 +179,8 @@ const url = new URL(request.url);
             }}
           />
         </td>
-                <td>{v.product.sku}</td>
+                <td>{v.product.title}</td>
+                <td>{v.product.id}</td>
                 <td>{v.sku}</td>
                 <td>{v.title}</td>
                 <td>{v.inventoryQuantity}</td>
