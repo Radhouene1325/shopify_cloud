@@ -110,20 +110,31 @@ const url = new URL(request.url);
 
       }
     }, [fetcher.data]);
-    const prevCursor = cursorStack[cursorStack.length - 2];
-    
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-    
+    const prevCursor = cursorStack.length > 1 ? cursorStack[cursorStack.length - 2] : undefined;
+
+    interface SelectedVariant {
+      id: string;
+      product: { id: string };
+    }
+
+    const [selected, setSelected] = useState<SelectedVariant[]>([]);
+
     useEffect(() => {
-      const autoSelected = new Set(
+      const autoSelected = new Map<string, SelectedVariant>(
         rows
           .filter((v: any) => v.inventoryPolicy === "CONTINUE")
-          .map((v: any) => v.id)
+          .map((v: any) => [
+            v.id,
+            {
+              id: v.id,
+              product: { id: v.product.id }
+            }
+          ])
       );
     
-      setSelectedIds(autoSelected);
+      setSelected([...autoSelected.values()]);
     }, [rows]);
-    console.log("selectedIds",selectedIds)
+    console.log("selectedIds",selected)
     console.log("rows is her",rows)
     return (
       <div style={{ padding: 24 }}>
