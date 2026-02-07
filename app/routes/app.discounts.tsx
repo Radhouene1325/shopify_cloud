@@ -1,7 +1,8 @@
 import { shopify } from "../shopify.server";
-import type {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
+import {
+  useLoaderData,
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
 } from "react-router";
 const SHOP_ORIGIN = "https://0g5p1w-50.myshopify.com";
 const corsHeaders = {
@@ -118,4 +119,15 @@ console.log('ddddddddddddddddddd',admin)
 }
 
 
-  
+  export const Dsicounts=()=>{
+
+    const data=useLoaderData()
+
+    return(
+      <>
+      <input />
+      <p>hello data im here</p>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
+      </>
+    )
+  }
