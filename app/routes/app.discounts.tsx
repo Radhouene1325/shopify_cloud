@@ -151,28 +151,21 @@ const url = new URL(request.url);
               <th>Inventory</th>
               <th>Policy</th>
               <th>
-  <input
-    type="checkbox"
-    checked={
-      rows.length > 0 &&
-      rows
-        .filter(v => v.inventoryPolicy === "CONTINUE")
-        .every(v => selectedIds.has(v.id))
+              <input
+  type="checkbox"
+  checked={selected.some(s => s.id === v.id)}
+  onChange={(e) => {
+    if (e.target.checked) {
+      setSelected(prev => [
+        ...prev,
+        { id: v.id, product: { id: v.product.id } }
+      ]);
+    } else {
+      setSelected(prev => prev.filter(s => s.id !== v.id));
     }
-    onChange={(e) => {
-      if (e.target.checked) {
-        setSelectedIds(
-          new Set(
-            rows
-              .filter(v => v.inventoryPolicy === "CONTINUE")
-              .map(v => v.id)
-          )
-        );
-      } else {
-        setSelectedIds(new Set());
-      }
-    }}
-  />
+  }}
+/>
+
 </th>
 
             </tr>
