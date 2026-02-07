@@ -63,7 +63,7 @@ const url = new URL(request.url);
     // Filtra solo discount ATTIVI
     const activeDiscounts ={
       
-        variants: data.data.productVariants.edges.map((e: any) => e.node),
+        variants: data.data.productVariants.edges.filter((e:any)=>e.inventoryPolicy === "CONTINUE").map((e: any) => e.node),
         pageInfo: data.data.productVariants.pageInfo
       
     }
