@@ -132,13 +132,14 @@ const url = new URL(request.url);
   
         <div style={{ marginTop: 16 }}>
           {pageInfo.hasNextPage && (
-            <button
-              onClick={() =>
-                fetcher.load(`?cursor=${pageInfo.endCursor}`)
-              }
-            >
-              Next page →
-            </button>
+         <button
+         disabled={fetcher.state === "loading"}
+         onClick={() =>
+           fetcher.load(`?cursor=${pageInfo.endCursor}`)
+         }
+       >
+         {fetcher.state === "loading" ? "Loading..." : "Next page →"}
+       </button>
           )}
         </div>
       </div>
