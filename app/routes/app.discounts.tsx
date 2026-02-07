@@ -89,7 +89,7 @@ const url = new URL(request.url);
 }
 
 
-  export const Dsicounts=()=>{
+  export default function Dsicounts(){
 
     const initial = useLoaderData<typeof loader>();
     const fetcher = useFetcher();
