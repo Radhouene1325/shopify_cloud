@@ -1,8 +1,8 @@
-import prisma from "app/db.server";
+import prisma from "../db.server";
 import { shopify } from "../shopify.server";
 import {  type LoaderFunctionArgs } from "@remix-run/node";
 
-import { useFetcher } from "@remix-run/react";
+import { useFetcher, useLoaderData } from "@remix-run/react";
 import { useEffect, useState } from "react";
 const SHOP_ORIGIN = "https://0g5p1w-50.myshopify.com";
 const corsHeaders = {
@@ -481,7 +481,7 @@ console.log('throttleStatus',activeDiscounts?.extensions?.cost?.throttleStatus)
 }
 
 
-  export default function Dsicounts(){
+  export default function Discounts(){
 
     const initial = useLoaderData<typeof loader>();
   const fetcher = useFetcher();
