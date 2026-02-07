@@ -10,7 +10,8 @@
 import {  type LoaderFunctionArgs } from "@remix-run/node";
 import { shopify } from "../shopify.server";
 import prisma from "../db.server"; // Il tuo Prisma client
-
+import { useLoaderData, useFetcher } from "@remix-run/react";
+import { useEffect, useState } from "react";
 export async function action({request,context}:LoaderFunctionArgs) {
   const { admin } = await shopify(context).authenticate.admin(request);
 console.log('hello admin im her bonsoir and radhoun bbbb',admin)
@@ -54,8 +55,11 @@ console.log('shop', session?.shop);
   //   }
   // });
 
+  const url=new URL(request.url)
+  const cursor=url.searchParams.get('cursir')
+
   let hasNextPage = true;
-  let cursor = null;
+  // let cursor = null;
 let response
 
 /////////////////
@@ -103,71 +107,65 @@ resultdata?.data?.productVariants?.edges ?? [];
   // console.log("Shopify variants is her hello:", variants);
 const continueVariants = variants
 .filter(({ node }: any) => node.inventoryPolicy === "CONTINUE")
-// .map(({ node }:any) => ({
-//   id: node.id,
-//   inventoryPolicy: "CONTINUE"
-// }));
-// console.log('varients coninuQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ',continueVariants)
 
-const variantsByProduct: Record<string, any[]> = {};
+// const variantsByProduct: Record<string, any[]> = {};
 
-for (const { node } of continueVariants) {
-  if (!variantsByProduct[node.product.id]) {
-    variantsByProduct[node.product.id] = [];
-  }
+// for (const { node } of continueVariants) {
+//   if (!variantsByProduct[node.product.id]) {
+//     variantsByProduct[node.product.id] = [];
+//   }
 
-  variantsByProduct[node.product.id].push({
-    id: node.id,
-    inventoryPolicy: "DENY"
-  });
-}
+//   variantsByProduct[node.product.id].push({
+//     id: node.id,
+//     inventoryPolicy: "DENY"
+//   });
+// }
 
 
-const results = [];
+// const results = [];
 
  
-  for (const productId of Object.keys(variantsByProduct)) {
-       console.log('node is hrer',productId)
-      const mutationResponse = await admin?.graphql(
-        `#graphql
-        mutation UpdateContinueToDeny($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
-          productVariantsBulkUpdate(
+//   for (const productId of Object.keys(variantsByProduct)) {
+//        console.log('node is hrer',productId)
+//       const mutationResponse = await admin?.graphql(
+//         `#graphql
+//         mutation UpdateContinueToDeny($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
+//           productVariantsBulkUpdate(
            
-            productId: $productId
-            variants: $variants
+//             productId: $productId
+//             variants: $variants
             
-          ) {
-            productVariants {
-              id
-              inventoryPolicy
-            }
-            userErrors {
-              field
-              message
-            }
+//           ) {
+//             productVariants {
+//               id
+//               inventoryPolicy
+//             }
+//             userErrors {
+//               field
+//               message
+//             }
            
-          }
-        }
-        `,
-     {
-      variables: {
-        productId,
-        variants: variantsByProduct[productId]
-      }
-    }
-      );
+//           }
+//         }
+//         `,
+//      {
+//       variables: {
+//         productId,
+//         variants: variantsByProduct[productId]
+//       }
+//     }
+//       );
       
 
 
     
-    results.push(await mutationResponse?.json());
-  }
-console.log('hekop')
+//     results.push(await mutationResponse?.json());
+//   }
+// console.log('hekop')
 
 return Response.json({
-  updatedCount: results.length,
-  result:results,
-  all:results
+  variants: continueVariants,
+  pageInfo: resultdata?.data?.productVariants.pageInfo
   
 });
 
@@ -494,8 +492,60 @@ console.log('throttleStatus',activeDiscounts?.extensions?.cost?.throttleStatus)
 
 
 
+export default function VariantsTable() {
+  const initial = useLoaderData<typeof loader>();
+  const fetcher = useFetcher();
 
+  const [rows, setRows] = useState(initial?.variants);
+  const [pageInfo, setPageInfo] = useState(initial?.pageInfo);
 
+  useEffect(() => {
+    if (fetcher.data) {
+      setRows(fetcher.data.variants);
+      setPageInfo(fetcher.data.pageInfo);
+    }
+  }, [fetcher.data]);
+
+  return (
+    <div style={{ padding: 24 }}>
+      <h1>Out of stock variants</h1>
+
+      <table width="100%" border={1} cellPadding={8}>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Variant</th>
+            <th>Inventory</th>
+            <th>Policy</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {rows.map((v: any) => (
+            <tr key={v.id}>
+              <td>{v.product.title}</td>
+              <td>{v.title}</td>
+              <td>{v.inventoryQuantity}</td>
+              <td>{v.inventoryPolicy}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div style={{ marginTop: 16 }}>
+        {pageInfo.hasNextPage && (
+          <button
+            onClick={() =>
+              fetcher.load(`?cursor=${pageInfo.endCursor}`)
+            }
+          >
+            Next page →
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
 
 
 
