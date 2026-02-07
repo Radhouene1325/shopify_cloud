@@ -29,7 +29,7 @@ const url = new URL(request.url);
     `#graphql
     query GetVariants($cursor: String) {
       productVariants(
-        first: 50
+        first: 250
         after: $cursor
         query: "inventory_quantity:0"
       ) {
