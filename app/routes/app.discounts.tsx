@@ -42,6 +42,7 @@ const url = new URL(request.url);
             product {
               id
               title
+              sku
             }
           }
         }
