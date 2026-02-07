@@ -55,7 +55,6 @@ console.log('shop', session?.shop);
   //   }
   // });
 
-  const url=new URL(request.url)
   const cursor=url.searchParams.get('cursir')
 
   let hasNextPage = true;
