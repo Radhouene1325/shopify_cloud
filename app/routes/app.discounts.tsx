@@ -127,7 +127,7 @@ export default function Discounts() {
 
     setSelected(autoSelected);
   }, [rows]);
-
+console.log('selected',selected)
   const prevCursor =
     cursorStack.length > 1
       ? cursorStack[cursorStack.length - 2]
