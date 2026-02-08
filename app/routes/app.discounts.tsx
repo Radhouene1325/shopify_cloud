@@ -232,7 +232,7 @@ const handleSubmitFormData = () => {
       {/* updated thedata */}
       <button
       onClick={handleSubmitFormData}
-      ></button>
+      >send updated please</button>
     </div>
 
 
@@ -256,6 +256,7 @@ export async function action({request,context}:LoaderFunctionArgs) {
   let {admin}=await shopify(context).authenticate.admin(request)
 const formData=await request.formData()
 const updatedpolicyvariants:selected[]=JSON.parse(formData.get('selected')as string)
+console.log('updatedpolicyvariants',updatedpolicyvariants)
 //   const continueVariants = variants
 // .filter(({ node }: any) => node.inventoryPolicy === "CONTINUE")
 // .map(({ node }:any) => ({
