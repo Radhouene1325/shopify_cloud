@@ -33,7 +33,7 @@ const url = new URL(request.url);
       productVariants(
         first: 250
         after: $cursor
-        query: "inventory_quantity:0"
+        query: "inventory_quantity:10"
       ) {
         edges {
           node {
