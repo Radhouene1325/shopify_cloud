@@ -272,13 +272,13 @@ console.log('updatedpolicyvariants',updatedpolicyvariants)
 
 const variantsByProduct: Record<string, any[]> = {};
 
-for (const { node } of updatedpolicyvariants) {
-  if (!variantsByProduct[node.product.id]) {
-    variantsByProduct[node.product.id] = [];
+for (const v of updatedpolicyvariants) {
+  if (!variantsByProduct[v.product.id]) {
+    variantsByProduct[v.product.id] = [];
   }
 
-  variantsByProduct[node.product.id].push({
-    id: node.id,
+  variantsByProduct[v.product.id].push({
+    id: v.id,
     inventoryPolicy: "DENY"
   });
 }
