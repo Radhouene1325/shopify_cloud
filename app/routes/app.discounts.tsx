@@ -272,7 +272,7 @@ console.log('updatedpolicyvariants',updatedpolicyvariants)
 
 const variantsByProduct: Record<string, any[]> = {};
 
-for (const { node } of updatedpolicyvariants.data?.variants) {
+for (const { node } of updatedpolicyvariants) {
   if (!variantsByProduct[node.product.id]) {
     variantsByProduct[node.product.id] = [];
   }
