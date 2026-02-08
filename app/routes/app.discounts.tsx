@@ -138,7 +138,7 @@ console.log('fetcher data is her',fetcher)
 console.log('selected',selected)
 
 const handleSubmitFormData = () => {
-  if(selected.length===0) return 
+  // if(selected.length===0) return 
   const formData = new FormData();
   formData.append("discounts", JSON.stringify(selected));
   
@@ -230,9 +230,14 @@ const handleSubmitFormData = () => {
       )}
 
       {/* updated thedata */}
-      <button
-      onClick={handleSubmitFormData}
-      >send updated please</button>
+      <Button
+                variant="primary"
+                onClick={handleSubmitFormData}
+                loading={isSubmitting}
+                size="large"
+              >
+                Create updated policy
+              </Button>
     </div>
 
 
@@ -267,7 +272,7 @@ console.log('updatedpolicyvariants',updatedpolicyvariants)
 
 const variantsByProduct: Record<string, any[]> = {};
 
-for (const { node } of updatedpolicyvariants) {
+for (const { node } of updatedpolicyvariants.data?.variants) {
   if (!variantsByProduct[node.product.id]) {
     variantsByProduct[node.product.id] = [];
   }
