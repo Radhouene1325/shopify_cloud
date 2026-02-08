@@ -1,8 +1,10 @@
 import { type LoaderFunctionArgs } from "@remix-run/node";
 import { shopify } from "../shopify.server";
 
-import { useLoaderData, useFetcher } from "@remix-run/react";
+import { useLoaderData, useFetcher, useSubmit, useActionData, useNavigate, useNavigation } from "@remix-run/react";
 import { useEffect, useState } from "react";
+import { Page, Layout, Card, Button, Banner, BlockStack } from "@shopify/polaris";
+
 const SHOP_ORIGIN = "https://0g5p1w-50.myshopify.com";
 const corsHeaders = {
   "Access-Control-Allow-Origin": SHOP_ORIGIN,
@@ -94,9 +96,15 @@ const url = new URL(request.url);
 export default function Discounts() {
   const initial = useLoaderData<typeof loader>();
   const fetcher = useFetcher();
+  const submit =useSubmit()
+  const actionData=useActionData()
+  const navigation=useNavigation()
+  const isSubmitting=navigation.state==="submitting"
+console.log('action data is her',actionData)
+console.log('fetcher data is her',fetcher)
 
-  const [rows, setRows] = useState(initial.variants);
-  const [pageInfo, setPageInfo] = useState(initial.pageInfo);
+  const [rows, setRows] = useState(initial?.variants);
+  const [pageInfo, setPageInfo] = useState(initial?.pageInfo);
 
   // cursor history
   const [cursorStack, setCursorStack] = useState<string[]>([]);
@@ -128,12 +136,25 @@ export default function Discounts() {
     setSelected(autoSelected);
   }, [rows]);
 console.log('selected',selected)
+
+const handleSubmitFormData = () => {
+  if(selected.length===0) return 
+  const formData = new FormData();
+  formData.append("discounts", JSON.stringify(selected));
+  
+  submit(formData, { 
+    method: "post",
+    encType: "application/x-www-form-urlencoded" 
+  });
+};
+
   const prevCursor =
     cursorStack.length > 1
       ? cursorStack[cursorStack.length - 2]
       : undefined;
 
   return (
+    <>
     <div style={{ padding: 24 }}>
       <h1>Out of stock variants</h1>
 
@@ -207,7 +228,16 @@ console.log('selected',selected)
           ← Previous page
         </button>
       )}
+
+      {/* updated thedata */}
+      <button
+      onClick={handleSubmitFormData}
+      ></button>
     </div>
+
+
+</>
+
   );
 }
 
@@ -216,7 +246,82 @@ console.log('selected',selected)
 
 
 
+export async function action({request,context}:LoaderFunctionArgs) {
+  interface selected{
+    id:string,
+    product:{
+      id:string
+    }
+  }
+  let {admin}=await shopify(context).authenticate.admin(request)
+const formData=await request.formData()
+const updatedpolicyvariants:selected[]=JSON.parse(formData.get('selected')as string)
+//   const continueVariants = variants
+// .filter(({ node }: any) => node.inventoryPolicy === "CONTINUE")
+// .map(({ node }:any) => ({
+//   id: node.id,
+//   inventoryPolicy: "CONTINUE"
+// }));
+// console.log('varients coninuQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ',continueVariants)
 
+const variantsByProduct: Record<string, any[]> = {};
+
+for (const { node } of updatedpolicyvariants) {
+  if (!variantsByProduct[node.product.id]) {
+    variantsByProduct[node.product.id] = [];
+  }
+
+  variantsByProduct[node.product.id].push({
+    id: node.id,
+    inventoryPolicy: "DENY"
+  });
+}
+
+
+const results = [];
+
+ 
+  for (const productId of Object.keys(variantsByProduct)) {
+       console.log('node is hrer',productId)
+      const mutationResponse = await admin?.graphql(
+        `#graphql
+        mutation UpdateContinueToDeny($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
+          productVariantsBulkUpdate(
+           
+            productId: $productId
+            variants: $variants
+            
+          ) {
+            productVariants {
+              id
+              inventoryPolicy
+            }
+            userErrors {
+              field
+              message
+            }
+            
+          }
+        }
+        `,
+     {
+      variables: {
+        productId,
+        variants: variantsByProduct[productId]
+      }
+    }
+      );
+      results.push(await mutationResponse?.json());
+    }
+
+    console.log(results)
+
+    return Response.json({
+      res:results
+    })
+    
+
+}
 
 
 
