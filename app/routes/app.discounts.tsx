@@ -140,7 +140,7 @@ console.log('selected',selected)
 const handleSubmitFormData = () => {
   // if(selected.length===0) return 
   const formData = new FormData();
-  formData.append("discounts", JSON.stringify(selected));
+  formData.append("selected", JSON.stringify(selected));
   
   submit(formData, { 
     method: "post",
@@ -260,7 +260,7 @@ export async function action({request,context}:LoaderFunctionArgs) {
   }
   let {admin}=await shopify(context).authenticate.admin(request)
 const formData=await request.formData()
-const updatedpolicyvariants:selected[]=JSON.parse(formData.get('selected')as string)
+const updatedpolicyvariants=JSON.parse(formData.get('selected')as string)
 console.log('updatedpolicyvariants',updatedpolicyvariants)
 //   const continueVariants = variants
 // .filter(({ node }: any) => node.inventoryPolicy === "CONTINUE")
