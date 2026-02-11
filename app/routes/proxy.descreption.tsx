@@ -3,7 +3,7 @@ import { type LoaderFunctionArgs } from "@remix-run/node";
 
 
 export async function loader({context,request}:LoaderFunctionArgs){
-    const response = await fetch("http://localhost:11434/api/generate", {method:"post",
+    const response = await fetch("http://toothsomely-unremanded-chadwick.ngrok-free.dev/api/generate", {method:"post",
         body:JSON.stringify(
             {
                 options: {
