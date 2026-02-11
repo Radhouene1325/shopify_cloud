@@ -13,7 +13,7 @@ export async function loader({context,request}:LoaderFunctionArgs){
                     temperature: 0.7
                   },
                 stream: false,
-                model: "deepseek-coder",
+                model: "deepseek-coder:latest",
                 prompt: `
             You are an expert eCommerce SEO specialist.
             
