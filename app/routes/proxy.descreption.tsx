@@ -31,13 +31,13 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
     //   }
   
       const data = await response.json();
-      const data2 = await response.text();
+      
       console.log("Ollama full response:", data);
 
   
       return Response.json({
         improvedHtml: data, // ✅ correct field from Ollama
-        html2:data2
+        
       });
     } catch (error: any) {
       console.error("Error:", error);
