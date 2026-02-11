@@ -1,49 +1,4 @@
-// import { type LoaderFunctionArgs } from "@remix-run/node";
 
-// export async function loader({ context, request }: LoaderFunctionArgs) {
-//     try {
-//       const response = await fetch(
-//         "https://toothsomely-unremanded-chadwick.ngrok-free.dev/api/generate",
-//         {
-//           method: "POST",
-//           headers: {
-//             "Content-Type": "application/json",
-  
-//             // 🔐 If using ngrok basic auth
-//             // "Authorization": "Bearer 39Ws0YopwEUdJGAz5QCZNn3fjlG_4nFN3Jw5rkuGyfNnVAmw2",
-  
-//             // 🔐 OR if you secured via Bearer token (custom middleware)
-//             // "Authorization": "Bearer YOUR_SECRET_TOKEN"
-//           },
-//           body: JSON.stringify({
-//             model: "deepseek-coder:latest",
-//             stream: false,
-//             options: {
-//               temperature: 0.7,
-//             },
-//             prompt: ` You are an expert eCommerce SEO specialist. Rewrite the following product description into: - Professional HTML - SEO optimized - Use semantic tags- Add headings (H2, H3) - Add bullet benefits - Add call-to-action - Keep Shopify compatible - Return ONLY clean HTML - Generate a short video presentation script for the product images - If JSON exists in the description, convert it into a professional 3-column table HTML:<h1>SPECIFICATIONS</h1> <p><span>CN</span>`,
-//           }),
-//         }
-//       );
-  
-//     //   if (!response.ok) {
-//     //     throw new Error("Ollama error: " + response.statusText);
-//     //   }
-  
-//       const data = await response.json();
-      
-//       console.log("Ollama full response:", data);
-
-  
-//       return Response.json({
-//         improvedHtml: data, // ✅ correct field from Ollama
-        
-//       });
-//     } catch (error: any) {
-//       console.error("Error:", error);
-//       return Response.json({ error: error.message }, { status: 500 });
-//     }
-//   }
 
 
 import { type ActionFunctionArgs } from "@remix-run/node";
@@ -55,7 +10,7 @@ async function generateSeoHtml(description: string,API_KEY_GEMINI:string) {
   // ⚠️ WARNING: Use process.env.GEMINI_KEY in production!
   console.log('is her both of ',description ,"api key is her ", API_KEY_GEMINI)
   const genAI = new GoogleGenerativeAI(API_KEY_GEMINI);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
   const prompt = `
     You are a professional SEO expert. 
