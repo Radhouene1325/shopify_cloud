@@ -15,7 +15,7 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
             // 🔐 OR if you secured via Bearer token (custom middleware)
             // "Authorization": "Bearer YOUR_SECRET_TOKEN"
           },
-          body: {
+          body: JSON.stringify({
             model: "deepseek-coder:latest",
             stream: false,
             options: {
@@ -67,7 +67,7 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
 </div>
 </div>
             `,
-          },
+          }),
         }
       );
   
