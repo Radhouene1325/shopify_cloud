@@ -1,37 +1,41 @@
-import { type LoaderFunctionArgs } from "@remix-run/node";
-
-
-
-export async function loader({context,request}:LoaderFunctionArgs){
-    
-    const response = await fetch("https://toothsomely-unremanded-chadwick.ngrok-free.dev/api/generate", {method:"post",headers: {
-        "Content-Type": "application/json"
-      }
-,      
-        body:JSON.stringify(
-            {
-                options: {
-                    temperature: 0.7
-                  },
-                stream: false,
-                model: "deepseek-coder:latest",
-                prompt: `
-            You are an expert eCommerce SEO specialist.
-            
-            Rewrite the following product description into:
-            - Professional HTML
-            - SEO optimized
-            - Use semantic tags
-            - Add headings (H2, H3)
-            - Add bullet benefits
-            - Add call-to-action
-            - Keep Shopify compatible
-            - Return ONLY clean HTML
-            - and generated vedio presetion fo the imges product
-            - if existe jeson in the descreption maked in table pro in 3 colone
-            
-            HTML:
-          <h1>SPECIFICATIONS</h1>
+export async function loader({ context, request }: LoaderFunctionArgs) {
+    try {
+      const response = await fetch(
+        "https://toothsomely-unremanded-chadwick.ngrok-free.dev/api/generate",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+  
+            // 🔐 If using ngrok basic auth
+            "Authorization": "Bearer  39Ws0YopwEUdJGAz5QCZNn3fjlG_4nFN3Jw5rkuGyfNnVAmw2",
+  
+            // 🔐 OR if you secured via Bearer token (custom middleware)
+            // "Authorization": "Bearer YOUR_SECRET_TOKEN"
+          },
+          body: JSON.stringify({
+            model: "deepseek-coder:latest",
+            stream: false,
+            options: {
+              temperature: 0.7,
+            },
+            prompt: `
+  You are an expert eCommerce SEO specialist.
+  
+  Rewrite the following product description into:
+  - Professional HTML
+  - SEO optimized
+  - Use semantic tags
+  - Add headings (H2, H3)
+  - Add bullet benefits
+  - Add call-to-action
+  - Keep Shopify compatible
+  - Return ONLY clean HTML
+  - Generate a short video presentation script for the product images
+  - If JSON exists in the description, convert it into a professional 3-column table
+  
+  HTML:
+ <h1>SPECIFICATIONS</h1>
 <p><span>CN</span>: <span style="color: #333;">Henan</span></p>
 <p><span>Colletto</span>: <span style="color: #333;">Collo a O</span></p>
 <p><span>Composizione dei materiali</span>: <span style="color: #333;">cotton</span></p>
@@ -61,17 +65,24 @@ export async function loader({context,request}:LoaderFunctionArgs){
 </div>
 </div>
             `,
-            }
-        ),
-      
-       
-        
+          }),
+        }
+      );
+  
+      if (!response.ok) {
+        throw new Error("Ollama error: " + response.statusText);
+      }
+  
+      const data = await response.json();
+  
+      console.log("Ollama full response:", data);
+  
+      return Response.json({
+        improvedHtml: data?.response, // ✅ correct field from Ollama
       });
-let res=await response.text()
-
-      console.log("hello res im her",res);
-
-      return Response.json({ improvedHtml: res });
-    
-}
-
+    } catch (error: any) {
+      console.error("Error:", error);
+      return Response.json({ error: error.message }, { status: 500 });
+    }
+  }
+  
