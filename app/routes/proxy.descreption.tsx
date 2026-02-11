@@ -38,7 +38,7 @@ export async function loader({context,request}:LoaderFunctionArgs){
        
         
       });
-let res=await response.json()
+let res=await response.text()
 
       console.log("hello res im her",res);
 
