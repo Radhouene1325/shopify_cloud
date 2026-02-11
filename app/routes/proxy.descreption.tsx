@@ -1,3 +1,5 @@
+import { type LoaderFunctionArgs } from "@remix-run/node";
+
 export async function loader({ context, request }: LoaderFunctionArgs) {
     try {
       const response = await fetch(
@@ -8,7 +10,7 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
             "Content-Type": "application/json",
   
             // 🔐 If using ngrok basic auth
-            "Authorization": "Bearer  39Ws0YopwEUdJGAz5QCZNn3fjlG_4nFN3Jw5rkuGyfNnVAmw2",
+            "Authorization": "Bearer 39Ws0YopwEUdJGAz5QCZNn3fjlG_4nFN3Jw5rkuGyfNnVAmw2",
   
             // 🔐 OR if you secured via Bearer token (custom middleware)
             // "Authorization": "Bearer YOUR_SECRET_TOKEN"
@@ -69,16 +71,18 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
         }
       );
   
-      if (!response.ok) {
-        throw new Error("Ollama error: " + response.statusText);
-      }
+    //   if (!response.ok) {
+    //     throw new Error("Ollama error: " + response.statusText);
+    //   }
   
       const data = await response.json();
-  
+      const data2 = await response.text();
       console.log("Ollama full response:", data);
+
   
       return Response.json({
-        improvedHtml: data?.response, // ✅ correct field from Ollama
+        improvedHtml: data, // ✅ correct field from Ollama
+        html2:data2
       });
     } catch (error: any) {
       console.error("Error:", error);
