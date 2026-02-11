@@ -30,7 +30,7 @@ export async function loader({context,request}:LoaderFunctionArgs){
       });
 let res=await response.json()
 
-      console.log(res);
+      console.log("hello res im her",res);
 
       return Response.json({ improvedHtml: res });
     
