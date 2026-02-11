@@ -10,7 +10,7 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
             "Content-Type": "application/json",
   
             // 🔐 If using ngrok basic auth
-            "Authorization": "Bearer 39Ws0YopwEUdJGAz5QCZNn3fjlG_4nFN3Jw5rkuGyfNnVAmw2",
+            // "Authorization": "Bearer 39Ws0YopwEUdJGAz5QCZNn3fjlG_4nFN3Jw5rkuGyfNnVAmw2",
   
             // 🔐 OR if you secured via Bearer token (custom middleware)
             // "Authorization": "Bearer YOUR_SECRET_TOKEN"
