@@ -3,7 +3,7 @@ import { type LoaderFunctionArgs } from "@remix-run/node";
 export async function loader({ context, request }: LoaderFunctionArgs) {
     try {
       const response = await fetch(
-        "https://toothsomely-unremanded-chadwick.ngrok-free.dev/api/generate -d",
+        "https://toothsomely-unremanded-chadwick.ngrok-free.dev/api/generate",
         {
           method: "POST",
           headers: {
@@ -15,7 +15,7 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
             // 🔐 OR if you secured via Bearer token (custom middleware)
             // "Authorization": "Bearer YOUR_SECRET_TOKEN"
           },
-          body: JSON.stringify({
+          body: {
             model: "deepseek-coder:latest",
             stream: false,
             options: {
@@ -67,7 +67,7 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
 </div>
 </div>
             `,
-          }),
+          },
         }
       );
   
