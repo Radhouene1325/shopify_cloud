@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs } from "@remix-run/node";
+import { ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
 import { shopify } from "../shopify.server";
 
 import { useLoaderData, useFetcher, useSubmit, useActionData, useNavigate, useNavigation, useLocation } from "@remix-run/react";
@@ -147,7 +147,7 @@ const handleSubmitFormData = () => {
   formData.append("selected", JSON.stringify(selected));
   console.log('form data is working oky ',formData)
   submit(formData, { 
-    method: "post",
+    method: "post", encType: "multipart/form-data"
   });
 };
 
@@ -259,7 +259,7 @@ const location=useLocation()
 
 
 
-export async function action({request,context}:LoaderFunctionArgs) {
+export async function action({request,context}:ActionFunctionArgs) {
 console.log('action is started oky ')
   let {admin}=await shopify(context).authenticate.admin(request)
 const formData=await request.formData()
