@@ -144,7 +144,7 @@ const handleSubmitFormData = () => {
   console.log('action oky button')
   const formData = new FormData();
   formData.append("selected", JSON.stringify(selected));
-  console.log('form data is working oky ')
+  console.log('form data is working oky ',formData)
   submit(formData, { 
     method: "post",
     action: location.pathname,
