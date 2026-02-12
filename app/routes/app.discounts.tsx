@@ -216,7 +216,7 @@ const location=useLocation()
           onClick={() => {
             setCursorStack(prev => [...prev, pageInfo.endCursor]);
             fetcher.load(
-              `${location.pathname}?cursor=${encodeURIComponent(pageInfo.endCursor)}`
+              `?cursor=${encodeURIComponent(pageInfo.endCursor)}`
             );
             
           }}
