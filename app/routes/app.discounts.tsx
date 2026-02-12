@@ -1,7 +1,7 @@
 import { type LoaderFunctionArgs } from "@remix-run/node";
 import { shopify } from "../shopify.server";
 
-import { useLoaderData, useFetcher, useSubmit, useActionData, useNavigate, useNavigation } from "@remix-run/react";
+import { useLoaderData, useFetcher, useSubmit, useActionData, useNavigate, useNavigation, useLocation } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { Page, Layout, Card, Button, Banner, BlockStack } from "@shopify/polaris";
 
@@ -102,7 +102,7 @@ export default function Discounts() {
   const isSubmitting=navigation.state==="submitting"
 console.log('action data is her',actionData)
 console.log('fetcher data is her',fetcher)
-
+console.log('fetcher data is her',fetcher.state)
   const [rows, setRows] = useState(initial?.variants);
   const [pageInfo, setPageInfo] = useState(initial?.pageInfo);
 
@@ -147,7 +147,7 @@ const handleSubmitFormData = () => {
     encType: "application/x-www-form-urlencoded" 
   });
 };
-
+const location=useLocation()
   const prevCursor =
     cursorStack.length > 1
       ? cursorStack[cursorStack.length - 2]
@@ -210,7 +210,7 @@ const handleSubmitFormData = () => {
           onClick={() => {
             setCursorStack(prev => [...prev, pageInfo.endCursor]);
             fetcher.load(
-              `/app/discounts?cursor=${encodeURIComponent(pageInfo.endCursor)}`
+              `${location.pathname}?cursor=${encodeURIComponent(pageInfo.endCursor)}`
             );
             
           }}
