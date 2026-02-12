@@ -216,7 +216,7 @@ export default function Descriptionupdated(){
                 {/* <td>{v.product.title}</td>
                 <td>{v.product.id}</td> */}
                 <td>{v.id}</td>
-                <td>{v.descpretion}</td>
+                <td>{v.descriptionHtml}</td>
                 {/* <td>{v.inventoryQuantity}</td>
                 <td>{v.inventoryPolicy}</td> */}
               </tr>
@@ -281,6 +281,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
     products(first: 1,after:$cursor) {
         edges{
             node{
+                title
                 id
                 descriptionHtml
             }
