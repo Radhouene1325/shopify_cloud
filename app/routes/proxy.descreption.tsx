@@ -10,7 +10,9 @@ async function generateSeoHtml(description: string,API_KEY_GEMINI:string) {
   // ⚠️ WARNING: Use process.env.GEMINI_KEY in production!
   console.log('is her both of ',description ,"api key is her ", API_KEY_GEMINI)
   const genAI = new GoogleGenerativeAI(API_KEY_GEMINI);
-  const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+  const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" ,generationConfig: {
+    responseMimeType: "application/json",
+  }});
 
   const prompt = `
 You are a professional SEO expert and UI/UX Copywriter.
@@ -33,7 +35,8 @@ You are a professional SEO expert and UI/UX Copywriter.
   `;
 
   const result = await model.generateContent(prompt);
-  return result.response.json();
+  const responseText = result.response.text(); 
+  return JSON.parse(responseText);
 }
 
 // 2. Remix Action (Server Side)
@@ -77,7 +80,10 @@ export async function action({context ,request }: ActionFunctionArgs) {
   try {
     const optimizedHtml = await generateSeoHtml(htmlDescription,API_KEY_GEMINI);
     console.log('new descreption is her and optimise ',optimizedHtml)
-    return Response.json({ optimizedHtml });
+    return Response.json({ 
+        short: optimizedHtml.shortDescription, 
+        detailed: optimizedHtml.detailedDescription 
+      });
   } catch (error) {
     console.error(error);
     return Response.json({ error: "Failed to generate content" }, { status: 500 });
