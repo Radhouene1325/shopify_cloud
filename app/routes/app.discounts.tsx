@@ -238,7 +238,7 @@ const location=useLocation()
       <Button
                 variant="primary"
                 onClick={handleSubmitFormData}
-                // loading={isSubmitting}
+                 loading={isSubmitting}
                 size="large"
               >
                 Create updated policy
