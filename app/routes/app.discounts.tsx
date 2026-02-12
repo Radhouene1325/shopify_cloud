@@ -16,6 +16,7 @@ export async function loader({ request,context }:LoaderFunctionArgs) {
   //   return new Response(null, { headers: corsHeaders });
   // }
   // const { admin } = await shopify(context).authenticate.public.appProxy(request);
+  console.log('is work loader secces ')
   const {admin}=await shopify(context).authenticate.admin(request);
 console.log('ddddddddddddddddddd',admin)
 const url = new URL(request.url);

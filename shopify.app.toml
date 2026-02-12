@@ -2,9 +2,9 @@
 
 client_id = "6f942bd29e0772cc3f8fcccb109f5f7d"
 name = "cloudflare-discount-platinumsh"
+api_version = "2026-01"
 application_url = "https://cloudflare-workers-app.radhouenekhalfa.workers.dev"
 embedded = true
-api_version = "2026-01"
 
 [build]
 automatically_update_urls_on_dev = true
@@ -22,7 +22,7 @@ api_version = "2026-01"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_analytics,read_app_proxy,write_app_proxy,read_customers,write_customers,read_price_rules,write_price_rules,read_discounts,write_discounts,read_inventory,read_locations,read_metaobjects,write_metaobjects,read_orders,write_orders,read_products,write_products"
+scopes = "read_analytics,read_app_proxy,read_customers,read_discounts,read_inventory,read_locations,read_metaobjects,read_orders,read_price_rules,read_products,write_app_proxy,write_customers,write_discounts,write_metaobjects,write_orders,write_price_rules,write_products"
 optional_scopes = [ ]
 use_legacy_install_flow = false
 
@@ -34,10 +34,8 @@ redirect_urls = [
 
 [app_proxy]
 url = "https://cloudflare-workers-app.radhouenekhalfa.workers.dev/proxy"
-prefix = "apps"
 subpath = "proxy"
-
-
+prefix = "apps"
 
 [pos]
 embedded = true
