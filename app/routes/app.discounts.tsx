@@ -280,8 +280,10 @@ const location=useLocation()
 export async function action({request,context}:LoaderFunctionArgs) {
 console.log('action is started oky ')
   let {admin}=await shopify(context).authenticate.admin(request)
-const formData=await request.formData()
-const updatedpolicyvariants=JSON.parse(formData.get('selected')as string)
+// const formData=await request.formData()
+// const updatedpolicyvariants=JSON.parse(formData.get('selected')as string)
+const body =await request.json()
+const updatedpolicyvariants=body?.selected
 console.log('updatedpolicyvariants',updatedpolicyvariants)
 //   const continueVariants = variants
 // .filter(({ node }: any) => node.inventoryPolicy === "CONTINUE")
