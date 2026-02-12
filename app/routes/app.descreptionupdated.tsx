@@ -293,10 +293,10 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
   `
   const response = await admin.graphql(query,{variables:{cursor}});
   const res = await response.json();
-  console.log('res is her ',res)
+  console.log('res is her ',res.data)
   const productsdescreption={
-    variants: res?.products.nodes.map((e: any) => e.node),
-        pageInfo: res?.products.pageInfo
+    variants: res?.data.products.nodes.map((e: any) => e.node),
+        pageInfo: res?.data.products.pageInfo
   }
   return new Response(JSON.stringify(productsdescreption), {
     status: 200,
