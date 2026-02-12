@@ -213,8 +213,8 @@ export default function Descriptionupdated(){
                     }}
                   />
                 </td>
-                <td>{v.product.title}</td>
-                <td>{v.product.id}</td>
+                {/* <td>{v.product.title}</td>
+                <td>{v.product.id}</td> */}
                 <td>{v.id}</td>
                 <td>{v.descpretion}</td>
                 {/* <td>{v.inventoryQuantity}</td>
