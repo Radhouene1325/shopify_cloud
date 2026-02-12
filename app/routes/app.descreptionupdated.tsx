@@ -1,7 +1,7 @@
 
 
 
-import { LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
+import {type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
 import { useActionData, Form, useNavigation, useLoaderData, useFetcher, useSubmit } from "@remix-run/react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { shopify } from "../shopify.server";
@@ -279,10 +279,13 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
   let query=    `#graphql
   query GetProducts($cursor:String) {
     products(first: 1,after:$cursor) {
-      nodes {
-        id
-        descriptionHtml
-      }
+        edges{
+            node{
+                id
+                descriptionHtml
+            }
+        }
+      
       pageInfo{
         endCursor
         hasNextPage
@@ -295,7 +298,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
   const res = await response.json();
   console.log('res is her ',res.data)
   const productsdescreption={
-    variants: res?.data.products.nodes.map((e: any) => e.node),
+    variants: res?.data.products.edges.map((e: any) => e.node),
         pageInfo: res?.data.products.pageInfo
   }
   return new Response(JSON.stringify(productsdescreption), {
