@@ -141,9 +141,10 @@ console.log('selected',selected)
 
 const handleSubmitFormData = () => {
   // if(selected.length===0) return 
+  console.log('action oky button')
   const formData = new FormData();
   formData.append("selected", JSON.stringify(selected));
-  
+  console.log('form data is working oky ')
   submit(formData, { 
     method: "post",
     action: location.pathname,
