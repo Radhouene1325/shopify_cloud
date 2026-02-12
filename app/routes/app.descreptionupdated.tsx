@@ -132,7 +132,7 @@ export default function Descriptionupdated(){
   
     interface SelectedVariant {
       id: string;
-      product: { id: string };
+      product: string;
     }
   
     const [selected, setSelected] = useState<SelectedVariant[]>([]);
@@ -148,10 +148,10 @@ export default function Descriptionupdated(){
     // Auto-select CONTINUE variants on each page
     useEffect(() => {
       const autoSelected: SelectedVariant[] = rows
-        .filter((v: any) => v.inventoryPolicy === "CONTINUE")
+        // .filter((v: any) => v.inventoryPolicy === "CONTINUE")
         .map((v: any) => ({
           id: v.id,
-          product: { id: v.product.id }
+          product: v.descreption
         }));
   
       setSelected(autoSelected);
@@ -183,12 +183,12 @@ export default function Descriptionupdated(){
           <thead>
             <tr>
               <th>Select</th>
-              <th>Product Title</th>
-              <th>Product ID</th>
-              <th>Variant ID</th>
-              <th>Variant</th>
-              <th>Inventory</th>
-              <th>Policy</th>
+              {/* <th>Product Title</th>
+              <th>Product ID</th> */}
+              <th>product ID</th>
+              <th>descreption</th>
+              {/* <th>Inventory</th>
+              <th>Policy</th> */}
             </tr>
           </thead>
   
@@ -203,7 +203,7 @@ export default function Descriptionupdated(){
                       if (e.target.checked) {
                         setSelected(prev => [
                           ...prev,
-                          { id: v.id, product: { id: v.product.id } }
+                          { id: v.id, product:v.descreption }
                         ]);
                       } else {
                         setSelected(prev =>
@@ -216,9 +216,9 @@ export default function Descriptionupdated(){
                 <td>{v.product.title}</td>
                 <td>{v.product.id}</td>
                 <td>{v.id}</td>
-                <td>{v.title}</td>
-                <td>{v.inventoryQuantity}</td>
-                <td>{v.inventoryPolicy}</td>
+                <td>{v.descpretion}</td>
+                {/* <td>{v.inventoryQuantity}</td>
+                <td>{v.inventoryPolicy}</td> */}
               </tr>
             ))}
           </tbody>
@@ -274,17 +274,36 @@ export default function Descriptionupdated(){
 
 export const loader = async ({request,context}:LoaderFunctionArgs) => {
   const { admin } = await shopify(context).authenticate.admin(request);
-  const response = await admin.graphql(
-    `#graphql
-  query GetProducts {
-    products(first: 1) {
+  const url=new URL(request.url)
+  const cursor=url.searchParams.get('cursor')
+  let query=    `#graphql
+  query GetProducts($cursor:string) {
+    products(first: 1,after:$cursor) {
       nodes {
         id
         descriptionHtml
       }
+      pageInfo{
+        endCursor
+        hasNextPage
+      }
     }
-  }`,
-  );
-  const json = await response.json();
-  return json.data;
+  
+  }
+  `
+  const response = await admin.graphql(query,{variables:{cursor}});
+  const res = await response.json();
+  const productsdescreption={
+    variants: res?.products.nodes.map((e: any) => e.node),
+        pageInfo: res?.products.pageInfo
+  }
+  return new Response(JSON.stringify(productsdescreption), {
+    status: 200,
+    headers: {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+      "Cache-Control": "public, max-age=60, s-maxage=300",
+    },
+  });
+//   return json.data;
 }
