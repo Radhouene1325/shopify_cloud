@@ -146,6 +146,7 @@ const handleSubmitFormData = () => {
   
   submit(formData, { 
     method: "post",
+    action: location.pathname,
     encType: "application/x-www-form-urlencoded" 
   });
 };
