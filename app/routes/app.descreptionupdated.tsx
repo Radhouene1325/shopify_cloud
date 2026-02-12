@@ -151,7 +151,7 @@ export default function Descriptionupdated(){
         // .filter((v: any) => v.inventoryPolicy === "CONTINUE")
         .map((v: any) => ({
           id: v.id,
-          product: v.descreption
+          descreption: v.descriptionHtml
         }));
   
       setSelected(autoSelected);
@@ -185,6 +185,7 @@ export default function Descriptionupdated(){
               <th>Select</th>
               {/* <th>Product Title</th>
               <th>Product ID</th> */}
+              <th>title</th>
               <th>product ID</th>
               <th>descreption</th>
               {/* <th>Inventory</th>
@@ -203,7 +204,11 @@ export default function Descriptionupdated(){
                       if (e.target.checked) {
                         setSelected(prev => [
                           ...prev,
-                          { id: v.id, product:v.descreption }
+                          {
+                            ...v, // spread all properties of v to satisfy SelectedVariant type
+                            id: v.id,
+                            descreption: v.descriptionHtml
+                          }
                         ]);
                       } else {
                         setSelected(prev =>
@@ -215,6 +220,7 @@ export default function Descriptionupdated(){
                 </td>
                 {/* <td>{v.product.title}</td>
                 <td>{v.product.id}</td> */}
+                 <td>{v.title}</td>
                 <td>{v.id}</td>
                 <td>{v.descriptionHtml}</td>
                 {/* <td>{v.inventoryQuantity}</td>
