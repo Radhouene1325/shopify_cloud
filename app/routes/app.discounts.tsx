@@ -257,12 +257,7 @@ const location=useLocation()
 
 
 export async function action({request,context}:LoaderFunctionArgs) {
-  interface selected{
-    id:string,
-    product:{
-      id:string
-    }
-  }
+console.log('action is started oky ')
   let {admin}=await shopify(context).authenticate.admin(request)
 const formData=await request.formData()
 const updatedpolicyvariants=JSON.parse(formData.get('selected')as string)
