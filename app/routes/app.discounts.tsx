@@ -209,7 +209,7 @@ const handleSubmitFormData = () => {
           disabled={fetcher.state === "loading"}
           onClick={() => {
             setCursorStack(prev => [...prev, pageInfo.endCursor]);
-            fetcher.load(`?discounts&cursor=${pageInfo.endCursor}`);
+            fetcher.load(`?cursor=${pageInfo.endCursor}`);
           }}
         >
           {fetcher.state === "loading" ? "Loading..." : "Next page →"}
@@ -222,7 +222,7 @@ const handleSubmitFormData = () => {
           disabled={fetcher.state === "loading"}
           onClick={() => {
             setCursorStack(prev => prev.slice(0, -1));
-            fetcher.load(`?discounts&cursor=${prevCursor}`);
+            fetcher.load(`?cursor=${prevCursor}`);
           }}
         >
           ← Previous page
