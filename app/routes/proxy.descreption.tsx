@@ -15,29 +15,30 @@ async function generateSeoHtml(description: string,API_KEY_GEMINI:string) {
   }});
 
   const prompt = `
-You are a professional SEO expert and UI/UX Copywriter.
-    Task: Transform the following raw HTML product description into a professional, SEO-optimized masterpiece.
-
-    STRICT RULES:
-    1. IMAGE PRESERVATION: Do NOT remove any <img> tags. Keep them in their original positions.
-    2. JSON DATA: If you find JSON data (like size charts or specs), convert it into a clean 4-column HTML <table>.
-
-    3. DUAL CONTENT: Provide TWO versions:
-        im need the designe more frendly and burefol
-       - A "Short Description" (Catchy, high-conversion summary).
-       - A "Detailed Description" (Deep SEO, features, benefits, and hierarchy).
-    4. HIERARCHY: Use <h1> for product name, <h2> for benefits, and <ul> for features.
-    5. SALES COPY: Use persuasive, "human-centric" language.
-    6. CLEAN HTML: No inline styles unless necessary for the table borders. Use semantic tags.
-    7. aReturn a JSON object with exactly these two keys: "shortDescription" and "detailedDescription".
+  You are a Senior E-commerce SEO Specialist and UX Copywriter for a high-end Amazon storefront. 
+  Your goal is to transform raw product data into a high-converting, SEO-optimized masterpiece.
   
-  Format:
+  STRICT JSON OUTPUT FORMAT:
   {
-    "shortDescription": "...",
-    "detailedDescription": "..."
+    "shortDescription": "HTML_STRING",
+    "detailedDescription": "HTML_STRING"
   }
-    RAW DESCRIPTION TO PROCESS:  
-    Original HTML: ${description}
+  
+  RULES FOR "shortDescription" (Amazon "Above the Fold" Style):
+  - Focus on "Benefit-First" copy. Why should the customer care?
+  - Use <ul> with 5-6 bullet points. Start each bullet with a bolded [CAPITALIZED KEY BENEFIT].
+  - Include a clear, persuasive "Call to Action" at the end.
+  - Design: Clean, high-white-space layout.
+  
+  RULES FOR "detailedDescription" (Amazon "A+ Content" Style):
+  - HIERARCHY: Use <h1> for a catchy Product Title. Use <h2> for sectional headings (e.g., "Premium Quality," "Versatile Style").
+  - IMAGE PRESERVATION: Every <img> tag from the source MUST remain in the flow. Do not delete them.
+  - JSON TO TABLE: Convert any JSON size/spec data into a 4-column <table>. Use <thead> for headers. Add "cellpadding='10'" and "border='1'" for a clean look.
+  - PSYCHOLOGY: Use sensory words and address pain points.
+  - CLEAN HTML: Use semantic tags (<section>, <article>, <strong>). No messy inline styles.
+  
+  RAW PRODUCT DATA:
+  ${description}
   `;
 
   const result = await model.generateContent(prompt);
@@ -86,6 +87,15 @@ export async function action({context ,request }: ActionFunctionArgs) {
   try {
     const optimizedHtml = await generateSeoHtml(htmlDescription,API_KEY_GEMINI);
     console.log('new descreption is her and optimise ',optimizedHtml)
+    const normalizedData = {
+        short: optimizedHtml.shortDescription || optimizedHtml["Short Description"] || "",
+        detailed: optimizedHtml.detailedDescription || optimizedHtml["Detailed Description"] || ""
+      };
+  
+      if (!normalizedData.short || !normalizedData.detailed) {
+        console.error("AI returned empty fields", optimizedHtml);
+        return Response.json({ error: "Empty content from AI" }, { status: 500 });
+      }
     return Response.json({ 
         short: optimizedHtml.shortDescription, 
         detailed: optimizedHtml.detailedDescription 
