@@ -277,7 +277,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
   const url=new URL(request.url)
   const cursor=url.searchParams.get('cursor')
   let query=    `#graphql
-  query GetProducts($cursor:string) {
+  query GetProducts($cursor:String) {
     products(first: 1,after:$cursor) {
       nodes {
         id
