@@ -33,7 +33,7 @@ You are a professional SEO expert and UI/UX Copywriter.
   `;
 
   const result = await model.generateContent(prompt);
-  return result.response.text();
+  return result.response.json();
 }
 
 // 2. Remix Action (Server Side)
