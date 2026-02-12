@@ -140,36 +140,17 @@ console.log('fetcher data is her',fetcher.state)
   }, [rows]);
 console.log('selected',selected)
 
-// const handleSubmitFormData = () => {
-//   // if(selected.length===0) return 
-//   console.log('action oky button')
-//   const formData = new FormData();
-//   formData.append("selected", JSON.stringify(selected));
-//   console.log('form data is working oky ',formData)
-//   submit(formData, { 
-//     method: "post",
-//   });
-// };
-const handleSubmitFormData = async () => {
-  if (selected.length === 0) return;
-
-  console.log("action oky button");
-
-  try {
-    const res = await fetch("/discounts", { // <-- Remix route with action()
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ selected }),
-    });
-
-    const data = await res.json();
-    console.log("Server response:", data);
-  } catch (err) {
-    console.error("Fetch failed:", err);
-  }
+const handleSubmitFormData = () => {
+  // if(selected.length===0) return 
+  console.log('action oky button')
+  const formData = new FormData();
+  formData.append("selected", JSON.stringify(selected));
+  console.log('form data is working oky ',formData)
+  submit(formData, { 
+    method: "post",
+  });
 };
+
 
 const location=useLocation()
   const prevCursor =
@@ -281,10 +262,9 @@ const location=useLocation()
 export async function action({request,context}:LoaderFunctionArgs) {
 console.log('action is started oky ')
   let {admin}=await shopify(context).authenticate.admin(request)
-// const formData=await request.formData()
-// const updatedpolicyvariants=JSON.parse(formData.get('selected')as string)
-const body =await request.json()
-const updatedpolicyvariants=body?.selected
+const formData=await request.formData()
+const updatedpolicyvariants=JSON.parse(formData.get('selected')as string)
+
 console.log('updatedpolicyvariants',updatedpolicyvariants)
 //   const continueVariants = variants
 // .filter(({ node }: any) => node.inventoryPolicy === "CONTINUE")
