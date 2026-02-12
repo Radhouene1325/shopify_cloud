@@ -212,7 +212,7 @@ const location=useLocation()
       {/* Next page */}
       {pageInfo.hasNextPage && (
         <button
-          disabled={fetcher.state === "loading"}
+          // disabled={fetcher.state === "loading"}
           onClick={() => {
             setCursorStack(prev => [...prev, pageInfo.endCursor]);
             fetcher.load(
