@@ -19,6 +19,7 @@ You are a professional SEO expert and UI/UX Copywriter.
     STRICT RULES:
     1. IMAGE PRESERVATION: Do NOT remove any <img> tags. Keep them in their original positions.
     2. JSON DATA: If you find JSON data (like size charts or specs), convert it into a clean 4-column HTML <table>.
+
     3. DUAL CONTENT: Provide TWO versions:
         im need the designe more frendly and burefol
        - A "Short Description" (Catchy, high-conversion summary).
@@ -26,7 +27,7 @@ You are a professional SEO expert and UI/UX Copywriter.
     4. HIERARCHY: Use <h1> for product name, <h2> for benefits, and <ul> for features.
     5. SALES COPY: Use persuasive, "human-centric" language.
     6. CLEAN HTML: No inline styles unless necessary for the table borders. Use semantic tags.
-
+    7. and im need to return for me object with key value for exmple Short Description:the short descreption and Detailed Description:juste the detail descpretion only the html 
     RAW DESCRIPTION TO PROCESS:  
     Original HTML: ${description}
   `;
