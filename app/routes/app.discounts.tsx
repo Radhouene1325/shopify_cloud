@@ -139,18 +139,37 @@ console.log('fetcher data is her',fetcher.state)
   }, [rows]);
 console.log('selected',selected)
 
-const handleSubmitFormData = () => {
-  // if(selected.length===0) return 
-  console.log('action oky button')
-  const formData = new FormData();
-  formData.append("selected", JSON.stringify(selected));
-  console.log('form data is working oky ',formData)
-  submit(formData, { 
-    method: "post",
-    action: location.pathname,
-    encType: "application/x-www-form-urlencoded" 
-  });
+// const handleSubmitFormData = () => {
+//   // if(selected.length===0) return 
+//   console.log('action oky button')
+//   const formData = new FormData();
+//   formData.append("selected", JSON.stringify(selected));
+//   console.log('form data is working oky ',formData)
+//   submit(formData, { 
+//     method: "post",
+//   });
+// };
+const handleSubmitFormData = async () => {
+  if (selected.length === 0) return;
+
+  console.log("action oky button");
+
+  try {
+    const res = await fetch("/discounts", { // <-- Remix route with action()
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ selected }),
+    });
+
+    const data = await res.json();
+    console.log("Server response:", data);
+  } catch (err) {
+    console.error("Fetch failed:", err);
+  }
 };
+
 const location=useLocation()
   const prevCursor =
     cursorStack.length > 1
