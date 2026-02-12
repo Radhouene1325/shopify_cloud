@@ -87,8 +87,8 @@ export async function action({context ,request }: ActionFunctionArgs) {
     const optimizedHtml = await generateSeoHtml(htmlDescription,API_KEY_GEMINI);
     console.log('new descreption is her and optimise ',optimizedHtml)
     return Response.json({ 
-        short: optimizedHtml["Short Description"], 
-        detailed: optimizedHtml["Detailed Description"] 
+        short: optimizedHtml.shortDescription, 
+        detailed: optimizedHtml.detailedDescription 
       });
   } catch (error) {
     console.error(error);
