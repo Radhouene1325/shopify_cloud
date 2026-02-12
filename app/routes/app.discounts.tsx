@@ -3,7 +3,7 @@ import { shopify } from "../shopify.server";
 
 import { useLoaderData, useFetcher, useSubmit, useActionData, useNavigate, useNavigation, useLocation } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import { Page, Layout, Card, Button, Banner, BlockStack } from "@shopify/polaris";
+import { Page, Layout, Card, Button, Banner, BlockStack, Form } from "@shopify/polaris";
 
 const SHOP_ORIGIN = "https://0g5p1w-50.myshopify.com";
 const corsHeaders = {
@@ -237,14 +237,21 @@ const location=useLocation()
       )}
 
       {/* updated thedata */}
-      <Button
-                variant="primary"
-                onClick={handleSubmitFormData}
-                 loading={isSubmitting}
-                size="large"
-              >
-                Create updated policy
-              </Button>
+      <Form method="post" onSubmit={handleSubmitFormData} >
+  <input 
+    type="hidden" 
+    name="selected" 
+    value={JSON.stringify(selected)} 
+  />
+
+  <Button
+    type="submit"
+    loading={isSubmitting}
+  >
+    Create updated policy
+  </Button>
+</Form>
+
     </div>
 
 
