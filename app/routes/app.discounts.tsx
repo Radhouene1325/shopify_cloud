@@ -142,6 +142,7 @@ console.log('selected',selected)
 
 const handleSubmitFormData = () => {
   // if(selected.length===0) return 
+  console.log('Submitting these IDs:', selected.map(s => s.id)); // Check if this is empty
   console.log('action oky button')
   const formData = new FormData();
   formData.append("selected", JSON.stringify(selected));
