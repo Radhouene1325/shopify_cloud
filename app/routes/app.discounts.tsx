@@ -19,7 +19,9 @@ export async function loader({ request,context }:LoaderFunctionArgs) {
   const {admin}=await shopify(context).authenticate.admin(request);
 console.log('ddddddddddddddddddd',admin)
 const url = new URL(request.url);
+console.log('url cursor is her',url)
   const cursor = url.searchParams.get("cursor");
+  console.log('cursor',cursor)
   if (!admin) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
