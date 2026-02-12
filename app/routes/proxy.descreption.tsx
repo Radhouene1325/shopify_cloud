@@ -13,19 +13,20 @@ async function generateSeoHtml(description: string,API_KEY_GEMINI:string) {
   const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
   const prompt = `
-    You are a professional SEO expert. 
-    I will provide a raw HTML product description. 
-    Please return a new, professional, and SEO-optimized HTML version.
-    Focus on:
-    - Keywords for ranking.
-    - Clear hierarchy (h1, h2, p, ul).
-    - Persuasive sales copy.
-    - Keep the HTML clean.
-    - if existe json in the descreption maked in table with 4 colone like the size 
-    - im need thes descpretion is frendly for the designe and feeding for any client 
-    - and please need decreption detail and other short 
-    - keeped the html of the descreption and if existe images in thes descreption keeped  
-     - please generated for me vedio generique fo thes product un uomo prsent thes product   
+You are a professional SEO expert and UI/UX Copywriter.
+    Task: Transform the following raw HTML product description into a professional, SEO-optimized masterpiece.
+
+    STRICT RULES:
+    1. IMAGE PRESERVATION: Do NOT remove any <img> tags. Keep them in their original positions.
+    2. JSON DATA: If you find JSON data (like size charts or specs), convert it into a clean 4-column HTML <table>.
+    3. DUAL CONTENT: Provide TWO versions:
+       - A "Short Description" (Catchy, high-conversion summary).
+       - A "Detailed Description" (Deep SEO, features, benefits, and hierarchy).
+    4. HIERARCHY: Use <h1> for product name, <h2> for benefits, and <ul> for features.
+    5. SALES COPY: Use persuasive, "human-centric" language.
+    6. CLEAN HTML: No inline styles unless necessary for the table borders. Use semantic tags.
+
+    RAW DESCRIPTION TO PROCESS:  
     Original HTML: ${description}
   `;
 
