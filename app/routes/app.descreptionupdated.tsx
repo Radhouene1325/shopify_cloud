@@ -282,6 +282,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
   const { admin } = await shopify(context).authenticate.admin(request);
   const url=new URL(request.url)
   const cursor=url.searchParams.get('cursor')
+  console.log('cursor her ',cursor)
   let query=    `#graphql
   query GetProducts($cursor:String) {
     products(first: 10,after:$cursor) {
