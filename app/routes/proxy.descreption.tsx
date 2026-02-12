@@ -29,7 +29,13 @@ You are a professional SEO expert and UI/UX Copywriter.
     4. HIERARCHY: Use <h1> for product name, <h2> for benefits, and <ul> for features.
     5. SALES COPY: Use persuasive, "human-centric" language.
     6. CLEAN HTML: No inline styles unless necessary for the table borders. Use semantic tags.
-    7. and im need to return for me object with key value for exmple Short Description:the short descreption and Detailed Description:juste the detail descpretion only the html 
+    7. aReturn a JSON object with exactly these two keys: "shortDescription" and "detailedDescription".
+  
+  Format:
+  {
+    "shortDescription": "...",
+    "detailedDescription": "..."
+  }
     RAW DESCRIPTION TO PROCESS:  
     Original HTML: ${description}
   `;
@@ -81,8 +87,8 @@ export async function action({context ,request }: ActionFunctionArgs) {
     const optimizedHtml = await generateSeoHtml(htmlDescription,API_KEY_GEMINI);
     console.log('new descreption is her and optimise ',optimizedHtml)
     return Response.json({ 
-        short: optimizedHtml.shortDescription, 
-        detailed: optimizedHtml.detailedDescription 
+        short: optimizedHtml["Short Description"], 
+        detailed: optimizedHtml["Detailed Description"] 
       });
   } catch (error) {
     console.error(error);

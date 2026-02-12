@@ -6,6 +6,7 @@ type Env = {
   SHOPIFY_APP_URL?: string;
   DATABASE_URL?: string;
   SCOPES?: string;
+  GEMINI_API_KEY?:string
 }
 
 type GetLoadContextArgs = {
