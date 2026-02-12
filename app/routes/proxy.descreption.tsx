@@ -24,7 +24,8 @@ async function generateSeoHtml(description: string,API_KEY_GEMINI:string) {
     - if existe json in the descreption maked in table with 4 colone like the size 
     - im need thes descpretion is frendly for the designe and feeding for any client 
     - and please need decreption detail and other short 
-    - keeped the html of the descreption and if existe images in thes descreption keeped     
+    - keeped the html of the descreption and if existe images in thes descreption keeped  
+     - please generated for me vedio generique fo thes product un uomo prsent thes product   
     Original HTML: ${description}
   `;
 
