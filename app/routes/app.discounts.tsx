@@ -209,7 +209,10 @@ const handleSubmitFormData = () => {
           disabled={fetcher.state === "loading"}
           onClick={() => {
             setCursorStack(prev => [...prev, pageInfo.endCursor]);
-            fetcher.load(`?cursor=${pageInfo.endCursor}`);
+            fetcher.load(
+              `/app/discounts?cursor=${encodeURIComponent(pageInfo.endCursor)}`
+            );
+            
           }}
         >
           {fetcher.state === "loading" ? "Loading..." : "Next page →"}
