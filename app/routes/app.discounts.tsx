@@ -159,6 +159,26 @@ const location=useLocation()
       ? cursorStack[cursorStack.length - 2]
       : undefined;
 
+
+
+
+      const handleNextPage = () => {
+        setCursorStack(prev => [...prev, pageInfo.endCursor]);
+        
+        // Use submit for GET request with cursor parameter
+        submit(
+          { cursor: pageInfo.endCursor },
+          { 
+            method: "get",
+            action: location.pathname,
+            navigate: false,  // This prevents URL change but still calls the loader
+            fetcherKey: "pagination" // Optional: gives you more control
+          }
+        );
+      };
+    
+      // Handle previous page with submit
+        
   return (
     <>
     <div style={{ padding: 24 }}>
@@ -210,19 +230,16 @@ const location=useLocation()
       </table>
 
       {/* Next page */}
-      {pageInfo.hasNextPage && (
-        <button
-          // disabled={fetcher.state === "loading"}
-          onClick={() => {
-            setCursorStack(prev => [...prev, pageInfo.endCursor]);
-           // Ensure this includes ALL current search params
-fetcher.load(`${location.pathname}${location.search}&cursor=${pageInfo.endCursor}`);
-            
-          }}
-        >
-          {fetcher.state === "loading" ? "Loading..." : "Next page →"}
-        </button>
-      )}
+      {pageInfo?.hasNextPage && (
+          <button
+            onClick={handleNextPage}
+            disabled={navigation.state === "submitting" || fetcher.state === "loading"}
+          >
+            {navigation.state === "submitting" || fetcher.state === "loading" 
+              ? "Loading..." 
+              : "Next page →"}
+          </button>
+        )}
 
       {/* Previous page */}
       {prevCursor && (
