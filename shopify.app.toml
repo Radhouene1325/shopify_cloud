@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "6f942bd29e0772cc3f8fcccb109f5f7d"
-name = "cloudflare-discount-platinumsh"
+client_id = "be8fbd46789e733020c3ec9f207d51bc"
+name = "shop_cloud"
 api_version = "2026-01"
 application_url = "https://cloudflare-workers-app.radhouenekhalfa.workers.dev"
 embedded = true
