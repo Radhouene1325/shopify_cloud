@@ -5,18 +5,15 @@ import { useLoaderData, useFetcher, useSubmit, useActionData, useNavigate, useNa
 import { useEffect, useState } from "react";
 import { Page, Layout, Card, Button, Banner, BlockStack } from "@shopify/polaris";
 
-const SHOP_ORIGIN = "https://0g5p1w-50.myshopify.com";
-const corsHeaders = {
-  "Access-Control-Allow-Origin": SHOP_ORIGIN,
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-};
+
 export async function loader({ request,context }:LoaderFunctionArgs) {
   // if (request.method === "OPTIONS") {
   //   return new Response(null, { headers: corsHeaders });
   // }
   // const { admin } = await shopify(context).authenticate.public.appProxy(request);
   console.log('is work loader secces ')
+  const { session } = await shopify(context).authenticate.public.appProxy(request);
+  console.log("session is her ",session)
   const {admin}=await shopify(context).authenticate.admin(request);
 console.log('ddddddddddddddddddd',admin)
 const url = new URL(request.url);
