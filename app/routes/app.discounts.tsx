@@ -148,7 +148,8 @@ const handleSubmitFormData = () => {
   formData.append("selected", JSON.stringify(selected));
   console.log('form data is working oky ',formData)
   submit(formData, { 
-    method: "post", encType: "multipart/form-data"
+    method: "post",
+    encType: "application/x-www-form-urlencoded" 
   });
 };
 console.log('hello cursor',pageInfo)
@@ -230,16 +231,18 @@ const location=useLocation()
       </table>
 
       {/* Next page */}
-      {pageInfo?.hasNextPage && (
-          <button
-            onClick={handleNextPage}
-            disabled={navigation.state === "submitting" || fetcher.state === "loading"}
-          >
-            {navigation.state === "submitting" || fetcher.state === "loading" 
-              ? "Loading..." 
-              : "Next page →"}
-          </button>
-        )}
+      {pageInfo.hasNextPage && (
+        <button
+          disabled={fetcher.state === "loading"}
+          onClick={() => {
+            setCursorStack(prev => [...prev, pageInfo.endCursor]);
+            fetcher.load(`?cursor=${pageInfo.endCursor}`);
+          }}
+        >
+          {fetcher.state === "loading" ? "Loading..." : "Next page →"}
+        </button>
+      )}
+
 
       {/* Previous page */}
       {prevCursor && (
