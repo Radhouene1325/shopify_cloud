@@ -215,9 +215,8 @@ const location=useLocation()
           // disabled={fetcher.state === "loading"}
           onClick={() => {
             setCursorStack(prev => [...prev, pageInfo.endCursor]);
-            fetcher.load(
-              `app/discounts?cursor=${pageInfo.endCursor}`
-            );
+           // Ensure this includes ALL current search params
+fetcher.load(`${location.pathname}${location.search}&cursor=${pageInfo.endCursor}`);
             
           }}
         >
