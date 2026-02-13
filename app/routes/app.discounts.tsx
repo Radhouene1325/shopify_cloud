@@ -216,7 +216,7 @@ const location=useLocation()
           onClick={() => {
             setCursorStack(prev => [...prev, pageInfo.endCursor]);
             fetcher.load(
-              `?cursor=${pageInfo.endCursor}`
+              `app/discounts?cursor=${pageInfo.endCursor}`
             );
             
           }}
