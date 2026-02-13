@@ -348,10 +348,10 @@ const location=useLocation()
               </Button>
     </div>
 
-    <Form method="post">
-        <input type="text" name="title" />
-        <button type="submit">Create Todo</button>
-      </Form>
+    <Form method="post" onSubmit={() => {}}>
+      <input type="text" name="title" />
+      <button type="submit">Create Todo</button>
+    </Form>
 
 </>
 
