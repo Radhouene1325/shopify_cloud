@@ -259,7 +259,23 @@ const location=useLocation()
       };
     
       // Handle previous page with submit
+      async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault(); // 🔥 prevent page reload
+    
         
+    
+        const formData = new FormData(event.currentTarget);
+    
+        const response = await fetch("/app/discounts", {
+          method: "POST",
+          body: formData,
+        });
+    
+        const data = await response.json();
+    
+        // setResult(data.generated);
+        // setLoading(false);
+      }
   return (
     <>
     <div style={{ padding: 24 }}>
@@ -348,7 +364,7 @@ const location=useLocation()
               </Button>
     </div>
 
-    <Form method="post" onSubmit={() => {}}>
+    <Form method="post" onSubmit={() => {handleSubmit}}>
       <input type="text" name="title" />
       <button type="submit">Create Todo</button>
     </Form>
