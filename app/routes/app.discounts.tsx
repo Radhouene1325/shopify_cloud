@@ -4,7 +4,80 @@ import { shopify } from "../shopify.server";
 import { useLoaderData, useFetcher, useSubmit, useActionData, useNavigate, useNavigation, useLocation } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { Page, Layout, Card, Button, Banner, BlockStack } from "@shopify/polaris";
-
+export async function action({request,context}:ActionFunctionArgs) {
+  console.log('action is started oky ')
+    let {admin}=await shopify(context).authenticate.admin(request)
+  const formData=await request.formData()
+  const updatedpolicyvariants=JSON.parse(formData.get('selected')as string)
+  
+  console.log('updatedpolicyvariants',updatedpolicyvariants)
+  //   const continueVariants = variants
+  // .filter(({ node }: any) => node.inventoryPolicy === "CONTINUE")
+  // .map(({ node }:any) => ({
+  //   id: node.id,
+  //   inventoryPolicy: "CONTINUE"
+  // }));
+  // console.log('varients coninuQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ',continueVariants)
+  
+  const variantsByProduct: Record<string, any[]> = {};
+  
+  for (const v of updatedpolicyvariants) {
+    if (!variantsByProduct[v.product.id]) {
+      variantsByProduct[v.product.id] = [];
+    }
+  
+    variantsByProduct[v.product.id].push({
+      id: v.id,
+      inventoryPolicy: "DENY"
+    });
+  }
+  
+  
+  const results = [];
+  
+   
+    for (const productId of Object.keys(variantsByProduct)) {
+         console.log('node is hrer',productId)
+        const mutationResponse = await admin?.graphql(
+          `#graphql
+          mutation UpdateContinueToDeny($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
+            productVariantsBulkUpdate(
+             
+              productId: $productId
+              variants: $variants
+              
+            ) {
+              productVariants {
+                id
+                inventoryPolicy
+              }
+              userErrors {
+                field
+                message
+              }
+              
+            }
+          }
+          `,
+       {
+        variables: {
+          productId,
+          variants: variantsByProduct[productId]
+        }
+      }
+        );
+        results.push(await mutationResponse?.json());
+      }
+  
+      console.log(results)
+  
+      return Response.json({
+        res:results
+      })
+      
+  
+  }
+  
 
 export async function loader({ request,context }:LoaderFunctionArgs) {
   // if (request.method === "OPTIONS") {
@@ -196,7 +269,7 @@ const location=useLocation()
         </thead>
 
         <tbody>
-          {rows.map((v: any) => (
+          {rows?.map((v: any) => (
             <tr key={v.id}>
               <td>
                 <input
@@ -276,79 +349,6 @@ const location=useLocation()
 
 
 
-export async function action({request,context}:ActionFunctionArgs) {
-console.log('action is started oky ')
-  let {admin}=await shopify(context).authenticate.admin(request)
-const formData=await request.formData()
-const updatedpolicyvariants=JSON.parse(formData.get('selected')as string)
-
-console.log('updatedpolicyvariants',updatedpolicyvariants)
-//   const continueVariants = variants
-// .filter(({ node }: any) => node.inventoryPolicy === "CONTINUE")
-// .map(({ node }:any) => ({
-//   id: node.id,
-//   inventoryPolicy: "CONTINUE"
-// }));
-// console.log('varients coninuQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ',continueVariants)
-
-const variantsByProduct: Record<string, any[]> = {};
-
-for (const v of updatedpolicyvariants) {
-  if (!variantsByProduct[v.product.id]) {
-    variantsByProduct[v.product.id] = [];
-  }
-
-  variantsByProduct[v.product.id].push({
-    id: v.id,
-    inventoryPolicy: "DENY"
-  });
-}
-
-
-const results = [];
-
- 
-  for (const productId of Object.keys(variantsByProduct)) {
-       console.log('node is hrer',productId)
-      const mutationResponse = await admin?.graphql(
-        `#graphql
-        mutation UpdateContinueToDeny($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
-          productVariantsBulkUpdate(
-           
-            productId: $productId
-            variants: $variants
-            
-          ) {
-            productVariants {
-              id
-              inventoryPolicy
-            }
-            userErrors {
-              field
-              message
-            }
-            
-          }
-        }
-        `,
-     {
-      variables: {
-        productId,
-        variants: variantsByProduct[productId]
-      }
-    }
-      );
-      results.push(await mutationResponse?.json());
-    }
-
-    console.log(results)
-
-    return Response.json({
-      res:results
-    })
-    
-
-}
 
 
 
