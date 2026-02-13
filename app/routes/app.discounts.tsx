@@ -3,9 +3,19 @@ import { shopify } from "../shopify.server";
 
 import { useLoaderData, useFetcher, useSubmit, useActionData, useNavigate, useNavigation, useLocation } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import { Page, Layout, Card, Button, Banner, BlockStack } from "@shopify/polaris";
+import { Page, Layout, Card, Button, Banner, BlockStack, Form } from "@shopify/polaris";
 export async function action({request,context}:ActionFunctionArgs) {
   console.log('action is started oky ')
+
+
+  const body = await request.formData();
+
+
+  console.log("body iis her helo",body.get("title"))
+
+
+
+
     let {admin}=await shopify(context).authenticate.admin(request)
   const formData=await request.formData()
   const updatedpolicyvariants=JSON.parse(formData.get('selected')as string)
@@ -338,6 +348,10 @@ const location=useLocation()
               </Button>
     </div>
 
+    <Form method="post">
+        <input type="text" name="title" />
+        <button type="submit">Create Todo</button>
+      </Form>
 
 </>
 
