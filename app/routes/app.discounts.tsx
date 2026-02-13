@@ -12,8 +12,8 @@ export async function loader({ request,context }:LoaderFunctionArgs) {
   // }
   // const { admin } = await shopify(context).authenticate.public.appProxy(request);
   console.log('is work loader secces ')
-  const { session } = await shopify(context).authenticate.public.appProxy(request);
-  console.log("session is her ",session)
+  // const { session } = await shopify(context).authenticate.public.appProxy(request);
+  // console.log("session is her ",session)
   const {admin}=await shopify(context).authenticate.admin(request);
 console.log('ddddddddddddddddddd',admin)
 const url = new URL(request.url);
