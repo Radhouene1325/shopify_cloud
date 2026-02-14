@@ -120,10 +120,14 @@ const resulte=await Promise.all(
       console.log('new descreption is her and optimise ',optimizedHtml)
       const normalizedData = {
           short: optimizedHtml.shortDescription || optimizedHtml["Short Description"] || "",
-          detailed: optimizedHtml.detailedDescription || optimizedHtml["Detailed Description"] || ""
+          detailed: optimizedHtml.detailedDescription || optimizedHtml["Detailed Description"] || "",
+          productID:optimizedHtml.productsID
         };
+        if (normalizedData.productID !== item.id) {
+          throw new Error(`ID mismatch! Expected ${item.id}, got ${item.descriptionHtml}`);
+        }
     
-        if (!normalizedData.short || !normalizedData.detailed) {
+        if (!normalizedData.short || !normalizedData.detailed || !normalizedData.productID) {
           console.error("AI returned empty fields", optimizedHtml);
           return Response.json({ error: "Empty content from AI" }, { status: 500 });
         }
