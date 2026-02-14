@@ -114,7 +114,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
     return Response.json({ error: "Please provide a description" }, { status: 400 });
   }
   try {
-    const optimizedHtml = await generateSeoHtml(updatedDescreptionAI,API_KEY_GEMINI);
+    const optimizedHtml = await generateSeoHtml(htmlDescription,API_KEY_GEMINI);
     console.log('new descreption is her and optimise ',optimizedHtml)
     // const normalizedData = {
     //     short: optimizedHtml.shortDescription || optimizedHtml["Short Description"] || "",
