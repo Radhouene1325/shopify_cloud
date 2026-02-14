@@ -51,7 +51,11 @@ async function generateSeoHtml(description: string,API_KEY_GEMINI:string) {
 
 // 2. Remix Action (Server Side)
 export async function action({context ,request }: ActionFunctionArgs) {
- 
+ let {admin}=await shopify(context).authenticate.admin(request)
+
+ let formData=await request.formData()
+ let updatedDescreptionAI=JSON.parse(formData.get('descreptionAI')as string)
+ console.log('descreptionAI IS HER ',updatedDescreptionAI)
   const htmlDescription = `<h1>SPECIFICATIONS</h1>
 <p><span>CN</span>: <span style="color: #333;">Henan</span></p>
 <p><span>Colletto</span>: <span style="color: #333;">Collo a O</span></p>
@@ -161,7 +165,7 @@ export default function Descriptionupdated(){
   const handleSubmitFormData = () => {
     // if(selected.length===0) return 
     const formData = new FormData();
-    formData.append("selected", JSON.stringify(selected));
+    formData.append("descreptionAI", JSON.stringify(selected));
     
     submit(formData, { 
       method: "post",

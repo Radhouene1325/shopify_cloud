@@ -13,7 +13,7 @@ async function generateSeoHtml(description: string,API_KEY_GEMINI:string) {
   const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" ,generationConfig: {
     responseMimeType: "application/json",
   }});
-
+  action
   const prompt = `
   You are a Senior E-commerce SEO Specialist and UX Copywriter for a high-end Amazon storefront. 
   Your goal is to transform raw product data into a high-converting, SEO-optimized masterpiece.
