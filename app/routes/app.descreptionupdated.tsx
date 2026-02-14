@@ -9,15 +9,15 @@ import { Button } from "@shopify/polaris";
 import { useEffect, useState } from "react";
 
 // 1. Logic to call Gemini
-async function generateSeoHtml(description: string,productId:string,API_KEY_GEMINI:string) {
+async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
   // ⚠️ WARNING: Use process.env.GEMINI_KEY in production!
-  console.log('descreption html ',description ,"product id is her ",productId,"api key is her ", API_KEY_GEMINI,)
+  console.log('descreption html ',updatedDescreptionAI,"api key is her ", API_KEY_GEMINI,)
   const genAI = new GoogleGenerativeAI(API_KEY_GEMINI);
   const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" ,generationConfig: {
     responseMimeType: "application/json",
   }});
    interface Prompt {
-    productsID:string
+   
     role: string;
     objective: string;
     outputFormat: {
@@ -37,7 +37,7 @@ async function generateSeoHtml(description: string,productId:string,API_KEY_GEMI
 }
 
   const prompt:Prompt = {
-    "productsID": `${productId}`,
+   
     "role": "Senior E-commerce SEO Specialist & UX Copywriter",
     "objective": "Transform raw technical data into a high-converting, luxury Amazon listing that balances emotional storytelling with rigorous SEO optimization.",
     "outputFormat": {
@@ -64,7 +64,7 @@ async function generateSeoHtml(description: string,productId:string,API_KEY_GEMI
         "Semantic HTML: Use <section>, <article>, and <strong> for accessibility and SEO ranking."
       ]
     },
-    "inputData": `${description}`
+    "inputData": `${updatedDescreptionAI}`
   }
 
   const result = await model.generateContent(JSON.stringify(prompt));
@@ -113,35 +113,56 @@ export async function action({context ,request }: ActionFunctionArgs) {
   if (!htmlDescription) {
     return Response.json({ error: "Please provide a description" }, { status: 400 });
   }
-const resulte=await Promise.all(
-  updatedDescreptionAI.map(async (item:any) => {
-    try {
-      const optimizedHtml = await generateSeoHtml(item.descreption,item.id,API_KEY_GEMINI);
-      console.log('new descreption is her and optimise ',optimizedHtml)
-      const normalizedData = {
-          short: optimizedHtml.shortDescription || optimizedHtml["Short Description"] || "",
-          detailed: optimizedHtml.detailedDescription || optimizedHtml["Detailed Description"] || "",
-          productID:optimizedHtml.productsID
-        };
-        if (normalizedData.productID !== item.id) {
-          throw new Error(`ID mismatch! Expected ${item.id}, got ${item.descriptionHtml}`);
-        }
+  try {
+    const optimizedHtml = await generateSeoHtml(updatedDescreptionAI,API_KEY_GEMINI);
+    console.log('new descreption is her and optimise ',optimizedHtml)
+    // const normalizedData = {
+    //     short: optimizedHtml.shortDescription || optimizedHtml["Short Description"] || "",
+    //     detailed: optimizedHtml.detailedDescription || optimizedHtml["Detailed Description"] || "",
+    //     productID:optimizedHtml.productsID
+    //   };
+    //   if (normalizedData.productID !== item.id) {
+    //     throw new Error(`ID mismatch! Expected ${item.id}, got ${item.descriptionHtml}`);
+    //   }
+  
+    //   if (!normalizedData.short || !normalizedData.detailed || !normalizedData.productID) {
+    //     console.error("AI returned empty fields", optimizedHtml);
+    //     return Response.json({ error: "Empty content from AI" }, { status: 500 });
+    //   }
+    return Response.json(optimizedHtml);
+  } catch (error) {
+    console.error(error);
+    return Response.json({ error: "Failed to generate content" }, { status: 500 });
+  }
+// const resulte=await Promise.all(
+//   updatedDescreptionAI.map(async (item:any) => {
+//     try {
+//       const optimizedHtml = await generateSeoHtml(item.descreption,item.id,API_KEY_GEMINI);
+//       console.log('new descreption is her and optimise ',optimizedHtml)
+//       const normalizedData = {
+//           short: optimizedHtml.shortDescription || optimizedHtml["Short Description"] || "",
+//           detailed: optimizedHtml.detailedDescription || optimizedHtml["Detailed Description"] || "",
+//           productID:optimizedHtml.productsID
+//         };
+//         if (normalizedData.productID !== item.id) {
+//           throw new Error(`ID mismatch! Expected ${item.id}, got ${item.descriptionHtml}`);
+//         }
     
-        if (!normalizedData.short || !normalizedData.detailed || !normalizedData.productID) {
-          console.error("AI returned empty fields", optimizedHtml);
-          return Response.json({ error: "Empty content from AI" }, { status: 500 });
-        }
-      return Response.json({ 
-          short: optimizedHtml.shortDescription, 
-          detailed: optimizedHtml.detailedDescription 
-        });
-    } catch (error) {
-      console.error(error);
-      return Response.json({ error: "Failed to generate content" }, { status: 500 });
-    }
-  })
-)
- return resulte
+//         if (!normalizedData.short || !normalizedData.detailed || !normalizedData.productID) {
+//           console.error("AI returned empty fields", optimizedHtml);
+//           return Response.json({ error: "Empty content from AI" }, { status: 500 });
+//         }
+//       return Response.json({ 
+//           short: optimizedHtml.shortDescription, 
+//           detailed: optimizedHtml.detailedDescription 
+//         });
+//     } catch (error) {
+//       console.error(error);
+//       return Response.json({ error: "Failed to generate content" }, { status: 500 });
+//     }
+//   })
+// )
+//  return resulte
 }
 
 
