@@ -7,15 +7,15 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { shopify } from "../shopify.server";
 import { Button } from "@shopify/polaris";
 import { useEffect, useState } from "react";
-
+import {OpenAI} from "openai"
 // 1. Logic to call Gemini
 async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
   // ⚠️ WARNING: Use process.env.GEMINI_KEY in production!
   console.log('descreption html ',updatedDescreptionAI,"api key is her ", API_KEY_GEMINI,)
-  const genAI = new GoogleGenerativeAI(API_KEY_GEMINI);
-  const model = genAI.getGenerativeModel({ model:"gemini-3-flash-preview",generationConfig: {
-    responseMimeType: "application/json",
-  }});
+  // const genAI = new GoogleGenerativeAI(API_KEY_GEMINI);
+  // const model = genAI.getGenerativeModel({ model:"gemini-3-flash-preview",generationConfig: {
+  //   responseMimeType: "application/json",
+  // }});
    interface Prompt {
    
     role: string;
@@ -67,9 +67,34 @@ async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
     "inputData": `${updatedDescreptionAI}`
   }
 
-  const result = await model.generateContent(JSON.stringify(prompt));
-  const responseText = result.response.text(); 
-  return JSON.parse(responseText);
+  // const result = await model.generateContent(JSON.stringify(prompt));
+  // const responseText = result.response.text(); 
+  // return JSON.parse(responseText);
+
+
+  const openai = new OpenAI({
+    apiKey: API_KEY_GEMINI,
+  });
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    temperature: 0.7,
+    messages: [
+      {
+        role: "system",
+        content: "You are an expert eCommerce SEO specialist."
+      },
+      {
+        role: "user",
+        content: prompt
+      }
+    ]
+  });
+
+  const html = completion.choices[0].message.content;
+// console.log('html open ai is her ',html)
+  return Response.json({ generated: html });
+
+
 }
 
 // 2. Remix Action (Server Side)
@@ -108,7 +133,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
 <p><img src="https://ae01.alicdn.com/kf/S9987dd33850a46fda6ebc4d46eb83e78X.jpg"><img src="https://ae01.alicdn.com/kf/S771af73c67dd44eab23ea6b52bc25b34K.jpg"><img src="https://ae01.alicdn.com/kf/S0e1fed8615ea47bb9c4a9131354fcb8e2.jpg"><img src="https://ae01.alicdn.com/kf/Sb37fd1c7644f4ce280d04e9ebe0d6a59S.jpg"><img src="https://ae01.alicdn.com/kf/S3f15e83e11f94402ba93d1b05b113750W.jpg"><img src="https://ae01.alicdn.com/kf/S425b8cf5c7664067902455b6b6e97b4cJ.jpg"><img src="https://ae01.alicdn.com/kf/Sf959804d6d1c44e49232b4e5b9904b26k.jpg"><img src="https://ae01.alicdn.com/kf/Sdb2ac6d29b4349a3948628dc256da12dd.jpg"><img src="https://ae01.alicdn.com/kf/S08f06331ecc44b3b8380f0e07aa47867t.jpg"><img src="https://ae01.alicdn.com/kf/S8d2f8c1baa1347d784142120593091ec0.jpg"></p>
 </div>
 </div>`
-    const API_KEY_GEMINI=context.cloudflare?.env?.GEMINI_API_KEY
+    const API_KEY_GEMINI=context.cloudflare?.env?.OPEN_AI_KEY_API
     console.log('api key is her ',API_KEY_GEMINI)
   if (!htmlDescription) {
     return Response.json({ error: "Please provide a description" }, { status: 400 });
