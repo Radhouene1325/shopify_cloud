@@ -9,42 +9,65 @@ import { Button } from "@shopify/polaris";
 import { useEffect, useState } from "react";
 
 // 1. Logic to call Gemini
-async function generateSeoHtml(description: string,API_KEY_GEMINI:string) {
+async function generateSeoHtml(description: string,productId:string,API_KEY_GEMINI:string) {
   // ⚠️ WARNING: Use process.env.GEMINI_KEY in production!
-  console.log('is her both of ',description ,"api key is her ", API_KEY_GEMINI)
+  console.log('descreption html ',description ,"product id is her ",productId,"api key is her ", API_KEY_GEMINI,)
   const genAI = new GoogleGenerativeAI(API_KEY_GEMINI);
   const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" ,generationConfig: {
     responseMimeType: "application/json",
   }});
+   interface Prompt {
+    productsID:string
+    role: string;
+    objective: string;
+    outputFormat: {
+      shortDescription: string;
+        detailedDescription: string;
+    };
+    stylingGuidelines: {
+        tone: string;
+        colorPsychology: string;
+        seoStrategy: string;
+    };
+    constraints: {
+        shortDescription: string[];
+        detailedDescription: string[];
+    };
+    inputData: string;
+}
 
-  const prompt = `
-  You are a Senior E-commerce SEO Specialist and UX Copywriter for a high-end Amazon storefront. 
-  Your goal is to transform raw product data into a high-converting, SEO-optimized masterpiece.
-  
-  STRICT JSON OUTPUT FORMAT:
-  {
-    "shortDescription": "HTML_STRING",
-    "detailedDescription": "HTML_STRING"
+  const prompt:Prompt = {
+    "productsID": `${productId}`,
+    "role": "Senior E-commerce SEO Specialist & UX Copywriter",
+    "objective": "Transform raw technical data into a high-converting, luxury Amazon listing that balances emotional storytelling with rigorous SEO optimization.",
+    "outputFormat": {
+      "shortDescription": "HTML_STRING (SEO-Optimized Bullet Points)",
+      "detailedDescription": "HTML_STRING (A+ Content / Narrative Flow)"
+    },
+    "stylingGuidelines": {
+      "tone": "Sophisticated, authoritative, yet approachable. Avoid 'salesy' fluff; use high-value adjectives.",
+      "colorPsychology": "Use sensory language that evokes the product's color and texture (e.g., 'Deep Midnight Matte' instead of 'Dark Blue').",
+      "seoStrategy": "Integrate primary keywords naturally into headings and the first 100 words of the narrative."
+    },
+    "constraints": {
+      "shortDescription": [
+        "5-6 Bullets maximum.",
+        "Start each bullet with a bolded [CAPITALIZED KEY BENEFIT].",
+        "Focus on the 'Transformation' (How does the customer's life improve?).",
+        "End with a clear, low-friction Call to Action (CTA)."
+      ],
+      "detailedDescription": [
+        "Use <h1> for a punchy, benefit-driven title.",
+        "Use <h2> for feature-specific storytelling sections.",
+        "Mandatory: Convert all JSON spec data into a 4-column <table> with thead, cellpadding='10', and border='1'.",
+        "Retention: All <img> tags from the source must be preserved in their original sequence.",
+        "Semantic HTML: Use <section>, <article>, and <strong> for accessibility and SEO ranking."
+      ]
+    },
+    "inputData": `${description}`
   }
-  
-  RULES FOR "shortDescription" (Amazon "Above the Fold" Style):
-  - Focus on "Benefit-First" copy. Why should the customer care?
-  - Use <ul> with 5-6 bullet points. Start each bullet with a bolded [CAPITALIZED KEY BENEFIT].
-  - Include a clear, persuasive "Call to Action" at the end.
-  - Design: Clean, high-white-space layout.
-  
-  RULES FOR "detailedDescription" (Amazon "A+ Content" Style):
-  - HIERARCHY: Use <h1> for a catchy Product Title. Use <h2> for sectional headings (e.g., "Premium Quality," "Versatile Style").
-  - IMAGE PRESERVATION: Every <img> tag from the source MUST remain in the flow. Do not delete them.
-  - JSON TO TABLE: Convert any JSON size/spec data into a 4-column <table>. Use <thead> for headers. Add "cellpadding='10'" and "border='1'" for a clean look.
-  - PSYCHOLOGY: Use sensory words and address pain points.
-  - CLEAN HTML: Use semantic tags (<section>, <article>, <strong>). No messy inline styles.
-  
-  RAW PRODUCT DATA:
-  ${description}
-  `;
 
-  const result = await model.generateContent(prompt);
+  const result = await model.generateContent(JSON.stringify(prompt));
   const responseText = result.response.text(); 
   return JSON.parse(responseText);
 }
@@ -90,27 +113,31 @@ export async function action({context ,request }: ActionFunctionArgs) {
   if (!htmlDescription) {
     return Response.json({ error: "Please provide a description" }, { status: 400 });
   }
-
-  try {
-    const optimizedHtml = await generateSeoHtml(htmlDescription,API_KEY_GEMINI);
-    console.log('new descreption is her and optimise ',optimizedHtml)
-    const normalizedData = {
-        short: optimizedHtml.shortDescription || optimizedHtml["Short Description"] || "",
-        detailed: optimizedHtml.detailedDescription || optimizedHtml["Detailed Description"] || ""
-      };
-  
-      if (!normalizedData.short || !normalizedData.detailed) {
-        console.error("AI returned empty fields", optimizedHtml);
-        return Response.json({ error: "Empty content from AI" }, { status: 500 });
-      }
-    return Response.json({ 
-        short: optimizedHtml.shortDescription, 
-        detailed: optimizedHtml.detailedDescription 
-      });
-  } catch (error) {
-    console.error(error);
-    return Response.json({ error: "Failed to generate content" }, { status: 500 });
-  }
+const resulte=await Promise.all(
+  updatedDescreptionAI.map(async (item:any) => {
+    try {
+      const optimizedHtml = await generateSeoHtml(item.descriptionHtml,item.id,API_KEY_GEMINI);
+      console.log('new descreption is her and optimise ',optimizedHtml)
+      const normalizedData = {
+          short: optimizedHtml.shortDescription || optimizedHtml["Short Description"] || "",
+          detailed: optimizedHtml.detailedDescription || optimizedHtml["Detailed Description"] || ""
+        };
+    
+        if (!normalizedData.short || !normalizedData.detailed) {
+          console.error("AI returned empty fields", optimizedHtml);
+          return Response.json({ error: "Empty content from AI" }, { status: 500 });
+        }
+      return Response.json({ 
+          short: optimizedHtml.shortDescription, 
+          detailed: optimizedHtml.detailedDescription 
+        });
+    } catch (error) {
+      console.error(error);
+      return Response.json({ error: "Failed to generate content" }, { status: 500 });
+    }
+  })
+)
+ 
 }
 
 
