@@ -85,7 +85,7 @@ async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
       },
       {
         role: "user",
-        content: prompt
+        content:JSON.stringify (prompt)
       }
     ]
   });
