@@ -116,7 +116,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
 const resulte=await Promise.all(
   updatedDescreptionAI.map(async (item:any) => {
     try {
-      const optimizedHtml = await generateSeoHtml(item.descriptionHtml,item.id,API_KEY_GEMINI);
+      const optimizedHtml = await generateSeoHtml(item.descreption,item.id,API_KEY_GEMINI);
       console.log('new descreption is her and optimise ',optimizedHtml)
       const normalizedData = {
           short: optimizedHtml.shortDescription || optimizedHtml["Short Description"] || "",
