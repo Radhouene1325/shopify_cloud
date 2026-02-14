@@ -13,7 +13,7 @@ async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
   // ⚠️ WARNING: Use process.env.GEMINI_KEY in production!
   console.log('descreption html ',updatedDescreptionAI,"api key is her ", API_KEY_GEMINI,)
   const genAI = new GoogleGenerativeAI(API_KEY_GEMINI);
-  const model = genAI.getGenerativeModel({ model:"gemini-2.5-pro",generationConfig: {
+  const model = genAI.getGenerativeModel({ model:"gemini-3-flash-preview",generationConfig: {
     responseMimeType: "application/json",
   }});
    interface Prompt {
