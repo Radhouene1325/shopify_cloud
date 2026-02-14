@@ -141,7 +141,7 @@ const resulte=await Promise.all(
     }
   })
 )
- 
+ return null
 }
 
 
