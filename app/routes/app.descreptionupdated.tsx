@@ -10,21 +10,49 @@ import { useEffect, useState } from "react";
   // sk-c8552ae161ed4db684bb1268bf4ba758
   import { Deepseek } from 'node-deepseek';
 
-
-  async function sendPrompt(prompt: string,deepseek:any) {
+  async function sendPrompt(prompt: string, API_KEY_GEMINI: string) {
     try {
-      const response = await deepseek.chat.createCompletion({
-        messages: [{ role: 'user', content: prompt }],
-        model: 'deepseek-chat',
-        temperature:0.7,
-        max_tokens:4000
+      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${API_KEY_GEMINI}`
+        },
+        body: JSON.stringify({
+          model: 'deepseek-chat',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.7,
+          max_tokens: 4000
+        })
       });
-      return response.choices;
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('DeepSeek API error:', response.status, errorText);
+        throw new Error(`API error: ${response.status} - ${errorText}`);
+      }
+  
+      const data = await response.json();
+      return data.choices[0].message.content;
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error calling DeepSeek:', error);
       throw error;
     }
   }
+  // async function sendPrompt(prompt: string,deepseek:any) {
+  //   try {
+  //     const response = await deepseek.chat.createCompletion({
+  //       messages: [{ role: 'user', content: prompt }],
+  //       model: 'deepseek-chat',
+  //       temperature:0.7,
+  //       max_tokens:4000
+  //     });
+  //     return response.choices;
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //     throw error;
+  //   }
+  // }
 
 // 1. Logic to call Gemini
 async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
@@ -151,7 +179,7 @@ Example response format:
   const deepseek = new Deepseek({
     apiKey: API_KEY_GEMINI,
   });
-  const response = await sendPrompt(JSON.stringify(prompt),deepseek );
+  const response = await sendPrompt(JSON.stringify(prompt),API_KEY_GEMINI );
 return response
 
 
