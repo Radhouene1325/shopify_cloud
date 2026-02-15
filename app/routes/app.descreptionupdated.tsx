@@ -8,9 +8,7 @@ import { shopify } from "../shopify.server";
 import { Button } from "@shopify/polaris";
 import { useEffect, useState } from "react";
 import JSON5 from "json5";
-
-  // sk-c8552ae161ed4db684bb1268bf4ba758
-  import { Deepseek } from 'node-deepseek';
+import DeepSeekClient from 'deepseekai';
 
   async function sendPrompt(prompt: string, API_KEY_GEMINI: string) {
     try {
@@ -361,9 +359,6 @@ STRICT OUTPUT FORMAT:
   // const responseText = result.response.text(); 
   // return JSON.parse(responseText);
 
-  const deepseek = new Deepseek({
-    apiKey: API_KEY_GEMINI,
-  });
   const response = await sendPrompt(JSON.stringify(prompt),API_KEY_GEMINI );
 return response
 
