@@ -207,9 +207,9 @@ STRICT OUTPUT FORMAT:
   A JSON array of objects:
   [
     {
-      ${id}: "original_id",
-      ${shortDescription}: "HTML string: <ul> with 5-6 bullets, bold [BENEFITS], and high-end styling.",
-      ${detailedDescription}: "HTML string: <article> containing <h1>, <h2>, <section>, <table> for specs, and preserving original <img> tags."
+      id: "original_id",
+      shortDescription: "HTML string: <ul> with 5-6 bullets, bold [BENEFITS], and high-end styling.",
+      detailedDescription: "HTML string: <article> containing <h1>, <h2>, <section>, <table> for specs, and preserving original <img> tags."
     }
   ]`;
 // prompts.ts
