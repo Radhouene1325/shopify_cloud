@@ -42,7 +42,8 @@ import JSON5 from "json5";
       console.log('hello dtat im e json data',data?.choices[0].message.content)
     
       let resulter=data?.choices[0].message.content
-      return resulter
+      console.log('eeeeeeeeeeeaaaaaaaaaaaaaaaaaaa',JSON.parse(`[${resulter}]`))
+      return JSON.parse(`[${resulter}]`)
           
    
       
