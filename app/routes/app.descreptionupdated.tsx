@@ -305,7 +305,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
     //     console.error("AI returned empty fields", optimizedHtml);
     //     return Response.json({ error: "Empty content from AI" }, { status: 500 });
     //   }
-    return Response.json(optimizedHtml);
+    return Response.json(JSON.parse(optimizedHtml));
   } catch (error) {
     console.error(error);
     return Response.json({ error: "Failed to generate content" }, { status: 500 });
@@ -347,8 +347,8 @@ export async function action({context ,request }: ActionFunctionArgs) {
 export default function Descriptionupdated(){
 
     const initial = useLoaderData<typeof loader>();
-    console.log('initia deta is her helo ',JSON.parse(initial as string))
-
+    console.log('initia deta is her helo ',initial)
+    
     const fetcher = useFetcher();
     const submit =useSubmit()
     const actionData=useActionData()
