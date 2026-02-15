@@ -289,8 +289,8 @@ export async function action({context ,request }: ActionFunctionArgs) {
   }
   try {
     const optimizedHtml = 
-    // await generateSeoHtml(updatedDescreptionAI,API_KEY_GEMINI);
-    await generateSeoHtmlgimini(API_KEY_GEMINI_TESTED as string,updatedDescreptionAI,)
+     await generateSeoHtml(updatedDescreptionAI,API_KEY_GEMINI);
+    // await generateSeoHtmlgimini(API_KEY_GEMINI_TESTED as string,updatedDescreptionAI,)
     console.log('new descreption is her and optimise ',optimizedHtml)
     // const normalizedData = {
     //     short: optimizedHtml.shortDescription || optimizedHtml["Short Description"] || "",
