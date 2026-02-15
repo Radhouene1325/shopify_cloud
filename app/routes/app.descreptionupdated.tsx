@@ -8,7 +8,17 @@ import { shopify } from "../shopify.server";
 import { Button } from "@shopify/polaris";
 import { useEffect, useState } from "react";
 import JSON5 from "json5";
-import DeepSeekClient from 'deepseekai';
+
+  // sk-c8552ae161ed4db684bb1268bf4ba758
+  import { Deepseek } from 'node-deepseek';
+
+  interface DeepSeekResponse {
+    choices?: Array<{
+      message?: {
+        content?: string;
+      };
+    }>;
+  }
 
   async function sendPrompt(prompt: string, API_KEY_GEMINI: string) {
     try {
@@ -36,12 +46,54 @@ import DeepSeekClient from 'deepseekai';
         throw new Error(`API error: ${response.status} - ${errorText}`);
       }
   
-      const data = await response.json();
-      console.log('hello dtat im e json data',data?.choices[0].message.content)
+      const data = await response.json() as DeepSeekResponse;
+      console.log('hello dtat im e json data',data?.choices?.[0]?.message?.content)
     
-      let resulter=data?.choices[0].message.content
-      console.log('eeeeeeeeeeeaaaaaaaaaaaaaaaaaaa',JSON.parse(`[${resulter}]`))
-      return JSON.parse(`[${resulter}]`)
+      let resulter = data?.choices?.[0]?.message?.content;
+      
+      if (!resulter) {
+        throw new Error('No content in API response');
+      }
+      
+      // Clean the response - remove markdown code fences if present
+      if (typeof resulter === 'string') {
+        // Remove markdown code fences (```json ... ``` or ``` ... ```)
+        resulter = resulter.trim();
+        resulter = resulter.replace(/^```(?:json)?\s*/i, ''); // Remove opening fence
+        resulter = resulter.replace(/\s*```$/i, ''); // Remove closing fence
+        resulter = resulter.trim();
+      }
+      
+      // Try to parse as JSON array directly
+      try {
+        const parsed = JSON.parse(resulter);
+        console.log('Parsed JSON array:', parsed);
+        
+        // Ensure it's an array
+        if (Array.isArray(parsed)) {
+          return parsed;
+        } else {
+          // If it's an object, wrap it in an array
+          return [parsed];
+        }
+      } catch (parseError) {
+        console.error('JSON parse error, trying to extract JSON from text:', parseError);
+        
+        // Try to extract JSON array from the text using regex
+        const jsonMatch = resulter.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          try {
+            const parsed = JSON.parse(jsonMatch[0]);
+            console.log('Extracted and parsed JSON array:', parsed);
+            return Array.isArray(parsed) ? parsed : [parsed];
+          } catch (e) {
+            console.error('Failed to parse extracted JSON:', e);
+            throw new Error('Failed to parse JSON response from API');
+          }
+        }
+        
+        throw new Error('Could not extract valid JSON from API response');
+      }
           
    
       
