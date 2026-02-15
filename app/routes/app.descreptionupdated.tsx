@@ -37,18 +37,21 @@ import { useEffect, useState } from "react";
       }
   
       const data = await response.json();
-       const raw = data?.choices[0].message.content.trim();
-      console.log("data from function fetch", data)
-      const jsonMatch = raw.match(/\[[\s\S]*\]|\{[\s\S]*\}/);
-
-      if (!jsonMatch) {
-        console.error("Invalid AI output:", raw);
-        throw new Error("AI did not return valid JSON");
+      const raw = data?.choices[0].message.content.trim();
+      // Find the first '[' and the last ']' to isolate the array
+      const startIndex = raw.indexOf('[');
+      const endIndex = raw.lastIndexOf(']');
+      
+      if (startIndex === -1 || endIndex === -1) {
+        console.error("No JSON array found in output:", raw);
+        throw new Error("AI did not return a valid JSON array");
       }
+      
+      const jsonString = raw.substring(startIndex, endIndex + 1);
       try {
-        return JSON.parse(jsonMatch[0]);
+        return JSON.parse(jsonString);
       } catch (err) {
-        console.error("JSON parse error:", raw);
+        console.error("JSON parse error. Raw snippet:", jsonString);
         throw new Error("Failed to parse AI JSON");
       }
     } catch (error) {
@@ -79,25 +82,25 @@ async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
   // const model = genAI.getGenerativeModel({ model:"gemini-3-flash-preview",generationConfig: {
   //   responseMimeType: "application/json",
   // }});
-   interface Prompt {
+//    interface Prompt {
    
-    role: string;
-    objective: string;
-    outputFormat: {
-      shortDescription: string;
-        detailedDescription: string;
-    };
-    stylingGuidelines: {
-        tone: string;
-        colorPsychology: string;
-        seoStrategy: string;
-    };
-    constraints: {
-        shortDescription: string[];
-        detailedDescription: string[];
-    };
-    inputData: string;
-}
+//     role: string;
+//     objective: string;
+//     outputFormat: {
+//       shortDescription: string;
+//         detailedDescription: string;
+//     };
+//     stylingGuidelines: {
+//         tone: string;
+//         colorPsychology: string;
+//         seoStrategy: string;
+//     };
+//     constraints: {
+//         shortDescription: string[];
+//         detailedDescription: string[];
+//     };
+//     inputData: string;
+// }
 const prompt = `You are a JSON API. Process ALL ${updatedDescreptionAI.length} products and return a JSON array.
 
 PROMPT TEMPLATE FOR EACH PRODUCT:
@@ -184,11 +187,8 @@ PROMPT TEMPLATE FOR EACH PRODUCT:
   }
 }
 
-PRODUCTS TO PROCESS:
-${updatedDescreptionAI.map((p, index) => `
---- PRODUCT ${index + 1} (ID: ${p.id}) ---
-${p.descreption}
-`).join('\n')}
+DATA TO PROCESS:
+  ${JSON.stringify(updatedDescreptionAI.map(p => ({ id: p.id, content: p.descreption })))}
 
 IMPORTANT INSTRUCTIONS:
 1. Process EACH product individually using the complete prompt template above
@@ -206,14 +206,15 @@ IMPORTANT INSTRUCTIONS:
 8. Preserve ALL original image tags in their exact sequence
 9. Ensure all HTML is properly formatted and escaped for JSON
 
-Example response format:
-[
-  {
-    "id": "gid://shopify/Product/123",
-    "shortDescription": "<ul class='premium-bullets' style='list-style: none; padding: 0;'><li style='margin-bottom: 12px; padding-left: 28px; position: relative;'><span style='position: absolute; left: 0; color: #8B7355;'>●</span><strong style='color: #2C3E50;'>[PREMIUM CRAFTSMANSHIP]</strong> Exquisitely tailored...</li></ul>",
-    "detailedDescription": "<article style='max-width: 1200px; margin: 0 auto;'><header><h1 style='color: #2C3E50; font-family: \"Playfair Display\", serif;'>Masterful Design Meets Uncompromising Quality</h1></header><section>...</section></article>"
-  }
-]`;
+STRICT OUTPUT FORMAT:
+  A JSON array of objects:
+  [
+    {
+      "id": "original_id",
+      "shortDescription": "HTML string: <ul> with 5-6 bullets, bold [BENEFITS], and high-end styling.",
+      "detailedDescription": "HTML string: <article> containing <h1>, <h2>, <section>, <table> for specs, and preserving original <img> tags."
+    }
+  ]`;
   // const prompt:Prompt = {
    
   //   "role": "Senior E-commerce SEO Specialist & UX Copywriter",
