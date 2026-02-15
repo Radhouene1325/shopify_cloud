@@ -20,8 +20,8 @@ import { useEffect, useState } from "react";
         },
         body: JSON.stringify({
           model: 'deepseek-chat',
-          messages: [{ role: 'user', content: prompt }],
-          temperature: 0.7,
+          messages: [{ role: 'system', content: prompt }],
+          temperature: 0.2,
           max_tokens: 4000
         })
       });
@@ -33,7 +33,19 @@ import { useEffect, useState } from "react";
       }
   
       const data = await response.json();
-      return data.choices[0].message.content;
+      const raw = data?.choices[0].message.content.trim();
+      const jsonMatch = raw.match(/\[[\s\S]*\]|\{[\s\S]*\}/);
+
+      if (!jsonMatch) {
+        console.error("Invalid AI output:", raw);
+        throw new Error("AI did not return valid JSON");
+      }
+      try {
+        return JSON.parse(jsonMatch[0]);
+      } catch (err) {
+        console.error("JSON parse error:", raw);
+        throw new Error("Failed to parse AI JSON");
+      }
     } catch (error) {
       console.error('Error calling DeepSeek:', error);
       throw error;
