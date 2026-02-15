@@ -317,7 +317,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
     //     console.error("AI returned empty fields", optimizedHtml);
     //     return Response.json({ error: "Empty content from AI" }, { status: 500 });
     //   }
-    return Response.json(JSON.parse(optimizedHtml));
+    return Response.json(optimizedHtml);
   } catch (error) {
     console.error(error);
     return Response.json({ error: "Failed to generate content" }, { status: 500 });
