@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 
   async function sendPrompt(prompt: string,deepseek:any) {
     try {
-      const response = await deepseek.callAPI({
+      const response = await deepseek.chat.createCompletion({
         messages: [{ role: 'user', content: prompt }],
         model: 'deepseek-chat',
         temperature:0.7,
