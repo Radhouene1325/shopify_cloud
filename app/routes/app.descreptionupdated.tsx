@@ -17,7 +17,7 @@ import { useEffect, useState } from "react";
         messages: [{ role: 'user', content: prompt }],
         model: 'deepseek-chat',
       });
-      return response.choices[0].message.content;
+      return response.choices;
     } catch (error) {
       console.error('Error:', error);
       throw error;
