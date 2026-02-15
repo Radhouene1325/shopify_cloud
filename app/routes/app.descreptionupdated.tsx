@@ -13,9 +13,11 @@ import { useEffect, useState } from "react";
 
   async function sendPrompt(prompt: string,deepseek:any) {
     try {
-      const response = await deepseek.chat.createCompletion({
+      const response = await deepseek.callAPI({
         messages: [{ role: 'user', content: prompt }],
         model: 'deepseek-chat',
+        temperature:0.7,
+        max_tokens:4000
       });
       return response.choices;
     } catch (error) {
@@ -51,37 +53,96 @@ async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
     };
     inputData: string;
 }
+const prompt= `You are a JSON API. Process ALL ${updatedDescreptionAI.length} products and return a JSON array.
 
-  const prompt:Prompt = {
-   
-    "role": "Senior E-commerce SEO Specialist & UX Copywriter",
-    "objective": "Transform raw technical data into a high-converting, luxury Amazon listing that balances emotional storytelling with rigorous SEO optimization.",
-    "outputFormat": {
-      "shortDescription": "HTML_STRING (SEO-Optimized Bullet Points)",
-      "detailedDescription": "HTML_STRING (A+ Content / Narrative Flow)"
-    },
-    "stylingGuidelines": {
-      "tone": "Sophisticated, authoritative, yet approachable. Avoid 'salesy' fluff; use high-value adjectives.",
-      "colorPsychology": "Use sensory language that evokes the product's color and texture (e.g., 'Deep Midnight Matte' instead of 'Dark Blue').",
-      "seoStrategy": "Integrate primary keywords naturally into headings and the first 100 words of the narrative."
-    },
-    "constraints": {
-      "shortDescription": [
-        "5-6 Bullets maximum.",
-        "Start each bullet with a bolded [CAPITALIZED KEY BENEFIT].",
-        "Focus on the 'Transformation' (How does the customer's life improve?).",
-        "End with a clear, low-friction Call to Action (CTA)."
-      ],
-      "detailedDescription": [
-        "Use <h1> for a punchy, benefit-driven title.",
-        "Use <h2> for feature-specific storytelling sections.",
-        "Mandatory: Convert all JSON spec data into a 4-column <table> with thead, cellpadding='10', and border='1'.",
-        "Retention: All <img> tags from the source must be preserved in their original sequence.",
-        "Semantic HTML: Use <section>, <article>, and <strong> for accessibility and SEO ranking."
-      ]
-    },
-    "inputData": `${updatedDescreptionAI}`
+PROMPT TEMPLATE FOR EACH PRODUCT:
+{
+  "role": "Senior E-commerce SEO Specialist & UX Copywriter",
+  "objective": "Transform raw technical data into a high-converting, luxury Amazon listing that balances emotional storytelling with rigorous SEO optimization.",
+  "outputFormat": {
+    "shortDescription": "HTML_STRING (SEO-Optimized Bullet Points)",
+    "detailedDescription": "HTML_STRING (A+ Content / Narrative Flow)"
+  },
+  "stylingGuidelines": {
+    "tone": "Sophisticated, authoritative, yet approachable. Avoid 'salesy' fluff; use high-value adjectives.",
+    "colorPsychology": "Use sensory language that evokes the product's color and texture (e.g., 'Deep Midnight Matte' instead of 'Dark Blue').",
+    "seoStrategy": "Integrate primary keywords naturally into headings and the first 100 words of the narrative."
+  },
+  "constraints": {
+    "shortDescription": [
+      "5-6 Bullets maximum.",
+      "Start each bullet with a bolded [CAPITALIZED KEY BENEFIT].",
+      "Focus on the 'Transformation' (How does the customer's life improve?).",
+      "End with a clear, low-friction Call to Action (CTA)."
+    ],
+    "detailedDescription": [
+      "Use <h1> for a punchy, benefit-driven title.",
+      "Use <h2> for feature-specific storytelling sections.",
+      "Mandatory: Convert all JSON spec data into a 4-column <table> with thead, cellpadding='10', and border='1'.",
+      "Retention: All <img> tags from the source must be preserved in their original sequence.",
+      "Semantic HTML: Use <section>, <article>, and <strong> for accessibility and SEO ranking."
+    ]
+  },
+  "inputData": "[PRODUCT_DESCRIPTION_HERE]"
+}
+
+PRODUCTS TO PROCESS:
+${updatedDescreptionAI.map((p, index) => `
+--- PRODUCT ${index + 1} (ID: ${p.id}) ---
+${p.descreption}
+`).join('\n')}
+
+IMPORTANT INSTRUCTIONS:
+1. Process EACH product individually using the prompt template above
+2. Return a JSON array with EXACTLY ${updatedDescreptionAI.length} objects
+3. Each object MUST have this structure:
+   {
+     "id": "original_product_id",
+     "shortDescription": "HTML string with 5-6 bullet points",
+     "detailedDescription": "HTML string with full narrative"
+   }
+4. Do NOT include any other text, explanations, or markdown
+5. Return ONLY the JSON array
+
+Example response format:
+[
+  {
+    "id": "gid://shopify/Product/123",
+    "shortDescription": "<ul><li><strong>[PREMIUM QUALITY]</strong> Description...</li></ul>",
+    "detailedDescription": "<h1>Title</h1><section>...</section>"
   }
+]`;
+  // const prompt:Prompt = {
+   
+  //   "role": "Senior E-commerce SEO Specialist & UX Copywriter",
+  //   "objective": "Transform raw technical data into a high-converting, luxury Amazon listing that balances emotional storytelling with rigorous SEO optimization.",
+  //   "outputFormat": {
+  //     "shortDescription": "HTML_STRING (SEO-Optimized Bullet Points)",
+  //     "detailedDescription": "HTML_STRING (A+ Content / Narrative Flow)"
+  //   },
+  //   "stylingGuidelines": {
+  //     "tone": "Sophisticated, authoritative, yet approachable. Avoid 'salesy' fluff; use high-value adjectives.",
+  //     "colorPsychology": "Use sensory language that evokes the product's color and texture (e.g., 'Deep Midnight Matte' instead of 'Dark Blue').",
+  //     "seoStrategy": "Integrate primary keywords naturally into headings and the first 100 words of the narrative."
+  //   },
+  //   "constraints": {
+  //     "shortDescription": [
+  //       "5-6 Bullets maximum.",
+  //       "Start each bullet with a bolded [CAPITALIZED KEY BENEFIT].",
+  //       "Focus on the 'Transformation' (How does the customer's life improve?).",
+  //       "End with a clear, low-friction Call to Action (CTA)."
+  //     ],
+  //     "detailedDescription": [
+  //       "Use <h1> for a punchy, benefit-driven title.",
+  //       "Use <h2> for feature-specific storytelling sections.",
+  //       "Mandatory: Convert all JSON spec data into a 4-column <table> with thead, cellpadding='10', and border='1'.",
+  //       "Retention: All <img> tags from the source must be preserved in their original sequence.",
+  //       "Semantic HTML: Use <section>, <article>, and <strong> for accessibility and SEO ranking."
+  //     ]
+  //   },
+  //   "inputData": `${updatedDescreptionAI}`,
+    
+  // }
 
   // const result = await model.generateContent(JSON.stringify(prompt));
   // const responseText = result.response.text(); 
