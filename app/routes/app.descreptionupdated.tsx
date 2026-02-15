@@ -41,17 +41,10 @@ import JSON5 from "json5";
       const data = await response.json();
       console.log('hello dtat im e json data',data?.choices[0].message.content)
     
+      let resulter=data?.choices[0].message.content
+      return resulter
           
-     
-      const productsMap = data?.choices[0]?.message?.content.reduce((acc, product) => {
-        acc[product.id] = {
-          shortDescription: product.shortDescription,
-          detailedDescription: product.detailedDescription
-        };
-        return acc;
-      }, {} as Record<string, { shortDescription: string; detailedDescription: string }>);
-      
-      console.log(productsMap);
+   
       
     } catch (error) {
       console.error('Error calling DeepSeek:', error);
@@ -426,6 +419,36 @@ export async function action({context ,request }: ActionFunctionArgs) {
      await generateSeoHtml(updatedDescreptionAI,API_KEY_GEMINI);
     // await generateSeoHtmlgimini(API_KEY_GEMINI_TESTED as string,updatedDescreptionAI,)
     console.log('new descreption is her and optimise ',optimizedHtml)
+
+const resulte=await Promise.all(
+  optimizedHtml.map(async (item:any) => {
+    try {
+      const normalizedData = {
+          short: item.shortDescription || item["shortDescription"] || "",
+          detailed: item.detailedDescription || item["detailedDescription"] || "",
+          productID:item.id ||item["id"] || ""
+        };
+        if (normalizedData.productID !== item.id) {
+          throw new Error(`ID mismatch! Expected ${item.id}, got ${item.descriptionHtml}`);
+        }
+    
+        if (!normalizedData.short || !normalizedData.detailed || !normalizedData.productID) {
+          console.error("AI returned empty fields", optimizedHtml);
+          return Response.json({ error: "Empty content from AI" }, { status: 500 });
+        }
+      return Response.json({ 
+          short: optimizedHtml.shortDescription, 
+          detailed: optimizedHtml.detailedDescription 
+        });
+    } catch (error) {
+      console.error(error);
+      return Response.json({ error: "Failed to generate content" }, { status: 500 });
+    }
+  })
+)
+console.log('hhhhhhhhhhhhhhhhhhhhhhhhh',resulte)
+
+
     // const normalizedData = {
     //     short: optimizedHtml.shortDescription || optimizedHtml["Short Description"] || "",
     //     detailed: optimizedHtml.detailedDescription || optimizedHtml["Detailed Description"] || "",
@@ -841,3 +864,8 @@ async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description: string) 
     throw new Error("Failed to optimize SEO content.");
   }
 }
+
+
+
+
+
