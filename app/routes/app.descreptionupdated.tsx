@@ -347,7 +347,8 @@ export async function action({context ,request }: ActionFunctionArgs) {
 export default function Descriptionupdated(){
 
     const initial = useLoaderData<typeof loader>();
-    console.log('initia deta is her helo ',initial)
+    console.log('initia deta is her helo ',JSON.parse(initial as string))
+
     const fetcher = useFetcher();
     const submit =useSubmit()
     const actionData=useActionData()
