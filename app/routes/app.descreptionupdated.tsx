@@ -217,7 +217,7 @@ async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
 //   ]`;
 // prompts.ts
 
-export interface ProductPrompt {
+interface ProductPrompt {
   id: string; // original_product_id
   content: string; // raw description or content
 }
