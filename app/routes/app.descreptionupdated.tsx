@@ -37,23 +37,16 @@ import { useEffect, useState } from "react";
       }
   
       const data = await response.json();
-      const raw = data?.choices[0].message.content.trim();
-      // Find the first '[' and the last ']' to isolate the array
-      const startIndex = raw.indexOf('[');
-      const endIndex = raw.lastIndexOf(']');
+      const productsMap = data?.reduce((acc, product) => {
+        acc[product.id] = {
+          shortDescription: product.shortDescription,
+          detailedDescription: product.detailedDescription
+        };
+        return acc;
+      }, {} as Record<string, { shortDescription: string; detailedDescription: string }>);
       
-      if (startIndex === -1 || endIndex === -1) {
-        console.error("No JSON array found in output:", raw);
-        throw new Error("AI did not return a valid JSON array");
-      }
+      console.log(productsMap);
       
-      const jsonString = raw.substring(startIndex, endIndex + 1);
-      try {
-        return JSON.parse(jsonString);
-      } catch (err) {
-        console.error("JSON parse error. Raw snippet:", jsonString);
-        throw new Error("Failed to parse AI JSON");
-      }
     } catch (error) {
       console.error('Error calling DeepSeek:', error);
       throw error;
