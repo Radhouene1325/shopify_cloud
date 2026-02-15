@@ -37,8 +37,8 @@ import { useEffect, useState } from "react";
       }
   
       const data = await response.json();
-      console.log('hello dtat im e json data',data)
-      const productsMap = data?.reduce((acc, product) => {
+      console.log('hello dtat im e json data',data.choices[0].message)
+      const productsMap = data?.choices[0]?.message?.reduce((acc, product) => {
         acc[product.id] = {
           shortDescription: product.shortDescription,
           detailedDescription: product.detailedDescription
