@@ -368,7 +368,7 @@ STRICT OUTPUT FORMAT:
   const deepseek = new Deepseek({
     apiKey: API_KEY_GEMINI,
   });
-  const response = await sendPrompt(prompt,API_KEY_GEMINI );
+  const response = await sendPrompt(JSON.stringify(prompt),API_KEY_GEMINI );
 return response
 
 
