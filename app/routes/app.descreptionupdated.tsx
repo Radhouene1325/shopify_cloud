@@ -122,6 +122,17 @@ import JSON5 from "json5";
                 console.error('First 500 chars:', resulter.substring(0, 500));
                 console.error('Last 500 chars:', resulter.substring(Math.max(0, resulter.length - 500)));
                 
+                // Check if response appears truncated (ends abruptly without closing brackets)
+                const trimmed = resulter.trim();
+                const lastChar = trimmed[trimmed.length - 1];
+                const bracketCount = (trimmed.match(/\[/g) || []).length - (trimmed.match(/\]/g) || []).length;
+                const braceCount = (trimmed.match(/\{/g) || []).length - (trimmed.match(/\}/g) || []).length;
+                
+                if (lastChar !== ']' && lastChar !== '}' || bracketCount > 0 || braceCount > 0) {
+                  console.warn('Response appears to be truncated. JSON is incomplete.');
+                  throw new Error('Response truncated: JSON is incomplete. Try processing fewer products at once.');
+                }
+                
                 // Last resort: try to parse just the structure and return partial data
                 throw new Error(`Failed to parse JSON: ${repairError instanceof Error ? repairError.message : 'Unknown error'}`);
               }
@@ -174,26 +185,16 @@ async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
   // const model = genAI.getGenerativeModel({ model:"gemini-3-flash-preview",generationConfig: {
   //   responseMimeType: "application/json",
   // }});
-//    interface Prompt {
-   
-//     role: string;
-//     objective: string;
-//     outputFormat: {
-//       shortDescription: string;
-//         detailedDescription: string;
-//     };
-//     stylingGuidelines: {
-//         tone: string;
-//         colorPsychology: string;
-//         seoStrategy: string;
-//     };
-//     constraints: {
-//         shortDescription: string[];
-//         detailedDescription: string[];
-//     };
-//     inputData: string;
-// }
-const prompt = `You are a JSON API. Process ALL ${updatedDescreptionAI.length} products and return a JSON array.
+  // Process products in batches to avoid token limit truncation
+  const BATCH_SIZE = 2; // Process 2 products at a time to stay within token limits
+  const allResults: any[] = [];
+  
+  for (let i = 0; i < updatedDescreptionAI.length; i += BATCH_SIZE) {
+    const batch = updatedDescreptionAI.slice(i, i + BATCH_SIZE);
+    console.log(`Processing batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(updatedDescreptionAI.length / BATCH_SIZE)} (${batch.length} products)`);
+    
+    // Create prompt for this batch
+    const batchPrompt = `You are a JSON API. Process ALL ${batch.length} products and return a JSON array.
 
 PROMPT TEMPLATE FOR EACH PRODUCT:
 {
@@ -280,13 +281,13 @@ PROMPT TEMPLATE FOR EACH PRODUCT:
 }
 
 DATA TO PROCESS:
-  ${JSON.stringify(updatedDescreptionAI.map(p => ({ id: p.id, content: p.descreption })))}
+  ${JSON.stringify(batch.map(p => ({ id: p.id, content: p.descreption })))}
 
 IMPORTANT INSTRUCTIONS:
 1. Process EACH product individually using the complete prompt template above
 2. Apply the color psychology guidelines based on the product type and target audience
 3. Use the provided HTML structure as a foundation, adapting it to each product's unique features
-4. Return a JSON array with EXACTLY ${updatedDescreptionAI.length} objects
+4. Return a JSON array with EXACTLY ${batch.length} objects
 5. Each object MUST have this structure:
    {
      "id": "original_product_id",
@@ -297,6 +298,7 @@ IMPORTANT INSTRUCTIONS:
 7. Return ONLY the JSON array
 8. Preserve ALL original image tags in their exact sequence
 9. Ensure all HTML is properly formatted and escaped for JSON
+10. CRITICAL: All quotes inside string values MUST be escaped with backslashes (\\\")
 
 STRICT OUTPUT FORMAT:
   A JSON array of objects:
@@ -306,11 +308,25 @@ STRICT OUTPUT FORMAT:
       shortDescription: "HTML string: <ul> with 5-6 bullets, bold [BENEFITS], and high-end styling.",
       detailedDescription: "HTML string: <article> containing <h1>, <h2>, <section>, <table> for specs, and preserving original <img> tags."
     }
-  ]
+  ]`;
     
-  please in the retrun of the arry im needing parser 
-  `;
-// prompts.ts
+    try {
+      const batchResponse = await sendPrompt(batchPrompt, API_KEY_GEMINI);
+      if (Array.isArray(batchResponse)) {
+        allResults.push(...batchResponse);
+        console.log(`Batch ${Math.floor(i / BATCH_SIZE) + 1} completed: ${batchResponse.length} products processed`);
+      } else {
+        console.error(`Batch ${Math.floor(i / BATCH_SIZE) + 1} returned invalid format:`, batchResponse);
+      }
+    } catch (error) {
+      console.error(`Error processing batch ${Math.floor(i / BATCH_SIZE) + 1}:`, error);
+      throw error; // Re-throw to stop processing if a batch fails
+    }
+  }
+  
+  console.log(`Total products processed: ${allResults.length}/${updatedDescreptionAI.length}`);
+  return allResults;
+}
 
 // prompts.ts
 
@@ -460,11 +476,6 @@ STRICT OUTPUT FORMAT:
   // const responseText = result.response.text(); 
   // return JSON.parse(responseText);
 
-  const response = await sendPrompt(JSON.stringify(prompt),API_KEY_GEMINI );
-return response
-
-
-}
 
 // 2. Remix Action (Server Side)
 export async function action({context ,request }: ActionFunctionArgs) {
