@@ -7,6 +7,8 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { shopify } from "../shopify.server";
 import { Button } from "@shopify/polaris";
 import { useEffect, useState } from "react";
+import JSON5 from "json5";
+
   // sk-c8552ae161ed4db684bb1268bf4ba758
   import { Deepseek } from 'node-deepseek';
 
@@ -37,7 +39,7 @@ import { useEffect, useState } from "react";
       }
   
       const data = await response.json();
-      console.log('hello dtat im e json data',JSON.parse(data?.choices[0].message.content))
+      console.log('hello dtat im e json data',JSON5.parse(data?.choices[0].message.content))
 
       const productsMap = data?.choices[0]?.message?.content.reduce((acc, product) => {
         acc[product.id] = {
@@ -205,9 +207,9 @@ STRICT OUTPUT FORMAT:
   A JSON array of objects:
   [
     {
-      "id": "original_id",
-      "shortDescription": "HTML string: <ul> with 5-6 bullets, bold [BENEFITS], and high-end styling.",
-      "detailedDescription": "HTML string: <article> containing <h1>, <h2>, <section>, <table> for specs, and preserving original <img> tags."
+      ${id}: "original_id",
+      ${shortDescription}: "HTML string: <ul> with 5-6 bullets, bold [BENEFITS], and high-end styling.",
+      ${detailedDescription}: "HTML string: <article> containing <h1>, <h2>, <section>, <table> for specs, and preserving original <img> tags."
     }
   ]`;
 // prompts.ts
