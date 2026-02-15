@@ -20,7 +20,11 @@ import { useEffect, useState } from "react";
         },
         body: JSON.stringify({
           model: 'deepseek-chat',
-          messages: [{ role: 'system', content: prompt }],
+          messages: [  {
+            role: "system",
+            content:
+              "You are a strict JSON generator. Return ONLY valid JSON. No markdown. No explanation. No code fences.",
+          },{ role: 'user', content: prompt }],
           temperature: 0.2,
           max_tokens: 4000
         })
@@ -33,7 +37,8 @@ import { useEffect, useState } from "react";
       }
   
       const data = await response.json();
-      const raw = data?.choices[0].message.content.trim();
+       const raw = data?.choices[0].message.content.trim();
+      console.log("data from function fetch", data)
       const jsonMatch = raw.match(/\[[\s\S]*\]|\{[\s\S]*\}/);
 
       if (!jsonMatch) {
