@@ -40,6 +40,17 @@ import JSON5 from "json5";
   
       const data = await response.json();
       console.log('hello dtat im e json data',data?.choices[0].message.content)
+      const normalizedData = [
+{
+    
+          short: data?.choices[0].message.content.shortDescription || data?.choices[0].message.content["shortDescription"] || "",
+          detailed: data?.choices[0].message.content.detailedDescription || data?.choices[0].message.content["detailedDescription"] || "",
+          productID:data?.choices[0].message.content.id|| data?.choices[0].message.content["id"] || ""
+        
+}
+      ]
+          
+      console.log('hello dtat im e json data',normalizedData)
 
       const productsMap = data?.choices[0]?.message?.content.reduce((acc, product) => {
         acc[product.id] = {
