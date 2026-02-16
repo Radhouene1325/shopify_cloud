@@ -541,7 +541,7 @@ for (const DESC_AI of optimizedHtml){
 console.log('DESC_AI.id',DESC_AI.id)
 console.log('OLD_DESC',OLD_DESC)
     if(DESC_AI.id===OLD_DESC.id){
-      console.log("VERIFU IS TESTED",DESC_AI===OLD_DESC)
+      console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
       console.log('is true is very nice ')
     }
 
