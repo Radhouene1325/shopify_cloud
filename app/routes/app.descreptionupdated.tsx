@@ -533,9 +533,30 @@ export async function action({context ,request }: ActionFunctionArgs) {
      await generateSeoHtml(updatedDescreptionAI,API_KEY_GEMINI);
     // await generateSeoHtmlgimini(API_KEY_GEMINI_TESTED as string,updatedDescreptionAI,)
     // console.log('new descreption is her and optimise ',optimizedHtml)
+const query=  `#graphql
+mutation UpdateProductDescription($input: ProductInput!) {
+  productUpdate(input: $input) {
+    product {
+      id
+      title
+      descriptionHtml
+      metafields(first: 5) {
+        nodes {
+          namespace
+          key
+          value
+        }
+      }
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}`
+let response
 
-
-for (const DESC_AI of optimizedHtml){
+for(const DESC_AI of optimizedHtml){
  
   for (const OLD_DESC of updatedDescreptionAI ){
 console.log('DESC_AI.id',DESC_AI.id)
@@ -543,6 +564,24 @@ console.log('OLD_DESC',OLD_DESC)
     if(DESC_AI.id===OLD_DESC.id){
       console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
       console.log('is true is very nice ')
+       response=await admin.graphql(query,{
+        variables:{
+          "input": {
+            "id": OLD_DESC.id,
+            "descriptionHtml": DESC_AI.detailedDescription,
+            "metafields": [
+              {
+                "namespace": "custom",
+                "key": "descriptions",
+                "type": "json",
+                "value": JSON.stringify(DESC_AI.shortDescription)
+              }
+            ]
+        }
+      }
+      })
+
+return response
     }
 
   }
@@ -550,29 +589,9 @@ console.log('OLD_DESC',OLD_DESC)
 }
 
 
-  const resulte=optimizedHtml.map( (item:any) => {
-    try {
-      const normalizedData = {
-          short: item.shortDescription ||  "",
-          detailed: item.detailedDescription || "",
-          productID:item.id || ""
-        };
-        // if (normalizedData.productID !== item.id) {
-        //   throw new Error(`ID mismatch! Expected ${item.id}, got ${item.descriptionHtml}`);
-        // }
-    
-        // if (!normalizedData.short || !normalizedData.detailed || !normalizedData.productID) {
-        //   console.error("AI returned empty fields", optimizedHtml);
-        //   return Response.json({ error: "Empty content from AI" }, { status: 500 });
-        // }
-      return normalizedData;
-    } catch (error) {
-      console.error(error);
-      return Response.json({ error: "Failed to generate content" }, { status: 500 });
-    }
-  })
 
-// console.log('hhhhhhhhhhhhhhhhhhhhhhhhh',resulte)
+
+ console.log('hhhhhhhhhhhhhhhhhhhhhhhhh',response)
 
 
     // const normalizedData = {
