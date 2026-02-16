@@ -554,7 +554,7 @@ mutation UpdateProductDescription($input: ProductInput!) {
     }
   }
 }`
-let response
+let responses
 
 for(const DESC_AI of optimizedHtml){
  
@@ -564,7 +564,7 @@ console.log('OLD_DESC',OLD_DESC)
     if(DESC_AI.id===OLD_DESC.id){
       console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
       console.log('is true is very nice ')
-       response=await admin.graphql(query,{
+      const response=await admin.graphql(query,{
         variables:{
           "input": {
             "id": OLD_DESC.id,
@@ -581,7 +581,7 @@ console.log('OLD_DESC',OLD_DESC)
       }
       })
 
-return response
+ responses=response
     }
 
   }
@@ -591,7 +591,7 @@ return response
 
 
 
- console.log('hhhhhhhhhhhhhhhhhhhhhhhhh',response)
+ console.log('hhhhhhhhhhhhhhhhhhhhhhhhh',responses)
 
 
     // const normalizedData = {
@@ -607,7 +607,7 @@ return response
     //     console.error("AI returned empty fields", optimizedHtml);
     //     return Response.json({ error: "Empty content from AI" }, { status: 500 });
     //   }
-    return Response.json(optimizedHtml);
+    return Response.json(responses);
   } catch (error) {
     console.error(error);
     return Response.json({ error: "Failed to generate content" }, { status: 500 });
