@@ -876,7 +876,9 @@ async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description: string) 
   const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
   
   // Using Gemini 3 Flash for speed and intelligence
-  const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+  const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" ,
+    generationConfig: { responseMimeType: "application/json" }
+  });
 
   interface Prompt {
    
@@ -1018,7 +1020,7 @@ async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description: string) 
 
   try {
     const result = await model.generateContent(prompt);
-    return result.response.text();
+    return JSON.parse(result.response.text());
   } catch (error: any) {
     console.error("Gemini Error:", error.message);
     throw new Error("Failed to optimize SEO content.");
