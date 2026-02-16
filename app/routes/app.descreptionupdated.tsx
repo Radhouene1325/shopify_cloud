@@ -767,11 +767,20 @@ export default function Descriptionupdated(){
 
       {Array.isArray(actionData) && actionData?.map((e: { detailedDescription?: string }, idx: number) => (
       <>
-      <div key={idx} dangerouslySetInnerHTML={{ __html: e.detailedDescription || "" }} />
-       <p> {e.detailedDescription}</p>
-       </>
+        <div key={idx} dangerouslySetInnerHTML={{ __html: e.detailedDescription || "" }} />
+        <p>
+          {e.detailedDescription
+            ? (() => {
+                try {
+                  return JSON.parse(e.detailedDescription);
+                } catch {
+                  return e.detailedDescription;
+                }
+              })()
+            : ""}
+        </p>
+      </>
       ))}
-
   </>
   
     );
