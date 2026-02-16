@@ -530,8 +530,8 @@ export async function action({context ,request }: ActionFunctionArgs) {
   }
   try {
     const optimizedHtml = 
-     await generateSeoHtml(updatedDescreptionAI,API_KEY_GEMINI);
-    // await generateSeoHtmlgimini(API_KEY_GEMINI_TESTED as string,updatedDescreptionAI,)
+    //  await generateSeoHtml(updatedDescreptionAI,API_KEY_GEMINI);
+     await generateSeoHtmlgimini(API_KEY_GEMINI_TESTED as string,updatedDescreptionAI,)
     // console.log('new descreption is her and optimise ',optimizedHtml)
 const query=  `#graphql
 mutation UpdateProductDescription($input: ProductInput!) {
@@ -556,42 +556,42 @@ mutation UpdateProductDescription($input: ProductInput!) {
 }`
 let responses
 
-for(const DESC_AI of optimizedHtml){
+// for(const DESC_AI of optimizedHtml){
  
-  for (const OLD_DESC of updatedDescreptionAI ){
-console.log('DESC_AI.id',DESC_AI.id)
-console.log('OLD_DESC',OLD_DESC)
-    if(DESC_AI.id===OLD_DESC.id){
-      console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
-      console.log('is true is very nice ')
-      const response=await admin.graphql(query,{
-        variables:{
-          "input": {
-            "id": OLD_DESC.id,
-            "descriptionHtml": DESC_AI.detailedDescription,
-            "metafields": [
-              {
-                "namespace": "custom",
-                "key": "descriptionsai",
-                "type": "json",
-                "value": JSON.stringify(DESC_AI.shortDescription)
-              }
-            ]
-        }
-      }
-      })
+//   for (const OLD_DESC of updatedDescreptionAI ){
+// console.log('DESC_AI.id',DESC_AI.id)
+// console.log('OLD_DESC',OLD_DESC)
+//     if(DESC_AI.id===OLD_DESC.id){
+//       console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
+//       console.log('is true is very nice ')
+//       const response=await admin.graphql(query,{
+//         variables:{
+//           "input": {
+//             "id": OLD_DESC.id,
+//             "descriptionHtml": DESC_AI.detailedDescription,
+//             "metafields": [
+//               {
+//                 "namespace": "custom",
+//                 "key": "descriptionsai",
+//                 "type": "json",
+//                 "value": JSON.stringify(DESC_AI.shortDescription)
+//               }
+//             ]
+//         }
+//       }
+//       })
 
- responses=response
-    }
+//  responses=response
+//     }
 
-  }
+//   }
 
-}
-
-
+// }
 
 
- console.log('hhhhhhhhhhhhhhhhhhhhhhhhh',responses)
+
+
+ console.log('hhhhhhhhhhhhhhhhhhhhhhhhh',optimizedHtml)
 
 
     // const normalizedData = {
