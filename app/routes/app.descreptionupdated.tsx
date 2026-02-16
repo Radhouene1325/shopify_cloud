@@ -767,8 +767,13 @@ export default function Descriptionupdated(){
                   Create updated policy
                 </Button>
       </div>
-  
-  
+
+      {Array.isArray(actionData) && actionData?.map((e: { detailedDescription?: string }, idx: number) => (
+        <div key={idx}>
+          {e.detailedDescription}
+        </div>
+      ))}
+
   </>
   
     );
