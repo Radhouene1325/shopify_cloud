@@ -538,6 +538,20 @@ export async function action({context ,request }: ActionFunctionArgs) {
     console.log('new descreption is her and optimise ',optimizedHtml)
 
 
+for (const DESC_AI of optimizedHtml){
+ 
+  for (const OLD_DESC of updatedDescreptionAI ){
+
+    if(DESC_AI.id===OLD_DESC.id){
+      console.log("VERIFU IS TESTED",DESC_AI===OLD_DESC)
+      console.log('is true is very nice ')
+    }
+
+  }
+
+}
+
+
   const resulte=optimizedHtml.map( (item:any) => {
     try {
       const normalizedData = {
