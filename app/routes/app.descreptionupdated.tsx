@@ -532,7 +532,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
     console.log('new descreption is her and optimise ',optimizedHtml)
 
 
-  const resulte=optimizedHtml.map(async (item:any) => {
+  const resulte=optimizedHtml.map( (item:any) => {
     try {
       const normalizedData = {
           short: item.shortDescription ||  "",
