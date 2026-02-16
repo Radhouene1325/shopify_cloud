@@ -51,19 +51,75 @@
 //     '<div style="font-size:14px" data-info="hello"></div>'
 //   ]
 //   */
-  /**
- * Strong parser for arrays of objects with HTML/Markdown strings
- * @param {any[]} input - Array of objects (or nested arrays)
+//   /**
+//  * Strong parser for arrays of objects with HTML/Markdown strings
+//  * @param {any[]} input - Array of objects (or nested arrays)
+//  * @param {string[]} fields - Fields to clean (default: shortDescription & detailedDescription)
+//  * @returns {any[]} - New array with cleaned strings
+//  */
+// export default function strongCleanObjectArray(
+//   input: any[],
+//   fields: string[] = ["shortDescription", "detailedDescription"]
+// ): any[] 
+//{
+//   if (!Array.isArray(input)) throw new TypeError("Input must be an array");
+
+//   // Recursive cleaning function
+//   const cleanValue = (value: any): any => {
+//     if (typeof value === "string") {
+//       let repaired = value;
+
+//       // Remove Markdown code blocks ``` or ```json
+//       repaired = repaired.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '');
+
+//       // Escape quotes inside style attributes
+//       repaired = repaired.replace(/style='([^']*)'/gi, (_, content) => {
+//         return `style="${content.replace(/"/g, '\\"')}"`;
+//       });
+
+//       // Convert other key='value' to key="value"
+//       repaired = repaired.replace(/(\w+)='([^']*)'/g, (_, attr, content) => {
+//         return `${attr}="${content.replace(/"/g, '\\"')}"`;
+//       });
+
+//       // Trim extra whitespace
+//       return repaired.trim();
+//     } else if (Array.isArray(value)) {
+//       return value.map(cleanValue);
+//     } else if (typeof value === "object" && value !== null) {
+//       return strongCleanObjectArray([value], Object.keys(value))[0]; // recurse on object
+//     } else {
+//       return value;
+//     }
+//   };
+
+//   // Process each object in the array
+//   return input.map(obj => {
+//     if (typeof obj !== "object" || obj === null) return obj;
+
+//     const cleaned = { ...obj };
+//     fields.forEach(field => {
+//       if (obj[field] !== undefined) {
+//         cleaned[field] = cleanValue(obj[field]);
+//       }
+//     });
+//     return cleaned;
+//   });
+// }
+
+// Example usa
+
+/**
+ * Strong parser for arrays of objects keeping HTML strings
+ * @param {any[]} input - Array of objects
  * @param {string[]} fields - Fields to clean (default: shortDescription & detailedDescription)
- * @returns {any[]} - New array with cleaned strings
+ * @returns {any[]} - New array with cleaned HTML strings
  */
-export default function strongCleanObjectArray(
-  input: any[],
+export default function strongCleanObjectArray(  input: any[],
   fields: string[] = ["shortDescription", "detailedDescription"]
-): any[] {
+): any[]  {
   if (!Array.isArray(input)) throw new TypeError("Input must be an array");
 
-  // Recursive cleaning function
   const cleanValue = (value: any): any => {
     if (typeof value === "string") {
       let repaired = value;
@@ -86,16 +142,14 @@ export default function strongCleanObjectArray(
     } else if (Array.isArray(value)) {
       return value.map(cleanValue);
     } else if (typeof value === "object" && value !== null) {
-      return strongCleanObjectArray([value], Object.keys(value))[0]; // recurse on object
+      return cleanObjectArray([value], Object.keys(value))[0];
     } else {
       return value;
     }
   };
 
-  // Process each object in the array
   return input.map(obj => {
     if (typeof obj !== "object" || obj === null) return obj;
-
     const cleaned = { ...obj };
     fields.forEach(field => {
       if (obj[field] !== undefined) {
@@ -106,4 +160,5 @@ export default function strongCleanObjectArray(
   });
 }
 
-// Example usa
+// ================= Example =================
+
