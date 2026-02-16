@@ -541,7 +541,8 @@ export async function action({context ,request }: ActionFunctionArgs) {
 for (const DESC_AI of optimizedHtml){
  
   for (const OLD_DESC of updatedDescreptionAI ){
-
+console.log('DESC_AI.id',DESC_AI.id)
+console.log('OLD_DESC',OLD_DESC)
     if(DESC_AI.id===OLD_DESC.id){
       console.log("VERIFU IS TESTED",DESC_AI===OLD_DESC)
       console.log('is true is very nice ')
