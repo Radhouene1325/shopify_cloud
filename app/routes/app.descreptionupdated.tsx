@@ -315,6 +315,8 @@ async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
       
       try {
         const batchResponse = await sendPrompt(batchPrompt, API_KEY_GEMINI);
+        console.log('batcher prod IDIDID',[...batchResponse].id)
+        console.log('origin product .id',v.id)
         console.log("tested is batches matched the origin products ",  [...batchResponse].id===v.id)
         console.log('batcher response is her ',batchResponse)
         if (Array.isArray(batchResponse)) {
