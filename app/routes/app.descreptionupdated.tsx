@@ -186,7 +186,8 @@ async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
   //   responseMimeType: "application/json",
   // }});
   // Process products in batches to avoid token limit truncation
-  const BATCH_SIZE = 2; // Process 2 products at a time to stay within token limits
+  // Using batch size 1 to guarantee responses fit within token limits
+  const BATCH_SIZE = 1;
   const allResults: any[] = [];
   
   for (let i = 0; i < updatedDescreptionAI.length; i += BATCH_SIZE) {
