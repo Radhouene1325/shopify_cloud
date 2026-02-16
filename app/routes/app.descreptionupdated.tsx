@@ -572,7 +572,7 @@ console.log('OLD_DESC',OLD_DESC)
             "metafields": [
               {
                 "namespace": "custom",
-                "key": "descriptions",
+                "key": "descriptionsai",
                 "type": "json",
                 "value": JSON.stringify(DESC_AI.shortDescription)
               }
