@@ -48,14 +48,14 @@ import strongCleanObjectArray, { cleanStringArray } from "./functions/parser";
       }
   
       const data = await response.json() as DeepSeekResponse;
-      console.log('hello dtat im e json data',data?.choices?.[0]?.message?.content)
+      // console.log('hello dtat im e json data',data?.choices?.[0]?.message?.content)
       let resulter = data?.choices?.[0]?.message?.content;
       if (!resulter) {
         throw new Error('No content in API response');
       }
       // Only pass a string to the cleaning function if it's defined
       let tested = typeof resulter === 'string' ? strongCleanObjectArray([resulter]) : [];
-      console.log("tes the function is ok hello ", tested);
+      // console.log("tes the function is ok hello ", tested);
       
       // Clean the response - remove markdown code fences if present
       if (typeof resulter === 'string') {
@@ -182,7 +182,6 @@ import strongCleanObjectArray, { cleanStringArray } from "./functions/parser";
 // 1. Logic to call Gemini
 async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
   // ⚠️ WARNING: Use process.env.GEMINI_KEY in production!
-  console.log('descreption html ',updatedDescreptionAI,"api key is her ", API_KEY_GEMINI,)
   // const genAI = new GoogleGenerativeAI(API_KEY_GEMINI);
   // const model = genAI.getGenerativeModel({ model:"gemini-3-flash-preview",generationConfig: {
   //   responseMimeType: "application/json",
@@ -316,12 +315,10 @@ async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
       try {
         const batchResponse = await sendPrompt(batchPrompt, API_KEY_GEMINI);
         console.log('batcher prod IDIDID',batchResponse.some((e)=>e.id===v.id))
-        console.log('origin product .id',v.id)
-        console.log("tested is batches matched the origin products ",  [...batchResponse].id===v.id)
-        console.log('batcher response is her ',batchResponse)
+    
         if (Array.isArray(batchResponse)) {
           allResults.push(...batchResponse);
-          console.log(`Batch ${Math.floor(i / BATCH_SIZE) + 1} completed: ${batchResponse.length} products processed`);
+          // console.log(`Batch ${Math.floor(i / BATCH_SIZE) + 1} completed: ${batchResponse.length} products processed`);
         } else {
           console.error(`Batch ${Math.floor(i / BATCH_SIZE) + 1} returned invalid format:`, batchResponse);
         }
@@ -492,7 +489,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
 
  let formData=await request.formData()
  let updatedDescreptionAI=JSON.parse(formData.get('descreptionAI')as string)
- console.log('descreptionAI IS HER ',updatedDescreptionAI)
+//  console.log('descreptionAI IS HER ',updatedDescreptionAI)
   const htmlDescription = `<h1>SPECIFICATIONS</h1>
 <p><span>CN</span>: <span style="color: #333;">Henan</span></p>
 <p><span>Colletto</span>: <span style="color: #333;">Collo a O</span></p>
@@ -535,7 +532,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
     const optimizedHtml = 
      await generateSeoHtml(updatedDescreptionAI,API_KEY_GEMINI);
     // await generateSeoHtmlgimini(API_KEY_GEMINI_TESTED as string,updatedDescreptionAI,)
-    console.log('new descreption is her and optimise ',optimizedHtml)
+    // console.log('new descreption is her and optimise ',optimizedHtml)
 
 
 for (const DESC_AI of optimizedHtml){
@@ -575,7 +572,7 @@ console.log('OLD_DESC',OLD_DESC)
     }
   })
 
-console.log('hhhhhhhhhhhhhhhhhhhhhhhhh',resulte)
+// console.log('hhhhhhhhhhhhhhhhhhhhhhhhh',resulte)
 
 
     // const normalizedData = {
