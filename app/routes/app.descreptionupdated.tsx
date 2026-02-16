@@ -769,9 +769,7 @@ export default function Descriptionupdated(){
       </div>
 
       {Array.isArray(actionData) && actionData?.map((e: { detailedDescription?: string }, idx: number) => (
-        <div key={idx}>
-          {e.detailedDescription}
-        </div>
+        <div key={idx} dangerouslySetInnerHTML={{ __html: e.detailedDescription || "" }} />
       ))}
 
   </>
