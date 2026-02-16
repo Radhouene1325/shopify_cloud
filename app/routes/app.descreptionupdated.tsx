@@ -11,7 +11,7 @@ import JSON5 from "json5";
 
   // sk-c8552ae161ed4db684bb1268bf4ba758
   import { Deepseek } from 'node-deepseek';
-import { cleanStringArray } from "./functions/parser";
+import strongCleanObjectArray, { cleanStringArray } from "./functions/parser";
 
   interface DeepSeekResponse {
     choices?: Array<{
@@ -49,13 +49,13 @@ import { cleanStringArray } from "./functions/parser";
   
       const data = await response.json() as DeepSeekResponse;
       console.log('hello dtat im e json data',data?.choices?.[0]?.message?.content)
-    
       let resulter = data?.choices?.[0]?.message?.content;
-      let tested=cleanStringArray(resulter)
-      console.log("tes the function is ok hello ",tested)
       if (!resulter) {
         throw new Error('No content in API response');
       }
+      // Only pass a string to the cleaning function if it's defined
+      let tested = typeof resulter === 'string' ? strongCleanObjectArray([resulter]) : [];
+      console.log("tes the function is ok hello ", tested);
       
       // Clean the response - remove markdown code fences if present
       if (typeof resulter === 'string') {
