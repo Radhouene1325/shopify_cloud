@@ -531,29 +531,29 @@ export async function action({context ,request }: ActionFunctionArgs) {
     // await generateSeoHtmlgimini(API_KEY_GEMINI_TESTED as string,updatedDescreptionAI,)
     console.log('new descreption is her and optimise ',optimizedHtml)
 
-const resulte=await Promise.all(
-  optimizedHtml.map(async (item:any) => {
+
+  const resulte=optimizedHtml.map(async (item:any) => {
     try {
       const normalizedData = {
           short: item.shortDescription ||  "",
           detailed: item.detailedDescription || "",
           productID:item.id || ""
         };
-        if (normalizedData.productID !== item.id) {
-          throw new Error(`ID mismatch! Expected ${item.id}, got ${item.descriptionHtml}`);
-        }
+        // if (normalizedData.productID !== item.id) {
+        //   throw new Error(`ID mismatch! Expected ${item.id}, got ${item.descriptionHtml}`);
+        // }
     
-        if (!normalizedData.short || !normalizedData.detailed || !normalizedData.productID) {
-          console.error("AI returned empty fields", optimizedHtml);
-          return Response.json({ error: "Empty content from AI" }, { status: 500 });
-        }
-      return Response.json(normalizedData);
+        // if (!normalizedData.short || !normalizedData.detailed || !normalizedData.productID) {
+        //   console.error("AI returned empty fields", optimizedHtml);
+        //   return Response.json({ error: "Empty content from AI" }, { status: 500 });
+        // }
+      return normalizedData;
     } catch (error) {
       console.error(error);
       return Response.json({ error: "Failed to generate content" }, { status: 500 });
     }
   })
-)
+
 console.log('hhhhhhhhhhhhhhhhhhhhhhhhh',resulte)
 
 
