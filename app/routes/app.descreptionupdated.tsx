@@ -315,6 +315,8 @@ STRICT OUTPUT FORMAT:
     
     try {
       const batchResponse = await sendPrompt(batchPrompt, API_KEY_GEMINI);
+
+      console.log('batcher response is her ',batchResponse)
       if (Array.isArray(batchResponse)) {
         allResults.push(...batchResponse);
         console.log(`Batch ${Math.floor(i / BATCH_SIZE) + 1} completed: ${batchResponse.length} products processed`);
