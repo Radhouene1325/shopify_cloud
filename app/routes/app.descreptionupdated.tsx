@@ -535,9 +535,9 @@ const resulte=await Promise.all(
   optimizedHtml.map(async (item:any) => {
     try {
       const normalizedData = {
-          short: item.shortDescription || item["shortDescription"] || "",
-          detailed: item.detailedDescription || item["detailedDescription"] || "",
-          productID:item.id ||item["id"] || ""
+          short: item.shortDescription ||  "",
+          detailed: item.detailedDescription || "",
+          productID:item.id || ""
         };
         if (normalizedData.productID !== item.id) {
           throw new Error(`ID mismatch! Expected ${item.id}, got ${item.descriptionHtml}`);
@@ -547,10 +547,7 @@ const resulte=await Promise.all(
           console.error("AI returned empty fields", optimizedHtml);
           return Response.json({ error: "Empty content from AI" }, { status: 500 });
         }
-      return Response.json({ 
-          short: optimizedHtml.shortDescription, 
-          detailed: optimizedHtml.detailedDescription 
-        });
+      return Response.json(normalizedData);
     } catch (error) {
       console.error(error);
       return Response.json({ error: "Failed to generate content" }, { status: 500 });
@@ -769,7 +766,10 @@ export default function Descriptionupdated(){
       </div>
 
       {Array.isArray(actionData) && actionData?.map((e: { detailedDescription?: string }, idx: number) => (
-        <div key={idx} dangerouslySetInnerHTML={{ __html: e.detailedDescription || "" }} />
+      <>
+      <div key={idx} dangerouslySetInnerHTML={{ __html: e.detailedDescription || "" }} />
+       <p> {e.detailedDescription}</p>
+       </>
       ))}
 
   </>
