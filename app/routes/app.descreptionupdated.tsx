@@ -191,143 +191,145 @@ async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
   // Using batch size 1 to guarantee responses fit within token limits
   const BATCH_SIZE = 1;
   const allResults: any[] = [];
+  for (const v of updatedDescreptionAI){
+    for (let i = 0; i < updatedDescreptionAI.length; i += BATCH_SIZE) {
+      const batch = updatedDescreptionAI.slice(i, i + BATCH_SIZE);
+      console.log(`Processing batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(updatedDescreptionAI.length / BATCH_SIZE)} (${batch.length} products)`);
+      
+      // Create prompt for this batch
+      const batchPrompt = `You are a JSON API. Process ALL ${batch.length} products and return a JSON array.
   
-  for (let i = 0; i < updatedDescreptionAI.length; i += BATCH_SIZE) {
-    const batch = updatedDescreptionAI.slice(i, i + BATCH_SIZE);
-    console.log(`Processing batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(updatedDescreptionAI.length / BATCH_SIZE)} (${batch.length} products)`);
-    
-    // Create prompt for this batch
-    const batchPrompt = `You are a JSON API. Process ALL ${batch.length} products and return a JSON array.
-
-PROMPT TEMPLATE FOR EACH PRODUCT:
-{
-  "role": "Senior E-commerce SEO Specialist & UX Copywriter with expertise in luxury branding and color psychology",
-  "objective": "Transform raw technical data into a visually stunning, high-converting Amazon listing that uses professional HTML structure and strategic color psychology to drive emotional engagement and sales.",
-  "outputFormat": {
-    "shortDescription": "PROFESSIONAL_HTML_STRING (SEO-Optimized Bullet Points with strategic color accents)",
-    "detailedDescription": "PROFESSIONAL_HTML_STRING (A+ Content with complete HTML5 structure, color psychology, and responsive design)"
-  },
-  "stylingGuidelines": {
-    "tone": "Luxury, sophisticated, authoritative, yet emotionally resonant. Use elevated vocabulary that conveys exclusivity and quality.",
-    "colorPsychology": {
-      "general": "Apply color psychology strategically to evoke desired emotions:",
-      "colorMeanings": {
-        "Deep Midnight Blue": "Conveys trust, stability, sophistication, and premium quality. Ideal for technology, finance, and luxury products.",
-        "Rich Burgundy": "Evokes luxury, passion, confidence, and timeless elegance. Perfect for premium fashion and accessories.",
-        "Forest Green": "Represents growth, harmony, nature, and wealth. Excellent for organic, eco-friendly, and wellness products.",
-        "Charcoal Gray": "Communicates authority, practicality, timelessness, and modern minimalism. Great for professional attire and tech gadgets.",
-        "Champagne Gold": "Signifies premium quality, success, celebration, and exclusivity. Use sparingly for accent elements.",
-        "Crimson Red": "Creates urgency, excitement, passion, and energy. Effective for calls-to-action and limited offers.",
-        "Royal Purple": "Associated with royalty, wisdom, creativity, and luxury. Suitable for premium and artistic products.",
-        "Cream White": "Evokes purity, simplicity, elegance, and clarity. Perfect for backgrounds and minimalist designs."
+  PROMPT TEMPLATE FOR EACH PRODUCT:
+  {
+    "role": "Senior E-commerce SEO Specialist & UX Copywriter with expertise in luxury branding and color psychology",
+    "objective": "Transform raw technical data into a visually stunning, high-converting Amazon listing that uses professional HTML structure and strategic color psychology to drive emotional engagement and sales.",
+    "outputFormat": {
+      "shortDescription": "PROFESSIONAL_HTML_STRING (SEO-Optimized Bullet Points with strategic color accents)",
+      "detailedDescription": "PROFESSIONAL_HTML_STRING (A+ Content with complete HTML5 structure, color psychology, and responsive design)"
+    },
+    "stylingGuidelines": {
+      "tone": "Luxury, sophisticated, authoritative, yet emotionally resonant. Use elevated vocabulary that conveys exclusivity and quality.",
+      "colorPsychology": {
+        "general": "Apply color psychology strategically to evoke desired emotions:",
+        "colorMeanings": {
+          "Deep Midnight Blue": "Conveys trust, stability, sophistication, and premium quality. Ideal for technology, finance, and luxury products.",
+          "Rich Burgundy": "Evokes luxury, passion, confidence, and timeless elegance. Perfect for premium fashion and accessories.",
+          "Forest Green": "Represents growth, harmony, nature, and wealth. Excellent for organic, eco-friendly, and wellness products.",
+          "Charcoal Gray": "Communicates authority, practicality, timelessness, and modern minimalism. Great for professional attire and tech gadgets.",
+          "Champagne Gold": "Signifies premium quality, success, celebration, and exclusivity. Use sparingly for accent elements.",
+          "Crimson Red": "Creates urgency, excitement, passion, and energy. Effective for calls-to-action and limited offers.",
+          "Royal Purple": "Associated with royalty, wisdom, creativity, and luxury. Suitable for premium and artistic products.",
+          "Cream White": "Evokes purity, simplicity, elegance, and clarity. Perfect for backgrounds and minimalist designs."
+        },
+        "application": "Use these colors strategically in headings, accents, and key elements. Never use bright neon or saturated primary colors which appear cheap. Maintain sophisticated, muted luxury tones."
       },
-      "application": "Use these colors strategically in headings, accents, and key elements. Never use bright neon or saturated primary colors which appear cheap. Maintain sophisticated, muted luxury tones."
+      "typography": {
+        "headings": "Use elegant font stacks with proper hierarchy: 'Playfair Display', 'Cormorant Garamond', or 'Georgia' for serif elegance; 'Montserrat', 'Helvetica Neue', or 'Open Sans' for clean sans-serif.",
+        "body": "Use highly readable fonts like 'Lato', 'Roboto', or 'Avenir' with proper line-height (1.6) and letter-spacing for luxury feel.",
+        "accent": "Use subtle uppercase with letter-spacing for premium badges and highlights."
+      },
+      "visualHierarchy": {
+        "primary": "Bold, emotive headline that captures attention and positions the product as a solution to an aspirational desire.",
+        "secondary": "Supporting elements that build credibility and highlight transformation.",
+        "tertiary": "Technical details presented in an organized, scannable format."
+      },
+      "seoStrategy": "Integrate primary keywords naturally into headings, first 100 words, and image alt text. Use semantic HTML for SEO ranking."
     },
-    "typography": {
-      "headings": "Use elegant font stacks with proper hierarchy: 'Playfair Display', 'Cormorant Garamond', or 'Georgia' for serif elegance; 'Montserrat', 'Helvetica Neue', or 'Open Sans' for clean sans-serif.",
-      "body": "Use highly readable fonts like 'Lato', 'Roboto', or 'Avenir' with proper line-height (1.6) and letter-spacing for luxury feel.",
-      "accent": "Use subtle uppercase with letter-spacing for premium badges and highlights."
+    "designElements": {
+      "badges": "Include premium badges like '🏆 PREMIUM QUALITY', '✨ EXCLUSIVE DESIGN', '🌟 BESTSELLER', '🎁 PERFECT GIFT' where appropriate using subtle emoji or CSS pseudo-elements.",
+      "testimonials": "Include subtle customer satisfaction indicators where space allows (e.g., '⭐ 4.9/5 ⭐ from 500+ reviews').",
+      "guarantees": "Prominently display satisfaction guarantees or warranty information if mentioned in specs."
     },
-    "visualHierarchy": {
-      "primary": "Bold, emotive headline that captures attention and positions the product as a solution to an aspirational desire.",
-      "secondary": "Supporting elements that build credibility and highlight transformation.",
-      "tertiary": "Technical details presented in an organized, scannable format."
-    },
-    "seoStrategy": "Integrate primary keywords naturally into headings, first 100 words, and image alt text. Use semantic HTML for SEO ranking."
-  },
-  "designElements": {
-    "badges": "Include premium badges like '🏆 PREMIUM QUALITY', '✨ EXCLUSIVE DESIGN', '🌟 BESTSELLER', '🎁 PERFECT GIFT' where appropriate using subtle emoji or CSS pseudo-elements.",
-    "testimonials": "Include subtle customer satisfaction indicators where space allows (e.g., '⭐ 4.9/5 ⭐ from 500+ reviews').",
-    "guarantees": "Prominently display satisfaction guarantees or warranty information if mentioned in specs."
-  },
-  "constraints": {
-    "shortDescription": [
-      "5-6 Bullets maximum.",
-      "Start each bullet with a bolded [CAPITALIZED KEY BENEFIT] in a sophisticated color (#8B7355, #2C3E50, or #4A4A4A).",
-      "Use a subtle emoji or symbol (●, ▶, ◆) before each bullet for visual appeal.",
-      "Focus on the 'Transformation' - how does the customer's life improve?",
-      "End with a clear, emotionally resonant Call to Action (CTA) in a contrasting but elegant color.",
-      "Include subtle trust signals like '⭐ SATISFACTION GUARANTEED' or '🔒 SECURE CHECKOUT'."
-    ],
-    "detailedDescription": [
-      "Use <h1> for a punchy, benefit-driven title with sophisticated color (#1A1A1A or #2C1810).",
-      "Use <h2> for feature-specific storytelling sections with elegant border-bottom or subtle background.",
-      "Create visually appealing feature grids using <div class='feature-grid'> with 2-3 columns on desktop.",
-      "Mandatory: Convert all JSON spec data into a professionally styled 4-column <table> with:",
-      "  - Light gray header background (#F5F5F7)",
-      "  - Alternating row colors (#FFFFFF and #FAFAFC)",
-      "  - Subtle borders (#E0E0E0)",
-      "  - cellpadding='12' for comfortable spacing",
-      "  - Proper <thead> with bold, slightly uppercase text",
-      "Retention: All <img> tags from the source must be preserved in their original sequence.",
-      "Style images with subtle border-radius (4px) and light box-shadow for depth.",
-      "Semantic HTML: Use <section>, <article>, <header>, and <strong> for accessibility and SEO ranking.",
-      "Add subtle hover effects on interactive elements.",
-      "Include a comparison section highlighting what makes this product unique.",
-      "End with a compelling summary and final call-to-action."
-    ],
-    "colorPalette": {
-      "primary": "#2C3E50 (Deep Midnight Blue) - For main headings and key accents",
-      "secondary": "#8B7355 (Rich Taupe) - For subheadings and supporting elements",
-      "accent": "#C4A484 (Champagne Gold) - For calls-to-action and premium badges",
-      "background": "#F9F9F9 (Off-white) - Main background for readability",
-      "text": "#333333 (Dark Gray) - Body text for comfortable reading",
-      "highlight": "#E8D5C4 (Warm Beige) - For highlighting important information",
-      "tableHeader": "#F0E9E2 (Elegant Cream) - For table headers",
-      "tableBorder": "#D4C4B5 (Soft Brown) - For table borders"
-    }
-  },
-  "htmlStructure": {
-    shortDescription: "<ul class='premium-bullets' style='list-style: none; padding: 0; margin: 0; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; line-height: 1.6;'>\n  <li style='margin-bottom: 12px; padding-left: 28px; position: relative;'>\n    <span style='position: absolute; left: 0; color: #8B7355; font-size: 18px;'>●</span>\n    <strong style='color: #2C3E50;'>[PREMIUM MATERIAL]</strong> Description text here...\n  </li>\n  <!-- More list items -->\n  <li style='margin-top: 16px; text-align: center;'>\n    <span style='background: #2C3E50; color: white; padding: 10px 20px; border-radius: 30px; display: inline-block; font-weight: 500; letter-spacing: 0.5px;'>✨ ELEVATE YOUR EXPERIENCE TODAY ✨</span>\n  </li>\n</ul>",
-    detailedDescription: "<article style='max-width: 1200px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: #333;'>\n  <header style='margin-bottom: 40px;'>\n    <h1 style='font-size: 32px; font-weight: 400; font-family: \"Playfair Display\", Georgia, serif; color: #2C3E50; border-bottom: 2px solid #8B7355; padding-bottom: 15px;'>Experience Unparalleled Luxury</h1>\n  </header>\n  \n  <section style='margin-bottom: 40px;'>\n    <h2 style='font-size: 24px; font-weight: 400; color: #8B7355; letter-spacing: 0.5px; margin-bottom: 20px;'>Where Craftsmanship Meets Elegance</h2>\n    <div style='display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px;'>\n      <div style='background: #F9F9F9; padding: 25px; border-radius: 8px;'>\n        <h3 style='color: #2C3E50; margin-top: 0;'>Exceptional Quality</h3>\n        <p>Detailed description with emotional resonance...</p>\n      </div>\n      <!-- More feature blocks -->\n    </div>\n  </section>\n\n  <section style='margin-bottom: 40px;'>\n    <h2 style='font-size: 24px; font-weight: 400; color: #8B7355;'>Technical Excellence</h2>\n    <table style='width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.05);'>\n      <thead style='background: #F0E9E2;'>\n        <tr>\n          <th style='padding: 12px; text-align: left; color: #2C3E50; font-weight: 500; border: 1px solid #D4C4B5;'>Specification</th>\n          <th style='padding: 12px; text-align: left; color: #2C3E50; font-weight: 500; border: 1px solid #D4C4B5;'>Detail</th>\n          <th style='padding: 12px; text-align: left; color: #2C3E50; font-weight: 500; border: 1px solid #D4C4B5;'>Benefit</th>\n          <th style='padding: 12px; text-align: left; color: #2C3E50; font-weight: 500; border: 1px solid #D4C4B5;'>Certification</th>\n        </tr>\n      </thead>\n      <tbody>\n        <tr style='background: white;'>\n          <td style='padding: 12px; border: 1px solid #D4C4B5;'>Material</td>\n          <td style='padding: 12px; border: 1px solid #D4C4B5;'>Premium Cotton</td>\n          <td style='padding: 12px; border: 1px solid #D4C4B5;'>Breathable & Comfortable</td>\n          <td style='padding: 12px; border: 1px solid #D4C4B5;'>OEKO-TEX®</td>\n        </tr>\n        <tr style='background: #FAFAFC;'>\n          <td style='padding: 12px; border: 1px solid #D4C4B5;'>Dimensions</td>\n          <td style='padding: 12px; border: 1px solid #D4C4B5;'>Size specifications</td>\n          <td style='padding: 12px; border: 1px solid #D4C4B5;'>Perfect fit</td>\n          <td style='padding: 12px; border: 1px solid #D4C4B5;'>ISO Certified</td>\n        </tr>\n      </tbody>\n    </table>\n  </section>\n\n  <footer style='text-align: center; margin-top: 40px; padding: 30px; background: linear-gradient(135deg, #F9F9F9 0%, #FFFFFF 100%); border-radius: 12px;'>\n    <h3 style='color: #2C3E50; margin-bottom: 15px;'>Experience the Difference</h3>\n    <p style='margin-bottom: 20px;'>Join thousands of satisfied customers who have elevated their daily experience.</p>\n    <a href='#' style='background: #C4A484; color: white; padding: 15px 40px; text-decoration: none; border-radius: 40px; font-weight: 500; letter-spacing: 1px; display: inline-block;'>DISCOVER LUXURY NOW</a>\n  </footer>\n</article>"
-  }
-}
-
-DATA TO PROCESS:
-  ${JSON.stringify(batch.map(p => ({ id: p.id, content: p.descreption })))}
-
-IMPORTANT INSTRUCTIONS:
-1. Process EACH product individually using the complete prompt template above
-2. Apply the color psychology guidelines based on the product type and target audience
-3. Use the provided HTML structure as a foundation, adapting it to each product's unique features
-4. Return a JSON array with EXACTLY ${batch.length} objects
-5. Each object MUST have this structure:
-   {
-     "id": "original_product_id",
-     "shortDescription": "PROFESSIONAL_HTML_STRING with bullet points and elegant styling",
-     "detailedDescription": "COMPLETE_HTML5_ARTICLE with proper semantic structure, color psychology, and responsive design"
-   }
-6. Do NOT include any other text, explanations, or markdown
-7. Return ONLY the JSON array
-8. Preserve ALL original image tags in their exact sequence
-9. Ensure all HTML is properly formatted and escaped for JSON
-10. CRITICAL: All quotes inside string values MUST be escaped with backslashes (\\\")
-
-STRICT OUTPUT FORMAT:
-  A JSON array of objects:
-  [
-    {
-      id: "original_id",
-      shortDescription: "HTML string: <ul> with 5-6 bullets, bold [BENEFITS], and high-end styling.",
-      detailedDescription: "HTML string: <article> containing <h1>, <h2>, <section>, <table> for specs, and preserving original <img> tags."
-    }
-  ]`;
-    
-    try {
-      const batchResponse = await sendPrompt(batchPrompt, API_KEY_GEMINI);
-
-      console.log('batcher response is her ',batchResponse)
-      if (Array.isArray(batchResponse)) {
-        allResults.push(...batchResponse);
-        console.log(`Batch ${Math.floor(i / BATCH_SIZE) + 1} completed: ${batchResponse.length} products processed`);
-      } else {
-        console.error(`Batch ${Math.floor(i / BATCH_SIZE) + 1} returned invalid format:`, batchResponse);
+    "constraints": {
+      "shortDescription": [
+        "5-6 Bullets maximum.",
+        "Start each bullet with a bolded [CAPITALIZED KEY BENEFIT] in a sophisticated color (#8B7355, #2C3E50, or #4A4A4A).",
+        "Use a subtle emoji or symbol (●, ▶, ◆) before each bullet for visual appeal.",
+        "Focus on the 'Transformation' - how does the customer's life improve?",
+        "End with a clear, emotionally resonant Call to Action (CTA) in a contrasting but elegant color.",
+        "Include subtle trust signals like '⭐ SATISFACTION GUARANTEED' or '🔒 SECURE CHECKOUT'."
+      ],
+      "detailedDescription": [
+        "Use <h1> for a punchy, benefit-driven title with sophisticated color (#1A1A1A or #2C1810).",
+        "Use <h2> for feature-specific storytelling sections with elegant border-bottom or subtle background.",
+        "Create visually appealing feature grids using <div class='feature-grid'> with 2-3 columns on desktop.",
+        "Mandatory: Convert all JSON spec data into a professionally styled 4-column <table> with:",
+        "  - Light gray header background (#F5F5F7)",
+        "  - Alternating row colors (#FFFFFF and #FAFAFC)",
+        "  - Subtle borders (#E0E0E0)",
+        "  - cellpadding='12' for comfortable spacing",
+        "  - Proper <thead> with bold, slightly uppercase text",
+        "Retention: All <img> tags from the source must be preserved in their original sequence.",
+        "Style images with subtle border-radius (4px) and light box-shadow for depth.",
+        "Semantic HTML: Use <section>, <article>, <header>, and <strong> for accessibility and SEO ranking.",
+        "Add subtle hover effects on interactive elements.",
+        "Include a comparison section highlighting what makes this product unique.",
+        "End with a compelling summary and final call-to-action."
+      ],
+      "colorPalette": {
+        "primary": "#2C3E50 (Deep Midnight Blue) - For main headings and key accents",
+        "secondary": "#8B7355 (Rich Taupe) - For subheadings and supporting elements",
+        "accent": "#C4A484 (Champagne Gold) - For calls-to-action and premium badges",
+        "background": "#F9F9F9 (Off-white) - Main background for readability",
+        "text": "#333333 (Dark Gray) - Body text for comfortable reading",
+        "highlight": "#E8D5C4 (Warm Beige) - For highlighting important information",
+        "tableHeader": "#F0E9E2 (Elegant Cream) - For table headers",
+        "tableBorder": "#D4C4B5 (Soft Brown) - For table borders"
       }
-    } catch (error) {
-      console.error(`Error processing batch ${Math.floor(i / BATCH_SIZE) + 1}:`, error);
-      throw error; // Re-throw to stop processing if a batch fails
+    },
+    "htmlStructure": {
+      shortDescription: "<ul class='premium-bullets' style='list-style: none; padding: 0; margin: 0; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; line-height: 1.6;'>\n  <li style='margin-bottom: 12px; padding-left: 28px; position: relative;'>\n    <span style='position: absolute; left: 0; color: #8B7355; font-size: 18px;'>●</span>\n    <strong style='color: #2C3E50;'>[PREMIUM MATERIAL]</strong> Description text here...\n  </li>\n  <!-- More list items -->\n  <li style='margin-top: 16px; text-align: center;'>\n    <span style='background: #2C3E50; color: white; padding: 10px 20px; border-radius: 30px; display: inline-block; font-weight: 500; letter-spacing: 0.5px;'>✨ ELEVATE YOUR EXPERIENCE TODAY ✨</span>\n  </li>\n</ul>",
+      detailedDescription: "<article style='max-width: 1200px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: #333;'>\n  <header style='margin-bottom: 40px;'>\n    <h1 style='font-size: 32px; font-weight: 400; font-family: \"Playfair Display\", Georgia, serif; color: #2C3E50; border-bottom: 2px solid #8B7355; padding-bottom: 15px;'>Experience Unparalleled Luxury</h1>\n  </header>\n  \n  <section style='margin-bottom: 40px;'>\n    <h2 style='font-size: 24px; font-weight: 400; color: #8B7355; letter-spacing: 0.5px; margin-bottom: 20px;'>Where Craftsmanship Meets Elegance</h2>\n    <div style='display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px;'>\n      <div style='background: #F9F9F9; padding: 25px; border-radius: 8px;'>\n        <h3 style='color: #2C3E50; margin-top: 0;'>Exceptional Quality</h3>\n        <p>Detailed description with emotional resonance...</p>\n      </div>\n      <!-- More feature blocks -->\n    </div>\n  </section>\n\n  <section style='margin-bottom: 40px;'>\n    <h2 style='font-size: 24px; font-weight: 400; color: #8B7355;'>Technical Excellence</h2>\n    <table style='width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.05);'>\n      <thead style='background: #F0E9E2;'>\n        <tr>\n          <th style='padding: 12px; text-align: left; color: #2C3E50; font-weight: 500; border: 1px solid #D4C4B5;'>Specification</th>\n          <th style='padding: 12px; text-align: left; color: #2C3E50; font-weight: 500; border: 1px solid #D4C4B5;'>Detail</th>\n          <th style='padding: 12px; text-align: left; color: #2C3E50; font-weight: 500; border: 1px solid #D4C4B5;'>Benefit</th>\n          <th style='padding: 12px; text-align: left; color: #2C3E50; font-weight: 500; border: 1px solid #D4C4B5;'>Certification</th>\n        </tr>\n      </thead>\n      <tbody>\n        <tr style='background: white;'>\n          <td style='padding: 12px; border: 1px solid #D4C4B5;'>Material</td>\n          <td style='padding: 12px; border: 1px solid #D4C4B5;'>Premium Cotton</td>\n          <td style='padding: 12px; border: 1px solid #D4C4B5;'>Breathable & Comfortable</td>\n          <td style='padding: 12px; border: 1px solid #D4C4B5;'>OEKO-TEX®</td>\n        </tr>\n        <tr style='background: #FAFAFC;'>\n          <td style='padding: 12px; border: 1px solid #D4C4B5;'>Dimensions</td>\n          <td style='padding: 12px; border: 1px solid #D4C4B5;'>Size specifications</td>\n          <td style='padding: 12px; border: 1px solid #D4C4B5;'>Perfect fit</td>\n          <td style='padding: 12px; border: 1px solid #D4C4B5;'>ISO Certified</td>\n        </tr>\n      </tbody>\n    </table>\n  </section>\n\n  <footer style='text-align: center; margin-top: 40px; padding: 30px; background: linear-gradient(135deg, #F9F9F9 0%, #FFFFFF 100%); border-radius: 12px;'>\n    <h3 style='color: #2C3E50; margin-bottom: 15px;'>Experience the Difference</h3>\n    <p style='margin-bottom: 20px;'>Join thousands of satisfied customers who have elevated their daily experience.</p>\n    <a href='#' style='background: #C4A484; color: white; padding: 15px 40px; text-decoration: none; border-radius: 40px; font-weight: 500; letter-spacing: 1px; display: inline-block;'>DISCOVER LUXURY NOW</a>\n  </footer>\n</article>"
     }
   }
+  
+  DATA TO PROCESS:
+    ${JSON.stringify(batch.map(p => ({ id: p.id, content: p.descreption })))}
+  
+  IMPORTANT INSTRUCTIONS:
+  1. Process EACH product individually using the complete prompt template above
+  2. Apply the color psychology guidelines based on the product type and target audience
+  3. Use the provided HTML structure as a foundation, adapting it to each product's unique features
+  4. Return a JSON array with EXACTLY ${batch.length} objects
+  5. Each object MUST have this structure:
+     {
+       "id": "original_product_id",
+       "shortDescription": "PROFESSIONAL_HTML_STRING with bullet points and elegant styling",
+       "detailedDescription": "COMPLETE_HTML5_ARTICLE with proper semantic structure, color psychology, and responsive design"
+     }
+  6. Do NOT include any other text, explanations, or markdown
+  7. Return ONLY the JSON array
+  8. Preserve ALL original image tags in their exact sequence
+  9. Ensure all HTML is properly formatted and escaped for JSON
+  10. CRITICAL: All quotes inside string values MUST be escaped with backslashes (\\\")
+  
+  STRICT OUTPUT FORMAT:
+    A JSON array of objects:
+    [
+      {
+        id: "original_id",
+        shortDescription: "HTML string: <ul> with 5-6 bullets, bold [BENEFITS], and high-end styling.",
+        detailedDescription: "HTML string: <article> containing <h1>, <h2>, <section>, <table> for specs, and preserving original <img> tags."
+      }
+    ]`;
+      
+      try {
+        const batchResponse = await sendPrompt(batchPrompt, API_KEY_GEMINI);
+        console.log("tested is batches matched the origin products ",  [...batchResponse].id===v.id)
+        console.log('batcher response is her ',batchResponse)
+        if (Array.isArray(batchResponse)) {
+          allResults.push(...batchResponse);
+          console.log(`Batch ${Math.floor(i / BATCH_SIZE) + 1} completed: ${batchResponse.length} products processed`);
+        } else {
+          console.error(`Batch ${Math.floor(i / BATCH_SIZE) + 1} returned invalid format:`, batchResponse);
+        }
+      } catch (error) {
+        console.error(`Error processing batch ${Math.floor(i / BATCH_SIZE) + 1}:`, error);
+        throw error; // Re-throw to stop processing if a batch fails
+      }
+    }
+  }
+  
   
   console.log(`Total products processed: ${allResults.length}/${updatedDescreptionAI.length}`);
   return allResults;
