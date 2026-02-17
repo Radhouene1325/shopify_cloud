@@ -923,6 +923,22 @@ async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description: string) 
       },
       "seoStrategy": "Integrate primary keywords naturally into headings, first 100 words, and image alt text. Use semantic HTML for SEO ranking."
     },
+    "responsiveDesign": {
+      "mobileFirst": "Design mobile-first, then enhance for larger screens. All layouts must be fully responsive and work perfectly on phones (320px+), tablets (768px+), and desktops (1024px+).",
+      "flexibleLayouts": "Use flexible units (%, vw, vh, rem, em) instead of fixed pixels. Use CSS Grid and Flexbox for responsive layouts that adapt automatically.",
+      "typography": {
+        "mobile": "Font sizes must scale: h1: 24-28px, h2: 20-22px, body: 14-16px on mobile. Use rem units for scalability.",
+        "tablet": "Font sizes: h1: 28-32px, h2: 24-26px, body: 16-18px on tablets.",
+        "desktop": "Font sizes: h1: 32-36px, h2: 26-28px, body: 16-18px on desktop."
+      },
+      "images": "All images must use max-width: 100%, height: auto, and display: block. Include srcset for responsive images when possible. Images must never overflow containers.",
+      "tables": "Tables must be horizontally scrollable on mobile using overflow-x: auto wrapper. Consider converting to card layout on mobile (under 768px) for better UX.",
+      "grids": "Feature grids: 1 column on mobile, 2 columns on tablet (768px+), 3-4 columns on desktop (1024px+). Use CSS Grid with auto-fit/auto-fill.",
+      "spacing": "Use responsive padding/margins: smaller on mobile (8-12px), medium on tablet (16-20px), larger on desktop (24-30px). Use clamp() for fluid spacing.",
+      "touchTargets": "All interactive elements (buttons, links) must be at least 44x44px on mobile for easy touch interaction.",
+      "mediaQueries": "Include inline media queries using @media in style attributes or use CSS custom properties. Breakpoints: mobile (<768px), tablet (768px-1023px), desktop (1024px+).",
+      "viewport": "Ensure content never exceeds viewport width. Use box-sizing: border-box on all elements. Prevent horizontal scrolling."
+    },
     "designElements": {
       "badges": "Include premium badges like '🏆 PREMIUM QUALITY', '✨ EXCLUSIVE DESIGN', '🌟 BESTSELLER', '🎁 PERFECT GIFT' where appropriate using subtle emoji or CSS pseudo-elements.",
       "testimonials": "Include subtle customer satisfaction indicators where space allows (e.g., '⭐ 4.9/5 ⭐ from 500+ reviews').",
@@ -992,6 +1008,16 @@ async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description: string) 
   7. Return ONLY the JSON array
   8. Preserve ALL original image tags in their exact sequence
   9. Ensure all HTML is properly formatted and escaped for JSON
+  10. CRITICAL RESPONSIVE REQUIREMENTS:
+      - All layouts must be mobile-first and work on phones (320px+), tablets (768px+), and desktops (1024px+)
+      - Use clamp() for fluid typography and spacing
+      - Use CSS Grid with auto-fit/auto-fill for responsive columns
+      - Tables must be horizontally scrollable on mobile with overflow-x: auto wrapper
+      - All images must use max-width: 100%, height: auto
+      - Buttons/CTAs must be minimum 44x44px for touch-friendly mobile interaction
+      - Use box-sizing: border-box on all elements
+      - Prevent horizontal scrolling with max-width: 100vw
+      - Font sizes must scale responsively using clamp() or rem units
   
   Example response format:
   [
