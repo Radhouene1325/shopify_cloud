@@ -265,6 +265,7 @@ async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
         "Include a comparison section highlighting what makes this product unique.",
         "End with a compelling summary and final call-to-action."
       ],
+      
       "colorPalette": {
         "primary": "#2C3E50 (Deep Midnight Blue) - For main headings and key accents",
         "secondary": "#8B7355 (Rich Taupe) - For subheadings and supporting elements",
@@ -300,8 +301,30 @@ async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
   7. Return ONLY the JSON array
   8. Preserve ALL original image tags in their exact sequence
   9. Ensure all HTML is properly formatted and escaped for JSON
-  10. CRITICAL: All quotes inside string values MUST be escaped with backslashes (\\\")
-  
+  10. CRITICAL: 
+    10. CRITICAL RESPONSIVE REQUIREMENTS:
+      - All quotes inside string values MUST be escaped with backslashes (\\\")
+      - All layouts must be mobile-first and work on phones (320px+), tablets (768px+), and desktops (1024px+)
+      - Use clamp() for fluid typography and spacing
+      - Use CSS Grid with auto-fit/auto-fill for responsive columns
+      - Tables must be horizontally scrollable on mobile with overflow-x: auto wrapper
+      - All images must use max-width: 100%, height: auto
+      - Buttons/CTAs must be minimum 44x44px for touch-friendly mobile interaction
+      - Use box-sizing: border-box on all elements
+      - Prevent horizontal scrolling with max-width: 100vw
+      - Font sizes must scale responsively using clamp() or rem units
+    11. SIZE INFORMATION HANDLING:
+   - Detect any size-related information (Size, Dimensions, Measurements, Chest, Length, Sleeve, Waist, Fit, Height, Width, Weight, etc.)
+   - If size data exists, create a dedicated <section> titled "Size & Fit Guide"
+   - Convert all size data into a professionally styled responsive HTML table
+   - The table must:
+       • Be wrapped inside a <div style="overflow-x:auto; width:100%;"> for mobile scrolling
+       • Use 4 columns if possible: Measurement | Value | Fit Guidance | Notes
+       • Use table header background #F5F5F7
+       • Alternate row colors #FFFFFF and #FAFAFC
+       • Use border color #E0E0E0
+       • Use cellpadding="12"
+       • Use proper <thead> and <tbody>
   STRICT OUTPUT FORMAT:
     A JSON array of objects:
     [
@@ -1047,7 +1070,7 @@ async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description: string) 
       "id": "gid://shopify/Product/123",
       "shortDescription": "<ul class='premium-bullets' style='list-style: none; padding: 0;'><li style='margin-bottom: 12px; padding-left: 28px; position: relative;'><span style='position: absolute; left: 0; color: #8B7355;'>●</span><strong style='color: #2C3E50;'>[PREMIUM CRAFTSMANSHIP]</strong> Exquisitely tailored...</li></ul>",
       "detailedDescription": "<article style='max-width: 1200px; margin: 0 auto;'><header><h1 style='color: #2C3E50; font-family: \"Playfair Display\", serif;'>Masterful Design Meets Uncompromising Quality</h1></header><section>...</section></article>"
-        
+
       }
   ]`;
  
