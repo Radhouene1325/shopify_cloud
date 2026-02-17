@@ -500,17 +500,17 @@ export async function action({context ,request }: ActionFunctionArgs) {
   if (!updatedDescreptionAI) {
     return Response.json({ error: "Please provide a description" }, { status: 400 });
   }
-  // let optimizedHtml
+  let optimizedHtml
   try {
-    // try{
-      const optimizedHtml =      await generateSeoHtmlgimini(API_KEY_GEMINI_GEMINI as string,updatedDescreptionAI,)
-      // optimizedHtml=optimizedHtml_gimini
-    // }
-    // catch{
-    //   const optimizedHtml_deep_seek =  await generateSeoHtml(updatedDescreptionAI,API_KEY_DEEP_SEEK);
-    //   //  await generateSeoHtmlgimini(API_KEY_GEMINI_TESTED as string,updatedDescreptionAI,)
-    //   optimizedHtml=optimizedHtml_deep_seek
-    // }
+    try{
+      const optimizedHtml_gimini =      await generateSeoHtmlgimini(API_KEY_GEMINI_GEMINI as string,updatedDescreptionAI,)
+      optimizedHtml=optimizedHtml_gimini
+    }
+    catch{
+      const optimizedHtml_deep_seek =  await generateSeoHtml(updatedDescreptionAI,API_KEY_DEEP_SEEK);
+      //  await generateSeoHtmlgimini(API_KEY_GEMINI_TESTED as string,updatedDescreptionAI,)
+      optimizedHtml=optimizedHtml_deep_seek
+    }
  
     // console.log('new descreption is her and optimise ',optimizedHtml)
 
@@ -567,9 +567,6 @@ console.log('OLD_DESC',OLD_DESC)
       })
 
  responses=response
-    }else{
-       throw new Error("existe error please verify ");
-      
     }
 
   }
