@@ -1025,7 +1025,7 @@ async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description: string) 
       - Detect any size-related data (Size, Dimensions, Measurement, Length, Width, Height, Weight, Chest, Waist, Sleeve, Fit, etc.)
       - Extract it into a structured array called "sizeInfo"
       - Format:
-         "sizeInfo": [
+         "sizeInfoList": [
          { "label": "Chest", "value": "102 cm" },
          { "label": "Length", "value": "68 cm" }
         ]
@@ -1039,7 +1039,7 @@ async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description: string) 
       "id": "gid://shopify/Product/123",
       "shortDescription": "<ul class='premium-bullets' style='list-style: none; padding: 0;'><li style='margin-bottom: 12px; padding-left: 28px; position: relative;'><span style='position: absolute; left: 0; color: #8B7355;'>●</span><strong style='color: #2C3E50;'>[PREMIUM CRAFTSMANSHIP]</strong> Exquisitely tailored...</li></ul>",
       "detailedDescription": "<article style='max-width: 1200px; margin: 0 auto;'><header><h1 style='color: #2C3E50; font-family: \"Playfair Display\", serif;'>Masterful Design Meets Uncompromising Quality</h1></header><section>...</section></article>"
-   "sizeInfo": [
+   "sizeInfoList": [
       { "label": "Chest", "value": "102 cm" },
       { "label": "Length", "value": "68 cm" },
       { "label": "Fit", "value": "Regular Fit" }
