@@ -1003,7 +1003,10 @@ async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description: string) 
        "id": "original_product_id",
        "shortDescription": "PROFESSIONAL_HTML_STRING with bullet points and elegant styling",
        "detailedDescription": "COMPLETE_HTML5_ARTICLE with proper semantic structure, color psychology, and responsive design"
-     }
+        "sizeInfo": [
+       { "label": "Measurement name", "value": "Measurement value" }
+        ]
+       }
   6. Do NOT include any other text, explanations, or markdown
   7. Return ONLY the JSON array
   8. Preserve ALL original image tags in their exact sequence
@@ -1018,14 +1021,30 @@ async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description: string) 
       - Use box-sizing: border-box on all elements
       - Prevent horizontal scrolling with max-width: 100vw
       - Font sizes must scale responsively using clamp() or rem units
-  
+    11. SIZE INFORMATION EXTRACTION:
+      - Detect any size-related data (Size, Dimensions, Measurement, Length, Width, Height, Weight, Chest, Waist, Sleeve, Fit, etc.)
+      - Extract it into a structured array called "sizeInfo"
+      - Format:
+         "sizeInfo": [
+         { "label": "Chest", "value": "102 cm" },
+         { "label": "Length", "value": "68 cm" }
+        ]
+   - If size data appears in a table, convert each row into label/value pairs
+   - If no size information exists, return: "sizeInfo": []
+   - Do NOT include size information inside HTML tables if already extracted — avoid duplication
+
   Example response format:
   [
     {
       "id": "gid://shopify/Product/123",
       "shortDescription": "<ul class='premium-bullets' style='list-style: none; padding: 0;'><li style='margin-bottom: 12px; padding-left: 28px; position: relative;'><span style='position: absolute; left: 0; color: #8B7355;'>●</span><strong style='color: #2C3E50;'>[PREMIUM CRAFTSMANSHIP]</strong> Exquisitely tailored...</li></ul>",
       "detailedDescription": "<article style='max-width: 1200px; margin: 0 auto;'><header><h1 style='color: #2C3E50; font-family: \"Playfair Display\", serif;'>Masterful Design Meets Uncompromising Quality</h1></header><section>...</section></article>"
-    }
+   "sizeInfo": [
+      { "label": "Chest", "value": "102 cm" },
+      { "label": "Length", "value": "68 cm" },
+      { "label": "Fit", "value": "Regular Fit" }
+    ]
+      }
   ]`;
  
 
