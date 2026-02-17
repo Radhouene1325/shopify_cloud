@@ -1021,14 +1021,22 @@ async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description: string) 
       - Use box-sizing: border-box on all elements
       - Prevent horizontal scrolling with max-width: 100vw
       - Font sizes must scale responsively using clamp() or rem units
-    11. SIZE INFORMATION EXTRACTION:
-      - Detect any size-related data (Size, Dimensions, Measurement, Length, Width, Height, Weight, Chest, Waist, Sleeve, Fit, etc.)
-      - Extract it into a structured array called "sizeInfo"
-      - Format:
-         "sizeInfoList": [
-         { "label": "Chest", "value": "102 cm" },
-         { "label": "Length", "value": "68 cm" }
-        ]
+    11. SIZE INFORMATION HANDLING:
+   - Detect any size-related information (Size, Dimensions, Measurements, Chest, Length, Sleeve, Waist, Fit, Height, Width, Weight, etc.)
+   - If size data exists, create a dedicated <section> titled "Size & Fit Guide"
+   - Convert all size data into a professionally styled responsive HTML table
+   - The table must:
+       • Be wrapped inside a <div style="overflow-x:auto; width:100%;"> for mobile scrolling
+       • Use 4 columns if possible: Measurement | Value | Fit Guidance | Notes
+       • Use table header background #F5F5F7
+       • Alternate row colors #FFFFFF and #FAFAFC
+       • Use border color #E0E0E0
+       • Use cellpadding="12"
+       • Use proper <thead> and <tbody>
+   - If only simple size info exists (e.g., "Available in S-XXL"), still create a structured 2-column table
+   - If no size information exists, do NOT create a size section
+   - Do NOT duplicate size info elsewhere in the article
+
    - If size data appears in a table, convert each row into label/value pairs
    - If no size information exists, return: "sizeInfo": []
    - Do NOT include size information inside HTML tables if already extracted — avoid duplication
@@ -1039,11 +1047,7 @@ async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description: string) 
       "id": "gid://shopify/Product/123",
       "shortDescription": "<ul class='premium-bullets' style='list-style: none; padding: 0;'><li style='margin-bottom: 12px; padding-left: 28px; position: relative;'><span style='position: absolute; left: 0; color: #8B7355;'>●</span><strong style='color: #2C3E50;'>[PREMIUM CRAFTSMANSHIP]</strong> Exquisitely tailored...</li></ul>",
       "detailedDescription": "<article style='max-width: 1200px; margin: 0 auto;'><header><h1 style='color: #2C3E50; font-family: \"Playfair Display\", serif;'>Masterful Design Meets Uncompromising Quality</h1></header><section>...</section></article>"
-   "sizeInfoList": [
-      { "label": "Chest", "value": "102 cm" },
-      { "label": "Length", "value": "68 cm" },
-      { "label": "Fit", "value": "Regular Fit" }
-    ]
+        
       }
   ]`;
  
