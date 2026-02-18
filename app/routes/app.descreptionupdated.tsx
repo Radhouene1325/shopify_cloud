@@ -441,7 +441,7 @@ for(const DESC_AI of optimizedHtml){
       
       })
       console.log(OLD_DESC.tags)
-      if(response &&Array.isArray(OLD_DESC.tags)&& OLD_DESC.tags.includes('DESC_AI')){
+      if(response &&Array.isArray(OLD_DESC.tags)&& !OLD_DESC.tags.includes('DESC_AI')){
           await admin.graphql(ADD_TAGS?.loc?.source.body,{
             variables:{
               "id":OLD_DESC.id,
