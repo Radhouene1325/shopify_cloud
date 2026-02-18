@@ -9,6 +9,7 @@ import { Button } from "@shopify/polaris";
 import { useEffect, useState } from "react";
 import JSON5 from "json5";
 import UPDATE_PRODUCT from "./functions/query/updateprooductquery.graphql"
+import ADD_TAGS from "./functions/query/add_tags.graphql"
   // sk-c8552ae161ed4db684bb1268bf4ba758
   import { Deepseek } from 'node-deepseek';
 
@@ -380,10 +381,12 @@ export async function action({context ,request }: ActionFunctionArgs) {
   let optimizedHtml
   try {
     try{
+      console.log('thes from gimini')
       const optimizedHtml_gimini =      await generateSeoHtmlgimini(API_KEY_GEMINI_GEMINI as string,updatedDescreptionAI,)
       optimizedHtml=optimizedHtml_gimini
     }
     catch{
+      console.log('thes from deepseek')
       const optimizedHtml_deep_seek =  await generateSeoHtml(updatedDescreptionAI,API_KEY_DEEP_SEEK);
       //  await generateSeoHtmlgimini(API_KEY_GEMINI_TESTED as string,updatedDescreptionAI,)
       optimizedHtml=optimizedHtml_deep_seek
@@ -430,7 +433,7 @@ for(const DESC_AI of optimizedHtml){
           "product": {
             "id": OLD_DESC.id,
             "descriptionHtml": DESC_AI.detailedDescription,
-            "tags":["DESC_AI"],
+            
             "metafields": [
               {
                 "namespace": "custom",
@@ -443,6 +446,19 @@ for(const DESC_AI of optimizedHtml){
       },
       
       })
+      console.log(OLD_DESC.tags)
+      if(response){
+        for(const tag of OLD_DESC.tags)
+          if(tag!=="DESC_AI"){
+            await admin.graphql(ADD_TAGS?.loc?.source.body,{
+              variables:{
+                "id":OLD_DESC.id,
+                "tags":["DESC_AI"]
+              }
+            })
+          }
+        
+      }
 
  responses=response
     }
@@ -508,7 +524,8 @@ export default function Descriptionupdated(){
         // .filter((v: any) => v.inventoryPolicy === "CONTINUE")
         .map((v: any) => ({
           id: v.id,
-          descreption: v.descriptionHtml
+          descreption: v.descriptionHtml,
+          tags:v.tags
         }));
   
       setSelected(autoSelected);
@@ -565,7 +582,8 @@ export default function Descriptionupdated(){
                           {
                             ...v, // spread all properties of v to satisfy SelectedVariant type
                             id: v.id,
-                            descreption: v.descriptionHtml
+                            descreption: v.descriptionHtml,
+                            tags:v.tags
                           }
                         ]);
                       } else {
