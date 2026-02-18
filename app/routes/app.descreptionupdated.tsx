@@ -368,7 +368,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
 //  console.log('descreptionAI IS HER ',updatedDescreptionAI)
 let verify =updatedDescreptionAI.map((e)=>e.tags)
 console.log(verify)
-return
+return null
     const API_KEY_DEEP_SEEK=context.cloudflare?.env?.DEEP_SEEK_API_KEY
     console.log('api key is her ',API_KEY_DEEP_SEEK)
 
