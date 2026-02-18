@@ -6,7 +6,7 @@ import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { installGlobals } from "@remix-run/node";
 import { getLoadContext } from "./load-context";
-import graphql from "vite-plugin-graphql";
+import graphql from 'vite-plugin-graphql-loader'; // this one is callable
 import path from "path";
 installGlobals({ nativeFetch: true });
 
@@ -60,7 +60,7 @@ export default defineConfig({
     cloudflareDevProxyVitePlugin({
       getLoadContext,
     }),
-    graphql,
+    graphql(),
     remix({
       future: {
         v3_fetcherPersist: true,
