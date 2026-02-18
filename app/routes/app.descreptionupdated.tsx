@@ -371,7 +371,9 @@ export async function action({context ,request }: ActionFunctionArgs) {
 
     const API_KEY_GEMINI_GEMINI=context.cloudflare?.env?.GEMINI_API_KEY
     console.log('api key is her ',API_KEY_GEMINI_GEMINI)
-    console.log('hello UPDATE_PRODUCT',UPDATE_PRODUCT)
+    console.log('hello UPDATE_PRODUCT',UPDATE_PRODUCT?.loc?.source.body)
+    console.log('parser UPDATE_PRODUCT',JSON.parse(UPDATE_PRODUCT?.loc?.source.body))
+
 
   if (!updatedDescreptionAI) {
     return Response.json({ error: "Please provide a description" }, { status: 400 });
