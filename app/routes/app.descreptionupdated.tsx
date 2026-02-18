@@ -14,7 +14,6 @@ import UPDATE_PRODUCT from "./functions/query/updateprooductquery.graphql"
 
   
 import strongCleanObjectArray, { cleanStringArray } from "./functions/parser";
-console.log('hello UPDATE_PRODUCT',UPDATE_PRODUCT)
   interface DeepSeekResponse {
     choices?: Array<{
       message?: {
@@ -372,6 +371,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
 
     const API_KEY_GEMINI_GEMINI=context.cloudflare?.env?.GEMINI_API_KEY
     console.log('api key is her ',API_KEY_GEMINI_GEMINI)
+    console.log('hello UPDATE_PRODUCT',UPDATE_PRODUCT)
 
   if (!updatedDescreptionAI) {
     return Response.json({ error: "Please provide a description" }, { status: 400 });
