@@ -8,13 +8,13 @@ import { shopify } from "../shopify.server";
 import { Button } from "@shopify/polaris";
 import { useEffect, useState } from "react";
 import JSON5 from "json5";
-
-import updateProductQuery from './functions/query/updateprooductquery.graphql'
-
+import UPDATE_PRODUCT from "./functions/query/updateprooductquery.graphql"
   // sk-c8552ae161ed4db684bb1268bf4ba758
   import { Deepseek } from 'node-deepseek';
-import strongCleanObjectArray, { cleanStringArray } from "./functions/parser";
 
+  
+import strongCleanObjectArray, { cleanStringArray } from "./functions/parser";
+console.log('hello UPDATE_PRODUCT',UPDATE_PRODUCT)
   interface DeepSeekResponse {
     choices?: Array<{
       message?: {
@@ -424,7 +424,7 @@ for(const DESC_AI of optimizedHtml){
     if(DESC_AI.id===OLD_DESC.id){
       // console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
       // console.log('is true is very nice ')
-      const response=await admin.graphql(updateProductQuery,{
+      const response=await admin.graphql(UPDATE_PRODUCT,{
         variables:{
           "product": {
             "id": OLD_DESC.id,

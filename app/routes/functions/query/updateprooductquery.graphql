@@ -1,5 +1,5 @@
 
-export const updateProductQuery=`mutation UpdateProductDescription($product: ProductUpdateInput!) {
+mutation UpdateProductDescription($product: ProductUpdateInput!) {
   productUpdate(product: $product) {
     product {
       id
@@ -18,4 +18,4 @@ export const updateProductQuery=`mutation UpdateProductDescription($product: Pro
       message
     }
   }
-}`
+}
