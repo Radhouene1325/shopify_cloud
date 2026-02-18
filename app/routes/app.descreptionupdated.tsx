@@ -370,8 +370,8 @@ export async function action({context ,request }: ActionFunctionArgs) {
    return Response.json({ error: "Invalid or missing 'descreptionAI' data" }, { status: 400 });
  }
  // Optionally filter for DESC_AI tags, but do not break if empty
- const verify = updatedDescreptionAI.some((e: { tags?: string[] }) =>
-   Array.isArray(e.tags) && e.tags.includes('DESC_AI')
+ const verify = updatedDescreptionAI.map((e: { tags?: string[] }) =>
+   Array.isArray(e.tags) && e.tags
  );
  console.log('verify DESC_AI  if existe ',verify)
  if (verify.length === 0) {
