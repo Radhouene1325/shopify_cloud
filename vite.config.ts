@@ -6,7 +6,8 @@ import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { installGlobals } from "@remix-run/node";
 import { getLoadContext } from "./load-context";
-
+import graphql from "vite-plugin-graphql";
+import path from "path";
 installGlobals({ nativeFetch: true });
 
 // Related: https://github.com/remix-run/remix/issues/2835#issuecomment-1144102176
@@ -59,6 +60,7 @@ export default defineConfig({
     cloudflareDevProxyVitePlugin({
       getLoadContext,
     }),
+    graphql,
     remix({
       future: {
         v3_fetcherPersist: true,
@@ -77,6 +79,9 @@ export default defineConfig({
   },
   resolve: {
     mainFields: ["browser", "module", "main"],
+    alias:{
+      "@":path.resolve(__dirname,"app")
+    }
   },
   build: {
     minify: true,

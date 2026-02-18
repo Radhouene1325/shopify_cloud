@@ -8,7 +8,7 @@ import { shopify } from "../shopify.server";
 import { Button } from "@shopify/polaris";
 import { useEffect, useState } from "react";
 import JSON5 from "json5";
-import UPDATE_PRODUCT from "./functions/query/updateprooductquery.graphql";
+import UPDATE_PRODUCT from "./functions/query/updateprooductquery.graphql"
 
   // sk-c8552ae161ed4db684bb1268bf4ba758
   import { Deepseek } from 'node-deepseek';
