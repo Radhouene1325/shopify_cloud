@@ -5,6 +5,7 @@ mutation UpdateProductDescription($product: ProductUpdateInput!) {
       id
       title
       descriptionHtml
+      tags
       metafields(first: 5) {
         nodes {
           namespace
