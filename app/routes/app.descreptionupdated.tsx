@@ -370,14 +370,19 @@ export async function action({context ,request }: ActionFunctionArgs) {
    return Response.json({ error: "Invalid or missing 'descreptionAI' data" }, { status: 400 });
  }
  // Optionally filter for DESC_AI tags, but do not break if empty
- const verify = updatedDescreptionAI.map((e: { tags?: string[] }) =>
-   Array.isArray(e.tags) && e.tags
- );
- console.log('verify DESC_AI  if existe ',verify.map((e)=>e))
- if (verify.length === 0) {
-   console.warn("No items found with DESC_AI tag");
- }
- return null
+   // Filter and check for DESC_AI tag presence safely
+   const verify = updatedDescreptionAI.map((e: { tags?: string[] }) =>
+     Array.isArray(e.tags) ? e.tags : []
+   );
+   console.log(
+     'verify DESC_AI  if existe ',
+     verify.map((tags) => Array.isArray(tags) && tags.includes('DESC_AI'))
+   );
+   if (!verify.some((tags) => Array.isArray(tags) && tags.includes('DESC_AI'))) {
+     console.warn("No items found with DESC_AI tag");
+   }
+  
+   return null
     const API_KEY_DEEP_SEEK=context.cloudflare?.env?.DEEP_SEEK_API_KEY
     console.log('api key is her ',API_KEY_DEEP_SEEK)
 
