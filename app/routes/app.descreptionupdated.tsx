@@ -544,6 +544,7 @@ export default function Descriptionupdated(){
               <th>title</th>
               <th>product ID</th>
               <th>descreption</th>
+              <th>tags</th>
               {/* <th>Inventory</th>
               <th>Policy</th> */}
             </tr>
@@ -579,6 +580,9 @@ export default function Descriptionupdated(){
                  <td>{v.title}</td>
                 <td>{v.id}</td>
                 <td>{v.descriptionHtml}</td>
+                {v.tags.map(({e,index}:{e:string,index:string})=>
+                 <td key={index}>{e}</td>
+                )}
                 {/* <td>{v.inventoryQuantity}</td>
                 <td>{v.inventoryPolicy}</td> */}
               </tr>
@@ -662,6 +666,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                 title
                 id
                 descriptionHtml
+                tags
             }
         }
       
