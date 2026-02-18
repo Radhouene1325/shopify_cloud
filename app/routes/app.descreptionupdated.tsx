@@ -390,27 +390,27 @@ export async function action({context ,request }: ActionFunctionArgs) {
     // console.log('new descreption is her and optimise ',optimizedHtml)
 
 
-// const query=  `#graphql
-// mutation UpdateProductDescription($input: ProductInput!) {
-//   productUpdate(input: $input) {
-//     product {
-//       id
-//       title
-//       descriptionHtml
-//       metafields(first: 5) {
-//         nodes {
-//           namespace
-//           key
-//           value
-//         }
-//       }
-//     }
-//     userErrors {
-//       field
-//       message
-//     }
-//   }
-// }`
+const query=  `#graphql
+mutation UpdateProductDescription($input: ProductInput!) {
+  productUpdate(input: $input) {
+    product {
+      id
+      title
+      descriptionHtml
+      metafields(first: 5) {
+        nodes {
+          namespace
+          key
+          value
+        }
+      }
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}`
 let responses
 
 for(const DESC_AI of optimizedHtml){
@@ -423,7 +423,7 @@ for(const DESC_AI of optimizedHtml){
     if(DESC_AI.id===OLD_DESC.id){
       // console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
       // console.log('is true is very nice ')
-      const response=await admin.graphql(UPDATE_PRODUCT,{
+      const response=await admin.graphql(query,{
         variables:{
           "product": {
             "id": OLD_DESC.id,
