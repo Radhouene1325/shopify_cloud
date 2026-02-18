@@ -366,7 +366,9 @@ export async function action({context ,request }: ActionFunctionArgs) {
  let formData=await request.formData()
  let updatedDescreptionAI=JSON.parse(formData.get('descreptionAI')as string)
 //  console.log('descreptionAI IS HER ',updatedDescreptionAI)
-
+let verify =updatedDescreptionAI.map((e)=>e.tags)
+console.log(verify)
+return
     const API_KEY_DEEP_SEEK=context.cloudflare?.env?.DEEP_SEEK_API_KEY
     console.log('api key is her ',API_KEY_DEEP_SEEK)
 
@@ -394,28 +396,6 @@ export async function action({context ,request }: ActionFunctionArgs) {
  
     // console.log('new descreption is her and optimise ',optimizedHtml)
 
-
-const query=  `#graphql
-mutation UpdateProductDescription($product: ProductUpdateInput!) {
-  productUpdate(product: $product) {
-    product {
-      id
-      title
-      descriptionHtml
-      metafields(first: 5) {
-        nodes {
-          namespace
-          key
-          value
-        }
-      }
-    }
-    userErrors {
-      field
-      message
-    }
-  }
-}`
 let responses
 
 for(const DESC_AI of optimizedHtml){
@@ -447,22 +427,15 @@ for(const DESC_AI of optimizedHtml){
       
       })
       console.log(OLD_DESC.tags)
-      if(response){
-        for(const tag of OLD_DESC.tags){
-          console.log('tafs is her ',tag)
-          if(tag!=="DESC_AI"){
-            await admin.graphql(ADD_TAGS?.loc?.source.body,{
-              variables:{
-                "id":OLD_DESC.id,
-                "tags":["DESC_AI"]
-              }
-            })
-          }
+      if(response &&OLD_DESC.tags.includes('DESC_AI')){
+          await admin.graphql(ADD_TAGS?.loc?.source.body,{
+            variables:{
+              "id":OLD_DESC.id,
+              "tags":["DESC_AI"]
+            }
+          })
+           
         }
-         
-          
-        
-      }
 
  responses=response
     }
