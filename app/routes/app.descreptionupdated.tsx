@@ -391,8 +391,8 @@ export async function action({context ,request }: ActionFunctionArgs) {
 
 
 const query=  `#graphql
-mutation UpdateProductDescription($input: ProductInput!) {
-  productUpdate(input: $input) {
+mutation UpdateProductDescription($product: ProductUpdateInput!) {
+  productUpdate(product: $product) {
     product {
       id
       title
