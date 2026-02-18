@@ -730,7 +730,12 @@ async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description: string) 
   
   // Using Gemini 3 Flash for speed and intelligence
   const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" ,
-    generationConfig: { responseMimeType: "application/json" }
+    generationConfig: {
+      responseMimeType: "application/json",
+      temperature: 0.7,
+      maxOutputTokens: 4096,
+      topP:0.9
+    },
   });
 
 
