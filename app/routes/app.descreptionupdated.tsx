@@ -373,6 +373,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
  const verify = updatedDescreptionAI.filter((e: { tags?: string[] }) =>
    Array.isArray(e.tags) && e.tags.includes('DESC_AI')
  );
+ console.log('verify DESC_AI  if existe ',verify)
  if (verify.length === 0) {
    console.warn("No items found with DESC_AI tag");
  }
