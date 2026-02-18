@@ -448,7 +448,8 @@ for(const DESC_AI of optimizedHtml){
       })
       console.log(OLD_DESC.tags)
       if(response){
-        for(const tag of OLD_DESC.tags)
+        for(const tag of OLD_DESC.tags){
+          console.log('tafs is her ',tag)
           if(tag!=="DESC_AI"){
             await admin.graphql(ADD_TAGS?.loc?.source.body,{
               variables:{
@@ -457,6 +458,9 @@ for(const DESC_AI of optimizedHtml){
               }
             })
           }
+        }
+         
+          
         
       }
 
