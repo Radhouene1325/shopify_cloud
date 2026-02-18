@@ -1,6 +1,6 @@
 
 mutation UpdateProductDescription($product: ProductUpdateInput!) {
-  productUpdate($product: $product) {
+  productUpdate(product: $product) {
     product {
       id
       title
