@@ -372,7 +372,6 @@ export async function action({context ,request }: ActionFunctionArgs) {
     const API_KEY_GEMINI_GEMINI=context.cloudflare?.env?.GEMINI_API_KEY
     console.log('api key is her ',API_KEY_GEMINI_GEMINI)
     console.log('hello UPDATE_PRODUCT',UPDATE_PRODUCT?.loc?.source.body)
-    console.log('parser UPDATE_PRODUCT',JSON.parse(UPDATE_PRODUCT?.loc?.source.body))
 
 
   if (!updatedDescreptionAI) {
@@ -426,7 +425,7 @@ for(const DESC_AI of optimizedHtml){
     if(DESC_AI.id===OLD_DESC.id){
       // console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
       // console.log('is true is very nice ')
-      const response=await admin.graphql(UPDATE_PRODUCT,{
+      const response=await admin.graphql(UPDATE_PRODUCT?.loc?.source.body,{
         variables:{
           "product": {
             "id": OLD_DESC.id,
