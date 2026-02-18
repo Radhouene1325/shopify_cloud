@@ -373,7 +373,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
  const verify = updatedDescreptionAI.map((e: { tags?: string[] }) =>
    Array.isArray(e.tags) && e.tags
  );
- console.log('verify DESC_AI  if existe ',verify)
+ console.log('verify DESC_AI  if existe ',verify.map((e)=>e))
  if (verify.length === 0) {
    console.warn("No items found with DESC_AI tag");
  }
