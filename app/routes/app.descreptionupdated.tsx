@@ -514,7 +514,7 @@ export default function Descriptionupdated(){
     // Auto-select CONTINUE variants on each page
     useEffect(() => {
       const autoSelected: SelectedVariant[] = rows
-         .filter((tags) => Array.isArray(tags) && !tags.includes('DESC_AI'))
+         .filter((tags) => Array.isArray(tags) && tags.includes('DESC_AI')===false)
         // .filter((v: any) => v.inventoryPolicy === "CONTINUE")
         .map((v: any) => ({
           id: v.id,
