@@ -1,6 +1,6 @@
 
-mutation UpdateProductDescription($input: ProductInput!) {
-  productUpdate(input: $input) {
+mutation UpdateProductDescription($$product: ProductUpdateInput!) {
+  productUpdate($product: $$product) {
     product {
       id
       title

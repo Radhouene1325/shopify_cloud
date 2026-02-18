@@ -425,7 +425,7 @@ for(const DESC_AI of optimizedHtml){
       // console.log('is true is very nice ')
       const response=await admin.graphql(UPDATE_PRODUCT,{
         variables:{
-          "input": {
+          "product": {
             "id": OLD_DESC.id,
             "descriptionHtml": DESC_AI.detailedDescription,
             "metafields": [
@@ -437,7 +437,8 @@ for(const DESC_AI of optimizedHtml){
               }
             ]
         }
-      }
+      },
+      
       })
 
  responses=response
