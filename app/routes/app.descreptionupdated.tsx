@@ -364,11 +364,19 @@ export async function action({context ,request }: ActionFunctionArgs) {
  let {admin}=await shopify(context).authenticate.admin(request)
 
  let formData=await request.formData()
- let updatedDescreptionAI=JSON.parse(formData.get('descreptionAI')as string)
-//  console.log('descreptionAI IS HER ',updatedDescreptionAI)
-let verify =updatedDescreptionAI.map((e)=>e.tags)
-console.log(verify.includes('DESC_AI'))
-return null
+ const updatedDescreptionAI = JSON.parse(formData.get('descreptionAI') as string);
+ if (!Array.isArray(updatedDescreptionAI)) {
+   console.error("Invalid or missing 'descreptionAI' data");
+   return Response.json({ error: "Invalid or missing 'descreptionAI' data" }, { status: 400 });
+ }
+ // Optionally filter for DESC_AI tags, but do not break if empty
+ const verify = updatedDescreptionAI.filter((e: { tags?: string[] }) =>
+   Array.isArray(e.tags) && e.tags.includes('DESC_AI')
+ );
+ if (verify.length === 0) {
+   console.warn("No items found with DESC_AI tag");
+ }
+ return null
     const API_KEY_DEEP_SEEK=context.cloudflare?.env?.DEEP_SEEK_API_KEY
     console.log('api key is her ',API_KEY_DEEP_SEEK)
 
