@@ -1,0 +1,21 @@
+
+mutation UpdateProductDescription($input: ProductInput!) {
+  productUpdate(input: $input) {
+    product {
+      id
+      title
+      descriptionHtml
+      metafields(first: 5) {
+        nodes {
+          namespace
+          key
+          value
+        }
+      }
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}

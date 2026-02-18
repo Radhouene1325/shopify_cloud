@@ -8,6 +8,7 @@ import { shopify } from "../shopify.server";
 import { Button } from "@shopify/polaris";
 import { useEffect, useState } from "react";
 import JSON5 from "json5";
+import UPDATE_PRODUCT from "../query/updateprooductquery.graphql";
 
   // sk-c8552ae161ed4db684bb1268bf4ba758
   import { Deepseek } from 'node-deepseek';
@@ -357,156 +358,7 @@ async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
   return allResults;
 }
 
-// prompts.ts
-
-//  interface ProductPrompt {
-//   id: string // original_product_id
-//   content: string // raw description or content
-// }
-
-//  const prompt = (updatedDescreptionAI: ProductPrompt[]) => `You are a JSON API. Process ALL ${updatedDescreptionAI.length} products and return a JSON array.
-
-// PROMPT TEMPLATE FOR EACH PRODUCT:
-// {
-//   role: Senior E-commerce SEO Specialist & UX Copywriter with expertise in luxury branding and color psychology,
-//   objective: Transform raw technical data into a visually stunning, high-converting Amazon listing that uses professional HTML structure and strategic color psychology to drive emotional engagement and sales.,
-//   outputFormat: {
-//     shortDescription: PROFESSIONAL_HTML_STRING (SEO-Optimized Bullet Points with strategic color accents),
-//     detailedDescription: PROFESSIONAL_HTML_STRING (A+ Content with complete HTML5 structure, color psychology, and responsive design)
-//   },
-//   stylingGuidelines: {
-//     tone: Luxury, sophisticated, authoritative, yet emotionally resonant. Use elevated vocabulary that conveys exclusivity and quality.,
-//     colorPsychology: {
-//       general: Apply color psychology strategically to evoke desired emotions:,
-//       colorMeanings: {
-//         DeepMidnightBlue: Conveys trust, stability, sophistication, and premium quality. Ideal for technology, finance, and luxury products.,
-//         RichBurgundy: Evokes luxury, passion, confidence, and timeless elegance. Perfect for premium fashion and accessories.,
-//         ForestGreen: Represents growth, harmony, nature, and wealth. Excellent for organic, eco-friendly, and wellness products.,
-//         CharcoalGray: Communicates authority, practicality, timelessness, and modern minimalism. Great for professional attire and tech gadgets.,
-//         ChampagneGold: Signifies premium quality, success, celebration, and exclusivity. Use sparingly for accent elements.,
-//         CrimsonRed: Creates urgency, excitement, passion, and energy. Effective for calls-to-action and limited offers.,
-//         RoyalPurple: Associated with royalty, wisdom, creativity, and luxury. Suitable for premium and artistic products.,
-//         CreamWhite: Evokes purity, simplicity, elegance, and clarity. Perfect for backgrounds and minimalist designs.
-//       },
-//       application: Use these colors strategically in headings, accents, and key elements. Never use bright neon or saturated primary colors which appear cheap. Maintain sophisticated, muted luxury tones.
-//     },
-//     typography: {
-//       headings: Use elegant font stacks with proper hierarchy: 'Playfair Display', 'Cormorant Garamond', or 'Georgia' for serif elegance; 'Montserrat', 'Helvetica Neue', or 'Open Sans' for clean sans-serif.,
-//       body: Use highly readable fonts like 'Lato', 'Roboto', or 'Avenir' with proper line-height (1.6) and letter-spacing for luxury feel.,
-//       accent: Use subtle uppercase with letter-spacing for premium badges and highlights.
-//     },
-//     visualHierarchy: {
-//       primary: Bold, emotive headline that captures attention and positions the product as a solution to an aspirational desire.,
-//       secondary: Supporting elements that build credibility and highlight transformation.,
-//       tertiary: Technical details presented in an organized, scannable format.
-//     },
-//     seoStrategy: Integrate primary keywords naturally into headings, first 100 words, and image alt text. Use semantic HTML for SEO ranking.
-//   },
-//   designElements: {
-//     badges: Include premium badges like 🏆 PREMIUM QUALITY, ✨ EXCLUSIVE DESIGN, 🌟 BESTSELLER, 🎁 PERFECT GIFT where appropriate using subtle emoji or CSS pseudo-elements.,
-//     testimonials: Include subtle customer satisfaction indicators where space allows (e.g., ⭐ 4.9/5 ⭐ from 500+ reviews).,
-//     guarantees: Prominently display satisfaction guarantees or warranty information if mentioned in specs.
-//   },
-//   constraints: {
-//     shortDescription: [
-//       5-6 Bullets maximum.,
-//       Start each bullet with a bolded [CAPITALIZED KEY BENEFIT] in a sophisticated color (#8B7355, #2C3E50, or #4A4A4A).,
-//       Use a subtle emoji or symbol (●, ▶, ◆) before each bullet for visual appeal.,
-//       Focus on the 'Transformation' - how does the customer's life improve?,
-//       End with a clear, emotionally resonant Call to Action (CTA) in a contrasting but elegant color.,
-//       Include subtle trust signals like ⭐ SATISFACTION GUARANTEED or 🔒 SECURE CHECKOUT.
-//     ],
-//     detailedDescription: [
-//       Use <h1> for a punchy, benefit-driven title with sophisticated color (#1A1A1A or #2C1810).,
-//       Use <h2> for feature-specific storytelling sections with elegant border-bottom or subtle background.,
-//       Create visually appealing feature grids using <div class='feature-grid'> with 2-3 columns on desktop.,
-//       Mandatory: Convert all JSON spec data into a professionally styled 4-column <table> with:,
-//       - Light gray header background (#F5F5F7),
-//       - Alternating row colors (#FFFFFF and #FAFAFC),
-//       - Subtle borders (#E0E0E0),
-//       - cellpadding='12' for comfortable spacing,
-//       - Proper <thead> with bold, slightly uppercase text,
-//       Retention: All <img> tags from the source must be preserved in their original sequence.,
-//       Style images with subtle border-radius (4px) and light box-shadow for depth.,
-//       Semantic HTML: Use <section>, <article>, <header>, and <strong> for accessibility and SEO ranking.,
-//       Add subtle hover effects on interactive elements.,
-//       Include a comparison section highlighting what makes this product unique.,
-//       End with a compelling summary and final call-to-action.
-//     ]
-//   },
-//   htmlStructure: {
-//     shortDescription: <ul class='premium-bullets'>...</ul>,
-//     detailedDescription: <article>...</article>
-//   }
-// }
-
-// DATA TO PROCESS:
-// ${JSON.stringify(updatedDescreptionAI.map(p => ({ id: p.id, content: p.descreption })))}
-
-// IMPORTANT INSTRUCTIONS:
-// 1. Process EACH product individually using the complete prompt template above
-// 2. Apply the color psychology guidelines based on the product type and target audience
-// 3. Use the provided HTML structure as a foundation, adapting it to each product's unique features
-// 4. Return a JSON array with EXACTLY ${updatedDescreptionAI.length} objects
-// 5. Each object MUST have this structure:
-//    {
-//      id: original_product_id,
-//      shortDescription: PROFESSIONAL_HTML_STRING,
-//      detailedDescription: COMPLETE_HTML5_ARTICLE
-//    }
-// 6. Do NOT include any other text or markdown
-// 7. Preserve ALL original image tags
-// 8. Ensure all HTML is properly formatted and escaped for JSON
-
-// STRICT OUTPUT FORMAT:
-// [
-//   {
-//     id: original_id,
-//     shortDescription: HTML string: <ul> with 5-6 bullets, bold [BENEFITS], and elegant styling,
-//     detailedDescription: HTML string: <article> with <h1>, <h2>, <section>, <table>, and preserved <img> tags
-//   }
-// ]`;
-
-
-
-  // const prompt:Prompt = {
-   
-  //   "role": "Senior E-commerce SEO Specialist & UX Copywriter",
-  //   "objective": "Transform raw technical data into a high-converting, luxury Amazon listing that balances emotional storytelling with rigorous SEO optimization.",
-  //   "outputFormat": {
-  //     "shortDescription": "HTML_STRING (SEO-Optimized Bullet Points)",
-  //     "detailedDescription": "HTML_STRING (A+ Content / Narrative Flow)"
-  //   },
-  //   "stylingGuidelines": {
-  //     "tone": "Sophisticated, authoritative, yet approachable. Avoid 'salesy' fluff; use high-value adjectives.",
-  //     "colorPsychology": "Use sensory language that evokes the product's color and texture (e.g., 'Deep Midnight Matte' instead of 'Dark Blue').",
-  //     "seoStrategy": "Integrate primary keywords naturally into headings and the first 100 words of the narrative."
-  //   },
-  //   "constraints": {
-  //     "shortDescription": [
-  //       "5-6 Bullets maximum.",
-  //       "Start each bullet with a bolded [CAPITALIZED KEY BENEFIT].",
-  //       "Focus on the 'Transformation' (How does the customer's life improve?).",
-  //       "End with a clear, low-friction Call to Action (CTA)."
-  //     ],
-  //     "detailedDescription": [
-  //       "Use <h1> for a punchy, benefit-driven title.",
-  //       "Use <h2> for feature-specific storytelling sections.",
-  //       "Mandatory: Convert all JSON spec data into a 4-column <table> with thead, cellpadding='10', and border='1'.",
-  //       "Retention: All <img> tags from the source must be preserved in their original sequence.",
-  //       "Semantic HTML: Use <section>, <article>, and <strong> for accessibility and SEO ranking."
-  //     ]
-  //   },
-  //   "inputData": `${updatedDescreptionAI}`,
-    
-  // }
-
-  // const result = await model.generateContent(JSON.stringify(prompt));
-  // const responseText = result.response.text(); 
-  // return JSON.parse(responseText);
-
-
-// 2. Remix Action (Server Side)
+ // 2. Remix Action (Server Side)
 export async function action({context ,request }: ActionFunctionArgs) {
  let {admin}=await shopify(context).authenticate.admin(request)
 
@@ -538,27 +390,27 @@ export async function action({context ,request }: ActionFunctionArgs) {
     // console.log('new descreption is her and optimise ',optimizedHtml)
 
 
-const query=  `#graphql
-mutation UpdateProductDescription($input: ProductInput!) {
-  productUpdate(input: $input) {
-    product {
-      id
-      title
-      descriptionHtml
-      metafields(first: 5) {
-        nodes {
-          namespace
-          key
-          value
-        }
-      }
-    }
-    userErrors {
-      field
-      message
-    }
-  }
-}`
+// const query=  `#graphql
+// mutation UpdateProductDescription($input: ProductInput!) {
+//   productUpdate(input: $input) {
+//     product {
+//       id
+//       title
+//       descriptionHtml
+//       metafields(first: 5) {
+//         nodes {
+//           namespace
+//           key
+//           value
+//         }
+//       }
+//     }
+//     userErrors {
+//       field
+//       message
+//     }
+//   }
+// }`
 let responses
 
 for(const DESC_AI of optimizedHtml){
@@ -567,12 +419,11 @@ for(const DESC_AI of optimizedHtml){
         return Response.json({ error: "Empty content from AI" }, { status: 500 });
       }
   for (const OLD_DESC of updatedDescreptionAI ){
-console.log('DESC_AI.id',DESC_AI.id)
-console.log('OLD_DESC',OLD_DESC)
+
     if(DESC_AI.id===OLD_DESC.id){
       // console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
       // console.log('is true is very nice ')
-      const response=await admin.graphql(query,{
+      const response=await admin.graphql(UPDATE_PRODUCT,{
         variables:{
           "input": {
             "id": OLD_DESC.id,
@@ -602,53 +453,12 @@ console.log('OLD_DESC',OLD_DESC)
  console.log('hhhhhhhhhhhhhhhhhhhhhhhhh',optimizedHtml,responses)
 
 
-    // const normalizedData = {
-    //     short: optimizedHtml.shortDescription || optimizedHtml["Short Description"] || "",
-    //     detailed: optimizedHtml.detailedDescription || optimizedHtml["Detailed Description"] || "",
-    //     productID:optimizedHtml.productsID
-    //   };
-    //   if (normalizedData.productID !== item.id) {
-    //     throw new Error(`ID mismatch! Expected ${item.id}, got ${item.descriptionHtml}`);
-    //   }
-  
-    //   if (!normalizedData.short || !normalizedData.detailed || !normalizedData.productID) {
-    //     console.error("AI returned empty fields", optimizedHtml);
-    //     return Response.json({ error: "Empty content from AI" }, { status: 500 });
-    //   }
     return Response.json(optimizedHtml,responses);
   } catch (error) {
     console.error(error);
     return Response.json({ error: "Failed to generate content" }, { status: 500 });
   }
-// const resulte=await Promise.all(
-//   updatedDescreptionAI.map(async (item:any) => {
-//     try {
-//       const optimizedHtml = await generateSeoHtml(item.descreption,item.id,API_KEY_GEMINI);
-//       console.log('new descreption is her and optimise ',optimizedHtml)
-//       const normalizedData = {
-//           short: optimizedHtml.shortDescription || optimizedHtml["Short Description"] || "",
-//           detailed: optimizedHtml.detailedDescription || optimizedHtml["Detailed Description"] || "",
-//           productID:optimizedHtml.productsID
-//         };
-//         if (normalizedData.productID !== item.id) {
-//           throw new Error(`ID mismatch! Expected ${item.id}, got ${item.descriptionHtml}`);
-//         }
-    
-//         if (!normalizedData.short || !normalizedData.detailed || !normalizedData.productID) {
-//           console.error("AI returned empty fields", optimizedHtml);
-//           return Response.json({ error: "Empty content from AI" }, { status: 500 });
-//         }
-//       return Response.json({ 
-//           short: optimizedHtml.shortDescription, 
-//           detailed: optimizedHtml.detailedDescription 
-//         });
-//     } catch (error) {
-//       console.error(error);
-//       return Response.json({ error: "Failed to generate content" }, { status: 500 });
-//     }
-//   })
-// )
-//  return resulte
+
 }
 
 
@@ -888,25 +698,6 @@ async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description: string) 
     generationConfig: { responseMimeType: "application/json" }
   });
 
-  interface Prompt {
-   
-    role: string;
-    objective: string;
-    outputFormat: {
-      shortDescription: string;
-        detailedDescription: string;
-    };
-    stylingGuidelines: {
-        tone: string;
-        colorPsychology: string;
-        seoStrategy: string;
-    };
-    constraints: {
-        shortDescription: string[];
-        detailedDescription: string[];
-    };
-    inputData: string;
-}
 
   const prompt = `You are a JSON API. Process ALL ${description.length} products and return a JSON array.
 
