@@ -423,7 +423,7 @@ for(const DESC_AI of optimizedHtml){
     if(DESC_AI.id===OLD_DESC.id){
       // console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
       // console.log('is true is very nice ')
-      const response=await admin.graphql(query,{
+      const response=await admin.graphql(UPDATE_PRODUCT,{
         variables:{
           "product": {
             "id": OLD_DESC.id,
