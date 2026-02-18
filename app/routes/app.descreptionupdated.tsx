@@ -580,9 +580,13 @@ export default function Descriptionupdated(){
                  <td>{v.title}</td>
                 <td>{v.id}</td>
                 <td>{v.descriptionHtml}</td>
-                {v.tags.map(({e,index}:{e:string,index:string})=>
-                 <td key={index}>{e}</td>
+                <td>
+                {v.tags.map((tag:string,index:number)=>(
+                  <span className="badge" key={index}>{tag}</span>
+                )
+                 
                 )}
+                </td>
                 {/* <td>{v.inventoryQuantity}</td>
                 <td>{v.inventoryPolicy}</td> */}
               </tr>
