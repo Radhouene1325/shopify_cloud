@@ -412,47 +412,49 @@ export async function action({context ,request }: ActionFunctionArgs) {
 
 let responses
 
-for(const DESC_AI of optimizedHtml){
+for( const DESC_AI of optimizedHtml){
     if (!DESC_AI.id|| !DESC_AI.detailedDescription || !DESC_AI.shortDescription) {
         console.error("AI returned empty fields", optimizedHtml);
         return Response.json({ error: "Empty content from AI" }, { status: 500 });
       }
   for (const OLD_DESC of updatedDescreptionAI ){
-
-    if(DESC_AI.id===OLD_DESC.id){
-      // console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
-      // console.log('is true is very nice ')
-      const response=await admin.graphql(UPDATE_PRODUCT?.loc?.source.body,{
-        variables:{
-          "product": {
-            "id": OLD_DESC.id,
-            "descriptionHtml": DESC_AI.detailedDescription,
-            
-            "metafields": [
-              {
-                "namespace": "custom",
-                "key": "descriptionsai",
-                "type": "json",
-                "value": JSON.stringify(DESC_AI.shortDescription)
+    if(Array.isArray(OLD_DESC.tags)&& !OLD_DESC.tags.includes('DESC_AI')){
+      if(DESC_AI.id===OLD_DESC.id){
+        // console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
+        // console.log('is true is very nice ')
+        const response=await admin.graphql(UPDATE_PRODUCT?.loc?.source.body,{
+          variables:{
+            "product": {
+              "id": OLD_DESC.id,
+              "descriptionHtml": DESC_AI.detailedDescription,
+              
+              "metafields": [
+                {
+                  "namespace": "custom",
+                  "key": "descriptionsai",
+                  "type": "json",
+                  "value": JSON.stringify(DESC_AI.shortDescription)
+                }
+              ]
+          }
+        },
+        
+        })
+        console.log(OLD_DESC.tags)
+            await admin.graphql(ADD_TAGS?.loc?.source.body,{
+              variables:{
+                "id":OLD_DESC.id,
+                "tags":["DESC_AI"]
               }
-            ]
-        }
-      },
-      
-      })
-      console.log(OLD_DESC.tags)
-      if(response &&Array.isArray(OLD_DESC.tags)&& !OLD_DESC.tags.includes('DESC_AI')){
-          await admin.graphql(ADD_TAGS?.loc?.source.body,{
-            variables:{
-              "id":OLD_DESC.id,
-              "tags":["DESC_AI"]
-            }
-          })
-           
-        }
-
- responses=response
+            })
+             
+          
+  
+   responses=response
+      }
     }
+
+   
 
   }
 
@@ -512,6 +514,7 @@ export default function Descriptionupdated(){
     // Auto-select CONTINUE variants on each page
     useEffect(() => {
       const autoSelected: SelectedVariant[] = rows
+         .map((tags) => Array.isArray(tags) && !tags.includes('DESC_AI'))
         // .filter((v: any) => v.inventoryPolicy === "CONTINUE")
         .map((v: any) => ({
           id: v.id,
