@@ -430,7 +430,7 @@ for(const DESC_AI of optimizedHtml){
           "product": {
             "id": OLD_DESC.id,
             "descriptionHtml": DESC_AI.detailedDescription,
-            "tags":["DESC_AI"],
+            "tags":"DESC_AI",
             "metafields": [
               {
                 "namespace": "custom",
