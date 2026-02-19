@@ -1,6 +1,7 @@
 import { createRequestHandler } from "@remix-run/cloudflare";
 import * as build from "./build/server";
-import { generateSeoHtml } from "./app/services/ai.server";
+import { generateSeoHtml } from "@/routes/app.descreptionupdated";
+import type { ExecutionContext } from "@cloudflare/workers-types";
 
 // Define Env interface for TypeScript
 interface Env {
@@ -10,23 +11,21 @@ interface Env {
 }
 
 // 1. The Remix Request Handler (Handles HTTP)
-const requestHandler = createRequestHandler({
-  build,
-  getLoadContext: (context) => ({
-    ...context, // Passes env to Remix loaders/actions
-  }),
-  mode: process.env.NODE_ENV,
-});
+// Workaround for type mismatch by wrapping build in a function
+const requestHandler = createRequestHandler(
+  () => build as any,
+  process.env.NODE_ENV
+);
 
 // 2. Export the Worker Object
-export default {
+
   // A. Fetch Handler (Standard Remix)
-  async fetch(request: Request, env: Env, context: ExecutionContext) {
-    return requestHandler(request, { env, context });
-  },
+const worker={  async fetch(request: Request, env: Env, ctx: ExecutionContext) {
+  return requestHandler(request, { env, context: ctx });
+},
 
   // B. Queue Handler (Background Consumer)
-  async queue(batch: MessageBatch<any>, env: Env, context: ExecutionContext) { 
+  async queue(batch: MessageBatch<any>, env: Env, ctx: ExecutionContext) { 
        for (const message of batch.messages) {
       // Data comes from the Remix Action
       const productData = message.body; 
@@ -59,4 +58,6 @@ export default {
       }
     }
   }
-};
+}
+
+export default worker

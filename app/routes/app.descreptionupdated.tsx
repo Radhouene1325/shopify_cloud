@@ -187,7 +187,7 @@ import strongCleanObjectArray, { cleanStringArray } from "./functions/parser";
   // }
 
 // 1. Logic to call Gemini
-async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
+export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
   // ⚠️ WARNING: Use process.env.GEMINI_KEY in production!
   // const genAI = new GoogleGenerativeAI(API_KEY_GEMINI);
   // const model = genAI.getGenerativeModel({ model:"gemini-3-flash-preview",generationConfig: {
@@ -428,7 +428,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
 let x;
 const {env}=context
 console.log('env context is her ',env)
-for(const desc in updatedDescreptionAI){
+for(const desc of updatedDescreptionAI){
   let message={
     body:{
       id:desc?.id,
@@ -439,7 +439,11 @@ for(const desc in updatedDescreptionAI){
 console.log('body meaasge',message.body)
   try {
     // @ts-ignore
-   const f= await env.SEO_QUEUE.send(message.body);
+   const f= await env.SEO_QUEUE.send({
+    id:desc?.id,
+    descreption:desc?.descreption,
+    tags:desc?.tags
+   });
     console.log('ffffffff',f)
    x=f
     return Response.json({ status: "success", message: "Product queued for generation!" });
