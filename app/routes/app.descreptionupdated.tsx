@@ -427,6 +427,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
 
 let x;
 const {env}=context
+console.log('env context is her ',env)
 for(const desc in updatedDescreptionAI){
   let message={
     body:{
@@ -435,10 +436,11 @@ for(const desc in updatedDescreptionAI){
       tags:desc?.tags
     }
   }
-
+console.log('body meaasge',message.body)
   try {
     // @ts-ignore
    const f= await env.SEO_QUEUE.send(message.body);
+    console.log('ffffffff',f)
    x=f
     return Response.json({ status: "success", message: "Product queued for generation!" });
   } catch (error) {

@@ -26,8 +26,8 @@ export default {
   },
 
   // B. Queue Handler (Background Consumer)
-  async queue(batch: MessageSendRequest<Env>[], env: Env, context: ExecutionContext) {
-    for (const message of batch) {
+  async queue(batch: MessageBatch<any>, env: Env, context: ExecutionContext) { 
+       for (const message of batch.messages) {
       // Data comes from the Remix Action
       const productData = message.body; 
       
