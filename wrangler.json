@@ -1,6 +1,7 @@
 {
     "name": "cloudflare-workers-app",
     "compatibility_date": "2024-11-11",
+    "account_id": "917919871e7e3df09d3f2eef0e374391",
     "env": {
       "dev": {
         "name": "shopify-proxy-dev"
@@ -9,6 +10,28 @@
         "name": "shopify-proxy-prod"
       }
     },
+    "queues": {
+      "producers": [
+        {
+          "queue": "seo-generation",
+          "binding": "SEO_QUEUE"
+        }
+      ],
+      "consumers": [
+        {
+          "queue": "seo-generation",
+          "max_batch_size": 1,
+          "max_batch_timeout": 30
+        }
+      ]
+    },
+    "d1_databases": [
+      {
+        "binding": "DB",
+        "database_name": "seo-db",
+        "database_id": "25f4b789-9cf8-4abe-a0e9-560f2aff8818"
+      }
+    ],
     "main": "./server.ts",
     "assets": {
       "directory": "./build/client"
