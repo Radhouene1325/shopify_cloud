@@ -195,7 +195,7 @@ async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
   // }});
   // Process products in batches to avoid token limit truncation
   // Using batch size 1 to guarantee responses fit within token limits
-  const BATCH_SIZE = 1;
+  const BATCH_SIZE = 10;
   const allResults: any[] = [];
   for (const v of updatedDescreptionAI){
     for (let i = 0; i < updatedDescreptionAI.length; i += BATCH_SIZE) {
