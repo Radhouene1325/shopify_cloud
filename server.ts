@@ -3,6 +3,7 @@ import { createRequestHandler, type ServerBuild } from "@remix-run/cloudflare";
 // @ts-ignore This file won’t exist if it hasn’t yet been built
 import * as build from "./build/server"; // eslint-disable-line import/no-unresolved
 import { getLoadContext } from "./load-context";
+import { generateSeoHtml } from "@/routes/app.descreptionupdated";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const handleRemixRequest = createRequestHandler(build as any as ServerBuild);
@@ -46,4 +47,42 @@ export default {
       return new Response("An unexpected error occurred", { status: 500 });
     }
   },
+  async queue(batch: MessageBatch<any>, env: Env, ctx: ExecutionContext) {
+    console.log("QUEUE HANDLER ACTIVE");
+
+    for (const message of batch.messages) {
+      const productData = message.body;
+
+      try {
+        console.log("Processing:", productData?.id);
+
+        const results = await generateSeoHtml(
+          [productData],
+          env.GEMINI_API_KEY
+        );
+
+        if (results?.length) {
+          const seoData = results[0];
+
+          await env.DB.prepare(
+            `INSERT INTO product_seo 
+           (id, shop_domain, short_description, detailed_description)
+           VALUES (?, ?, ?, ?)`
+          )
+            .bind(
+              productData.id,
+              productData.shop,
+              seoData.shortDescription,
+              seoData.detailedDescription
+            )
+            .run();
+        }
+
+        message.ack(); // ✅ IMPORTANT
+      } catch (err) {
+        console.error("Queue error:", err);
+        message.retry(); // better than throw
+      }
+    }
+  }
 } satisfies ExportedHandler<Env>;
