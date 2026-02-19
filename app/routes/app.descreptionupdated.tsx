@@ -576,17 +576,8 @@ export default function Descriptionupdated(){
           descreption: v.descriptionHtml,
           tags:v.tags
         }));
-        function chunkArray<T>(array:T[],size:number){
-          const chunks: T[][] = [];
-    for (let i = 0; i < array.length; i += size) {
-      chunks.push(array.slice(i, i + size));
-    }
-    return chunks;
-        }
-        let BATCH_SIZE=3
-  const chunks = chunkArray(autoSelected, BATCH_SIZE);
-
-      setSelected(chunks);
+  
+      setSelected(autoSelected);
     }, [rows]);
   console.log('selected',selected)
   
