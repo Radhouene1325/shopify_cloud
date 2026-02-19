@@ -412,7 +412,7 @@ async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
   
   // console.log(`Total products processed: ${allResults.length}/${updatedDescreptionAI.length}`);
   // return allResults;
-}
+
 
  // 2. Remix Action (Server Side)
 export async function action({context ,request }: ActionFunctionArgs) {
