@@ -722,7 +722,7 @@ async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description: string) 
     generationConfig: {
       responseMimeType: "application/json",
       temperature: 0.7,
-      maxOutputTokens: 4096,
+      maxOutputTokens: 8192,
       topP:0.9
     },
   });
