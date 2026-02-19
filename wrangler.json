@@ -14,7 +14,8 @@
       "producers": [
         {
           "queue": "seo-generation",
-          "binding": "SEO_QUEUE"
+          "binding": "SEO_QUEUE",
+          
         }
       ],
       "consumers": [

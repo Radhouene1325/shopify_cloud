@@ -425,7 +425,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
    return Response.json({ error: "Invalid or missing 'descreptionAI' data" }, { status: 400 });
  }
 
-
+let x;
 const {env}=context
 for(const desc in updatedDescreptionAI){
   let message={
@@ -438,13 +438,15 @@ for(const desc in updatedDescreptionAI){
 
   try {
     // @ts-ignore
-    await env.SEO_QUEUE.send(message.body);
+   const f= await env.SEO_QUEUE.send(message.body);
+   x=f
     return Response.json({ status: "success", message: "Product queued for generation!" });
   } catch (error) {
     return Response.json({ status: "error", message: "Failed to queue" }, { status: 500 });
   }
 }
-return null
+ return Response.json({ data:x,status: "success", message: "Product queued for generation!" });
+
     const API_KEY_DEEP_SEEK=context.cloudflare?.env?.DEEP_SEEK_API_KEY
     console.log('api key is her ',API_KEY_DEEP_SEEK)
 
