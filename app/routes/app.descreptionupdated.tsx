@@ -43,8 +43,8 @@ import strongCleanObjectArray, { cleanStringArray } from "./functions/parser";
             content:
               "You are a strict JSON generator. Return ONLY valid JSON. No markdown. No explanation. No code fences. CRITICAL: All quotes inside string values MUST be escaped with backslashes (\\\"). All HTML content must have properly escaped quotes. Ensure the JSON is complete and valid.",
           },{ role: 'user', content: prompt }],
-          temperature: 0.2,
-          max_tokens: 8192
+          temperature: 0.7,
+          max_tokens: 10000
         })
       });
   
@@ -195,7 +195,7 @@ async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
   // }});
   // Process products in batches to avoid token limit truncation
   // Using batch size 1 to guarantee responses fit within token limits
-  const BATCH_SIZE = 10;
+  const BATCH_SIZE = 1;
   const allResults: any[] = [];
   for (const v of updatedDescreptionAI){
     for (let i = 0; i < updatedDescreptionAI.length; i += BATCH_SIZE) {
