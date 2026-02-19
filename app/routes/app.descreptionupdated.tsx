@@ -418,7 +418,6 @@ for( const DESC_AI of optimizedHtml){
         return Response.json({ error: "Empty content from AI" }, { status: 500 });
       }
   for (const OLD_DESC of updatedDescreptionAI ){
-    if(Array.isArray(OLD_DESC.tags)&& !OLD_DESC.tags.includes('DESC_AI')){
       if(DESC_AI.id===OLD_DESC.id){
         // console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
         // console.log('is true is very nice ')
@@ -450,9 +449,9 @@ for( const DESC_AI of optimizedHtml){
              
           
   
-   responses=response
-      }
-    }
+          responses=response
+        }
+    
 
    
 
