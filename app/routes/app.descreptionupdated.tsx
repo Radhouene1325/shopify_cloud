@@ -22,6 +22,11 @@ import strongCleanObjectArray, { cleanStringArray } from "./functions/parser";
       };
     }>;
   }
+  interface DESCREPTION{
+    descreption:string,
+    id:string,
+    tags:string[]
+  }
 
   async function sendPrompt(prompt: string, API_KEY_GEMINI: string) {
     try {
@@ -364,7 +369,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
  let {admin}=await shopify(context).authenticate.admin(request)
 
  let formData=await request.formData()
- const updatedDescreptionAI = JSON.parse(formData.get('descreptionAI') as string);
+ const updatedDescreptionAI:DESCREPTION = JSON.parse(formData.get('descreptionAI') as string);
  if (!Array.isArray(updatedDescreptionAI)) {
    console.error("Invalid or missing 'descreptionAI' data");
    return Response.json({ error: "Invalid or missing 'descreptionAI' data" }, { status: 400 });
@@ -714,7 +719,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
 
 
 
-async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description: string) {
+async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description:DESCREPTION) {
   const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
   
   // Using Gemini 3 Flash for speed and intelligence
@@ -727,8 +732,7 @@ async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description: string) 
     },
   });
 
-
-  const prompt = `You are a JSON API. Process ALL ${description.length} products and return a JSON array.
+  const prompt = `You are a JSON API. Process ALL ${Array.isArray(description) ? description.length : 0} products and return a JSON array.
 
   PROMPT TEMPLATE FOR EACH PRODUCT:
   {
@@ -840,7 +844,7 @@ async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description: string) 
   1. Process EACH product individually using the complete prompt template above
   2. Apply the color psychology guidelines based on the product type and target audience
   3. Use the provided HTML structure as a foundation, adapting it to each product's unique features
-  4. Return a JSON array with EXACTLY ${description.length} objects
+  4. Return a JSON array with EXACTLY ${Array.isArray(description) ? description.length : 0} objects
   5. Each object MUST have this structure:
      {
        "id": "original_product_id",
