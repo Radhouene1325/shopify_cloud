@@ -552,7 +552,8 @@ export default function Descriptionupdated(){
   
     interface SelectedVariant {
       id: string;
-      product: string;
+      descreption: string,
+      tags:string[]
     }
   
     const [selected, setSelected] = useState<SelectedVariant[]>([]);
@@ -575,8 +576,17 @@ export default function Descriptionupdated(){
           descreption: v.descriptionHtml,
           tags:v.tags
         }));
-  
-      setSelected(autoSelected);
+        function chunkArray<T>(array:T[],size:number){
+          const chunks: T[][] = [];
+    for (let i = 0; i < array.length; i += size) {
+      chunks.push(array.slice(i, i + size));
+    }
+    return chunks;
+        }
+        let BATCH_SIZE=3
+  const chunks = chunkArray(autoSelected, BATCH_SIZE);
+
+      setSelected(chunks);
     }, [rows]);
   console.log('selected',selected)
   
