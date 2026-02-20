@@ -367,8 +367,8 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
         ]`;
   
       try {
-        // const response = await sendPrompt(batchPrompt, API_KEY_GEMINI);
-        const response = await kimi(batchPrompt, API_KEY_GEMINI);
+         const response = await sendPrompt(batchPrompt, API_KEY_GEMINI);
+        // const response = await kimi(batchPrompt, API_KEY_GEMINI);
         if (!Array.isArray(response)) {
           throw new Error(`Chunk ${idx + 1} returned invalid format`);
         }
