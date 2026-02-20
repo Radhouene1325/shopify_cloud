@@ -52,7 +52,7 @@ export default {
 
     for (const message of batch.messages) {
       const productData = message.body;
-
+console.log('productedData',productData)
       try {
         console.log("Processing:", productData?.id);
 
@@ -65,7 +65,7 @@ export default {
           const seoData = results[0];
 
           await env.DB.prepare(
-            `INSERT INTO product_seo 
+            `INSERT INTO seo-db 
            (id, short_description, detailed_description)
            VALUES (?, ?, ?, ?)`
           )
