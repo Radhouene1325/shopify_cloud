@@ -45,7 +45,7 @@ import { kimi } from "./functions/KIMI_AI/kimi_descreption";
               "You are a strict JSON generator. Return ONLY valid JSON. No markdown. No explanation. No code fences. CRITICAL: All quotes inside string values MUST be escaped with backslashes (\\\"). All HTML content must have properly escaped quotes. Ensure the JSON is complete and valid.",
           },{ role: 'user', content: prompt }],
           temperature: 0.7,
-          max_tokens: 900
+          max_tokens: 4000
         })
       });
   
@@ -196,7 +196,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
   // }});
   // Process products in batches to avoid token limit truncation
   // Using batch size 1 to guarantee responses fit within token limits
-  const BATCH_SIZE = 3;
+  const BATCH_SIZE = 1;
   const allResults: any[] = [];
 
   function chunkArray<T>(array: T[], size: number): T[][] {
