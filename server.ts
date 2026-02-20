@@ -57,7 +57,7 @@ console.log('productedData',productData)
         console.log("Processing:", productData?.id);
 
         const results = await generateSeoHtml(
-          [productData],
+          [...productData],
           env.DEEP_SEEK_API_KEY
         );
 
