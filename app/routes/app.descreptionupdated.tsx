@@ -439,7 +439,7 @@ for(const desc of updatedDescreptionAI){
 console.log('body meaasge',message.body)
   try {
     // @ts-ignore
-   const f= await context.cloudflare.env.SEO_QUEUE.send(message);
+   const f= await context.cloudflare.env.SEO_QUEUE.send(message.body);
     console.log('ffffffff',f)
    x=f
     return Response.json({ status: "success", message: "Product queued for generation!" });
