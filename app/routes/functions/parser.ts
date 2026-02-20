@@ -513,7 +513,7 @@ export class AdvancedSeoGenerator {
    */
   private processSizeData(product: ProductInput): ProductInput {
     const enriched = { ...product };
-    
+    console.log(enriched)
     // Handle sizeInfoList array
     if (product.sizeInfoList && Array.isArray(product.sizeInfoList) && product.sizeInfoList.length > 0) {
       // Convert complex sizeInfoList to structured sizeInfo array
