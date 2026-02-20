@@ -485,7 +485,7 @@ export class AdvancedSeoGenerator {
     if (!Array.isArray(products) || products.length === 0) {
       throw new Error("Products must be a non-empty array");
     }
-
+console.log('products is her please verify',products)
     // Pre-process to normalize size data
     const enrichedProducts = products.map(p => this.processSizeData(p));
     
@@ -513,7 +513,7 @@ export class AdvancedSeoGenerator {
    */
   private processSizeData(product: ProductInput): ProductInput {
     const enriched = { ...product };
-    console.log(enriched)
+    console.log("enriched is her hello",enriched)
     // Handle sizeInfoList array
     if (product.sizeInfoList && Array.isArray(product.sizeInfoList) && product.sizeInfoList.length > 0) {
       // Convert complex sizeInfoList to structured sizeInfo array
