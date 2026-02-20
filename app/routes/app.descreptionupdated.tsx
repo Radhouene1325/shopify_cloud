@@ -504,7 +504,20 @@ for( const DESC_AI of optimizedHtml){
                   "key": "descriptionsai",
                   "type": "json",
                   "value": JSON.stringify(DESC_AI.shortDescription)
-                }
+                },
+                {
+                  "namespace": "custom",
+                  "key": "sizeInfo",
+                  "type": "json",
+                  "value": JSON.stringify(DESC_AI.sizeInfo)
+                },
+                {
+                  "namespace": "custom",
+                  "key": "metaDescreption",
+                  "type": "json",
+                  "value": JSON.stringify(DESC_AI.sizeInfo)
+                },
+
               ]
           }
         },
