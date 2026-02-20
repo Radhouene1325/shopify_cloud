@@ -13,7 +13,7 @@ import {addtags} from "./functions/query/add_tags"
   import { Deepseek } from 'node-deepseek';
 
   
-import strongCleanObjectArray, { cleanStringArray, generateSeoHtmlGemini } from "./functions/parser";
+import  { generateSeoHtmlGemini } from "./functions/parser";
 import { productsupdated } from "./functions/query/updateprooductquery";
 import { kimi } from "./functions/KIMI_AI/kimi_descreption";
   interface DeepSeekResponse {
