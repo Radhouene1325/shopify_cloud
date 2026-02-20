@@ -58,7 +58,7 @@ export default {
 
         const results = await generateSeoHtml(
           [productData],
-          env.GEMINI_API_KEY
+          env.DEEP_SEEK_API_KEY
         );
 
         if (results?.length) {
