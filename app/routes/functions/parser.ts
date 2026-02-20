@@ -458,7 +458,7 @@ export class AdvancedSeoGenerator {
   private enrichProductData(product: ProductInput): ProductInput {
     const enriched = { ...product };
     const desc = product.description || '';
-    
+    console.log('desc is her ',desc)
     // Extract size information using regex patterns
     const sizePatterns = [
       /size[:\s]+([\w\s-]+)/gi,
