@@ -65,7 +65,7 @@ console.log('productedData',productData)
           const seoData = results[0];
 
           await env.DB.prepare(
-            `INSERT INTO product_seo 
+            `INSERT INTO descreption 
            (id, short_description, detailed_description)
            VALUES (?, ?, ?)`
           )
