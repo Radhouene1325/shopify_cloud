@@ -66,12 +66,12 @@ export default {
 
           await env.DB.prepare(
             `INSERT INTO product_seo 
-           (id, shop_domain, short_description, detailed_description)
+           (id, short_description, detailed_description)
            VALUES (?, ?, ?, ?)`
           )
             .bind(
               productData.id,
-              productData.shop,
+              // productData.shop,
               seoData.shortDescription,
               seoData.detailedDescription
             )
