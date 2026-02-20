@@ -19,7 +19,8 @@ export async function kimi(descriptions,KIMI_API_KEY) {
     }
 
     // Optimize each description using Kimi API
-    //   descriptions.map(async (description) => {
+    const optimizedDescriptions = await Promise.all(
+      descriptions.map(async (description) => {
         const response = await fetch(KIMI_API_URL, {
           method: "POST",
           headers: {
@@ -35,7 +36,7 @@ export async function kimi(descriptions,KIMI_API_KEY) {
               },
               {
                 role: "user",
-                content: `Optimize this description: "${descriptions}"`
+                content: `Optimize this description: "${description}"`
               }
             ],
             temperature: 0.7,
@@ -49,15 +50,13 @@ export async function kimi(descriptions,KIMI_API_KEY) {
         }
 
         const data = await response.json();
-        console.log(data)
-        const x= data?.choices[0]?.message?.content?.trim();
-        console.log(x)
-      
-    
+        return data.choices[0]?.message?.content?.trim() || description;
+      })
+    );
 
     return Response.json({ 
       success: true, 
-      x 
+      optimizedDescriptions 
     });
 
   } catch (error) {
