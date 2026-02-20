@@ -49,7 +49,9 @@ export async function kimi(descriptions,KIMI_API_KEY) {
         }
 
         const data = await response.json();
-        const x= data?.choices[0]?.message?.content?.trim() || descriptions;
+        console.log(data)
+        const x= data?.choices[0]?.message?.content?.trim();
+        console.log(x)
       
     
 
