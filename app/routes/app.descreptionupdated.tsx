@@ -45,7 +45,7 @@ import { kimi } from "./functions/KIMI_AI/kimi_descreption";
               "You are a strict JSON generator. Return ONLY valid JSON. No markdown. No explanation. No code fences. CRITICAL: All quotes inside string values MUST be escaped with backslashes (\\\"). All HTML content must have properly escaped quotes. Ensure the JSON is complete and valid.",
           },{ role: 'user', content: prompt }],
           temperature: 0.7,
-          max_tokens: 10000
+          max_tokens: 900
         })
       });
   
