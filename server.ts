@@ -64,11 +64,13 @@ console.log('productedData',productData)
         if (results?.length) {
           const seoData = results[0];
 
-          await env.DB.prepare(
-            `INSERT INTO descreption 
-           (id, short_description, detailed_description)
-           VALUES (?, ?, ?)`
-          )
+          await env.DB.prepare(`
+            INSERT INTO descreption (id, short_description, detailed_description)
+            VALUES (?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+              short_description = excluded.short_description,
+              detailed_description = excluded.detailed_description
+          `)
             .bind(
               productData.id,
               // productData.shop,
