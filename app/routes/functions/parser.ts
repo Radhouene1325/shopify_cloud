@@ -903,7 +903,7 @@ Generate complete SEO content for all ${products.length} products now.`;
   private generateFallbackDetailedDescription(product: ProductInput): string {
     let content = `<article style="max-width:1200px;margin:0 auto;padding:20px;">
       <h1 style="color:${this.brandColors.primary};">${product.title || 'Premium Product'}</h1>
-      <p>${product.description || 'High-quality athletic product'}</p>`;
+      <p>${product.description}</p>`;
     
     if (product.sizeInfoList && product.sizeInfoList.length > 0) {
       content += this.generateSizeSection(product.sizeInfoList);
