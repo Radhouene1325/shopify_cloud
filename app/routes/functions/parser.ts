@@ -412,7 +412,7 @@ export class AdvancedSeoGenerator {
   constructor(apiKey: string) {
     const genAI = new GoogleGenerativeAI(apiKey);
     this.model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash-latest",
+      model: "gemini-3-flash-preview",
       generationConfig: {
         temperature: 0.7,
         topP: 0.9,
@@ -429,7 +429,11 @@ export class AdvancedSeoGenerator {
     if (!Array.isArray(products) || products.length === 0) {
       throw new Error("Products must be a non-empty array");
     }
-
+console.log('products in the calss is her ',products)
+    if(products.length===0){
+       throw new Error("has error ");
+      
+    }
     // Pre-process to extract size information from descriptions
     const enrichedProducts = products.map(p => this.enrichProductData(p));
     
@@ -795,7 +799,7 @@ Generate complete SEO content for all ${products.length} products now.`;
   private generateFallbackDetailedDescription(product: ProductInput): string {
     return `<article style="max-width:1200px;margin:0 auto;padding:20px;">
       <h1 style="color:${this.brandColors.primary};">${product.title || 'Premium Product'}</h1>
-      <p>${product.description || 'High-quality athletic product'}</p>
+      <p>${product.description}</p>
     </article>`;
   }
 
