@@ -13,7 +13,7 @@ import {addtags} from "./functions/query/add_tags"
   import { Deepseek } from 'node-deepseek';
 
   
-import strongCleanObjectArray, { cleanStringArray } from "./functions/parser";
+import strongCleanObjectArray, { cleanStringArray, generateSeoHtmlGemini } from "./functions/parser";
 import { productsupdated } from "./functions/query/updateprooductquery";
 import { kimi } from "./functions/KIMI_AI/kimi_descreption";
   interface DeepSeekResponse {
@@ -466,7 +466,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
   try {
     try{
       console.log('thes from gimini')
-      const optimizedHtml_gimini =      await generateSeoHtmlgimini(API_KEY_GEMINI_GEMINI as string,updatedDescreptionAI,)
+      const optimizedHtml_gimini =      await generateSeoHtmlGemini(API_KEY_GEMINI_GEMINI as string,updatedDescreptionAI,)
       optimizedHtml=optimizedHtml_gimini
     }
     catch{
