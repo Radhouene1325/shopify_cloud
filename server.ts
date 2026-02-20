@@ -53,76 +53,79 @@ export default {
     for (const message of batch.messages) {
       const productData = message.body;
 console.log('productedData',productData)
-      try {
-        console.log("Processing:", productData?.id);
+for (const des of productData){
+  try {
+    console.log("Processing:", des?.id);
 
-        const results = await generateSeoHtml(
-          productData,
-          env.KIMI_API_KEY
+    const results = await generateSeoHtml(
+      productData,
+      env.KIMI_API_KEY
+    );
+
+    if (results?.length) {
+//         for (const res of results) {
+//           const { id, shortDescription, detailedDescription } = res;
+//           await env.DB.prepare(`
+//             INSERT INTO descreption (id, short_description, detailed_description)
+//             VALUES (?, ?, ?)
+//             ON CONFLICT(id) DO UPDATE SET
+//     short_description = excluded.short_description,
+//     detailed_description = excluded.detailed_description
+//           `)
+//      .bind(
+//     id,
+//     // productData.shop,
+//     shortDescription,
+//     detailedDescription
+//   )
+//   .run();
+//  }
+      // for(const res of results){
+      //   await env.DB.prepare(`
+      //     INSERT INTO descreption (id, short_description, detailed_description)
+      //     VALUES (?, ?, ?)
+      //     ON CONFLICT(id) DO UPDATE SET
+      //       short_description = excluded.short_description,
+      //       detailed_description = excluded.detailed_description
+      //   `)
+      //     .bind(
+      //       res.id,
+      //       // productData.shop,
+      //       res.shortDescription,
+      //       res.detailedDescription
+      //     )
+      //     .run();
+      // }
+      if (results?.length) {
+        await Promise.all(
+          results.map(({ id, shortDescription, detailedDescription }) =>
+            env.DB.prepare(`
+              INSERT INTO descreption (id, short_description, detailed_description)
+              VALUES (?, ?, ?)
+              ON CONFLICT(id) DO UPDATE SET
+                short_description = excluded.short_description,
+                detailed_description = excluded.detailed_description
+            `)
+            .bind(
+              id,
+              shortDescription ?? "",
+              detailedDescription ?? ""
+            )
+            .run()
+          )
         );
-
-        if (results?.length) {
-  //         for (const res of results) {
-  //           const { id, shortDescription, detailedDescription } = res;
-  //           await env.DB.prepare(`
-  //             INSERT INTO descreption (id, short_description, detailed_description)
-  //             VALUES (?, ?, ?)
-  //             ON CONFLICT(id) DO UPDATE SET
-  //     short_description = excluded.short_description,
-  //     detailed_description = excluded.detailed_description
-  //           `)
-  //      .bind(
-  //     id,
-  //     // productData.shop,
-  //     shortDescription,
-  //     detailedDescription
-  //   )
-  //   .run();
-  //  }
-          // for(const res of results){
-          //   await env.DB.prepare(`
-          //     INSERT INTO descreption (id, short_description, detailed_description)
-          //     VALUES (?, ?, ?)
-          //     ON CONFLICT(id) DO UPDATE SET
-          //       short_description = excluded.short_description,
-          //       detailed_description = excluded.detailed_description
-          //   `)
-          //     .bind(
-          //       res.id,
-          //       // productData.shop,
-          //       res.shortDescription,
-          //       res.detailedDescription
-          //     )
-          //     .run();
-          // }
-          if (results?.length) {
-            await Promise.all(
-              results.map(({ id, shortDescription, detailedDescription }) =>
-                env.DB.prepare(`
-                  INSERT INTO descreption (id, short_description, detailed_description)
-                  VALUES (?, ?, ?)
-                  ON CONFLICT(id) DO UPDATE SET
-                    short_description = excluded.short_description,
-                    detailed_description = excluded.detailed_description
-                `)
-                .bind(
-                  id,
-                  shortDescription ?? "",
-                  detailedDescription ?? ""
-                )
-                .run()
-              )
-            );
-          }
-          
-         
-        }
-
-        message.ack(); // ✅ IMPORTANT
-      } catch (err) {
-        console.error("Queue error:", err);
-        message.retry(); // better than throw
       }
+      
+     
+    }
+
+    message.ack(); // ✅ IMPORTANT
+  } catch (err) {
+    console.error("Queue error:", err);
+    message.retry(); // better than throw
+  }
+}
+     
     }
   }
 } satisfies ExportedHandler<Env>;
