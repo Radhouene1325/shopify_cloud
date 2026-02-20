@@ -460,7 +460,7 @@ console.log('products in the calss is her ',products)
    * Extract size information and enrich product data before sending to Gemini
    */
   private enrichProductData(product: ProductInput): ProductInput {
-    const enriched = { ...product };
+    const enriched = product ;
     const desc = product.description;
     console.log('desc is her ',desc)
     // Extract size information using regex patterns
