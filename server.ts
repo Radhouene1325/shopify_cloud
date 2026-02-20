@@ -57,27 +57,65 @@ console.log('productedData',productData)
         console.log("Processing:", productData?.id);
 
         const results = await generateSeoHtml(
-          [...productData],
+          [productData],
           env.DEEP_SEEK_API_KEY
         );
 
         if (results?.length) {
-          const seoData = results[0];
-
-          await env.DB.prepare(`
-            INSERT INTO descreption (id, short_description, detailed_description)
-            VALUES (?, ?, ?)
-            ON CONFLICT(id) DO UPDATE SET
-              short_description = excluded.short_description,
-              detailed_description = excluded.detailed_description
-          `)
-            .bind(
-              productData.id,
-              // productData.shop,
-              seoData.shortDescription,
-              seoData.detailedDescription
-            )
-            .run();
+  //         for (const res of results) {
+  //           const { id, shortDescription, detailedDescription } = res;
+  //           await env.DB.prepare(`
+  //             INSERT INTO descreption (id, short_description, detailed_description)
+  //             VALUES (?, ?, ?)
+  //             ON CONFLICT(id) DO UPDATE SET
+  //     short_description = excluded.short_description,
+  //     detailed_description = excluded.detailed_description
+  //           `)
+  //      .bind(
+  //     id,
+  //     // productData.shop,
+  //     shortDescription,
+  //     detailedDescription
+  //   )
+  //   .run();
+  //  }
+          // for(const res of results){
+          //   await env.DB.prepare(`
+          //     INSERT INTO descreption (id, short_description, detailed_description)
+          //     VALUES (?, ?, ?)
+          //     ON CONFLICT(id) DO UPDATE SET
+          //       short_description = excluded.short_description,
+          //       detailed_description = excluded.detailed_description
+          //   `)
+          //     .bind(
+          //       res.id,
+          //       // productData.shop,
+          //       res.shortDescription,
+          //       res.detailedDescription
+          //     )
+          //     .run();
+          // }
+          if (results?.length) {
+            await Promise.all(
+              results.map(({ id, shortDescription, detailedDescription }) =>
+                env.DB.prepare(`
+                  INSERT INTO descreption (id, short_description, detailed_description)
+                  VALUES (?, ?, ?)
+                  ON CONFLICT(id) DO UPDATE SET
+                    short_description = excluded.short_description,
+                    detailed_description = excluded.detailed_description
+                `)
+                .bind(
+                  id,
+                  shortDescription ?? "",
+                  detailedDescription ?? ""
+                )
+                .run()
+              )
+            );
+          }
+          
+         
         }
 
         message.ack(); // ✅ IMPORTANT
