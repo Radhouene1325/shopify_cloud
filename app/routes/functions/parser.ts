@@ -461,7 +461,7 @@ console.log('products in the calss is her ',products)
    */
   private enrichProductData(product: ProductInput): ProductInput {
     const enriched = { ...product };
-    const desc = product.description || '';
+    const desc = product.description;
     console.log('desc is her ',desc)
     // Extract size information using regex patterns
     const sizePatterns = [
