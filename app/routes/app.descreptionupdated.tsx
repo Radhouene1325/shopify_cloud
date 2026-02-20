@@ -62,7 +62,7 @@ import { kimi } from "./functions/KIMI_AI/kimi_descreption";
         throw new Error('No content in API response');
       }
       // Only pass a string to the cleaning function if it's defined
-      let tested = typeof resulter === 'string' ? strongCleanObjectArray([resulter]) : [];
+      // let tested = typeof resulter === 'string' ? strongCleanObjectArray([resulter]) : [];
       // console.log("tes the function is ok hello ", tested);
       
       // Clean the response - remove markdown code fences if present
