@@ -1486,14 +1486,13 @@ interface SizeInfoItem {
 
 interface ProductInput {
   id: string;
-  description: string;
+  description: string; // Contains HTML with embedded sizeInfoList JSON
   title?: string;
   category?: string;
   brand?: string;
   price?: number;
   images?: string[];
   specifications?: Record<string, string>;
-  sizeInfoList?: SizeInfoItem[];
   [key: string]: any;
 }
 
@@ -1507,8 +1506,8 @@ interface SizeInfo {
 interface SeoOutput {
   id: string;
   shortDescription: string;
-  detailedDescription: string;
-  sizeInfo: SizeInfo[];
+  detailedDescription: string; // HTML with size table replacing the JSON
+  sizeInfo: SizeInfo[]; // Parsed array from the JSON
   metaTitle: string;
   metaDescription: string;
   keywords: string[];
@@ -1521,9 +1520,6 @@ interface SeoOutput {
   };
 }
 
-/**
- * SEO Generator with Guaranteed Size Table Integration
- */
 export class AdvancedSeoGenerator {
   private model: any;
   private readonly brandColors = {
@@ -1551,316 +1547,250 @@ export class AdvancedSeoGenerator {
   }
 
   /**
-   * Main generation method
+   * Main entry: Extract size data from description, generate SEO content
    */
   async generateBatch(products: ProductInput[]): Promise<SeoOutput[]> {
     if (!Array.isArray(products) || products.length === 0) {
       throw new Error("Products must be a non-empty array");
     }
 
-    // Pre-process size data
-    const enrichedProducts = products.map(p => this.processSizeData(p));
+    // Step 1: Extract sizeInfoList from description HTML
+    const productsWithExtractedSizes = products.map(p => this.extractSizeInfoFromDescription(p));
     
+    // Step 2: Build enhanced prompt telling Gemini to replace JSON with table
     try {
       const result = await this.model.generateContent({
         contents: [{
           role: "user",
-          parts: [{ text: this.buildAdvancedPrompt(enrichedProducts) }]
+          parts: [{ text: this.buildPrompt(productsWithExtractedSizes) }]
         }],
         generationConfig: {
           responseSchema: this.getStrictSchema(products.length)
         }
       });
 
-      const parsed = this.parseRobustResponse(result.response.text(), enrichedProducts);
+      const parsed = this.parseResponse(result.response.text());
       
-      // Post-process to ensure size tables are included
-      return this.injectMissingSizeTables(parsed, enrichedProducts);
+      // Step 3: Post-process to ensure size tables are properly formatted
+      return this.finalizeOutput(parsed, productsWithExtractedSizes);
       
     } catch (error) {
-      console.error("Batch generation failed, using fallback:", error);
-      return this.generateWithFallback(enrichedProducts);
+      console.error("Generation failed, using fallback:", error);
+      return this.generateFallback(productsWithExtractedSizes);
     }
   }
 
   /**
-   * Process sizeInfoList into usable format
+   * Extract sizeInfoList JSON from the HTML description
    */
-  private processSizeData(product: ProductInput): ProductInput {
-    const enriched = { ...product };
-    console.log('enriched products details ',enriched)
-    if (product.sizeInfoList && Array.isArray(product.sizeInfoList) && product.sizeInfoList.length > 0) {
-      // Sort by EU size numerically
-      const sortedSizes = [...product.sizeInfoList].sort((a, b) => {
-        const aNum = parseFloat(a.size);
-        const bNum = parseFloat(b.size);
-        return aNum - bNum;
-      });
+  private extractSizeInfoFromDescription(product: ProductInput): ProductInput & { 
+    extractedSizeInfo?: SizeInfoItem[];
+    hasSizeData: boolean;
+  } {
+    const description = product.description || '';
+    const enriched: any = { ...product, hasSizeData: false, extractedSizeInfo: [] };
 
-      // Create structured sizeInfo array
-      enriched.sizes = sortedSizes.map((item: SizeInfoItem) => ({
-        label: `EU ${item.size}`,
-        value: `US ${item.countrySizeMap.US} / UK ${item.countrySizeMap.UK} / JP ${item.countrySizeMap.JP}cm`,
-        guidance: `Length: ${item.length.cm}cm (${item.length.inch}")`,
-        notes: `BR: ${item.countrySizeMap.BR}, KR: ${item.countrySizeMap.KR}, MX: ${item.countrySizeMap.MX}, VID: ${item.vid}`
-      }));
+    // Look for size_info pattern with JSON
+    const sizeInfoRegex = /<span[^>]*>size_info<\/span>:\s*<span[^>]*>(\{.*?\})<\/span>/s;
+    const match = description.match(sizeInfoRegex);
 
-      enriched.hasComplexSizeData = true;
-      enriched.sortedSizeInfoList = sortedSizes;
-    } else {
-      enriched.sizes = [];
-      enriched.hasComplexSizeData = false;
+    if (match && match[1]) {
+      try {
+        // Parse the JSON string (handle HTML entities)
+        const jsonStr = match[1]
+          .replace(/&quot;/g, '"')
+          .replace(/&amp;/g, '&')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&#39;/g, "'");
+
+        const parsed = JSON.parse(jsonStr);
+        
+        if (parsed.sizeInfoList && Array.isArray(parsed.sizeInfoList)) {
+          enriched.extractedSizeInfo = parsed.sizeInfoList;
+          enriched.hasSizeData = true;
+          
+          // Create cleaned description without the raw JSON
+          enriched.cleanedDescription = description.replace(
+            /<p><span>size_info<\/span>:.*?<\/p>/s,
+            '<!-- SIZE_TABLE_PLACEHOLDER -->'
+          );
+          
+          // Create structured sizeInfo array
+          enriched.sizes = parsed.sizeInfoList.map((item: SizeInfoItem) => ({
+            label: `EU ${item.size}`,
+            value: `US ${item.countrySizeMap.US} / UK ${item.countrySizeMap.UK} / JP ${item.countrySizeMap.JP}cm`,
+            guidance: `Length: ${item.length.cm}cm (${item.length.inch}")`,
+            notes: `BR: ${item.countrySizeMap.BR}, KR: ${item.countrySizeMap.KR}, MX: ${item.countrySizeMap.MX}, VID: ${item.vid}`
+          }));
+        }
+      } catch (e) {
+        console.error(`Failed to parse size_info for product ${product.id}:`, e);
+      }
     }
-    
+
+    // If no size data found, use original description
+    if (!enriched.cleanedDescription) {
+      enriched.cleanedDescription = description;
+    }
+
     return enriched;
   }
 
   /**
-   * Build prompt with explicit size table requirements
+   * Build prompt that instructs Gemini to replace placeholder with table
    */
-  private buildAdvancedPrompt(products: ProductInput[]): string {
-    return `You are an elite E-commerce SEO Architect specializing in athletic footwear with international sizing expertise.
+  private buildPrompt(products: any[]): string {
+    return `You are an elite E-commerce SEO Architect. Transform product descriptions into professional HTML with formatted size tables.
 
-## CRITICAL REQUIREMENT: SIZE TABLE INTEGRATION
+## CRITICAL INSTRUCTIONS:
 
-For products with sizeInfoList, you MUST include this EXACT size table section inside the detailedDescription, placed AFTER the Technical Specifications section and BEFORE the Footer:
+For products with size data (marked with <!-- SIZE_TABLE_PLACEHOLDER -->):
+1. Replace the placeholder with a complete International Size & Fit Guide section
+2. The section must include a responsive HTML table with all size conversions
+3. Sort sizes by EU size ascending (35.5, 36, 36.5, 37...)
 
-### SIZE TABLE HTML TEMPLATE (COPY THIS STRUCTURE EXACTLY):
+## SIZE TABLE HTML STRUCTURE:
 
-<section style="margin-bottom:clamp(40px,6vw,60px);">
-  <h2 style="font-size:clamp(22px,3.5vw,28px);font-weight:400;color:${this.brandColors.secondary};margin-bottom:25px;border-left:4px solid ${this.brandColors.primary};padding-left:15px;font-family:'Playfair Display',Georgia,serif;">
+<section style="margin:40px 0;">
+  <h2 style="font-size:24px;color:${this.brandColors.secondary};border-left:4px solid ${this.brandColors.primary};padding-left:15px;">
     International Size & Fit Guide
   </h2>
   
-  <p style="margin-bottom:25px;color:#666;font-size:clamp(14px,2vw,16px);line-height:1.6;">
-    Find your perfect fit with our comprehensive international size conversion chart. We recommend measuring your foot length in centimeters for the most accurate fit. All sizes are listed in ascending order.
-  </p>
-  
-  <div style="overflow-x:auto;width:100%;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.08);border:1px solid ${this.brandColors.border};">
-    <table style="width:100%;border-collapse:collapse;background:white;min-width:900px;font-size:clamp(11px,1.5vw,13px);">
+  <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;min-width:800px;">
       <thead style="background:${this.brandColors.highlight};">
         <tr>
-          <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};font-family:'Montserrat',sans-serif;text-transform:uppercase;font-size:11px;letter-spacing:0.5px;">EU Size</th>
-          <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};font-family:'Montserrat',sans-serif;text-transform:uppercase;font-size:11px;letter-spacing:0.5px;">US Men</th>
-          <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};font-family:'Montserrat',sans-serif;text-transform:uppercase;font-size:11px;letter-spacing:0.5px;">US Women</th>
-          <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};font-family:'Montserrat',sans-serif;text-transform:uppercase;font-size:11px;letter-spacing:0.5px;">UK Size</th>
-          <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};font-family:'Montserrat',sans-serif;text-transform:uppercase;font-size:11px;letter-spacing:0.5px;">JP (cm)</th>
-          <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};font-family:'Montserrat',sans-serif;text-transform:uppercase;font-size:11px;letter-spacing:0.5px;">BR Size</th>
-          <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};font-family:'Montserrat',sans-serif;text-transform:uppercase;font-size:11px;letter-spacing:0.5px;">KR (mm)</th>
-          <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};font-family:'Montserrat',sans-serif;text-transform:uppercase;font-size:11px;letter-spacing:0.5px;">MX Size</th>
-          <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};font-family:'Montserrat',sans-serif;text-transform:uppercase;font-size:11px;letter-spacing:0.5px;">Foot Length</th>
+          <th style="padding:12px;border:1px solid ${this.brandColors.border};">EU</th>
+          <th style="padding:12px;border:1px solid ${this.brandColors.border};">US</th>
+          <th style="padding:12px;border:1px solid ${this.brandColors.border};">UK</th>
+          <th style="padding:12px;border:1px solid ${this.brandColors.border};">JP (cm)</th>
+          <th style="padding:12px;border:1px solid ${this.brandColors.border};">BR</th>
+          <th style="padding:12px;border:1px solid ${this.brandColors.border};">KR</th>
+          <th style="padding:12px;border:1px solid ${this.brandColors.border};">MX</th>
+          <th style="padding:12px;border:1px solid ${this.brandColors.border};">Length</th>
         </tr>
       </thead>
       <tbody>
-        <!-- GENERATE ALL ROWS FROM sizeInfoList DATA -->
-        <!-- Row example with alternating colors: -->
-        <tr style="background:#FFFFFF;">
-          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;font-weight:700;color:${this.brandColors.primary};font-size:13px;">36</td>
-          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;color:#555;">4</td>
-          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;color:#555;">5</td>
-          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;color:#555;">3.5</td>
-          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;color:#555;font-weight:600;">22</td>
-          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;color:#555;">33</td>
-          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;color:#555;">220</td>
-          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;color:#555;">22</td>
-          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;color:${this.brandColors.secondary};font-weight:500;white-space:nowrap;">22cm / 8.66"</td>
-        </tr>
-        <tr style="background:${this.brandColors.tableAlt};">
-          <!-- Next row with alternate background -->
-        </tr>
-        <!-- Continue for ALL sizes in sizeInfoList -->
+        <!-- Rows with alternating colors -->
       </tbody>
     </table>
   </div>
-  
-  <div style="margin-top:30px;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;">
-    <div style="padding:25px;background:${this.brandColors.background};border-radius:12px;border-left:4px solid ${this.brandColors.accent};">
-      <h4 style="margin-top:0;color:${this.brandColors.primary};font-size:18px;margin-bottom:12px;">📏 How to Measure</h4>
-      <p style="margin-bottom:0;line-height:1.7;color:#555;font-size:14px;">
-        <strong>1.</strong> Place paper on flat surface<br>
-        <strong>2.</strong> Stand on paper with heel against wall<br>
-        <strong>3.</strong> Mark longest toe point<br>
-        <strong>4.</strong> Measure distance in cm<br>
-        <strong>5.</strong> Match to JP/cm column
-      </p>
-    </div>
-    
-    <div style="padding:25px;background:${this.brandColors.background};border-radius:12px;border-left:4px solid ${this.brandColors.secondary};">
-      <h4 style="margin-top:0;color:${this.brandColors.primary};font-size:18px;margin-bottom:12px;">💡 Fit Tips</h4>
-      <p style="margin-bottom:0;line-height:1.7;color:#555;font-size:14px;">
-        • If between sizes, size up for comfort<br>
-        • Measure at end of day when feet are largest<br>
-        • Wear socks you'll use with the shoes<br>
-        • EU sizes are most accurate reference
-      </p>
-    </div>
-  </div>
 </section>
 
-## COMPLETE PRODUCT STRUCTURE
+## OUTPUT FORMAT:
+Return JSON array with:
+- id: product ID
+- shortDescription: HTML bullet list (5 items)
+- detailedDescription: Complete HTML with size table replacing placeholder
+- sizeInfo: Array of parsed size data [{label, value, guidance, notes}]
+- metaTitle, metaDescription, keywords
 
-### 1. SHORT DESCRIPTION (5 Bullets - 4 features + 1 CTA)
-[Same structure as before]
+## PRODUCTS (${products.length}):
 
-### 2. DETAILED DESCRIPTION (Full HTML5 Article Structure)
-\`\`\`html
-<article style="max-width:1200px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:${this.brandColors.text};box-sizing:border-box;padding:0 16px;">
-  
-  <!-- HEADER -->
-  <header style="text-align:center;margin-bottom:clamp(40px,6vw,60px);">
-    <h1 style="font-size:clamp(28px,5vw,42px);font-weight:400;font-family:'Playfair Display',Georgia,serif;color:${this.brandColors.primary};border-bottom:3px solid ${this.brandColors.secondary};padding-bottom:20px;display:inline-block;line-height:1.2;">
-      [Emotional Headline]
-    </h1>
-    <p style="font-size:clamp(16px,2.5vw,20px);color:#666;max-width:700px;margin:25px auto;line-height:1.6;">
-      [Value proposition]
-    </p>
-  </header>
-
-  <!-- FEATURES SECTION -->
-  <section style="margin-bottom:clamp(40px,6vw,60px);">
-    <h2 style="font-size:clamp(20px,3vw,26px);color:${this.brandColors.secondary};border-left:4px solid ${this.brandColors.primary};padding-left:15px;margin-bottom:25px;">
-      [Features Title]
-    </h2>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(20px,3vw,30px);">
-      <!-- 2-3 feature cards -->
-    </div>
-  </section>
-
-  <!-- TECHNICAL SPECIFICATIONS -->
-  <section style="margin-bottom:clamp(40px,6vw,60px);">
-    <h2 style="font-size:clamp(20px,3vw,26px);color:${this.brandColors.secondary};margin-bottom:25px;">Technical Specifications</h2>
-    <div style="overflow-x:auto;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.05);">
-      <table style="width:100%;border-collapse:collapse;background:white;min-width:600px;">
-        <!-- 4-column specs table -->
-      </table>
-    </div>
-  </section>
-
-  <!-- SIZE GUIDE SECTION - MANDATORY IF sizeInfoList EXISTS -->
-  ${products.some(p => p.sizeInfoList?.length > 0) ? '[INSERT SIZE TABLE HERE]' : ''}
-
-  <!-- FOOTER -->
-  <footer style="text-align:center;margin-top:clamp(50px,7vw,70px);padding:clamp(40px,5vw,60px);background:linear-gradient(135deg,${this.brandColors.background} 0%,#FFFFFF 100%);border-radius:16px;border:1px solid #E0E0E0;">
-    <h3 style="color:${this.brandColors.primary};margin-bottom:20px;font-family:'Playfair Display',serif;font-size:clamp(24px,3vw,32px);">Experience Unrivaled Comfort</h3>
-    <p style="margin-bottom:30px;color:#666;font-size:clamp(14px,2vw,16px);max-width:600px;margin-left:auto;margin-right:auto;">
-      Join thousands of satisfied customers who demand excellence in every step.
-    </p>
-    <a href="#" style="background:${this.brandColors.accent};color:white;padding:18px 50px;text-decoration:none;border-radius:50px;font-weight:600;letter-spacing:1px;display:inline-block;font-size:clamp(14px,2vw,16px);box-shadow:0 6px 20px rgba(196,164,132,0.4);transition:all 0.3s ease;min-height:52px;line-height:1;">
-      SHOP THE COLLECTION
-    </a>
-  </footer>
-
-</article>
-\`\`\`
-
-## PRODUCTS TO PROCESS (${products.length}):
-
-${products.map((p, i) => {
-  const hasSizes = p.sizeInfoList && p.sizeInfoList.length > 0;
-  return `
+${products.map((p, i) => `
 --- PRODUCT ${i + 1} ---
 ID: ${p.id}
-TITLE: ${p.title || 'Untitled'}
-BRAND: ${p.brand || 'Adidas'}
-HAS_SIZE_INFO_LIST: ${hasSizes ? 'YES - ' + p.sizeInfoList!.length + ' sizes' : 'NO'}
-${hasSizes ? `SIZE_RANGE: EU ${p.sortedSizeInfoList![0].size} to EU ${p.sortedSizeInfoList![p.sortedSizeInfoList!.length - 1].size}
-SAMPLE_DATA: ${JSON.stringify(p.sortedSizeInfoList!.slice(0, 2), null, 2)}` : ''}
-DESCRIPTION: ${p.description?.substring(0, 500) || 'None'}
-`;
-}).join('\n')}
+HAS_SIZE_DATA: ${p.hasSizeData ? 'YES - ' + p.extractedSizeInfo?.length + ' sizes' : 'NO'}
+${p.hasSizeData ? `SIZE_RANGE: EU ${Math.min(...p.extractedSizeInfo.map((s: SizeInfoItem) => parseFloat(s.size)))} to EU ${Math.max(...p.extractedSizeInfo.map((s: SizeInfoItem) => parseFloat(s.size)))}` : ''}
+CLEANED_DESCRIPTION: ${p.cleanedDescription.substring(0, 600)}...
+`).join('\n')}
 
-## CRITICAL RULES:
-1. **MANDATORY**: If sizeInfoList exists, the detailedDescription MUST contain the complete International Size & Fit Guide section with the 9-column table
-2. Include ALL sizes from sizeInfoList in the table, sorted by EU size ascending (35.5, 36, 36.5, 37...)
-3. Use alternating row colors: #FFFFFF and #FAFAFC
-4. The size table must be wrapped in overflow-x:auto for mobile scrolling
-5. Include both "How to Measure" and "Fit Tips" boxes below the table
-6. Return sizeInfo array with all size data including VID numbers
-7. NEVER omit the size section if sizeInfoList is provided
-8. Return valid JSON array only - no markdown, no explanations
-
-Generate complete SEO content for all ${products.length} products now.`;
+Generate complete SEO content with size tables integrated into descriptions.`;
   }
 
   /**
-   * Inject missing size tables into parsed results
+   * Parse Gemini response
    */
-  private injectMissingSizeTables(parsed: SeoOutput[], originalProducts: ProductInput[]): SeoOutput[] {
+  private parseResponse(text: string): any[] {
+    let cleaned = text
+      .replace(/```json\s*/g, '')
+      .replace(/```\s*$/g, '')
+      .trim();
+
+    try {
+      return JSON.parse(cleaned);
+    } catch (e) {
+      const match = text.match(/\[[\s\S]*\]/);
+      if (match) return JSON.parse(match[0]);
+      throw new Error("Failed to parse response");
+    }
+  }
+
+  /**
+   * Finalize output: ensure size tables are present and sizeInfo array populated
+   */
+  private finalizeOutput(parsed: any[], originalProducts: any[]): SeoOutput[] {
     return parsed.map((item, index) => {
       const original = originalProducts[index];
+      let description = item.detailedDescription || original.cleanedDescription;
       
-      // Check if size table is missing
-      if (original.hasComplexSizeData && !item.detailedDescription.includes('International Size & Fit Guide')) {
-        console.log(`Injecting size table for product ${item.id}`);
+      // If size data exists but table not in description, inject it
+      if (original.hasSizeData && !description.includes('International Size & Fit Guide')) {
+        const sizeTable = this.generateSizeTableHtml(original.extractedSizeInfo);
         
-        // Generate and insert size section before closing </article> tag
-        const sizeSection = this.generateCompleteSizeSection(original.sortedSizeInfoList!);
-        item.detailedDescription = item.detailedDescription.replace(
-          '</article>',
-          `${sizeSection}</article>`
-        );
+        // Replace placeholder or append before footer
+        if (description.includes('<!-- SIZE_TABLE_PLACEHOLDER -->')) {
+          description = description.replace('<!-- SIZE_TABLE_PLACEHOLDER -->', sizeTable);
+        } else {
+          description = description.replace('</article>', `${sizeTable}</article>`);
+        }
       }
-      
-      // Ensure sizeInfo array is populated
-      if (original.hasComplexSizeData && (!item.sizeInfo || item.sizeInfo.length === 0)) {
-        item.sizeInfo = original.sizes || [];
-      }
-      
-      return item;
+
+      return {
+        id: item.id || original.id,
+        shortDescription: item.shortDescription || this.generateShortDescription(),
+        detailedDescription: description,
+        sizeInfo: item.sizeInfo || original.sizes || [],
+        metaTitle: item.metaTitle || this.generateMetaTitle(original),
+        metaDescription: item.metaDescription || this.generateMetaDescription(original),
+        keywords: item.keywords || this.generateKeywords(original),
+        colorPalette: this.brandColors
+      };
     });
   }
 
   /**
-   * Generate complete size section with all data
+   * Generate complete size table HTML
    */
-  private generateCompleteSizeSection(sizeInfoList: SizeInfoItem[]): string {
-    // Sort by EU size
+  private generateSizeTableHtml(sizeInfoList: SizeInfoItem[]): string {
+    // Sort by EU size numerically
     const sorted = [...sizeInfoList].sort((a, b) => parseFloat(a.size) - parseFloat(b.size));
     
-    // Generate table rows
     const rows = sorted.map((item, index) => {
       const bg = index % 2 === 0 ? '#FFFFFF' : this.brandColors.tableAlt;
-      // Calculate US Women (typically US Men + 1.5 for unisex shoes)
-      const usMen = parseFloat(item.countrySizeMap.US);
-      const usWomen = (usMen + 1.5).toFixed(1).replace('.0', '');
       
       return `
-        <tr style="background:${bg};transition:background 0.2s;" onmouseover="this.style.background='#F5F5F5'" onmouseout="this.style.background='${bg}'">
-          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;font-weight:700;color:${this.brandColors.primary};font-size:13px;">${item.size}</td>
-          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;color:#555;">${item.countrySizeMap.US}</td>
-          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;color:#555;">${usWomen}</td>
-          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;color:#555;">${item.countrySizeMap.UK}</td>
-          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;color:#555;font-weight:600;background:rgba(139,115,85,0.05);">${item.countrySizeMap.JP}</td>
-          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;color:#555;">${item.countrySizeMap.BR}</td>
-          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;color:#555;">${item.countrySizeMap.KR}</td>
-          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;color:#555;">${item.countrySizeMap.MX}</td>
-          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;color:${this.brandColors.secondary};font-weight:500;white-space:nowrap;">${item.length.cm}cm / ${item.length.inch}"</td>
+        <tr style="background:${bg};">
+          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;font-weight:700;color:${this.brandColors.primary};">${item.size}</td>
+          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;">${item.countrySizeMap.US}</td>
+          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;">${item.countrySizeMap.UK}</td>
+          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;">${item.countrySizeMap.JP}</td>
+          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;">${item.countrySizeMap.BR}</td>
+          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;">${item.countrySizeMap.KR}</td>
+          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;">${item.countrySizeMap.MX}</td>
+          <td style="padding:14px 12px;text-align:center;border:1px solid #E0E0E0;color:${this.brandColors.secondary};font-weight:500;">${item.length.cm}cm</td>
         </tr>`;
     }).join('');
 
     return `
-    <section style="margin-bottom:clamp(40px,6vw,60px);">
-      <h2 style="font-size:clamp(22px,3.5vw,28px);font-weight:400;color:${this.brandColors.secondary};margin-bottom:25px;border-left:4px solid ${this.brandColors.primary};padding-left:15px;font-family:'Playfair Display',Georgia,serif;">
+    <section style="margin:40px 0;">
+      <h2 style="font-size:24px;color:${this.brandColors.secondary};border-left:4px solid ${this.brandColors.primary};padding-left:15px;margin-bottom:20px;">
         International Size & Fit Guide
       </h2>
       
-      <p style="margin-bottom:25px;color:#666;font-size:clamp(14px,2vw,16px);line-height:1.6;">
-        Find your perfect fit with our comprehensive international size conversion chart. We recommend measuring your foot length in centimeters for the most accurate fit. All sizes are listed in ascending order.
-      </p>
-      
-      <div style="overflow-x:auto;width:100%;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.08);border:1px solid ${this.brandColors.border};">
-        <table style="width:100%;border-collapse:collapse;background:white;min-width:900px;font-size:clamp(11px,1.5vw,13px);">
+      <div style="overflow-x:auto;width:100%;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+        <table style="width:100%;border-collapse:collapse;background:white;min-width:800px;font-size:13px;">
           <thead style="background:${this.brandColors.highlight};">
             <tr>
-              <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};font-family:'Montserrat',sans-serif;text-transform:uppercase;font-size:11px;letter-spacing:0.5px;">EU Size</th>
-              <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};font-family:'Montserrat',sans-serif;text-transform:uppercase;font-size:11px;letter-spacing:0.5px;">US Men</th>
-              <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};font-family:'Montserrat',sans-serif;text-transform:uppercase;font-size:11px;letter-spacing:0.5px;">US Women</th>
-              <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};font-family:'Montserrat',sans-serif;text-transform:uppercase;font-size:11px;letter-spacing:0.5px;">UK Size</th>
-              <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};font-family:'Montserrat',sans-serif;text-transform:uppercase;font-size:11px;letter-spacing:0.5px;">JP (cm)</th>
-              <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};font-family:'Montserrat',sans-serif;text-transform:uppercase;font-size:11px;letter-spacing:0.5px;">BR Size</th>
-              <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};font-family:'Montserrat',sans-serif;text-transform:uppercase;font-size:11px;letter-spacing:0.5px;">KR (mm)</th>
-              <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};font-family:'Montserrat',sans-serif;text-transform:uppercase;font-size:11px;letter-spacing:0.5px;">MX Size</th>
-              <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};font-family:'Montserrat',sans-serif;text-transform:uppercase;font-size:11px;letter-spacing:0.5px;">Foot Length</th>
+              <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};text-transform:uppercase;font-size:11px;">EU Size</th>
+              <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};text-transform:uppercase;font-size:11px;">US Size</th>
+              <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};text-transform:uppercase;font-size:11px;">UK Size</th>
+              <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};text-transform:uppercase;font-size:11px;">JP (cm)</th>
+              <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};text-transform:uppercase;font-size:11px;">BR Size</th>
+              <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};text-transform:uppercase;font-size:11px;">KR (mm)</th>
+              <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};text-transform:uppercase;font-size:11px;">MX Size</th>
+              <th style="padding:16px 12px;text-align:center;color:${this.brandColors.primary};font-weight:600;border:1px solid ${this.brandColors.border};text-transform:uppercase;font-size:11px;">Foot Length</th>
             </tr>
           </thead>
           <tbody>
@@ -1868,166 +1798,62 @@ Generate complete SEO content for all ${products.length} products now.`;
           </tbody>
         </table>
       </div>
-      
-      <div style="margin-top:30px;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;">
-        <div style="padding:25px;background:${this.brandColors.background};border-radius:12px;border-left:4px solid ${this.brandColors.accent};">
-          <h4 style="margin-top:0;color:${this.brandColors.primary};font-size:18px;margin-bottom:12px;">📏 How to Measure</h4>
-          <p style="margin-bottom:0;line-height:1.7;color:#555;font-size:14px;">
-            <strong>1.</strong> Place paper on flat surface<br>
-            <strong>2.</strong> Stand on paper with heel against wall<br>
-            <strong>3.</strong> Mark longest toe point<br>
-            <strong>4.</strong> Measure distance in cm<br>
-            <strong>5.</strong> Match to JP/cm column
-          </p>
-        </div>
-        
-        <div style="padding:25px;background:${this.brandColors.background};border-radius:12px;border-left:4px solid ${this.brandColors.secondary};">
-          <h4 style="margin-top:0;color:${this.brandColors.primary};font-size:18px;margin-bottom:12px;">💡 Fit Tips</h4>
-          <p style="margin-bottom:0;line-height:1.7;color:#555;font-size:14px;">
-            • If between sizes, size up for comfort<br>
-            • Measure at end of day when feet are largest<br>
-            • Wear socks you'll use with the shoes<br>
-            • EU sizes are most accurate reference
-          </p>
-        </div>
-      </div>
     </section>`;
   }
 
   /**
-   * Generate with complete fallback
+   * Generate fallback content if Gemini fails
    */
-  private generateWithFallback(products: ProductInput[]): SeoOutput[] {
-    return products.map(product => ({
-      id: product.id,
-      shortDescription: this.generateFallbackShortDescription(),
-      detailedDescription: this.generateCompleteFallbackDescription(product),
-      sizeInfo: product.sizes || [],
-      metaTitle: this.generateMetaTitle(product),
-      metaDescription: this.generateMetaDescription(product),
-      keywords: this.generateKeywords(product),
+  private generateFallback(products: any[]): SeoOutput[] {
+    return products.map(p => ({
+      id: p.id,
+      shortDescription: this.generateShortDescription(),
+      detailedDescription: this.generateFullDescription(p),
+      sizeInfo: p.sizes || [],
+      metaTitle: this.generateMetaTitle(p),
+      metaDescription: this.generateMetaDescription(p),
+      keywords: this.generateKeywords(p),
       colorPalette: this.brandColors
     }));
   }
 
-  private generateCompleteFallbackDescription(product: ProductInput): string {
-    const baseDescription = `<article style="max-width:1200px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:${this.brandColors.text};box-sizing:border-box;padding:0 16px;">
-      <header style="text-align:center;margin-bottom:clamp(40px,6vw,60px);">
-        <h1 style="font-size:clamp(28px,5vw,42px);font-weight:400;font-family:'Playfair Display',Georgia,serif;color:${this.brandColors.primary};border-bottom:3px solid ${this.brandColors.secondary};padding-bottom:20px;display:inline-block;">
-          ${product.title || 'Premium Athletic Footwear'}
-        </h1>
-        <p style="font-size:clamp(16px,2.5vw,20px);color:#666;max-width:700px;margin:25px auto;line-height:1.6;">
-          Experience unparalleled comfort and performance with ${product.brand || 'Adidas'}.
-        </p>
-      </header>
-
-      <section style="margin-bottom:clamp(40px,6vw,60px);">
-        <h2 style="font-size:clamp(20px,3vw,26px);color:${this.brandColors.secondary};border-left:4px solid ${this.brandColors.primary};padding-left:15px;margin-bottom:25px;">
-          Exceptional Features
-        </h2>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(20px,3vw,30px);">
-          <div style="background:${this.brandColors.background};padding:30px;border-radius:12px;">
-            <h3 style="color:${this.brandColors.primary};margin-top:0;">Premium Quality</h3>
-            <p>Crafted with the finest materials for lasting durability.</p>
-          </div>
-          <div style="background:${this.brandColors.background};padding:30px;border-radius:12px;">
-            <h3 style="color:${this.brandColors.primary};margin-top:0;">Superior Comfort</h3>
-            <p>Engineered for all-day wear with advanced cushioning.</p>
-          </div>
-        </div>
-      </section>
-
-      <section style="margin-bottom:clamp(40px,6vw,60px);">
-        <h2 style="font-size:clamp(20px,3vw,26px);color:${this.brandColors.secondary};margin-bottom:25px;">Technical Specifications</h2>
-        <div style="overflow-x:auto;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.05);">
-          <table style="width:100%;border-collapse:collapse;background:white;min-width:600px;">
-            <thead style="background:${this.brandColors.highlight};">
-              <tr>
-                <th style="padding:16px 12px;text-align:left;border:1px solid ${this.brandColors.border};">Specification</th>
-                <th style="padding:16px 12px;text-align:left;border:1px solid ${this.brandColors.border};">Detail</th>
-                <th style="padding:16px 12px;text-align:left;border:1px solid ${this.brandColors.border};">Benefit</th>
-                <th style="padding:16px 12px;text-align:left;border:1px solid ${this.brandColors.border};">Standard</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr style="background:#FFFFFF;">
-                <td style="padding:14px 12px;border:1px solid #E0E0E0;">Material</td>
-                <td style="padding:14px 12px;border:1px solid #E0E0E0;">Premium Synthetic</td>
-                <td style="padding:14px 12px;border:1px solid #E0E0E0;">Durability</td>
-                <td style="padding:14px 12px;border:1px solid #E0E0E0;">ISO Certified</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>`;
-
-    // Add size section if data exists
-    const sizeSection = (product.sizeInfoList && product.sizeInfoList.length > 0)
-      ? this.generateCompleteSizeSection(product.sizeInfoList)
-      : '';
-
-    const footer = `
-      <footer style="text-align:center;margin-top:clamp(50px,7vw,70px);padding:clamp(40px,5vw,60px);background:linear-gradient(135deg,${this.brandColors.background} 0%,#FFFFFF 100%);border-radius:16px;border:1px solid #E0E0E0;">
-        <h3 style="color:${this.brandColors.primary};margin-bottom:20px;font-family:'Playfair Display',serif;font-size:clamp(24px,3vw,32px);">Experience the Difference</h3>
-        <a href="#" style="background:${this.brandColors.accent};color:white;padding:18px 50px;text-decoration:none;border-radius:50px;font-weight:600;display:inline-block;box-shadow:0 6px 20px rgba(196,164,132,0.4);">SHOP NOW</a>
-      </footer>
-    </article>`;
-
-    return baseDescription + sizeSection + footer;
-  }
-
-  // [Additional helper methods: parseRobustResponse, generateFallbackShortDescription, generateMetaTitle, etc. remain the same as previous version]
-
-  private generateFallbackShortDescription(): string {
+  private generateShortDescription(): string {
     return `<ul style="list-style:none;padding:0;margin:0;font-family:sans-serif;line-height:1.6;">
-      <li style="margin-bottom:12px;padding-left:28px;position:relative;"><span style="position:absolute;left:0;color:${this.brandColors.secondary};">●</span><strong style="color:${this.brandColors.primary};">[PREMIUM QUALITY]</strong> Exceptional craftsmanship and materials.</li>
-      <li style="margin-bottom:12px;padding-left:28px;position:relative;"><span style="position:absolute;left:0;color:${this.brandColors.secondary};">●</span><strong style="color:${this.brandColors.primary};">[SUPERIOR COMFORT]</strong> Designed for all-day wearability.</li>
-      <li style="margin-bottom:12px;padding-left:28px;position:relative;"><span style="position:absolute;left:0;color:${this.brandColors.secondary};">●</span><strong style="color:${this.brandColors.primary};">[DURABLE DESIGN]</strong> Built to last with premium construction.</li>
-      <li style="margin-bottom:12px;padding-left:28px;position:relative;"><span style="position:absolute;left:0;color:${this.brandColors.secondary};">●</span><strong style="color:${this.brandColors.primary};">[VERSATILE STYLE]</strong> Perfect for any occasion.</li>
-      <li style="margin-top:16px;text-align:center;"><span style="background:${this.brandColors.primary};color:white;padding:12px 24px;border-radius:30px;display:inline-block;">✨ EXPERIENCE EXCELLENCE TODAY ✨</span></li>
+      <li style="margin-bottom:12px;padding-left:28px;position:relative;"><span style="position:absolute;left:0;color:${this.brandColors.secondary};">●</span><strong style="color:${this.brandColors.primary};">[PREMIUM QUALITY]</strong> Exceptional craftsmanship.</li>
+      <li style="margin-bottom:12px;padding-left:28px;position:relative;"><span style="position:absolute;left:0;color:${this.brandColors.secondary};">●</span><strong style="color:${this.brandColors.primary};">[SUPERIOR COMFORT]</strong> All-day wearability.</li>
+      <li style="margin-bottom:12px;padding-left:28px;position:relative;"><span style="position:absolute;left:0;color:${this.brandColors.secondary};">●</span><strong style="color:${this.brandColors.primary};">[DURABLE DESIGN]</strong> Built to last.</li>
+      <li style="margin-bottom:12px;padding-left:28px;position:relative;"><span style="position:absolute;left:0;color:${this.brandColors.secondary};">●</span><strong style="color:${this.brandColors.primary};">[PERFECT FIT]</strong> International size options available.</li>
+      <li style="margin-top:16px;text-align:center;"><span style="background:${this.brandColors.primary};color:white;padding:12px 24px;border-radius:30px;display:inline-block;">✨ SHOP NOW ✨</span></li>
     </ul>`;
   }
 
-  private generateMetaTitle(product: ProductInput): string {
-    return `${product.title || 'Premium Product'} | ${product.brand || 'Adidas'}`.substring(0, 60);
-  }
-
-  private generateMetaDescription(product: ProductInput): string {
-    return `Shop ${product.title || 'premium products'}. ${product.description?.substring(0, 100) || ''}`.substring(0, 160);
-  }
-
-  private generateKeywords(product: ProductInput): string[] {
-    return [product.brand?.toLowerCase() || 'adidas', 'footwear', 'premium', 'athletic', 'performance'];
-  }
-
-  private parseRobustResponse(text: string, originalProducts: ProductInput[]): SeoOutput[] {
-    let cleaned = text.replace(/```json\s*/g, '').replace(/```\s*$/g, '').trim();
-    cleaned = cleaned.replace(/,\s*]/g, ']').replace(/,\s*}/g, '}').replace(/\n/g, '\\n');
+  private generateFullDescription(product: any): string {
+    let desc = product.cleanedDescription;
     
-    try {
-      const parsed = JSON.parse(cleaned);
-      return this.validateAndEnrich(parsed, originalProducts);
-    } catch (e) {
-      const match = text.match(/\[[\s\S]*\]/);
-      if (match) return this.validateAndEnrich(JSON.parse(match[0]), originalProducts);
-      throw new Error("Failed to parse response");
+    // If has size data, replace placeholder with table
+    if (product.hasSizeData) {
+      const sizeTable = this.generateSizeTableHtml(product.extractedSizeInfo);
+      desc = desc.replace('<!-- SIZE_TABLE_PLACEHOLDER -->', sizeTable);
     }
+    
+    // Wrap in article if not already
+    if (!desc.includes('<article')) {
+      desc = `<article style="max-width:1200px;margin:0 auto;padding:20px;">${desc}</article>`;
+    }
+    
+    return desc;
   }
 
-  private validateAndEnrich(parsed: any[], originalProducts: ProductInput[]): SeoOutput[] {
-    return parsed.map((item, index) => {
-      const original = originalProducts[index];
-      return {
-        id: item.id || original.id,
-        shortDescription: item.shortDescription || this.generateFallbackShortDescription(),
-        detailedDescription: item.detailedDescription || this.generateCompleteFallbackDescription(original),
-        sizeInfo: item.sizeInfo || original.sizes || [],
-        metaTitle: item.metaTitle || this.generateMetaTitle(original),
-        metaDescription: item.metaDescription || this.generateMetaDescription(original),
-        keywords: item.keywords || this.generateKeywords(original),
-        colorPalette: item.colorPalette || this.brandColors
-      };
-    });
+  private generateMetaTitle(product: any): string {
+    return `${product.title || 'Product'} | ${product.brand || 'Brand'}`.substring(0, 60);
+  }
+
+  private generateMetaDescription(product: any): string {
+    return `Shop ${product.title}. Premium ${product.brand} with international sizing.`.substring(0, 160);
+  }
+
+  private generateKeywords(product: any): string[] {
+    return [product.brand?.toLowerCase() || 'adidas', 'shoes', 'sneakers', 'premium', 'women', 'size-guide'];
   }
 
   private getStrictSchema(count: number) {
@@ -2048,14 +1874,12 @@ Generate complete SEO content for all ${products.length} products now.`;
                 value: { type: SchemaType.STRING },
                 guidance: { type: SchemaType.STRING },
                 notes: { type: SchemaType.STRING }
-              },
-              required: ["label", "value"]
+              }
             }
           },
           metaTitle: { type: SchemaType.STRING },
           metaDescription: { type: SchemaType.STRING },
-          keywords: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
-          colorPalette: { type: SchemaType.OBJECT }
+          keywords: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } }
         },
         required: ["id", "shortDescription", "detailedDescription", "sizeInfo"]
       },
@@ -2065,7 +1889,6 @@ Generate complete SEO content for all ${products.length} products now.`;
   }
 }
 
-// Export function
 export async function generateSeoHtmlGemini(
   apiKey: string,
   products: ProductInput[]
