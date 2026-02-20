@@ -8,13 +8,13 @@ import { shopify } from "../shopify.server";
 import { Button } from "@shopify/polaris";
 import { useEffect, useState } from "react";
 import JSON5 from "json5";
-import UPDATE_PRODUCT from "./functions/query/updateprooductquery.graphql"
-import ADD_TAGS from "./functions/query/add_tags.graphql"
+import {addtags} from "./functions/query/add_tags"
   // sk-c8552ae161ed4db684bb1268bf4ba758
   import { Deepseek } from 'node-deepseek';
 
   
 import strongCleanObjectArray, { cleanStringArray } from "./functions/parser";
+import { productsupdated } from "./functions/query/updateprooductquery";
   interface DeepSeekResponse {
     choices?: Array<{
       message?: {
@@ -491,7 +491,10 @@ for( const DESC_AI of optimizedHtml){
       if(DESC_AI.id===OLD_DESC.id){
         // console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
         // console.log('is true is very nice ')
-        const response=await admin.graphql(UPDATE_PRODUCT?.loc?.source.body,{
+        const response=await admin.graphql(
+          // UPDATE_PRODUCT?.loc?.source.body
+          productsupdated
+          ,{
           variables:{
             "product": {
               "id": OLD_DESC.id,
@@ -510,7 +513,10 @@ for( const DESC_AI of optimizedHtml){
         
         })
         console.log(OLD_DESC.tags)
-            await admin.graphql(ADD_TAGS?.loc?.source.body,{
+            await admin.graphql(
+              // ADD_TAGS?.loc?.source.body
+              addtags
+              ,{
               variables:{
                 "id":OLD_DESC.id,
                 "tags":["DESC_AI"]

@@ -1,4 +1,4 @@
-mutation addTags($id:ID!,$tags:[String!]!){
+export const addtags=`mutation addTags($id:ID!,$tags:[String!]!){
     tagsAdd(id: $id, tags: $tags) {
       node {
         id
@@ -8,4 +8,5 @@ mutation addTags($id:ID!,$tags:[String!]!){
         field
       }
     }
-  }
+  }`
+
