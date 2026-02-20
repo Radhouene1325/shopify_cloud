@@ -426,30 +426,30 @@ export async function action({context ,request }: ActionFunctionArgs) {
    return Response.json({ error: "Invalid or missing 'descreptionAI' data" }, { status: 400 });
  }
 
-let x;
-const {env}=context
-console.log('env context is her ',context)
-// for(const desc of updatedDescreptionAI){
-  let message=updatedDescreptionAI
-  // {
-  //   body:{
-  //     id:desc?.id,
-  //     descreption:desc?.descreption,
-  //     tags:desc?.tags
-  //   }
-  // }
-console.log('body meaasge',message)
-  try {
-    // @ts-ignore
-   const f= await context.cloudflare.env.SEO_QUEUE.send(message);
-    console.log('ffffffff',f)
-   x=f
-    return Response.json({ status: "success", message: "Product queued for generation!" });
-  } catch (error) {
-    return Response.json({ status: "error", message: "Failed to queue" }, { status: 500 });
-  }
+// let x;
+// const {env}=context
+// console.log('env context is her ',context)
+// // for(const desc of updatedDescreptionAI){
+//   let message=updatedDescreptionAI
+//   // {
+//   //   body:{
+//   //     id:desc?.id,
+//   //     descreption:desc?.descreption,
+//   //     tags:desc?.tags
+//   //   }
+//   // }
+// console.log('body meaasge',message)
+//   try {
+//     // @ts-ignore
+//    const f= await context.cloudflare.env.SEO_QUEUE.send(message);
+//     console.log('ffffffff',f)
+//    x=f
+//     return Response.json({ status: "success", message: "Product queued for generation!" });
+//   } catch (error) {
+//     return Response.json({ status: "error", message: "Failed to queue" }, { status: 500 });
+//   }
 // }
- return Response.json({ data:x,status: "success", message: "Product queued for generation!" });
+//  return Response.json({ data:x,status: "success", message: "Product queued for generation!" });
 
     const API_KEY_DEEP_SEEK=context.cloudflare?.env?.DEEP_SEEK_API_KEY
     console.log('api key is her ',API_KEY_DEEP_SEEK)
