@@ -427,7 +427,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
 
 let x;
 const {env}=context
-console.log('env context is her ',env)
+console.log('env context is her ',context)
 for(const desc of updatedDescreptionAI){
   let message={
     body:{
@@ -439,7 +439,7 @@ for(const desc of updatedDescreptionAI){
 console.log('body meaasge',message.body)
   try {
     // @ts-ignore
-   const f= await env.SEO_QUEUE.send({
+   const f= await context.cloudflare.env.SEO_QUEUE.send({
     id:desc?.id,
     descreption:desc?.descreption,
     tags:desc?.tags
