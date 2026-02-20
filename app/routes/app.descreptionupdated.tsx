@@ -15,6 +15,7 @@ import {addtags} from "./functions/query/add_tags"
   
 import strongCleanObjectArray, { cleanStringArray } from "./functions/parser";
 import { productsupdated } from "./functions/query/updateprooductquery";
+import { kimi } from "./functions/KIMI_AI/kimi_descreption";
   interface DeepSeekResponse {
     choices?: Array<{
       message?: {
@@ -366,8 +367,8 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
         ]`;
   
       try {
-        const response = await sendPrompt(batchPrompt, API_KEY_GEMINI);
-  
+        // const response = await sendPrompt(batchPrompt, API_KEY_GEMINI);
+        const response = await kimi(batchPrompt, API_KEY_GEMINI);
         if (!Array.isArray(response)) {
           throw new Error(`Chunk ${idx + 1} returned invalid format`);
         }

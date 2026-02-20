@@ -58,7 +58,7 @@ console.log('productedData',productData)
 
         const results = await generateSeoHtml(
           productData,
-          env.DEEP_SEEK_API_KEY
+          env.KIMI_API_KEY
         );
 
         if (results?.length) {
