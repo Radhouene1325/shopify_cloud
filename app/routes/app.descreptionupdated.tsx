@@ -21,6 +21,7 @@ import { kimi } from "./functions/KIMI_AI/kimi_descreption";
       message?: {
         content?: string;
       };
+      finish_reason?: string;
     }>;
   }
   interface DESCREPTION{
@@ -45,7 +46,7 @@ import { kimi } from "./functions/KIMI_AI/kimi_descreption";
               "You are a strict JSON generator. Return ONLY valid JSON. No markdown. No explanation. No code fences. CRITICAL: All quotes inside string values MUST be escaped with backslashes (\\\"). All HTML content must have properly escaped quotes. Ensure the JSON is complete and valid.",
           },{ role: 'user', content: prompt }],
           temperature: 0.7,
-          max_tokens: 4000
+          max_tokens: 8192
         })
       });
   
@@ -56,8 +57,11 @@ import { kimi } from "./functions/KIMI_AI/kimi_descreption";
       }
   
       const data = await response.json() as DeepSeekResponse;
-      // console.log('hello dtat im e json data',data?.choices?.[0]?.message?.content)
-      let resulter = data?.choices?.[0]?.message?.content;
+      const choice = data?.choices?.[0];
+      let resulter = choice?.message?.content;
+      if (choice?.finish_reason === 'length') {
+        throw new Error('Response truncated: Output hit token limit. Try processing fewer products or shortening product descriptions.');
+      }
       if (!resulter) {
         throw new Error('No content in API response');
       }
