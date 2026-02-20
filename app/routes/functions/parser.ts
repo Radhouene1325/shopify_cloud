@@ -1588,7 +1588,7 @@ export class AdvancedSeoGenerator {
    */
   private processSizeData(product: ProductInput): ProductInput {
     const enriched = { ...product };
-    
+    console.log('enriched products details ',enriched)
     if (product.sizeInfoList && Array.isArray(product.sizeInfoList) && product.sizeInfoList.length > 0) {
       // Sort by EU size numerically
       const sortedSizes = [...product.sizeInfoList].sort((a, b) => {
