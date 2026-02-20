@@ -47,8 +47,8 @@ export default {
       return new Response("An unexpected error occurred", { status: 500 });
     }
   },
-//   async queue(batch: MessageBatch<any>, env: Env, ctx: ExecutionContext) {
-//     console.log("QUEUE HANDLER ACTIVE");
+  async queue(batch: MessageBatch<any>, env: Env, ctx: ExecutionContext) {
+    console.log("QUEUE HANDLER ACTIVE");
 
 //     for (const message of batch.messages) {
 //       const productData = message.body;
@@ -62,7 +62,7 @@ export default {
 //       env.KIMI_API_KEY
 //     );
 
-//     if (results?.length) {
+//     if (!results?.length) {
 // //         for (const res of results) {
 // //           const { id, shortDescription, detailedDescription } = res;
 // //           await env.DB.prepare(`
@@ -127,5 +127,5 @@ export default {
 // }
      
 //     }
-//   }
+  }
 } satisfies ExportedHandler<Env>;
