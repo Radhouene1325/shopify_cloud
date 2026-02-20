@@ -456,7 +456,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
 
     const API_KEY_GEMINI_GEMINI=context.cloudflare?.env?.GEMINI_API_KEY
     console.log('api key is her ',API_KEY_GEMINI_GEMINI)
-    console.log('hello UPDATE_PRODUCT',UPDATE_PRODUCT?.loc?.source.body)
+    // console.log('hello UPDATE_PRODUCT',UPDATE_PRODUCT?.loc?.source.body)
 
 
   if (!updatedDescreptionAI) {
