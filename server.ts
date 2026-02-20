@@ -65,9 +65,9 @@ console.log('productedData',productData)
           const seoData = results[0];
 
           await env.DB.prepare(
-            `INSERT INTO seo_db 
+            `INSERT INTO product_seo 
            (id, short_description, detailed_description)
-           VALUES (?, ?, ?, ?)`
+           VALUES (?, ?, ?)`
           )
             .bind(
               productData.id,
