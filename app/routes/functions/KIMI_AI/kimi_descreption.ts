@@ -1,7 +1,7 @@
 // app/routes/api/optimize-descriptions.ts
 
 // Kimi/Moonshot AI API configuration
-const KIMI_API_URL = "https://api.moonshot.cn/v1/chat/completions";
+export const KIMI_API_URL = "https://api.moonshot.cn/v1/chat/completions";
 
 export async function kimi(descriptions,KIMI_API_KEY) {
   // Validate request method
@@ -19,8 +19,8 @@ export async function kimi(descriptions,KIMI_API_KEY) {
     }
 
     // Optimize each description using Kimi API
-    const optimizedDescriptions = await Promise.all(
-      descriptions.map(async (description) => {
+    // const optimizedDescriptions = await Promise.all(
+    //   descriptions.map(async (description) => {
         const response = await fetch(KIMI_API_URL, {
           method: "POST",
           headers: {
@@ -50,14 +50,14 @@ export async function kimi(descriptions,KIMI_API_KEY) {
         }
 
         const data = await response.json();
-        return data.choices[0]?.message?.content?.trim() || description;
-      })
-    );
+        return data.choices[0]?.message?.content?.trim();
+      // })
+    // );
 
-    return Response.json({ 
-      success: true, 
-      optimizedDescriptions 
-    });
+    // return Response.json({ 
+    //   success: true, 
+    //   optimizedDescriptions 
+    // });
 
   } catch (error) {
     console.error("Optimization error:", error);

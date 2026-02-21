@@ -15,7 +15,7 @@ import {addtags} from "./functions/query/add_tags"
   
 import  { generateSeoHtmlGemini } from "./functions/parser";
 import { productsupdated } from "./functions/query/updateprooductquery";
-import { kimi } from "./functions/KIMI_AI/kimi_descreption";
+import { kimi, KIMI_API_URL } from "./functions/KIMI_AI/kimi_descreption";
 import { parserData } from "@/parser/parser_data";
   interface DeepSeekResponse {
     choices?: Array<{
@@ -31,25 +31,55 @@ import { parserData } from "@/parser/parser_data";
     tags:string[]
   }
 
-  async function sendPrompt(prompt: string, API_KEY_GEMINI: string) {
+  async function sendPrompt(prompt: string, API_KEY_GEMINI: string,KIMI_API_KEY:string) {
     try {
-      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-        method: 'POST',
+      // const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Authorization': `Bearer ${API_KEY_GEMINI}`
+      //   },
+      //   body: JSON.stringify({
+      //     model: 'deepseek-chat',
+      //     messages: [  {
+      //       role: "system",
+      //       content:
+      //         "You are a strict JSON generator. Return ONLY valid JSON. No markdown. No explanation. No code fences. CRITICAL: All quotes inside string values MUST be escaped with backslashes (\\\"). All HTML content must have properly escaped quotes. Ensure the JSON is complete and valid.",
+      //     },{ role: 'user', content: prompt }],
+      //     temperature: 0.7,
+      //     max_tokens: 8192
+      //   })
+      // });
+      const response = await fetch(KIMI_API_URL, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${API_KEY_GEMINI}`
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${KIMI_API_KEY}`,
         },
         body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages: [  {
-            role: "system",
-            content:
-              "You are a strict JSON generator. Return ONLY valid JSON. No markdown. No explanation. No code fences. CRITICAL: All quotes inside string values MUST be escaped with backslashes (\\\"). All HTML content must have properly escaped quotes. Ensure the JSON is complete and valid.",
-          },{ role: 'user', content: prompt }],
+          model: "moonshot-v1-8k", // or moonshot-v1-32k, moonshot-v1-128k
+          messages: [
+            {
+              role: "system",
+              content: "You are a professional copywriter. Optimize the following description to be more engaging, clear, and concise. Return only the optimized text without any explanations."
+            },
+            {
+              role: "user",
+              content: `Optimize this description: "${prompt}"`
+            }
+          ],
           temperature: 0.7,
-          max_tokens: 8192
-        })
+          max_tokens: 5000,
+        }),
       });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`Kimi API error: ${error}`);
+      }
+
+      // const data = await response.json();
+      // return data.choices[0]?.message?.content?.trim();
   
       if (!response.ok) {
         const errorText = await response.text();
@@ -57,8 +87,8 @@ import { parserData } from "@/parser/parser_data";
         throw new Error(`API error: ${response.status} - ${errorText}`);
       }
   
-      const data = await response.json() as DeepSeekResponse;
-      const choice = data?.choices?.[0];
+      const data = await response.json() ;
+      const choice = data?.choices[0];
       let resulter = choice?.message?.content;
       if (choice?.finish_reason === 'length') {
         throw new Error('Response truncated: Output hit token limit. Try processing fewer products or shortening product descriptions.');
@@ -194,7 +224,7 @@ import { parserData } from "@/parser/parser_data";
   // }
 
 // 1. Logic to call Gemini
-export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
+export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string,KIMI_API_KEY) {
   // ⚠️ WARNING: Use process.env.GEMINI_KEY in production!
   // const genAI = new GoogleGenerativeAI(API_KEY_GEMINI);
   // const model = genAI.getGenerativeModel({ model:"gemini-3-flash-preview",generationConfig: {
@@ -373,7 +403,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
         ]`;
   
       try {
-         const response = await sendPrompt(batchPrompt, API_KEY_GEMINI);
+         const response = await sendPrompt(batchPrompt, API_KEY_GEMINI,KIMI_API_KEY);
         // const response = await kimi(batchPrompt, API_KEY_GEMINI);
         if (!Array.isArray(response)) {
           throw new Error(`Chunk ${idx + 1} returned invalid format`);
@@ -463,6 +493,8 @@ export async function action({context ,request }: ActionFunctionArgs) {
     const API_KEY_GEMINI_GEMINI=context.cloudflare?.env?.GEMINI_API_KEY
     console.log('api key is her ',API_KEY_GEMINI_GEMINI)
     // console.log('hello UPDATE_PRODUCT',UPDATE_PRODUCT?.loc?.source.body)
+    const KIMI_API_KEY=context.cloudflare.env.KIMI_API_KEY
+    console.log(KIMI_API_KEY)
 
 
   if (!updatedDescreptionAI) {
@@ -477,7 +509,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
     }
     catch{
       console.log('thes from deepseek')
-      const optimizedHtml_deep_seek =  await generateSeoHtml(updatedDescreptionAI,API_KEY_DEEP_SEEK);
+      const optimizedHtml_deep_seek =  await generateSeoHtml(updatedDescreptionAI,API_KEY_DEEP_SEEK,KIMI_API_KEY);
       //  await generateSeoHtmlgimini(API_KEY_GEMINI_TESTED as string,updatedDescreptionAI,)
       optimizedHtml=optimizedHtml_deep_seek
     }
