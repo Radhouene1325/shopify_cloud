@@ -940,9 +940,7 @@ async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description:DESCREPTI
        "id": "original_product_id",
        "shortDescription": "PROFESSIONAL_HTML_STRING with bullet points and elegant styling",
        "detailedDescription": "COMPLETE_HTML5_ARTICLE with proper semantic structure, color psychology, and responsive design"
-        "sizeInfo": [
-       { "label": "Measurement name", "value": "Measurement value" }
-        ]
+       
        }
   6. Do NOT include any other text, explanations, or markdown
   7. Return ONLY the JSON array
