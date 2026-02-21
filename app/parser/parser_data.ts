@@ -1,6 +1,6 @@
 
 
-export const parserData=(resulter,parsed,JSON5)=>{
+export const parserData = (resulter: string, parsed: unknown, JSON5: { parse: (text: string) => unknown }) => {
     try {
         parsed = JSON.parse(resulter);
         console.log('Successfully parsed with JSON.parse');
