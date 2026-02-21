@@ -816,8 +816,8 @@ async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description:DESCREPTI
   const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" ,
     generationConfig: {
       responseMimeType: "application/json",
-      //  temperature: 0.7,
-      // maxOutputTokens: 8192,
+        temperature: 0.7,
+       maxOutputTokens: 8192,
       // topP:0.9
     },
   });
