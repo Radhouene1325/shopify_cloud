@@ -649,7 +649,7 @@ export default function Descriptionupdated(){
                 </Button>
       </div>
 
-      {Array.isArray(actionData) && actionData?.map((e: { detailedDescription?: string }, idx: number) => (
+      {/* {Array.isArray(actionData) && actionData?.map((e: { detailedDescription?: string }, idx: number) => (
       <>
         <div key={idx} dangerouslySetInnerHTML={{ __html: e.detailedDescription || "" }} />
         <p>
@@ -664,7 +664,7 @@ export default function Descriptionupdated(){
             : ""}
         </p>
       </>
-      ))}
+      ))} */}
   </>
   
     );
