@@ -8,14 +8,12 @@ import { shopify } from "../shopify.server";
 import { Button } from "@shopify/polaris";
 import { useEffect, useState } from "react";
 import JSON5 from "json5";
-import {addtags} from "./functions/query/add_tags"
   // sk-c8552ae161ed4db684bb1268bf4ba758
   import { Deepseek } from 'node-deepseek';
 
   
 import  { generateSeoHtmlGemini } from "./functions/parser";
 import { productsupdated } from "./functions/query/updateprooductquery";
-import { kimi } from "./functions/KIMI_AI/kimi_descreption";
 import { parserData } from "@/parser/parser_data";
   interface DeepSeekResponse {
     choices?: Array<{
@@ -382,6 +380,19 @@ export async function action({context ,request }: ActionFunctionArgs) {
   if (!updatedDescreptionAI) {
     return Response.json({ error: "Please provide a description" }, { status: 400 });
   }
+
+  // Cloudflare Workers limit: 50 subrequests per request (free tier).
+  // Each product: 1–2 AI fetches + 1 GraphQL update. Limit to 15 products to stay under 50.
+  const MAX_PRODUCTS_PER_REQUEST = 15;
+  if (updatedDescreptionAI.length > MAX_PRODUCTS_PER_REQUEST) {
+    return Response.json(
+      {
+        error: `Too many products. Please select up to ${MAX_PRODUCTS_PER_REQUEST} products at a time. (Cloudflare subrequest limit)`,
+        code: "TOO_MANY_SUBREQUESTS"
+      },
+      { status: 400 }
+    );
+  }
   let optimizedHtml
   try {
     try{
@@ -409,50 +420,37 @@ for( const DESC_AI of optimizedHtml){
       if(DESC_AI.id===OLD_DESC.id){
         // console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
         // console.log('is true is very nice ')
-        const response=await admin.graphql(
-          // UPDATE_PRODUCT?.loc?.source.body
-          productsupdated
-          ,{
-          variables:{
-            "product": {
-              "id": OLD_DESC.id,
-              "descriptionHtml": DESC_AI.detailedDescription,
-              
-              "metafields": [
+        // Merge tags: preserve existing + add DESC_AI (productUpdate overwrites, so we must include all)
+        const mergedTags = [...new Set([...(OLD_DESC.tags || []), "DESC_AI"])];
+        const response = await admin.graphql(productsupdated, {
+          variables: {
+            product: {
+              id: OLD_DESC.id,
+              descriptionHtml: DESC_AI.detailedDescription,
+              tags: mergedTags,
+              metafields: [
                 {
-                  "namespace": "custom",
-                  "key": "descriptionsai",
-                  "type": "json",
-                  "value": JSON.stringify(DESC_AI.shortDescription)
+                  namespace: "custom",
+                  key: "descriptionsai",
+                  type: "json",
+                  value: JSON.stringify(DESC_AI.shortDescription)
                 },
                 {
-                  "namespace": "custom",
-                  "key": "sizeInfo",
-                  "type": "json",
-                  "value": JSON.stringify(DESC_AI.sizeInfo)
+                  namespace: "custom",
+                  key: "sizeInfo",
+                  type: "json",
+                  value: JSON.stringify(DESC_AI.sizeInfo ?? [])
                 },
                 {
-                  "namespace": "custom",
-                  "key": "metaDescreption",
-                  "type": "json",
-                  "value": JSON.stringify(DESC_AI.sizeInfo)
-                },
-
+                  namespace: "custom",
+                  key: "metaDescreption",
+                  type: "json",
+                  value: JSON.stringify(DESC_AI.sizeInfo ?? [])
+                }
               ]
+            }
           }
-        },
-        
-        })
-        console.log(OLD_DESC.tags)
-            await admin.graphql(
-              // ADD_TAGS?.loc?.source.body
-              addtags
-              ,{
-              variables:{
-                "id":OLD_DESC.id,
-                "tags":["DESC_AI"]
-              }
-            })
+        });
              
           
   
@@ -472,7 +470,7 @@ for( const DESC_AI of optimizedHtml){
  console.log('hhhhhhhhhhhhhhhhhhhhhhhhh',optimizedHtml,responses)
 
 
-    return Response.json(optimizedHtml,responses);
+    return Response.json(optimizedHtml);
   } catch (error) {
     console.error(error);
     return Response.json({ error: "Failed to generate content" }, { status: 500 });
