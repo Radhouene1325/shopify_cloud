@@ -1,4 +1,4 @@
-
+import { jsonrepair } from "jsonrepair";
 
 export const parserData = (resulter: string, parsed: unknown, JSON5: { parse: (text: string) => unknown }) => {
     try {
@@ -15,22 +15,36 @@ export const parserData = (resulter: string, parsed: unknown, JSON5: { parse: (t
           console.log('Successfully parsed with JSON5');
           return parsed
         } catch (json5Error) {
-          console.warn('JSON5.parse failed, trying to extract and repair JSON:', json5Error);
-          
-          // Strategy 3: Extract JSON array and try to repair common issues
+          console.warn('JSON5.parse failed, trying jsonrepair:', json5Error);
+
+          // Strategy 3: Use jsonrepair to fix common AI JSON issues (unescaped quotes in HTML, etc.)
+          try {
+            const repaired = jsonrepair(resulter);
+            parsed = JSON.parse(repaired);
+            console.log('Successfully parsed with jsonrepair');
+            return parsed;
+          } catch (repairError) {
+            console.warn('jsonrepair failed, trying manual repair:', repairError);
+          }
+
+          // Strategy 4: Extract JSON array and try to repair common issues
           const jsonMatch = resulter.match(/\[[\s\S]*\]/);
           if (jsonMatch) {
             let jsonText = jsonMatch[0];
-            
-            // Try to fix common issues: unescaped quotes in HTML strings
-            // This is a simple fix - replace unescaped quotes inside string values
-            // Note: This is a heuristic and may not work for all cases
+
             try {
-              // First try JSON5 on the extracted text
               parsed = JSON5.parse(jsonText);
               console.log('Successfully parsed extracted JSON with JSON5');
-              return parsed
+              return parsed;
             } catch (e) {
+              try {
+                const repaired = jsonrepair(jsonText);
+                parsed = JSON.parse(repaired);
+                console.log('Successfully parsed extracted JSON with jsonrepair');
+                return parsed;
+              } catch (_) {
+                /* fall through to manual repair */
+              }
               console.warn('JSON5 on extracted text failed, trying manual repair:', e);
               
               // Try to repair by finding and fixing unescaped quotes in HTML content
