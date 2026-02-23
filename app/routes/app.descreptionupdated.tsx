@@ -383,7 +383,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
 
   // Cloudflare Workers limit: 50 subrequests per request (free tier).
   // Each product: 1–2 AI fetches + 1 GraphQL update. Limit to 15 products to stay under 50.
-  const MAX_PRODUCTS_PER_REQUEST = 17;
+  const MAX_PRODUCTS_PER_REQUEST = 15;
   if (updatedDescreptionAI.length > MAX_PRODUCTS_PER_REQUEST) {
     return Response.json(
       {
@@ -682,7 +682,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
   console.log('cursor her ',cursor)
   let query=    `#graphql
   query GetProducts($cursor:String) {
-    products(first: 17,after:$cursor) {
+    products(first: 15,after:$cursor) {
         edges{
             node{
                 title
