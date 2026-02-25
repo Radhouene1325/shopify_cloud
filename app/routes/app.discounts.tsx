@@ -110,7 +110,7 @@ console.log('url cursor is her',url)
       productVariants(
         first: 250
         after: $cursor
-        query: "inventory_quantity:10"
+        query: "inventory_quantity:0"
       ) {
         edges {
           node {

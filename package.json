@@ -43,6 +43,7 @@
     "@shopify/shopify-app-remix": "^4.1.1",
     "@shopify/shopify-app-session-storage-prisma": "^6.0.0",
     "deepseekai": "^1.0.5",
+    "fabric": "^7.2.0",
     "isbot": "^5.1.0",
     "jsonrepair": "^3.13.2",
     "node-deepseek": "^1.1.1",
