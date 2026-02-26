@@ -111,7 +111,7 @@ console.log('url cursor is her',url)
         first: 250
         after: $cursor
         # query: "inventory_quantity:0"
-        query: "inventory_quantity:>=0 AND inventory_quantity:<=10"
+        query: "inventory_quantity:>=0 AND inventory_quantity:<=100"
 
       ) {
         edges {
