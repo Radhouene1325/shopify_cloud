@@ -272,38 +272,80 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
   
     const outputStructure = isShort
       ? '{ "id": "original_product_id", "shortDescription": "PROFESSIONAL_HTML_STRING" }'
-      : '{ "id": "original_product_id", "detailedDescription": "COMPLETE_HTML5_ARTICLE" }';
+      : '{ "id": "original_product_id", "detailedDescription": "COMPLETE_HTML5_ARTICLE_WITH_CSS" }';
   
     return `You are a JSON API. Process ALL ${chunk.length} products and return a JSON array with ONLY ${fieldLabel}.
   
   PROMPT TEMPLATE FOR EACH PRODUCT:
   {
-    "role": "Senior E-commerce SEO Specialist & UX Copywriter with expertise in luxury branding and high-conversion UX writing",
-    "objective": "Transform raw technical data into a high-converting Amazon listing using clean semantic HTML structure. Do NOT use inline styles. Do NOT use color codes. The design must inherit styling from the active theme.",
+    "role": "Senior E-commerce SEO Specialist, Conversion Strategist & Front-End UX Architect",
+    "objective": "Transform raw technical product data into a high-converting, SEO-optimized, fully responsive HTML5 product description using professional embedded CSS and structured data tables.",
     "outputFormat": {
       ${
         isShort
-          ? '"shortDescription": "PROFESSIONAL_HTML_STRING (SEO-Optimized Bullet Points using clean semantic HTML without inline styles)"'
-          : '"detailedDescription": "PROFESSIONAL_HTML_STRING (Complete semantic HTML5 article structure without inline styles)"'
+          ? '"shortDescription": "SEO-Optimized HTML bullet list with professional structure"'
+          : '"detailedDescription": "Complete HTML5 article with embedded professional CSS, responsive layout, structured specification tables, and automatic size-detection table formatting"'
       }
     },
-    "stylingGuidelines": {
-      "tone": "Luxury, sophisticated, authoritative, emotionally engaging.",
-      "htmlRules": [
-        "DO NOT use inline CSS.",
-        "DO NOT use style attributes.",
-        "DO NOT include color codes.",
-        "Use clean semantic HTML only.",
-        "Use class names only if necessary (e.g., class=\\"product-section\\").",
-        "Structure must allow theme to control all visual styling."
-      ]
-    },
+    "SEORequirements": [
+      "Use one <h1> optimized for product keyword intent.",
+      "Use logical <h2> hierarchy.",
+      "Include semantic HTML5 structure.",
+      "Use keyword-rich but natural language.",
+      "Optimize for readability and conversion."
+    ],
     ${
       isShort
-        ? '"constraints": ["5-6 Bullets maximum.", "Start each bullet with bolded benefit label.", "Use <ul> and <li> structure.", "End with strong CTA paragraph."]'
-        : '"constraints": ["Use <article>, <section>, <h1>, <h2>.", "Convert specs into clean <table> without styling attributes.", "Preserve ALL <img> tags exactly as provided.", "Limit to 3-4 sections to stay concise."]'
+        ? `"constraints": [
+            "5-6 Bullet points maximum.",
+            "Use <ul> and <li>.",
+            "Start each bullet with <strong>Benefit:</strong>.",
+            "End with persuasive CTA paragraph."
+          ]`
+        : `"constraints": [
+            "Use <article>, <section>, <header>.",
+            "Include embedded <style> block at top of output.",
+            "CSS must be clean, modern, professional.",
+            "Use responsive design with media queries.",
+            "Convert ALL technical specifications into structured <table>.",
+            "Detect any size-related information (dimensions, weight, capacity, measurements, fit, etc.) and place it inside a dedicated 'Size & Dimensions' table section.",
+            "All tables must be responsive.",
+            "Preserve ALL <img> tags exactly as provided.",
+            "Limit to 3-4 main sections for clarity."
+          ]`
+    },
+    "CSSGuidelines": {
+      "design": "Minimal luxury e-commerce style",
+      "typography": "Clean system font stack",
+      "layout": "Max-width container centered with spacing",
+      "tables": "Professional bordered table with styled header row",
+      "responsive": "Mobile-first with breakpoint at 768px",
+      "performance": "Lightweight CSS, no external libraries"
     }
   }
+  
+  DETAILED STRUCTURE REQUIREMENTS (for detailedDescription):
+  
+  1. Start with:
+     <style>
+     /* Professional Responsive Product CSS */
+     </style>
+  
+  2. Wrap everything inside:
+     <article class="product-description">
+  
+  3. Required Sections:
+     - Hero Introduction
+     - Key Features Section
+     - Specifications Table
+     - Size & Dimensions Table (ONLY if size data exists)
+     - Closing CTA Section
+  
+  4. Table Rules:
+     - Use <table>, <thead>, <tbody>
+     - Use proper <th> headers
+     - No inline styles
+     - Must be mobile responsive (overflow-x or stacked layout)
   
   DATA TO PROCESS:
   ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })))}
