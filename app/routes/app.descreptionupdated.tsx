@@ -839,12 +839,12 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
   
   🔒 CRITICAL CONSTRAINT: Use EXTREMELY SPECIFIC selectors with 'pd-' prefix to prevent ANY style leakage to other theme elements.
   
-  🎯 CORE MISSION: Create AliExpress-style professional product descriptions with "See More/Less" functionality, beautiful image galleries with titles, and trust-building design elements.
+  🎯 CORE MISSION: Create AliExpress-style professional product descriptions with WORKING "See More/Less" functionality and beautiful image galleries with titles.
   
   PROMPT TEMPLATE FOR EACH PRODUCT:
   {
     "role": "Senior E-commerce UX Designer & Conversion Specialist",
-    "objective": "Transform raw product data into a professional, trust-building product description with AliExpress-inspired design and see more/less functionality.",
+    "objective": "Transform raw product data into a professional, trust-building product description with AliExpress-inspired design and working see more/less functionality.",
     "designDirection": "Professional, trustworthy, clean, and conversion-focused with subtle animations and clear visual hierarchy.",
     "outputFormat": {
       ${
@@ -867,12 +867,10 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
         ? `"constraints": [
             "5-6 bullet points with icons",
             "Add trust badges (✓ Free Shipping, 🔒 Secure Payment, etc.)",
-            "Include price highlight if available",
-            "Add stock status indicator",
             "Use professional color scheme"
           ]`
         : `"constraints": [
-            "Implement SEE MORE/SEE LESS functionality with smooth toggle",
+            "Implement WORKING SEE MORE/SEE LESS functionality with JavaScript",
             "Create image gallery with titles/descriptions under each image",
             "Add trust badges section (guarantee, shipping, returns)",
             "Include price section with discounts if applicable",
@@ -881,13 +879,14 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
             "Add customer review highlights section",
             "Include shipping info with timeline",
             "Add warranty and support information",
+            "NO add to cart or buy now buttons",
             "All interactive elements must work on mobile",
             "Use professional color palette: #1E293B, #3B82F6, #10B981, #F59E0B"
           ]`
     }
   }
   
-  📋 COMPLETE HTML STRUCTURE WITH SEE MORE/LESS:
+  📋 COMPLETE HTML STRUCTURE WITH WORKING SEE MORE/LESS:
   
   <style>
   /* PROFESSIONAL ALIEXPRESS-STYLE DESIGN - COMPLETELY ISOLATED */
@@ -931,6 +930,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
     padding: 1rem;
     background: #F8FAFC;
     border-radius: 12px;
+    flex-wrap: wrap;
   }
   
   .pd-current-price {
@@ -962,12 +962,14 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
     padding: 1rem;
     background: #F1F5F9;
     border-radius: 12px;
+    flex-wrap: wrap;
   }
   
   .pd-stock-status {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    flex-wrap: wrap;
   }
   
   .pd-in-stock {
@@ -1051,12 +1053,13 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
     line-height: 1.4;
   }
   
-  /* SEE MORE/LESS SECTION */
+  /* SEE MORE/LESS SECTION - FIXED VERSION */
   .pd-collapsible-section {
     margin: 2rem 0;
     border: 1px solid #E2E8F0;
     border-radius: 16px;
     overflow: hidden;
+    background: #FFFFFF;
   }
   
   .pd-section-header {
@@ -1066,7 +1069,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
     padding: 1.25rem;
     background: #F8FAFC;
     cursor: pointer;
-    border-bottom: 2px solid transparent;
+    border-bottom: 2px solid #E2E8F0;
     transition: all 0.3s ease;
   }
   
@@ -1099,6 +1102,8 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
     border: none;
     cursor: pointer;
     transition: background 0.3s ease;
+    pointer-events: auto;
+    z-index: 10;
   }
   
   .pd-toggle-btn:hover {
@@ -1106,17 +1111,19 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
   }
   
   .pd-section-content {
-    padding: 0;
+    padding: 0 1.5rem;
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.5s ease-out, padding 0.3s ease;
     background: #FFFFFF;
+    opacity: 0;
   }
   
   .pd-section-content.pd-expanded {
     padding: 1.5rem;
     max-height: 2000px; /* Large enough for content */
-    transition: max-height 0.5s ease-in, padding 0.3s ease;
+    opacity: 1;
+    transition: max-height 0.5s ease-in, padding 0.3s ease, opacity 0.3s ease;
   }
   
   /* FEATURES GRID */
@@ -1220,7 +1227,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
-    margin-top: 1rem;
+    margin: 2rem 0;
   }
   
   .pd-shipping-card {
@@ -1228,6 +1235,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
     background: #F8FAFC;
     border-radius: 12px;
     text-align: center;
+    border: 1px solid #E2E8F0;
   }
   
   .pd-shipping-method {
@@ -1262,6 +1270,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
     align-items: center;
     gap: 1rem;
     margin-bottom: 1rem;
+    flex-wrap: wrap;
   }
   
   .pd-average-rating {
@@ -1293,6 +1302,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
     border: 1px solid #E2E8F0;
     font-size: 0.875rem;
     color: #334155;
+    text-align: center;
   }
   
   /* WARRANTY SECTION */
@@ -1306,58 +1316,6 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
     border-radius: 12px;
     font-weight: 600;
     margin: 1rem 0;
-  }
-  
-  /* CTA BUTTONS */
-  .pd-cta-container {
-    display: flex;
-    gap: 1rem;
-    margin: 2rem 0;
-    flex-wrap: wrap;
-  }
-  
-  .pd-add-to-cart {
-    flex: 2;
-    min-width: 200px;
-    background: #3B82F6;
-    color: white !important;
-    padding: 1rem 2rem;
-    border: none;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 1.125rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-  }
-  
-  .pd-add-to-cart:hover {
-    background: #2563EB;
-    transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
-  }
-  
-  .pd-buy-now {
-    flex: 1;
-    min-width: 150px;
-    background: #10B981;
-    color: white !important;
-    padding: 1rem 2rem;
-    border: none;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 1.125rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  
-  .pd-buy-now:hover {
-    background: #059669;
-    transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
   }
   
   /* BULLET POINTS FOR SHORT DESCRIPTION */
@@ -1427,12 +1385,14 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
       grid-template-columns: repeat(2, 1fr);
     }
     
-    .pd-cta-container {
+    .pd-section-header {
       flex-direction: column;
+      gap: 1rem;
+      text-align: center;
     }
     
-    .pd-add-to-cart, .pd-buy-now {
-      width: 100%;
+    .pd-section-title {
+      justify-content: center;
     }
   }
   
@@ -1445,10 +1405,12 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
       grid-template-columns: 1fr;
     }
     
-    .pd-section-header {
-      flex-direction: column;
-      gap: 1rem;
-      text-align: center;
+    .pd-review-highlights {
+      grid-template-columns: 1fr;
+    }
+    
+    .pd-shipping-grid {
+      grid-template-columns: 1fr;
     }
   }
   </style>
@@ -1504,14 +1466,16 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
       </div>
     </div>
     
-    <!-- COLLAPSIBLE SECTION 1: KEY FEATURES -->
+    <!-- COLLAPSIBLE SECTION 1: KEY FEATURES - WITH WORKING TOGGLE -->
     <div class="pd-collapsible-section" id="pd-features-section">
-      <div class="pd-section-header" onclick="document.getElementById('pd-features-content').classList.toggle('pd-expanded'); this.querySelector('.pd-toggle-btn').textContent = document.getElementById('pd-features-content').classList.contains('pd-expanded') ? 'See Less' : 'See More'">
+      <div class="pd-section-header">
         <div class="pd-section-title">
-          <svg viewBox="0 0 20 20"><path d="M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm1 13h-2v-2h2v2zm0-4h-2V5h2v6z"/></svg>
+          <svg viewBox="0 0 20 20" width="20" height="20">
+            <path d="M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm1 13h-2v-2h2v2zm0-4h-2V5h2v6z" fill="#3B82F6"/>
+          </svg>
           Key Features & Benefits
         </div>
-        <button class="pd-toggle-btn">See More</button>
+        <button class="pd-toggle-btn" onclick="toggleSection('pd-features-content', this)">See More</button>
       </div>
       <div class="pd-section-content" id="pd-features-content">
         <div class="pd-features-grid">
@@ -1547,14 +1511,16 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
       </div>
     </div>
     
-    <!-- COLLAPSIBLE SECTION 2: TECHNICAL SPECIFICATIONS -->
+    <!-- COLLAPSIBLE SECTION 2: TECHNICAL SPECIFICATIONS - WITH WORKING TOGGLE -->
     <div class="pd-collapsible-section" id="pd-specs-section">
-      <div class="pd-section-header" onclick="document.getElementById('pd-specs-content').classList.toggle('pd-expanded'); this.querySelector('.pd-toggle-btn').textContent = document.getElementById('pd-specs-content').classList.contains('pd-expanded') ? 'See Less' : 'See More'">
+      <div class="pd-section-header">
         <div class="pd-section-title">
-          <svg viewBox="0 0 20 20"><path d="M4 4h12v12H4V4zm2 2v8h8V6H6z"/></svg>
+          <svg viewBox="0 0 20 20" width="20" height="20">
+            <path d="M4 4h12v12H4V4zm2 2v8h8V6H6z" fill="#3B82F6"/>
+          </svg>
           Technical Specifications
         </div>
-        <button class="pd-toggle-btn">See More</button>
+        <button class="pd-toggle-btn" onclick="toggleSection('pd-specs-content', this)">See More</button>
       </div>
       <div class="pd-section-content" id="pd-specs-content">
         <table class="pd-specs-table">
@@ -1633,57 +1599,45 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
       <span>2-Year Warranty & Lifetime Support</span>
     </div>
     
-    <!-- CTA BUTTONS -->
-    <div class="pd-cta-container">
-      <button class="pd-add-to-cart">
-        <span>🛒</span>
-        Add to Cart
-      </button>
-      <button class="pd-buy-now">
-        Buy Now
-      </button>
-    </div>
   </div>
   
-  <!-- JAVASCRIPT FOR SEE MORE/LESS FUNCTIONALITY -->
+  <!-- JAVASCRIPT FOR SEE MORE/LESS FUNCTIONALITY - FIXED AND SIMPLIFIED -->
   <script>
   (function() {
-    // Safe scoped JavaScript that won't interfere with theme
-    function initProductDescription() {
-      const sections = document.querySelectorAll('.pd-collapsible-section');
+    // Global function for toggle that works in all browsers
+    window.toggleSection = function(contentId, btnElement) {
+      const content = document.getElementById(contentId);
+      if (!content) return;
       
-      sections.forEach(section => {
-        const header = section.querySelector('.pd-section-header');
-        const content = section.querySelector('.pd-section-content');
-        const toggleBtn = section.querySelector('.pd-toggle-btn');
-        
-        if (header && content && toggleBtn) {
-          header.addEventListener('click', function(e) {
-            // Don't toggle if clicking the button directly (button has its own handler)
-            if (e.target === toggleBtn || toggleBtn.contains(e.target)) {
-              return;
-            }
-            toggleSection(content, toggleBtn);
-          });
-          
-          toggleBtn.addEventListener('click', function() {
-            toggleSection(content, toggleBtn);
-          });
-        }
-      });
+      // Toggle the expanded class
+      content.classList.toggle('pd-expanded');
       
-      function toggleSection(content, toggleBtn) {
-        content.classList.toggle('pd-expanded');
-        toggleBtn.textContent = content.classList.contains('pd-expanded') ? 'See Less' : 'See More';
+      // Update button text
+      if (btnElement) {
+        btnElement.textContent = content.classList.contains('pd-expanded') ? 'See Less' : 'See More';
       }
-    }
-    
-    // Run when DOM is ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initProductDescription);
-    } else {
-      initProductDescription();
-    }
+    };
+  
+    // Also add click handlers to section headers for better UX
+    document.addEventListener('DOMContentLoaded', function() {
+      const headers = document.querySelectorAll('.pd-section-header');
+      
+      headers.forEach(function(header) {
+        header.addEventListener('click', function(e) {
+          // Don't toggle if clicking the button directly (to avoid double toggle)
+          if (e.target.classList.contains('pd-toggle-btn') || e.target.closest('.pd-toggle-btn')) {
+            return;
+          }
+          
+          // Find the toggle button in this header and trigger its click
+          const toggleBtn = this.querySelector('.pd-toggle-btn');
+          if (toggleBtn) {
+            const contentId = toggleBtn.getAttribute('onclick').match(/'([^']+)'/)[1];
+            toggleSection(contentId, toggleBtn);
+          }
+        });
+      });
+    });
   })();
   </script>
   
@@ -1694,23 +1648,24 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
   Each object: ${outputStructure}
   
   ⚠️ KEY FEATURES IMPLEMENTED:
-  ✅ See More/Less toggle on collapsible sections
-  ✅ Image gallery with titles and descriptions under each image
+  ✅ WORKING See More/Less buttons with JavaScript
+  ✅ Click on header also toggles sections
+  ✅ Smooth animations and transitions
+  ✅ Image gallery with titles and descriptions
   ✅ Professional AliExpress-style design
   ✅ Price section with discounts
   ✅ Stock status and sales counter
   ✅ Trust badges (shipping, payment, returns, warranty)
-  ✅ Specification tables
+  ✅ Specification tables with clean design
   ✅ Size & dimensions with visual cards
   ✅ Shipping information grid
-  ✅ Review highlights
+  ✅ Review highlights with ratings
   ✅ Warranty badge
-  ✅ CTA buttons with hover effects
+  ✅ NO add to cart or buy now buttons
   ✅ Fully responsive mobile design
   ✅ Complete style isolation with pd- prefix
-  ✅ Smooth animations and transitions
   
-  Remember: Create a professional, trustworthy experience that converts visitors into customers! 🛍️✨
+  Remember: The See More/Less buttons now work perfectly! Create a professional, trustworthy experience that converts visitors into customers! 🛍️✨
   `;
   }
 
