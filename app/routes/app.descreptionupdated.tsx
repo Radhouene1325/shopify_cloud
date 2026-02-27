@@ -287,6 +287,13 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
         "DO NOT include <html>, <body>, or full page structure.",
         "Avoid <h1>. Start from <h2>."
       ],
+      "SEO rules": [
+  "Use keyword-rich <h2> headings.",
+  "Do not duplicate product title.",
+  "Avoid generic filler text.",
+  "Ensure semantic hierarchy (<h2> then <h3>).",
+  "Keep HTML clean and crawlable."
+],
       "responsiveSafety": [
         "Tables must NOT contain width attributes.",
         "Images must preserve original <img> tags exactly.",
@@ -297,23 +304,41 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
     "tone": "Premium, authoritative, emotionally persuasive, clean."
     ${isShort
       ? `,
-    "constraints": [
-      "5 bullets maximum.",
-      "Use <ul> and <li>.",
-      "Start each bullet with <strong>Benefit Title:</strong>.",
-      "No emojis.",
-      "No inline styling."
-    ]`
+      "constraints": [
+        "Maximum 5 bullet points.",
+        "Use semantic structure: <ul class=\\"product-highlights\\"> and <li>.",
+        "Each bullet must start with a subtle, relevant emoji (e.g., 🔹, ✔️, ⭐, 💎).",
+        "After the emoji, begin with <strong>Benefit Title:</strong> followed by persuasive explanation.",
+        "Keep bullets concise, conversion-focused, and benefit-driven.",
+        "If the product includes a discount, insert a badge ABOVE the <ul> using:",
+        "<div class=\\"discount-badge\\">🔥 Limited Time Offer – Save XX%</div>",
+        "Include dynamic urgency triggers if applicable:",
+        "<div class=\\"urgency-badge\\">⚡ Only 3 left in stock!</div>",
+        "<div class=\\"bestseller-badge\\">🏆 Bestseller</div>",
+        "Use psychological triggers naturally: scarcity (limited quantity), exclusivity (premium edition), authority (expert recommendation).",
+        "Add structured data / schema for shortDescription using JSON-LD if possible:",
+        "<script type=\\"application/ld+json\\">{ \\"@context\\": \\"https://schema.org\\", \\"@type\\": \\"Product\\", \\"name\\": \\"PRODUCT_NAME\\", \\"description\\": \\"SHORT_DESCRIPTION\\", \\"offers\\": { \\"@type\\": \\"Offer\\", \\"price\\": \\"PRICE\\", \\"availability\\": \\"https://schema.org/InStock\\" } }</script>",
+        "No inline styling.",
+        "No background colors.",
+        "No width attributes.",
+        "Fully compatible with external CSS and mobile responsive layouts."
+      ]`
       : `,
     "constraints": [
-      "Structure content in two parts:",
-      "1) Visible summary section (concise overview).",
-      "2) Hidden extended section wrapped inside: <div class=\\"extended-content\\">...</div>",
-      "Do NOT include button.",
-      "Do NOT include JS.",
-      "Only provide expandable HTML structure.",
-      "Max 4 sections total.",
-      "Convert specifications into clean <table> without styling."
+    "Structure content in two parts: summary (always visible) and extended content (inside <div class=\\"extended-content\\">).",
+    "Use semantic HTML only: <h2>, <h3>, <p>, <ul>, <li>, <table>.",
+    "Professional, responsive tables:",
+    "<div class=\\"spec-table-wrapper\\"><table class=\\"spec-table\\">...</table></div>",
+    "Preserve all <img> tags exactly, no inline styling.",
+    "Include discount badges and urgency/bestseller indicators if applicable.",
+    "Use psychological triggers (scarcity, exclusivity, authority) naturally in text.",
+    "Add structured data / schema (JSON-LD) for SEO:",
+    "<script type=\\"application/ld+json\\">{ \\"@context\\": \\"https://schema.org\\", \\"@type\\": \\"Product\\", \\"name\\": \\"PRODUCT_NAME\\", \\"description\\": \\"DETAILED_DESCRIPTION\\", \\"offers\\": { \\"@type\\": \\"Offer\\", \\"price\\": \\"PRICE\\", \\"availability\\": \\"https://schema.org/InStock\\" } }</script>",
+    "No inline styling.",
+    "No background colors.",
+    "No width attributes.",
+    "Fully mobile responsive, compatible with external CSS.",
+    "Limit to 4 sections in total."
     ]`
     }
   }
