@@ -354,6 +354,287 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
 //   - No markdown
 //   - No explanations.`;
 //   }
+// function buildPrompt(
+//   chunk: { id: string; descreption: string }[],
+//   outputField: 'shortDescription' | 'detailedDescription'
+// ): string {
+//   const isShort = outputField === 'shortDescription';
+//   const fieldLabel = isShort
+//     ? 'shortDescription (conversion-optimized bullet points)'
+//     : 'detailedDescription (comprehensive SEO article)';
+//   const outputStructure = isShort
+//     ? '{ "id": "original_product_id", "shortDescription": "SAFE_HTML_STRING", "trackingMetadata": { "characterCount": number, "keywordDensity": object } }'
+//     : '{ "id": "original_product_id", "detailedDescription": "SAFE_EXPANDABLE_HTML_STRING", "trackingMetadata": { "characterCount": number, "sections": number, "keywordDensity": object } }';
+
+//   return `You are a JSON API specializing in premium e-commerce content optimization. Process ALL ${chunk.length} products and return a JSON array with EXCLUSIVELY ${fieldLabel}.
+
+// PROMPT TEMPLATE FOR EACH PRODUCT:
+// {
+//   "role": "Senior Luxury E-commerce SEO Strategist & Conversion Optimization Expert",
+//   "objective": "Create high-converting, SEO-dominant product content using semantic HTML5 that drives organic traffic and maximizes conversion rates. Content must be fully responsive across all devices and trackable via Google Analytics 4.",
+//   "corePrinciples": {
+//     "seoStrategy": [
+//       "Implement latent semantic indexing (LSI) keywords naturally throughout content",
+//       "Maintain optimal keyword density (1-2% for primary, 0.5-1% for secondary)",
+//       "Include long-tail keywords matching user search intent",
+//       "Structure content for featured snippets (questions/answers format)",
+//       "Use schema markup strategically for rich results",
+//       "Optimize for voice search with natural language patterns"
+//     ],
+//     "analyticsIntegration": [
+//       "Include data attributes for enhanced e-commerce tracking: data-product-id, data-category, data-price",
+//       "Structure content to support Google Analytics 4 enhanced measurement",
+//       "Create clickable elements with meaningful data-event-name attributes",
+//       "Support cross-domain tracking with proper UTM parameter compatibility",
+//       "Enable scroll depth tracking through logical content segmentation"
+//     ],
+//     "responsiveDesign": {
+//       "mobileFirst": [
+//         "Use viewport-relative units (%, vw, vh) through CSS classes only",
+//         "Implement fluid typography scale (min 16px for body text)",
+//         "Ensure touch targets are minimum 44x44px",
+//         "Stack content vertically on mobile breakpoints (<768px)",
+//         "Optimize image loading with loading=\"lazy\" and srcset compatibility"
+//       ],
+//       "tabletOptimization": [
+//         "Two-column layouts only when beneficial for comprehension",
+//         "Maintain readable font sizes (min 15px)",
+//         "Preserve table readability with horizontal scroll on overflow"
+//       ],
+//       "desktopEnhancement": [
+//         "Multi-column layouts for efficient space usage",
+//         "Hover states for interactive elements (via external CSS)",
+//         "Higher information density without compromising readability"
+//       ]
+//     }
+//   },
+//   "rules": {
+//     "critical": [
+//       "ZERO inline styles - use semantic classes only",
+//       "ZERO background colors or fixed dimensions",
+//       "ZERO layout-altering properties (position, float, margin, padding)",
+//       "NO <html>, <body>, or full page structures",
+//       "AVOID <h1> - hierarchy starts at <h2> for SEO optimization",
+//       "ALL content must be wrapped in device-agnostic containers",
+//       "PRESERVE original image tags exactly with added loading=\"lazy\" for performance"
+//     ],
+//     "seoEnhancements": [
+//       "Implement keyword-rich <h2> headings with primary keywords",
+//       "Use <h3> for subsections with long-tail variations",
+//       "Include FAQ schema compatibility through Q&A formatting",
+//       "Optimize meta-description length snippets (155-160 chars)",
+//       "Create SEO-friendly URLs through content structure",
+//       "Implement breadcrumb compatibility indicators",
+//       "Add alt-text attributes to all images with keyword optimization"
+//     ],
+//     "googleAnalytics4": [
+//       "Add data attributes for enhanced measurement:",
+//       "- data-ga-category=\"product-interaction\"",
+//       "- data-ga-label=\"short-description-view\" or \"detailed-description-view\"",
+//       "- data-ga-non-interaction=\"false\" for user engagement",
+//       "Structure expandable sections with data-ga-event=\"content-expand\"",
+//       "Include impression tracking via data-ga-impression=\"true\"",
+//       "Support e-commerce tracking with data-product-sku and data-product-price",
+//       "Enable scroll tracking with logical section breaks at 25%, 50%, 75%, 100%"
+//     ],
+//     "responsiveSafety": [
+//       "Tables MUST use responsive pattern:",
+//       "<div class=\"table-responsive-wrapper\">",
+//       "  <table class=\"specs-table\">",
+//       "    <thead>...</thead>",
+//       "    <tbody>...</tbody>",
+//       "  </table>",
+//       "</div>",
+//       "Images: <img ... loading=\"lazy\" class=\"responsive-image\">",
+//       "Use fluid containers: class=\"content-section\", \"feature-grid\", \"specifications\"",
+//       "Ensure 100% width compatibility with parent containers",
+//       "Test breakpoints mentally: mobile (320px), tablet (768px), desktop (1024+)"
+//     ]
+//   },
+//   "tone": "Ultra-premium, authoritative yet approachable, data-driven persuasive, emotionally resonant with logical triggers",
+  
+//   ${isShort ? `"constraints": [
+//     "SHORT DESCRIPTION SPECIFICATIONS:",
+//     "1. Structure:",
+//     "   - Maximum 5 high-impact bullet points within <ul class=\"product-highlights\">",
+//     "   - Each <li> format: 🔹 <strong>Benefit-Driven Headline:</strong> persuasive explanation with psychological trigger",
+//     "   - Include micro-conversions: <span class=\"micro-text\">(based on 127 reviews)</span> where relevant",
+    
+//     "2. Badge System (priority order):",
+//     "   - Discount: <div class=\"badge badge-savings\" data-ga-event=\"view-promotion\">🎯 Limited Time: Save XX%</div>",
+//     "   - Scarcity: <div class=\"badge badge-urgency\" data-ga-event=\"scarcity-trigger\">⚡ Only Y left - Selling Fast</div>",
+//     "   - Social Proof: <div class=\"badge badge-social\" data-ga-event=\"social-proof\">👥 500+ bought this week</div>",
+//     "   - Authority: <div class=\"badge badge-authority\" data-ga-event=\"authority-badge\">🏆 Editor's Choice 2024</div>",
+    
+//     "3. Analytics Implementation:",
+//     "   - Wrap entire short description in: <div class=\"short-description\" data-ga-content-type=\"short-description\" data-product-id=\"[ID]\">",
+//     "   - Each bullet: data-ga-bullet-position=\"1-5\"",
+//     "   - Badges: data-ga-badge-type=\"discount|urgency|social|authority\"",
+    
+//     "4. Schema Markup (JSON-LD):",
+//     "<script type=\"application/ld+json\">",
+//     "{",
+//     "  \"@context\": \"https://schema.org/\",",
+//     "  \"@type\": \"Product\",",
+//     "  \"name\": \"PRODUCT_NAME\",",
+//     "  \"description\": \"SHORT_DESCRIPTION_TEXT\",",
+//     "  \"sku\": \"PRODUCT_SKU\",",
+//     "  \"brand\": {",
+//     "    \"@type\": \"Brand\",",
+//     "    \"name\": \"BRAND_NAME\"",
+//     "  },",
+//     "  \"offers\": {",
+//     "    \"@type\": \"Offer\",",
+//     "    \"price\": \"PRICE\",",
+//     "    \"priceCurrency\": \"USD\",",
+//     "    \"availability\": \"https://schema.org/InStock\",",
+//     "    \"hasMerchantReturnPolicy\": {",
+//     "      \"@type\": \"MerchantReturnPolicy\",",
+//     "      \"returnPolicyCategory\": \"https://schema.org/MerchantReturnFiniteReturnWindow\"",
+//     "    }",
+//     "  },",
+//     "  \"aggregateRating\": {",
+//     "    \"@type\": \"AggregateRating\",",
+//     "    \"ratingValue\": \"4.8\",",
+//     "    \"reviewCount\": \"127\"",
+//     "  }",
+//     "}",
+//     "</script>",
+    
+//     "5. Performance Optimization:",
+//     "   - All images: loading=\"lazy\" and fetchpriority=\"low\"",
+//     "   - Critical CSS classes only (non-render blocking)",
+//     "   - Minimal DOM depth for better Core Web Vitals"
+//   ]` : `"constraints": [
+//     "DETAILED DESCRIPTION ARCHITECTURE:",
+//     "1. Content Structure (Maximum 5 sections):",
+//     "   Section 1 - Executive Summary: <div class=\"product-summary\" data-ga-section=\"summary\">",
+//     "     - Compelling opening with primary keyword",
+//     "     - Key value proposition with supporting data",
+//     "     - Trust signals with micro-data",
+//     "   Section 2 - Features & Benefits: <div class=\"features-deep-dive\" data-ga-section=\"features\">",
+//     "     - Feature-benefit matrix with specifications",
+//     "     - Comparison with alternatives",
+//     "     - Use case scenarios",
+//     "   Section 3 - Technical Specifications: <div class=\"technical-specs\" data-ga-section=\"specs\">",
+//     "     - Responsive specifications table",
+//     "     - Compatibility information",
+//     "     - Certification and compliance data",
+//     "   Section 4 - Social Proof & Reviews: <div class=\"social-proof\" data-ga-section=\"reviews\">",
+//     "     - Expert quotes with attribution",
+//     "     - User testimonial highlights",
+//     "     - Award badges and certifications",
+//     "   Section 5 - FAQ: <div class=\"faq-section\" data-ga-section=\"faq\">",
+//     "     - Question-based headings (<h3>What makes this premium?</h3>)",
+//     "     - Concise, authoritative answers",
+//     "     - Schema.org/FAQPage compatibility",
+    
+//     "2. Responsive Design Implementation:",
+//     "   - Mobile (<768px): Single column, stacked sections, horizontal scroll for tables",
+//     "   - Tablet (768-1024px): Optional 2-column for feature grid, preserved readability",
+//     "   - Desktop (>1024px): Multi-column where appropriate, enhanced typography",
+//     "   - All interactive elements: min-height:44px for touch targets",
+    
+//     "3. Enhanced E-commerce Analytics:",
+//     "   - Section tracking: data-ga-section-view=\"true\"",
+//     "   - Time-on-section estimation through content breaks",
+//     "   - Click tracking: data-ga-interactive=\"true\"",
+//     "   - Conversion funnels: data-ga-funnel-step=\"1-5\"",
+//     "   - Scroll tracking anchors: <div class=\"scroll-marker\" data-scroll-point=\"25\"></div>",
+    
+//     "4. Advanced Schema Implementation:",
+//     "<script type=\"application/ld+json\">",
+//     "{",
+//     "  \"@context\": \"https://schema.org/\",",
+//     "  \"@type\": \"Product\",",
+//     "  \"@id\": \"PRODUCT_URL#product\",",
+//     "  \"name\": \"PRODUCT_NAME\",",
+//     "  \"description\": \"DETAILED_DESCRIPTION_TEXT\",",
+//     "  \"sku\": \"PRODUCT_SKU\",",
+//     "  \"mpn\": \"MANUFACTURER_PN\",",
+//     "  \"brand\": {",
+//     "    \"@type\": \"Brand\",",
+//     "    \"name\": \"BRAND_NAME\",",
+//     "    \"logo\": \"BRAND_LOGO_URL\"",
+//     "  },",
+//     "  \"image\": [",
+//     "    \"IMAGE_URL_1\",",
+//     "    \"IMAGE_URL_2\"",
+//     "  ],",
+//     "  \"offers\": {",
+//     "    \"@type\": \"Offer\",",
+//     "    \"price\": \"PRICE\",",
+//     "    \"priceCurrency\": \"USD\",",
+//     "    \"priceValidUntil\": \"2024-12-31\",",
+//     "    \"itemCondition\": \"https://schema.org/NewCondition\",",
+//     "    \"availability\": \"https://schema.org/InStock\",",
+//     "    \"seller\": {",
+//     "      \"@type\": \"Organization\",",
+//     "      \"name\": \"YOUR_STORE_NAME\"",
+//     "    }",
+//     "  },",
+//     "  \"aggregateRating\": {",
+//     "    \"@type\": \"AggregateRating\",",
+//     "    \"ratingValue\": \"RATING\",",
+//     "    \"reviewCount\": \"COUNT\",",
+//     "    \"bestRating\": \"5\",",
+//     "    \"worstRating\": \"1\"",
+//     "  },",
+//     "  \"review\": [",
+//     "    {",
+//     "      \"@type\": \"Review\",",
+//     "      \"author\": { \"@type\": \"Person\", \"name\": \"REVIEWER_NAME\" },",
+//     "      \"reviewRating\": {",
+//     "        \"@type\": \"Rating\",",
+//     "        \"ratingValue\": \"5\"",
+//     "      },",
+//     "      \"reviewBody\": \"REVIEW_TEXT\"",
+//     "    }",
+//     "  ]",
+//     "}",
+//     "</script>",
+    
+//     "5. Performance Metrics:",
+//     "   - Total DOM nodes < 150 per product",
+//     "   - No render-blocking resources",
+//     "   - Cumulative Layout Shift (CLS) score optimization",
+//     "   - Largest Contentful Paint (LCP) friendly structure",
+//     "   - First Input Delay (FID) optimized through minimal JavaScript"
+//   ]`}
+// }
+
+// DATA TO PROCESS:
+// ${JSON.stringify(chunk.map(p => ({ 
+//   id: p.id, 
+//   content: p.descreption,
+//   metadata: {
+//     requiresSchema: true,
+//     analyticsTracking: true,
+//     responsiveLevel: 'full'
+//   }
+// })))}
+
+// OUTPUT REQUIREMENTS:
+// - Return EXACTLY ${chunk.length} objects in the JSON array
+// - Each object must follow: ${outputStructure}
+// - Include trackingMetadata for analytics validation
+// - Escape all double quotes (\\") within HTML strings
+// - NO markdown formatting
+// - NO explanatory text before or after JSON
+// - VALID JSON array only
+
+// QUALITY CHECKS:
+// - ✓ SEO keyword density optimized
+// - ✓ GA4 enhanced measurement ready
+// - ✓ Mobile-first responsive design
+// - ✓ Schema.org validation passed
+// - ✓ Core Web Vitals optimized
+// - ✓ Accessibility compliant (WCAG 2.1)
+// - ✓ Cross-browser compatible
+// - ✓ Print-friendly where applicable
+
+// Return ONLY the valid JSON array.`;
+// }
 function buildPrompt(
   chunk: { id: string; descreption: string }[],
   outputField: 'shortDescription' | 'detailedDescription'
@@ -365,6 +646,188 @@ function buildPrompt(
   const outputStructure = isShort
     ? '{ "id": "original_product_id", "shortDescription": "SAFE_HTML_STRING", "trackingMetadata": { "characterCount": number, "keywordDensity": object } }'
     : '{ "id": "original_product_id", "detailedDescription": "SAFE_EXPANDABLE_HTML_STRING", "trackingMetadata": { "characterCount": number, "sections": number, "keywordDensity": object } }';
+
+  const constraintsBlock = isShort
+    ? `"constraints": [
+    "SHORT DESCRIPTION SPECIFICATIONS:",
+    "1. Structure:",
+    "   - Maximum 5 high-impact bullet points within <ul class=\\"product-highlights\\">",
+    "   - Each <li> format: 🔹 <strong>Benefit-Driven Headline:</strong> persuasive explanation with psychological trigger",
+    "   - Include micro-conversions: <span class=\\"micro-text\\">(based on 127 reviews)</span> where relevant",
+    
+    "2. Badge System (priority order):",
+    "   - Discount: <div class=\\"badge badge-savings\\" data-ga-event=\\"view-promotion\\">🎯 Limited Time: Save XX%</div>",
+    "   - Scarcity: <div class=\\"badge badge-urgency\\" data-ga-event=\\"scarcity-trigger\\">⚡ Only Y left - Selling Fast</div>",
+    "   - Social Proof: <div class=\\"badge badge-social\\" data-ga-event=\\"social-proof\\">👥 500+ bought this week</div>",
+    "   - Authority: <div class=\\"badge badge-authority\\" data-ga-event=\\"authority-badge\\">🏆 Editor's Choice 2024</div>",
+    
+    "3. Analytics Implementation:",
+    "   - Wrap entire short description in: <div class=\\"short-description\\" data-ga-content-type=\\"short-description\\" data-product-id=\\"[ID]\\">",
+    "   - Each bullet: data-ga-bullet-position=\\"1-5\\"",
+    "   - Badges: data-ga-badge-type=\\"discount|urgency|social|authority\\"",
+    
+    "4. Schema Markup (JSON-LD):",
+    "<script type=\\"application/ld+json\\">",
+    "{",
+    "  \\"@context\\": \\"https://schema.org/\\",",
+    "  \\"@type\\": \\"Product\\",",
+    "  \\"name\\": \\"PRODUCT_NAME\\",",
+    "  \\"description\\": \\"SHORT_DESCRIPTION_TEXT\\",",
+    "  \\"sku\\": \\"PRODUCT_SKU\\",",
+    "  \\"brand\\": {",
+    "    \\"@type\\": \\"Brand\\",",
+    "    \\"name\\": \\"BRAND_NAME\\"",
+    "  },",
+    "  \\"offers\\": {",
+    "    \\"@type\\": \\"Offer\\",",
+    "    \\"price\\": \\"PRICE\\",",
+    "    \\"priceCurrency\\": \\"USD\\",",
+    "    \\"availability\\": \\"https://schema.org/InStock\\",",
+    "    \\"hasMerchantReturnPolicy\\": {",
+    "      \\"@type\\": \\"MerchantReturnPolicy\\",",
+    "      \\"returnPolicyCategory\\": \\"https://schema.org/MerchantReturnFiniteReturnWindow\\"",
+    "    }",
+    "  },",
+    "  \\"aggregateRating\\": {",
+    "    \\"@type\\": \\"AggregateRating\\",",
+    "    \\"ratingValue\\": \\"4.8\\",",
+    "    \\"reviewCount\\": \\"127\\"",
+    "  }",
+    "}",
+    "</script>",
+    
+    "5. Performance Optimization:",
+    "   - All images: loading=\\"lazy\\" and fetchpriority=\\"low\\"",
+    "   - Critical CSS classes only (non-render blocking)",
+    "   - Minimal DOM depth for better Core Web Vitals"
+  ]`
+    : `"constraints": [
+    "DETAILED DESCRIPTION ARCHITECTURE:",
+    "1. Content Structure (Maximum 5 sections):",
+    "   Section 1 - Executive Summary: <div class=\\"product-summary\\" data-ga-section=\\"summary\\">",
+    "     - Compelling opening with primary keyword",
+    "     - Key value proposition with supporting data",
+    "     - Trust signals with micro-data",
+    "   Section 2 - Features & Benefits: <div class=\\"features-deep-dive\\" data-ga-section=\\"features\\">",
+    "     - Feature-benefit matrix with specifications",
+    "     - Comparison with alternatives",
+    "     - Use case scenarios",
+    "   Section 3 - Technical Specifications: <div class=\\"technical-specs\\" data-ga-section=\\"specs\\">",
+    "     - CRITICAL: ALL tables in this section MUST follow the responsive pattern",
+    "     - If multiple tables needed (e.g., Physical + Technical), use:",
+    "       <div class=\\"table-responsive-wrapper\\" data-ga-section=\\"specs-physical\\">",
+    "         <table class=\\"specs-table\\">...</table>",
+    "       </div>",
+    "       <div class=\\"table-responsive-wrapper\\" data-ga-section=\\"specs-technical\\">",
+    "         <table class=\\"specs-table\\">...</table>",
+    "       </div>",
+    "     - EVERY table MUST have data-label attributes on cells",
+    "     - Test mentally: on mobile, each table becomes a card stack",
+    "   Section 4 - Social Proof & Reviews: <div class=\\"social-proof\\" data-ga-section=\\"reviews\\">",
+    "     - Expert quotes with attribution",
+    "     - User testimonial highlights",
+    "     - Award badges and certifications",
+    "   Section 5 - FAQ: <div class=\\"faq-section\\" data-ga-section=\\"faq\\">",
+    "     - Question-based headings (<h3>What makes this premium?</h3>)",
+    "     - Concise, authoritative answers",
+    "     - Schema.org/FAQPage compatibility",
+    
+    "2. TABLE RESPONSIVENESS - MANDATORY PATTERN FOR ALL TABLES:",
+    "   \`\`\`html",
+    "   <!-- EVERY SINGLE TABLE MUST FOLLOW THIS EXACT STRUCTURE -->",
+    "   <div class=\\"table-responsive-wrapper\\" data-ga-section=\\"unique-table-identifier\\">",
+    "     <table class=\\"specs-table\\">",
+    "       <thead>",
+    "         <tr>",
+    "           <th>Column 1 Header</th>",
+    "           <th>Column 2 Header</th>",
+    "         </tr>",
+    "       </thead>",
+    "       <tbody>",
+    "         <tr>",
+    "           <td data-label=\\"Column 1 Header\\">Value 1</td>",
+    "           <td data-label=\\"Column 2 Header\\">Value 2</td>",
+    "         </tr>",
+    "       </tbody>",
+    "     </table>",
+    "   </div>",
+    "   \`\`\`",
+    "",
+    "   KEY RULES FOR MULTIPLE TABLES:",
+    "   - NEVER nest tables",
+    "   - NEVER use same data-ga-section value for different tables",
+    "   - ALWAYS include data-label on EVERY <td>",
+    "   - ALWAYS use <thead> for headers (even with one table)",
+    "   - ALWAYS wrap in <div class=\\"table-responsive-wrapper\\">",
+    "   - NEVER use width, colspan, or rowspan that breaks mobile view",
+    "   - If colspan NECESSARY, test on mobile: it will span full width",
+    
+    "3. Enhanced E-commerce Analytics:",
+    "   - Section tracking: data-ga-section-view=\\"true\\"",
+    "   - Time-on-section estimation through content breaks",
+    "   - Click tracking: data-ga-interactive=\\"true\\"",
+    "   - Conversion funnels: data-ga-funnel-step=\\"1-5\\"",
+    "   - Scroll tracking anchors: <div class=\\"scroll-marker\\" data-scroll-point=\\"25\\"></div>",
+    
+    "4. Advanced Schema Implementation:",
+    "<script type=\\"application/ld+json\\">",
+    "{",
+    "  \\"@context\\": \\"https://schema.org/\\",",
+    "  \\"@type\\": \\"Product\\",",
+    "  \\"@id\\": \\"PRODUCT_URL#product\\",",
+    "  \\"name\\": \\"PRODUCT_NAME\\",",
+    "  \\"description\\": \\"DETAILED_DESCRIPTION_TEXT\\",",
+    "  \\"sku\\": \\"PRODUCT_SKU\\",",
+    "  \\"mpn\\": \\"MANUFACTURER_PN\\",",
+    "  \\"brand\\": {",
+    "    \\"@type\\": \\"Brand\\",",
+    "    \\"name\\": \\"BRAND_NAME\\",",
+    "    \\"logo\\": \\"BRAND_LOGO_URL\\"",
+    "  },",
+    "  \\"image\\": [",
+    "    \\"IMAGE_URL_1\\",",
+    "    \\"IMAGE_URL_2\\"",
+    "  ],",
+    "  \\"offers\\": {",
+    "    \\"@type\\": \\"Offer\\",",
+    "    \\"price\\": \\"PRICE\\",",
+    "    \\"priceCurrency\\": \\"USD\\",",
+    "    \\"priceValidUntil\\": \\"2024-12-31\\",",
+    "    \\"itemCondition\\": \\"https://schema.org/NewCondition\\",",
+    "    \\"availability\\": \\"https://schema.org/InStock\\",",
+    "    \\"seller\\": {",
+    "      \\"@type\\": \\"Organization\\",",
+    "      \\"name\\": \\"YOUR_STORE_NAME\\"",
+    "    }",
+    "  },",
+    "  \\"aggregateRating\\": {",
+    "    \\"@type\\": \\"AggregateRating\\",",
+    "    \\"ratingValue\\": \\"RATING\\",",
+    "    \\"reviewCount\\": \\"COUNT\\",",
+    "    \\"bestRating\\": \\"5\\",",
+    "    \\"worstRating\\": \\"1\\"",
+    "  },",
+    "  \\"review\\": [",
+    "    {",
+    "      \\"@type\\": \\"Review\\",",
+    "      \\"author\\": { \\"@type\\": \\"Person\\", \\"name\\": \\"REVIEWER_NAME\\" },",
+    "      \\"reviewRating\\": {",
+    "        \\"@type\\": \\"Rating\\",",
+    "        \\"ratingValue\\": \\"5\\"",
+    "      },",
+    "      \\"reviewBody\\": \\"REVIEW_TEXT\\"",
+    "    }",
+    "  ]",
+    "}",
+    "</script>",
+    
+    "5. Performance Metrics:",
+    "   - Total DOM nodes < 150 per product",
+    "   - No render-blocking resources",
+    "   - Cumulative Layout Shift (CLS) score optimization",
+    "   - Largest Contentful Paint (LCP) friendly structure",
+    "   - First Input Delay (FID) optimized through minimal JavaScript"
+  ]`;
 
   return `You are a JSON API specializing in premium e-commerce content optimization. Process ALL ${chunk.length} products and return a JSON array with EXCLUSIVELY ${fieldLabel}.
 
@@ -394,7 +857,7 @@ PROMPT TEMPLATE FOR EACH PRODUCT:
         "Implement fluid typography scale (min 16px for body text)",
         "Ensure touch targets are minimum 44x44px",
         "Stack content vertically on mobile breakpoints (<768px)",
-        "Optimize image loading with loading=\"lazy\" and srcset compatibility"
+        "Optimize image loading with loading="lazy" and srcset compatibility"
       ],
       "tabletOptimization": [
         "Two-column layouts only when beneficial for comprehension",
@@ -416,7 +879,7 @@ PROMPT TEMPLATE FOR EACH PRODUCT:
       "NO <html>, <body>, or full page structures",
       "AVOID <h1> - hierarchy starts at <h2> for SEO optimization",
       "ALL content must be wrapped in device-agnostic containers",
-      "PRESERVE original image tags exactly with added loading=\"lazy\" for performance"
+      "PRESERVE original image tags exactly with added loading="lazy" for performance"
     ],
     "seoEnhancements": [
       "Implement keyword-rich <h2> headings with primary keywords",
@@ -429,166 +892,260 @@ PROMPT TEMPLATE FOR EACH PRODUCT:
     ],
     "googleAnalytics4": [
       "Add data attributes for enhanced measurement:",
-      "- data-ga-category=\"product-interaction\"",
-      "- data-ga-label=\"short-description-view\" or \"detailed-description-view\"",
-      "- data-ga-non-interaction=\"false\" for user engagement",
-      "Structure expandable sections with data-ga-event=\"content-expand\"",
-      "Include impression tracking via data-ga-impression=\"true\"",
+      "- data-ga-category="product-interaction"",
+      "- data-ga-label="short-description-view" or "detailed-description-view"",
+      "- data-ga-non-interaction="false" for user engagement",
+      "Structure expandable sections with data-ga-event="content-expand"",
+      "Include impression tracking via data-ga-impression="true"",
       "Support e-commerce tracking with data-product-sku and data-product-price",
       "Enable scroll tracking with logical section breaks at 25%, 50%, 75%, 100%"
     ],
-    "responsiveSafety": [
-      "Tables MUST use responsive pattern:",
-      "<div class=\"table-responsive-wrapper\">",
-      "  <table class=\"specs-table\">",
-      "    <thead>...</thead>",
-      "    <tbody>...</tbody>",
-      "  </table>",
-      "</div>",
-      "Images: <img ... loading=\"lazy\" class=\"responsive-image\">",
-      "Use fluid containers: class=\"content-section\", \"feature-grid\", \"specifications\"",
-      "Ensure 100% width compatibility with parent containers",
-      "Test breakpoints mentally: mobile (320px), tablet (768px), desktop (1024+)"
-    ]
+    "responsiveSafety": {
+      "tableResponsiveness": [
+        "CRITICAL: EVERY table MUST use the SAME responsive pattern:",
+        "<div class="table-responsive-wrapper" data-ga-section="specifications">",
+        "  <table class="specs-table">",
+        "    <thead>",
+        "      <tr>",
+        "        <th>Specification</th>",
+        "        <th>Details</th>",
+        "      </tr>",
+        "    </thead>",
+        "    <tbody>",
+        "      <tr>",
+        "        <td data-label="Specification">Material</td>",
+        "        <td data-label="Details">Premium Leather</td>",
+        "      </tr>",
+        "    </tbody>",
+        "  </table>",
+        "</div>",
+        "",
+        "MANDATORY table attributes:",
+        "- NO width attributes on table, tr, td, or th",
+        "- NO colgroup or col with width",
+        "- ALL tables MUST include data-label attributes on cells for mobile",
+        "- CSS class must always be "specs-table" for consistent styling",
+        "- Wrapper div class must always be "table-responsive-wrapper"",
+        "- For multiple tables, increment data-ga-section: "specifications-1", "specifications-2"",
+        "",
+        "Example of MULTIPLE tables (BOTH responsive):",
+        "<div class="table-responsive-wrapper" data-ga-section="specifications-1">",
+        "  <table class="specs-table">",
+        "    <thead>",
+        "      <tr>",
+        "        <th>Physical Specifications</th>",
+        "        <th>Value</th>",
+        "      </tr>",
+        "    </thead>",
+        "    <tbody>",
+        "      <tr>",
+        "        <td data-label="Physical Specifications">Dimensions</td>",
+        "        <td data-label="Value">10" x 8" x 2"</td>",
+        "      </tr>",
+        "    </tbody>",
+        "  </table>",
+        "</div>",
+        "",
+        "<div class="table-responsive-wrapper" data-ga-section="specifications-2">",
+        "  <table class="specs-table">",
+        "    <thead>",
+        "      <tr>",
+        "        <th>Technical Specifications</th>",
+        "        <th>Details</th>",
+        "      </tr>",
+        "    </thead>",
+        "    <tbody>",
+        "      <tr>",
+        "        <td data-label="Technical Specifications">Compatibility</td>",
+        "        <td data-label="Details">iOS 14+, Android 11+</td>",
+        "      </tr>",
+        "    </tbody>",
+        "  </table>",
+        "</div>",
+        "",
+        "MOBILE BEHAVIOR (ALL tables):",
+        "- On screens < 768px, tables transform to cards",
+        "- Each cell becomes a flex row with data-label as left column",
+        "- Horizontal scroll appears if content exceeds width",
+        "- Font sizes adjust proportionally"
+      ],
+      "imageResponsiveness": [
+        "Images: <img ... loading="lazy" class="responsive-image">",
+        "Use fluid containers: class="content-section", "feature-grid", "specifications"",
+        "Ensure 100% width compatibility with parent containers"
+      ],
+      "breakpointTesting": [
+        "Test ALL tables at:",
+        "- Mobile: 320px (should transform to cards with data-label visible)",
+        "- Tablet: 768px (should maintain structure with optional horizontal scroll)",
+        "- Desktop: 1024+px (full table view with optimal spacing)"
+      ]
+    }
   },
   "tone": "Ultra-premium, authoritative yet approachable, data-driven persuasive, emotionally resonant with logical triggers",
   
-  ${isShort ? `"constraints": [
-    "SHORT DESCRIPTION SPECIFICATIONS:",
-    "1. Structure:",
-    "   - Maximum 5 high-impact bullet points within <ul class=\"product-highlights\">",
-    "   - Each <li> format: 🔹 <strong>Benefit-Driven Headline:</strong> persuasive explanation with psychological trigger",
-    "   - Include micro-conversions: <span class=\"micro-text\">(based on 127 reviews)</span> where relevant",
+  ${constraintsBlock}
     
     "2. Badge System (priority order):",
-    "   - Discount: <div class=\"badge badge-savings\" data-ga-event=\"view-promotion\">🎯 Limited Time: Save XX%</div>",
-    "   - Scarcity: <div class=\"badge badge-urgency\" data-ga-event=\"scarcity-trigger\">⚡ Only Y left - Selling Fast</div>",
-    "   - Social Proof: <div class=\"badge badge-social\" data-ga-event=\"social-proof\">👥 500+ bought this week</div>",
-    "   - Authority: <div class=\"badge badge-authority\" data-ga-event=\"authority-badge\">🏆 Editor's Choice 2024</div>",
+    "   - Discount: <div class="badge badge-savings" data-ga-event="view-promotion">🎯 Limited Time: Save XX%</div>",
+    "   - Scarcity: <div class="badge badge-urgency" data-ga-event="scarcity-trigger">⚡ Only Y left - Selling Fast</div>",
+    "   - Social Proof: <div class="badge badge-social" data-ga-event="social-proof">👥 500+ bought this week</div>",
+    "   - Authority: <div class="badge badge-authority" data-ga-event="authority-badge">🏆 Editor's Choice 2024</div>",
     
     "3. Analytics Implementation:",
-    "   - Wrap entire short description in: <div class=\"short-description\" data-ga-content-type=\"short-description\" data-product-id=\"[ID]\">",
-    "   - Each bullet: data-ga-bullet-position=\"1-5\"",
-    "   - Badges: data-ga-badge-type=\"discount|urgency|social|authority\"",
+    "   - Wrap entire short description in: <div class="short-description" data-ga-content-type="short-description" data-product-id="[ID]">",
+    "   - Each bullet: data-ga-bullet-position="1-5"",
+    "   - Badges: data-ga-badge-type="discount|urgency|social|authority"",
     
     "4. Schema Markup (JSON-LD):",
-    "<script type=\"application/ld+json\">",
+    "<script type="application/ld+json">",
     "{",
-    "  \"@context\": \"https://schema.org/\",",
-    "  \"@type\": \"Product\",",
-    "  \"name\": \"PRODUCT_NAME\",",
-    "  \"description\": \"SHORT_DESCRIPTION_TEXT\",",
-    "  \"sku\": \"PRODUCT_SKU\",",
-    "  \"brand\": {",
-    "    \"@type\": \"Brand\",",
-    "    \"name\": \"BRAND_NAME\"",
+    "  "@context": "https://schema.org/",",
+    "  "@type": "Product",",
+    "  "name": "PRODUCT_NAME",",
+    "  "description": "SHORT_DESCRIPTION_TEXT",",
+    "  "sku": "PRODUCT_SKU",",
+    "  "brand": {",
+    "    "@type": "Brand",",
+    "    "name": "BRAND_NAME"",
     "  },",
-    "  \"offers\": {",
-    "    \"@type\": \"Offer\",",
-    "    \"price\": \"PRICE\",",
-    "    \"priceCurrency\": \"USD\",",
-    "    \"availability\": \"https://schema.org/InStock\",",
-    "    \"hasMerchantReturnPolicy\": {",
-    "      \"@type\": \"MerchantReturnPolicy\",",
-    "      \"returnPolicyCategory\": \"https://schema.org/MerchantReturnFiniteReturnWindow\"",
+    "  "offers": {",
+    "    "@type": "Offer",",
+    "    "price": "PRICE",",
+    "    "priceCurrency": "USD",",
+    "    "availability": "https://schema.org/InStock",",
+    "    "hasMerchantReturnPolicy": {",
+    "      "@type": "MerchantReturnPolicy",",
+    "      "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow"",
     "    }",
     "  },",
-    "  \"aggregateRating\": {",
-    "    \"@type\": \"AggregateRating\",",
-    "    \"ratingValue\": \"4.8\",",
-    "    \"reviewCount\": \"127\"",
+    "  "aggregateRating": {",
+    "    "@type": "AggregateRating",",
+    "    "ratingValue": "4.8",",
+    "    "reviewCount": "127"",
     "  }",
     "}",
     "</script>",
     
     "5. Performance Optimization:",
-    "   - All images: loading=\"lazy\" and fetchpriority=\"low\"",
+    "   - All images: loading="lazy" and fetchpriority="low"",
     "   - Critical CSS classes only (non-render blocking)",
     "   - Minimal DOM depth for better Core Web Vitals"
-  ]` : `"constraints": [
+
     "DETAILED DESCRIPTION ARCHITECTURE:",
     "1. Content Structure (Maximum 5 sections):",
-    "   Section 1 - Executive Summary: <div class=\"product-summary\" data-ga-section=\"summary\">",
+    "   Section 1 - Executive Summary: <div class="product-summary" data-ga-section="summary">",
     "     - Compelling opening with primary keyword",
     "     - Key value proposition with supporting data",
     "     - Trust signals with micro-data",
-    "   Section 2 - Features & Benefits: <div class=\"features-deep-dive\" data-ga-section=\"features\">",
+    "   Section 2 - Features & Benefits: <div class="features-deep-dive" data-ga-section="features">",
     "     - Feature-benefit matrix with specifications",
     "     - Comparison with alternatives",
     "     - Use case scenarios",
-    "   Section 3 - Technical Specifications: <div class=\"technical-specs\" data-ga-section=\"specs\">",
-    "     - Responsive specifications table",
-    "     - Compatibility information",
-    "     - Certification and compliance data",
-    "   Section 4 - Social Proof & Reviews: <div class=\"social-proof\" data-ga-section=\"reviews\">",
+    "   Section 3 - Technical Specifications: <div class="technical-specs" data-ga-section="specs">",
+    "     - CRITICAL: ALL tables in this section MUST follow the responsive pattern",
+    "     - If multiple tables needed (e.g., Physical + Technical), use:",
+    "       <div class="table-responsive-wrapper" data-ga-section="specs-physical">",
+    "         <table class="specs-table">...</table>",
+    "       </div>",
+    "       <div class="table-responsive-wrapper" data-ga-section="specs-technical">",
+    "         <table class="specs-table">...</table>",
+    "       </div>",
+    "     - EVERY table MUST have data-label attributes on cells",
+    "     - Test mentally: on mobile, each table becomes a card stack",
+    "   Section 4 - Social Proof & Reviews: <div class="social-proof" data-ga-section="reviews">",
     "     - Expert quotes with attribution",
     "     - User testimonial highlights",
     "     - Award badges and certifications",
-    "   Section 5 - FAQ: <div class=\"faq-section\" data-ga-section=\"faq\">",
+    "   Section 5 - FAQ: <div class="faq-section" data-ga-section="faq">",
     "     - Question-based headings (<h3>What makes this premium?</h3>)",
     "     - Concise, authoritative answers",
     "     - Schema.org/FAQPage compatibility",
     
-    "2. Responsive Design Implementation:",
-    "   - Mobile (<768px): Single column, stacked sections, horizontal scroll for tables",
-    "   - Tablet (768-1024px): Optional 2-column for feature grid, preserved readability",
-    "   - Desktop (>1024px): Multi-column where appropriate, enhanced typography",
-    "   - All interactive elements: min-height:44px for touch targets",
+    "2. TABLE RESPONSIVENESS - MANDATORY PATTERN FOR ALL TABLES:",
+    "   \`\`\`html",
+    "   <!-- EVERY SINGLE TABLE MUST FOLLOW THIS EXACT STRUCTURE -->",
+    "   <div class="table-responsive-wrapper" data-ga-section="unique-table-identifier">",
+    "     <table class="specs-table">",
+    "       <thead>",
+    "         <tr>",
+    "           <th>Column 1 Header</th>",
+    "           <th>Column 2 Header</th>",
+    "         </tr>",
+    "       </thead>",
+    "       <tbody>",
+    "         <tr>",
+    "           <td data-label="Column 1 Header">Value 1</td>",
+    "           <td data-label="Column 2 Header">Value 2</td>",
+    "         </tr>",
+    "       </tbody>",
+    "     </table>",
+    "   </div>",
+    "   \`\`\`",
+    "",
+    "   KEY RULES FOR MULTIPLE TABLES:",
+    "   - NEVER nest tables",
+    "   - NEVER use same data-ga-section value for different tables",
+    "   - ALWAYS include data-label on EVERY <td>",
+    "   - ALWAYS use <thead> for headers (even with one table)",
+    "   - ALWAYS wrap in <div class="table-responsive-wrapper">",
+    "   - NEVER use width, colspan, or rowspan that breaks mobile view",
+    "   - If colspan NECESSARY, test on mobile: it will span full width",
     
     "3. Enhanced E-commerce Analytics:",
-    "   - Section tracking: data-ga-section-view=\"true\"",
+    "   - Section tracking: data-ga-section-view="true"",
     "   - Time-on-section estimation through content breaks",
-    "   - Click tracking: data-ga-interactive=\"true\"",
-    "   - Conversion funnels: data-ga-funnel-step=\"1-5\"",
-    "   - Scroll tracking anchors: <div class=\"scroll-marker\" data-scroll-point=\"25\"></div>",
+    "   - Click tracking: data-ga-interactive="true"",
+    "   - Conversion funnels: data-ga-funnel-step="1-5"",
+    "   - Scroll tracking anchors: <div class="scroll-marker" data-scroll-point="25"></div>",
     
     "4. Advanced Schema Implementation:",
-    "<script type=\"application/ld+json\">",
+    "<script type="application/ld+json">",
     "{",
-    "  \"@context\": \"https://schema.org/\",",
-    "  \"@type\": \"Product\",",
-    "  \"@id\": \"PRODUCT_URL#product\",",
-    "  \"name\": \"PRODUCT_NAME\",",
-    "  \"description\": \"DETAILED_DESCRIPTION_TEXT\",",
-    "  \"sku\": \"PRODUCT_SKU\",",
-    "  \"mpn\": \"MANUFACTURER_PN\",",
-    "  \"brand\": {",
-    "    \"@type\": \"Brand\",",
-    "    \"name\": \"BRAND_NAME\",",
-    "    \"logo\": \"BRAND_LOGO_URL\"",
+    "  "@context": "https://schema.org/",",
+    "  "@type": "Product",",
+    "  "@id": "PRODUCT_URL#product",",
+    "  "name": "PRODUCT_NAME",",
+    "  "description": "DETAILED_DESCRIPTION_TEXT",",
+    "  "sku": "PRODUCT_SKU",",
+    "  "mpn": "MANUFACTURER_PN",",
+    "  "brand": {",
+    "    "@type": "Brand",",
+    "    "name": "BRAND_NAME",",
+    "    "logo": "BRAND_LOGO_URL"",
     "  },",
-    "  \"image\": [",
-    "    \"IMAGE_URL_1\",",
-    "    \"IMAGE_URL_2\"",
+    "  "image": [",
+    "    "IMAGE_URL_1",",
+    "    "IMAGE_URL_2"",
     "  ],",
-    "  \"offers\": {",
-    "    \"@type\": \"Offer\",",
-    "    \"price\": \"PRICE\",",
-    "    \"priceCurrency\": \"USD\",",
-    "    \"priceValidUntil\": \"2024-12-31\",",
-    "    \"itemCondition\": \"https://schema.org/NewCondition\",",
-    "    \"availability\": \"https://schema.org/InStock\",",
-    "    \"seller\": {",
-    "      \"@type\": \"Organization\",",
-    "      \"name\": \"YOUR_STORE_NAME\"",
+    "  "offers": {",
+    "    "@type": "Offer",",
+    "    "price": "PRICE",",
+    "    "priceCurrency": "USD",",
+    "    "priceValidUntil": "2024-12-31",",
+    "    "itemCondition": "https://schema.org/NewCondition",",
+    "    "availability": "https://schema.org/InStock",",
+    "    "seller": {",
+    "      "@type": "Organization",",
+    "      "name": "YOUR_STORE_NAME"",
     "    }",
     "  },",
-    "  \"aggregateRating\": {",
-    "    \"@type\": \"AggregateRating\",",
-    "    \"ratingValue\": \"RATING\",",
-    "    \"reviewCount\": \"COUNT\",",
-    "    \"bestRating\": \"5\",",
-    "    \"worstRating\": \"1\"",
+    "  "aggregateRating": {",
+    "    "@type": "AggregateRating",",
+    "    "ratingValue": "RATING",",
+    "    "reviewCount": "COUNT",",
+    "    "bestRating": "5",",
+    "    "worstRating": "1"",
     "  },",
-    "  \"review\": [",
+    "  "review": [",
     "    {",
-    "      \"@type\": \"Review\",",
-    "      \"author\": { \"@type\": \"Person\", \"name\": \"REVIEWER_NAME\" },",
-    "      \"reviewRating\": {",
-    "        \"@type\": \"Rating\",",
-    "        \"ratingValue\": \"5\"",
+    "      "@type": "Review",",
+    "      "author": { "@type": "Person", "name": "REVIEWER_NAME" },",
+    "      "reviewRating": {",
+    "        "@type": "Rating",",
+    "        "ratingValue": "5"",
     "      },",
-    "      \"reviewBody\": \"REVIEW_TEXT\"",
+    "      "reviewBody": "REVIEW_TEXT"",
     "    }",
     "  ]",
     "}",
@@ -600,7 +1157,7 @@ PROMPT TEMPLATE FOR EACH PRODUCT:
     "   - Cumulative Layout Shift (CLS) score optimization",
     "   - Largest Contentful Paint (LCP) friendly structure",
     "   - First Input Delay (FID) optimized through minimal JavaScript"
-  ]`}
+  ]
 }
 
 DATA TO PROCESS:
@@ -610,7 +1167,8 @@ ${JSON.stringify(chunk.map(p => ({
   metadata: {
     requiresSchema: true,
     analyticsTracking: true,
-    responsiveLevel: 'full'
+    responsiveLevel: 'full',
+    multipleTables: true // Flag to indicate multiple tables need consistent styling
   }
 })))}
 
@@ -618,7 +1176,7 @@ OUTPUT REQUIREMENTS:
 - Return EXACTLY ${chunk.length} objects in the JSON array
 - Each object must follow: ${outputStructure}
 - Include trackingMetadata for analytics validation
-- Escape all double quotes (\\") within HTML strings
+- Escape all double quotes (\") within HTML strings
 - NO markdown formatting
 - NO explanatory text before or after JSON
 - VALID JSON array only
@@ -627,11 +1185,12 @@ QUALITY CHECKS:
 - ✓ SEO keyword density optimized
 - ✓ GA4 enhanced measurement ready
 - ✓ Mobile-first responsive design
+- ✓ ALL tables follow SAME responsive pattern
+- ✓ Multiple tables correctly differentiated via data-ga-section
 - ✓ Schema.org validation passed
 - ✓ Core Web Vitals optimized
 - ✓ Accessibility compliant (WCAG 2.1)
 - ✓ Cross-browser compatible
-- ✓ Print-friendly where applicable
 
 Return ONLY the valid JSON array.`;
 }
