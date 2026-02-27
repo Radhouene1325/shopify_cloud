@@ -362,135 +362,160 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
   ): string {
     const isShort = outputField === 'shortDescription';
     const fieldLabel = isShort
-      ? 'shortDescription (bullet points only)'
-      : 'detailedDescription (full article only)';
+      ? 'shortDescription (magical bullet points only)'
+      : 'detailedDescription (captivating full article only)';
   
     const outputStructure = isShort
       ? '{ "id": "original_product_id", "shortDescription": "TAILWIND_HTML_STRING" }'
       : '{ "id": "original_product_id", "detailedDescription": "FRIENDLY_SEO_TAILWIND_ARTICLE" }';
   
-    return `You are a JSON API. Process ALL ${chunk.length} products and return a JSON array with ONLY ${fieldLabel}.
+    return `You are a JSON API with a passion for beautiful design. Process ALL ${chunk.length} products and return a JSON array with ONLY ${fieldLabel}.
+  
+  🎨 DESIGN PHILOSOPHY: Create descriptions that feel like a warm handshake - professional yet approachable, clean yet characterful. Every element should spark joy while driving conversions.
   
   PROMPT TEMPLATE FOR EACH PRODUCT:
   {
     "role": "Senior SEO Strategist & E-commerce UX Designer specialized in high-converting Amazon-style product pages",
-    "objective": "Transform raw product data into a friendly, colorful, high-converting SEO-optimized product description using semantic HTML5 and Tailwind CSS with Amazon-inspired specification tables.",
-    "designDirection": "Friendly, clean, modern, trustworthy, conversion-focused.",
+    "objective": "Transform raw product data into a delightful, conversion-optimized product description using semantic HTML5 and Tailwind CSS with beautifully crafted specification tables.",
+    "designDirection": "Warm, modern, trustworthy, and conversion-focused with personality. Think Apple meets Mailchimp - clean but playful.",
     "outputFormat": {
       ${
         isShort
-          ? '"shortDescription": "SEO-Optimized Tailwind bullet section with friendly design"'
-          : '"detailedDescription": "Complete SEO-friendly Tailwind HTML5 article with Amazon-style specification tables and responsive layout"'
+          ? '"shortDescription": "SEO-Optimized Tailwind bullet section with friendly, scannable design"'
+          : '"detailedDescription": "Complete SEO-friendly Tailwind HTML5 article with stunning Amazon-style specification tables and responsive layout"'
       }
     },
     "SEORequirements": [
-      "One optimized <h1> using main keyword intent.",
-      "Clear <h2> hierarchy.",
-      "Keyword-rich natural language.",
-      "Short readable paragraphs.",
-      "Conversion-focused copywriting.",
-      "Optimized for mobile readability."
+      "One optimized <h1> using main keyword intent with subtle gradient effect",
+      "Clear <h2> hierarchy with elegant underlines or left borders",
+      "Keyword-rich natural language that reads like a helpful friend",
+      "Short, scannable paragraphs with ample white space",
+      "Conversion-focused copywriting that builds trust",
+      "Optimized for mobile with touch-friendly tap targets"
     ],
     ${
       isShort
         ? `"constraints": [
-            "5-6 bullet points maximum.",
-            "Use <ul> and <li>.",
-            "Start each bullet with <strong>Benefit:</strong>.",
-            "Use friendly icon indicator (✓).",
-            "End with persuasive CTA block styled with Tailwind."
+            "5-6 bullet points maximum - each a tiny masterpiece.",
+            "Use <ul> and <li> with custom bullet styling.",
+            "Start each bullet with <strong class='text-blue-600'>Benefit:</strong>.",
+            "Use friendly emoji indicators (✨, 🚀, 💡, 🎯, ⭐, ✅).",
+            "End with persuasive CTA block styled with Tailwind and subtle hover effects.",
+            "Add micro-interactions like hover scale transforms on CTAs."
           ]`
         : `"constraints": [
-            "Use Tailwind CSS only.",
-            "No inline CSS.",
-            "No <style> blocks.",
-            "Convert ALL technical specifications into Amazon-style structured table.",
-            "Detect size-related data (dimensions, weight, fit, measurements, capacity) and create separate 'Size & Dimensions' table.",
-            "Tables must include zebra striping.",
-            "Tables must be wrapped in overflow-x-auto for responsiveness.",
-            "Preserve ALL <img> tags exactly.",
-            "Use friendly color palette utilities."
+            "Use Tailwind CSS only - no exceptions.",
+            "No inline CSS or <style> blocks.",
+            "Convert ALL technical specifications into stunning Amazon-style tables with visual hierarchy.",
+            "Detect size-related data (dimensions, weight, fit, measurements, capacity) and create separate 'Perfect Fit Guide' section.",
+            "Tables must include soft zebra striping with gentle colors.",
+            "Tables must be wrapped in overflow-x-auto with subtle shadows for depth.",
+            "Preserve ALL <img> tags and wrap them in elegant rounded corners with soft shadows.",
+            "Use friendly color palette utilities - think warm blues, soft grays, and accent greens.",
+            "Add subtle hover effects on interactive elements.",
+            "Include micro-animations via Tailwind transition utilities."
           ]`
     },
     "TailwindDesignSystem": {
-      "container": "max-w-6xl mx-auto px-4 sm:px-6 lg:px-8",
-      "text": "text-gray-700 leading-relaxed",
-      "headings": "font-bold text-gray-900",
+      "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+      "text": "text-gray-600 leading-relaxed text-base sm:text-lg",
+      "headings": "font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent",
       "primaryColor": "text-blue-600",
-      "highlightBg": "bg-blue-50",
-      "ctaBg": "bg-blue-600 hover:bg-blue-700 text-white",
-      "card": "bg-white rounded-xl shadow-md border border-gray-100",
-      "tableWrapper": "overflow-x-auto rounded-lg border border-gray-200",
-      "amazonTable": "min-w-full text-sm text-left",
-      "tableHeader": "bg-gray-100 text-gray-700 font-semibold uppercase text-xs",
-      "tableRow": "odd:bg-white even:bg-gray-50",
-      "tableCell": "px-4 py-3"
+      "accentColor": "text-emerald-500",
+      "highlightBg": "bg-gradient-to-br from-blue-50 to-indigo-50",
+      "ctaBg": "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300",
+      "card": "bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100 hover:shadow-2xl transition-shadow duration-300",
+      "tableWrapper": "overflow-x-auto rounded-xl border border-gray-200 shadow-sm",
+      "amazonTable": "min-w-full text-sm sm:text-base",
+      "tableHeader": "bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 font-semibold uppercase tracking-wider text-xs sm:text-sm",
+      "tableRow": "odd:bg-white even:bg-gray-50/80 hover:bg-blue-50/50 transition-colors duration-200",
+      "tableCell": "px-6 py-4 border-b border-gray-100"
     }
   }
   
-  DETAILED STRUCTURE REQUIREMENTS (for detailedDescription):
+  📋 DETAILED STRUCTURE REQUIREMENTS (for detailedDescription):
   
-  1. Wrap content inside:
-     <article class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-gray-700 leading-relaxed">
+  1. MAIN CONTAINER:
+     <article class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-gray-600 leading-relaxed space-y-12">
   
-  2. HERO SECTION
-     - <header class="mb-8">
-     - <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-     - Intro paragraph
-     - Optional image in responsive wrapper: rounded-xl shadow-md
+  2. ✨ HERO SECTION - First Impressions Matter
+     - <header class="mb-12 text-center sm:text-left">
+     - <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-gray-900 bg-clip-text text-transparent mb-6">
+     - <p class="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto sm:mx-0 leading-relaxed">
+     - Optional image: <img class="rounded-2xl shadow-2xl hover:shadow-3xl transition-shadow duration-500 w-full object-cover">
   
-  3. KEY FEATURES SECTION
-     - <section class="mb-10">
-     - <h2 class="text-xl font-semibold text-blue-600 mb-4">
-     - Grid layout:
-       grid md:grid-cols-2 gap-6
+  3. 💫 KEY FEATURES SECTION - Benefits That Shine
+     - <section class="mb-16">
+     - <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-8 pb-2 border-b-2 border-blue-200 inline-block">
+     - Grid layout: grid md:grid-cols-2 lg:grid-cols-3 gap-8
      - Feature cards:
-       bg-white rounded-xl shadow-md p-6 border border-gray-100
+       <div class="group bg-white rounded-2xl shadow-md hover:shadow-xl p-6 border border-gray-100 transition-all duration-300 hover:-translate-y-1">
+         <div class="text-3xl mb-4">✨</div>
+         <h3 class="text-xl font-semibold text-gray-900 mb-3">
+         <p class="text-gray-600">
   
-  4. TECHNICAL SPECIFICATIONS (Amazon Style)
-     - <section class="mb-10">
-     - <h2>
+  4. 📊 TECHNICAL SPECIFICATIONS (Amazon Style - But Better)
+     - <section class="mb-16">
+     - <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-8 pb-2 border-b-2 border-blue-200 inline-block">
      - Wrap table in:
-       <div class="overflow-x-auto rounded-lg border border-gray-200">
-     - Table classes:
-       min-w-full text-sm text-left
-     - Header:
-       bg-gray-100 uppercase text-xs font-semibold text-gray-700
-     - Rows:
-       odd:bg-white even:bg-gray-50
-     - Clean two-column layout:
-       Specification | Value
+       <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300">
+     - Table structure:
+       <table class="min-w-full text-sm sm:text-base divide-y divide-gray-200">
+         <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
+           <tr>
+             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Specification</th>
+             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Details</th>
+           </tr>
+         </thead>
+         <tbody class="bg-white divide-y divide-gray-100">
+     - Row styling:
+       <tr class="odd:bg-white even:bg-gray-50/80 hover:bg-blue-50/30 transition-colors duration-200">
+         <td class="px-6 py-4 font-medium text-gray-900">Spec name</td>
+         <td class="px-6 py-4 text-gray-600">Value with optional <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">badge</span></td>
+       </tr>
   
-  5. SIZE & DIMENSIONS (Only if detected)
-     - Separate section
-     - Same Amazon-style table format
-     - Include:
-       Width, Height, Depth, Weight, Capacity, Fit, Measurements
+  5. 📏 PERFECT FIT GUIDE (Size & Dimensions - Only if detected)
+     - Same Amazon-style table with enhanced visual hierarchy
+     - Add measurement icons: 📐 Width, ⚖️ Weight, 📦 Capacity
+     - Include helpful tooltips or micro-copy for complex measurements
+     - Use visual indicators for size comparisons
   
-  6. FINAL CTA SECTION
-     - <section class="mt-12">
+  6. 🎯 FINAL CTA SECTION - The Grand Finale
+     - <section class="mt-20 text-center">
      - Friendly highlight box:
-       bg-blue-600 text-white rounded-2xl p-8 text-center shadow-lg
-     - Strong conversion closing paragraph
+       <div class="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white rounded-3xl p-10 sm:p-12 shadow-2xl transform hover:scale-[1.02] transition-transform duration-500">
+         <h3 class="text-3xl sm:text-4xl font-bold mb-4">Ready to Transform Your Experience? 🚀</h3>
+         <p class="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
+         <button class="bg-white text-blue-600 px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 inline-flex items-center gap-2">
+           Get Yours Now <span class="text-xl">→</span>
+         </button>
+       </div>
   
-  PERFORMANCE RULES:
-  - Mobile-first.
-  - No unnecessary wrappers.
-  - Lightweight Tailwind utilities only.
-  - No inline styles.
-  - Clean semantic HTML.
+  🎯 PERFORMANCE & BEAUTY RULES:
+  - Mobile-first with graceful scaling on larger screens.
+  - Smooth transitions and hover states for interactive elements.
+  - Consistent spacing using Tailwind's spacing scale.
+  - Accessibility: Maintain contrast ratios and focus states.
+  - No unnecessary wrappers - keep HTML semantic and clean.
+  - Use Tailwind's built-in modifiers for dark mode readiness.
+  - Add subtle shadows for depth and visual hierarchy.
+  - Include micro-interactions that feel responsive and alive.
   
-  DATA TO PROCESS:
+  📦 DATA TO PROCESS:
   ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })))}
   
   Return a JSON array with EXACTLY ${chunk.length} objects.
   Each object: ${outputStructure}
   
-  CRITICAL:
-  - Escape all quotes as (\\").
-  - Return ONLY the JSON array.
-  - No markdown.
-  - No explanations.
+  ⚠️ CRITICAL INSTRUCTIONS:
+  - Escape all quotes as (\\") for JSON compatibility.
+  - Return ONLY the JSON array - no markdown, no explanations.
+  - Make every detail count - each product description should feel hand-crafted.
+  - Tables should be so beautiful they make data exciting to read.
+  - Use emojis sparingly but effectively to add personality.
+  - Ensure all Tailwind classes are valid and commonly used.
+  
+  Remember: You're not just writing descriptions - you're creating digital experiences that convert browsers into buyers! 🎨✨
   `;
   }
 
