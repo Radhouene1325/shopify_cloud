@@ -356,6 +356,472 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
   // Return ONLY the JSON array, no markdown.`;
   // }
 
+  // function buildPrompt(
+  //   chunk: { id: string; descreption: string }[],
+  //   outputField: 'shortDescription' | 'detailedDescription'
+  // ): string {
+  //   const isShort = outputField === 'shortDescription';
+  //   const fieldLabel = isShort
+  //     ? 'shortDescription (magical bullet points only)'
+  //     : 'detailedDescription (captivating full article only)';
+  
+  //   const outputStructure = isShort
+  //     ? '{ "id": "original_product_id", "shortDescription": "HTML_STRING" }'
+  //     : '{ "id": "original_product_id", "detailedDescription": "SEO_FRIENDLY_HTML_ARTICLE" }';
+  
+  //   return `You are a JSON API that creates stunning, SEO-optimized product descriptions. Process ALL ${chunk.length} products and return a JSON array with ONLY ${fieldLabel}.
+  
+  // 🔒 CRITICAL CONSTRAINT: Use EXTREMELY SPECIFIC selectors with unique prefixes to prevent ANY style leakage to other theme elements. Never use generic element selectors like "div", "h1", "table" alone - always prefix with unique class.
+  
+  // 🎯 CORE MISSION: Create beautiful, conversion-focused product descriptions using clean HTML/CSS that works in ANY Shopify theme WITHOUT affecting other elements.
+  
+  // PROMPT TEMPLATE FOR EACH PRODUCT:
+  // {
+  //   "role": "Senior SEO Strategist & E-commerce UX Designer",
+  //   "objective": "Transform raw product data into a gorgeous, SEO-optimized product description with ISOLATED styles that won't affect the theme.",
+  //   "designDirection": "Warm, professional, trustworthy, and conversion-focused with isolated styling.",
+  //   "outputFormat": {
+  //     ${
+  //       isShort
+  //         ? '"shortDescription": "SEO-Optimized bullet section with friendly design using ISOLATED styles"'
+  //         : '"detailedDescription": "Complete SEO-friendly HTML5 article with Amazon-style tables using ISOLATED styles"'
+  //     }
+  //   },
+  //   "SEORequirements": [
+  //     "One optimized H1 tag using main keyword intent",
+  //     "Clear H2 hierarchy for search engines",
+  //     "Keyword-rich natural language",
+  //     "Short, scannable paragraphs",
+  //     "Conversion-focused copywriting",
+  //     "Mobile-optimized",
+  //     "Semantic HTML5 structure",
+  //     "Proper heading hierarchy"
+  //   ],
+  //   ${
+  //     isShort
+  //       ? `"constraints": [
+  //           "5-6 bullet points maximum",
+  //           "Use UL and LI with custom bullet styling",
+  //           "Start each bullet with emoji (✓, ✨, 🚀, 💡, ⭐, ✅)",
+  //           "Include a warm CTA at the end",
+  //           "Use EXTREMELY SPECIFIC class names like 'pd-bullet-list'"
+  //         ]`
+  //       : `"constraints": [
+  //           "Use ONLY classes with 'pd-' prefix (stands for product-description)",
+  //           "NEVER use bare element selectors like 'table' or 'div'",
+  //           "Convert ALL technical specifications into beautiful tables",
+  //           "Detect size data and create separate 'Size & Fit Guide'",
+  //           "Tables must be responsive with horizontal scroll",
+  //           "Preserve ALL img tags with proper alt text",
+  //           "Use warm color palette: #3B82F6, #4B5563, #F9FAFB",
+  //           "All hover effects must use pd- prefixed classes"
+  //         ]`
+  //   },
+  //   "ColorPalette": {
+  //     "primary": "#3B82F6",
+  //     "primaryDark": "#2563EB",
+  //     "text": "#4B5563",
+  //     "textDark": "#1F2937",
+  //     "background": "#FFFFFF",
+  //     "backgroundAlt": "#F9FAFB",
+  //     "border": "#E5E7EB"
+  //   }
+  // }
+  
+  // 📋 CRITICAL STYLE ISOLATION APPROACH:
+  
+  // <style>
+  // /* 🛡️ ALL SELECTORS MUST START WITH 'pd-' - THIS IS NON-NEGOTIABLE */
+  // /* This prevents ANY style from leaking into the theme */
+  
+  // .pd-container {
+  //   all: initial; /* RESETS ALL INHERITED STYLES */
+  //   display: block;
+  //   max-width: 1280px;
+  //   margin: 0 auto;
+  //   padding: 0 1rem;
+  //   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  //   line-height: 1.6;
+  //   color: #4B5563;
+  // }
+  
+  // /* All styles must be scoped with pd- prefix */
+  // .pd-container .pd-title {
+  //   all: unset; /* Reset any inherited styles */
+  //   display: block;
+  //   font-size: 2.5rem;
+  //   font-weight: 700;
+  //   color: #1F2937 !important; /* Override theme styles */
+  //   margin-bottom: 1rem !important;
+  //   line-height: 1.2 !important;
+  // }
+  
+  // .pd-container .pd-section-title {
+  //   all: unset;
+  //   display: inline-block;
+  //   font-size: 2rem;
+  //   font-weight: 700;
+  //   color: #1F2937 !important;
+  //   margin-bottom: 2rem !important;
+  //   padding-bottom: 0.5rem !important;
+  //   border-bottom: 3px solid #3B82F6 !important;
+  // }
+  
+  // .pd-container .pd-feature-grid {
+  //   all: unset;
+  //   display: grid;
+  //   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  //   gap: 1.5rem;
+  //   margin: 2rem 0 !important;
+  // }
+  
+  // .pd-container .pd-feature-card {
+  //   all: unset;
+  //   display: block;
+  //   background: #FFFFFF;
+  //   border-radius: 16px;
+  //   padding: 1.5rem !important;
+  //   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  //   border: 1px solid #E5E7EB;
+  //   transition: transform 0.3s ease;
+  // }
+  
+  // .pd-container .pd-feature-card:hover {
+  //   transform: translateY(-4px);
+  //   box-shadow: 0 20px 25px rgba(0,0,0,0.1);
+  // }
+  
+  // /* 🛡️ TABLE STYLES - COMPLETELY ISOLATED */
+  // .pd-container .pd-table-wrapper {
+  //   all: unset;
+  //   display: block;
+  //   overflow-x: auto;
+  //   border-radius: 12px;
+  //   border: 1px solid #E5E7EB;
+  //   margin: 1.5rem 0 !important;
+  // }
+  
+  // .pd-container .pd-table {
+  //   all: unset;
+  //   display: table;
+  //   width: 100%;
+  //   border-collapse: collapse;
+  //   min-width: 600px;
+  //   font-size: 1rem;
+  // }
+  
+  // .pd-container .pd-table thead {
+  //   all: unset;
+  //   display: table-header-group;
+  // }
+  
+  // .pd-container .pd-table th {
+  //   all: unset;
+  //   display: table-cell;
+  //   background: #F3F4F6;
+  //   padding: 1rem 1.5rem !important;
+  //   font-weight: 600 !important;
+  //   color: #1F2937 !important;
+  //   border-bottom: 2px solid #E5E7EB !important;
+  //   text-align: left;
+  // }
+  
+  // .pd-container .pd-table tbody {
+  //   all: unset;
+  //   display: table-row-group;
+  // }
+  
+  // .pd-container .pd-table tr {
+  //   all: unset;
+  //   display: table-row;
+  // }
+  
+  // .pd-container .pd-table td {
+  //   all: unset;
+  //   display: table-cell;
+  //   padding: 1rem 1.5rem !important;
+  //   border-bottom: 1px solid #E5E7EB !important;
+  //   color: #4B5563 !important;
+  // }
+  
+  // .pd-container .pd-table tr:nth-child(even) td {
+  //   background: #F9FAFB;
+  // }
+  
+  // .pd-container .pd-table tr:hover td {
+  //   background: #EFF6FF !important;
+  // }
+  
+  // /* Size cards */
+  // .pd-container .pd-size-grid {
+  //   all: unset;
+  //   display: grid;
+  //   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  //   gap: 1rem;
+  //   margin: 1.5rem 0 !important;
+  // }
+  
+  // .pd-container .pd-size-card {
+  //   all: unset;
+  //   display: block;
+  //   background: #F9FAFB;
+  //   border-radius: 12px;
+  //   padding: 1.5rem !important;
+  //   text-align: center;
+  //   border: 1px solid #E5E7EB;
+  // }
+  
+  // .pd-container .pd-size-emoji {
+  //   all: unset;
+  //   display: block;
+  //   font-size: 2rem;
+  //   margin-bottom: 0.5rem;
+  // }
+  
+  // .pd-container .pd-size-label {
+  //   all: unset;
+  //   display: block;
+  //   font-size: 0.875rem;
+  //   color: #6B7280;
+  //   margin-bottom: 0.25rem;
+  // }
+  
+  // .pd-container .pd-size-value {
+  //   all: unset;
+  //   display: block;
+  //   font-size: 1.25rem;
+  //   font-weight: 700;
+  //   color: #1F2937;
+  // }
+  
+  // /* CTA Section */
+  // .pd-container .pd-cta-section {
+  //   all: unset;
+  //   display: block;
+  //   margin-top: 4rem !important;
+  //   text-align: center;
+  // }
+  
+  // .pd-container .pd-cta-box {
+  //   all: unset;
+  //   display: block;
+  //   background: linear-gradient(135deg, #3B82F6, #2563EB);
+  //   border-radius: 24px;
+  //   padding: 3rem 2rem !important;
+  //   color: white;
+  // }
+  
+  // .pd-container .pd-cta-title {
+  //   all: unset;
+  //   display: block;
+  //   font-size: 2.5rem;
+  //   font-weight: 700;
+  //   color: white !important;
+  //   margin-bottom: 1rem !important;
+  // }
+  
+  // .pd-container .pd-cta-text {
+  //   all: unset;
+  //   display: block;
+  //   font-size: 1.25rem;
+  //   opacity: 0.9;
+  //   margin-bottom: 2rem !important;
+  // }
+  
+  // .pd-container .pd-cta-button {
+  //   all: unset;
+  //   display: inline-block;
+  //   background: white;
+  //   color: #3B82F6 !important;
+  //   padding: 1rem 3rem !important;
+  //   border-radius: 9999px;
+  //   font-weight: 600;
+  //   font-size: 1.125rem;
+  //   cursor: pointer;
+  //   transition: all 0.3s ease;
+  // }
+  
+  // .pd-container .pd-cta-button:hover {
+  //   transform: translateY(-2px);
+  //   box-shadow: 0 20px 25px rgba(0,0,0,0.2);
+  // }
+  
+  // /* Bullet points for short description */
+  // .pd-container .pd-bullet-list {
+  //   all: unset;
+  //   display: block;
+  //   list-style: none;
+  //   padding: 0 !important;
+  //   margin: 1.5rem 0 !important;
+  // }
+  
+  // .pd-container .pd-bullet-item {
+  //   all: unset;
+  //   display: flex;
+  //   align-items: flex-start;
+  //   gap: 0.75rem;
+  //   margin-bottom: 1rem !important;
+  // }
+  
+  // .pd-container .pd-bullet-emoji {
+  //   all: unset;
+  //   display: inline-block;
+  //   font-size: 1.25rem;
+  //   flex-shrink: 0;
+  // }
+  
+  // .pd-container .pd-bullet-text {
+  //   all: unset;
+  //   display: inline;
+  //   color: #4B5563;
+  // }
+  
+  // /* Images */
+  // .pd-container .pd-image {
+  //   all: unset;
+  //   display: block;
+  //   max-width: 100%;
+  //   height: auto;
+  //   border-radius: 12px;
+  //   margin: 1.5rem 0 !important;
+  //   box-shadow: 0 20px 25px rgba(0,0,0,0.1);
+  // }
+  
+  // /* Mobile responsiveness */
+  // @media (max-width: 640px) {
+  //   .pd-container .pd-title {
+  //     font-size: 2rem !important;
+  //   }
+  //   .pd-container .pd-section-title {
+  //     font-size: 1.5rem !important;
+  //   }
+  //   .pd-container .pd-feature-grid {
+  //     grid-template-columns: 1fr !important;
+  //   }
+  //   .pd-container .pd-cta-box {
+  //     padding: 2rem 1rem !important;
+  //   }
+  //   .pd-container .pd-cta-title {
+  //     font-size: 1.75rem !important;
+  //   }
+  // }
+  // </style>
+  
+  // 📋 COMPLETE HTML STRUCTURE EXAMPLE:
+  
+  // <!-- ✅ SAFE APPROACH - STYLES WON'T LEAK -->
+  // <div class="pd-container">
+    
+  //   <!-- HERO SECTION -->
+  //   <header>
+  //     <h1 class="pd-title">Premium Product Name with Keywords</h1>
+  //     <p class="pd-text">Engaging introduction with natural keywords...</p>
+  //     <img class="pd-image" src="image.jpg" alt="Descriptive alt text with keywords">
+  //   </header>
+  
+  //   <!-- FEATURES SECTION -->
+  //   <section>
+  //     <h2 class="pd-section-title">Key Features & Benefits</h2>
+      
+  //     <div class="pd-feature-grid">
+  //       <!-- FEATURE CARD -->
+  //       <div class="pd-feature-card">
+  //         <span class="pd-feature-emoji">✨</span>
+  //         <h3 class="pd-feature-title">Premium Quality</h3>
+  //         <p class="pd-feature-text">Benefit-focused description...</p>
+  //       </div>
+        
+  //       <div class="pd-feature-card">
+  //         <span class="pd-feature-emoji">🚀</span>
+  //         <h3 class="pd-feature-title">Fast Shipping</h3>
+  //         <p class="pd-feature-text">Benefit-focused description...</p>
+  //       </div>
+  //     </div>
+  //   </section>
+  
+  //   <!-- TECHNICAL SPECIFICATIONS - AMAZON STYLE -->
+  //   <section>
+  //     <h2 class="pd-section-title">Technical Specifications</h2>
+      
+  //     <div class="pd-table-wrapper">
+  //       <table class="pd-table">
+  //         <thead>
+  //           <tr>
+  //             <th>Specification</th>
+  //             <th>Details</th>
+  //           </tr>
+  //         </thead>
+  //         <tbody>
+  //           <tr>
+  //             <td>Material</td>
+  //             <td>Premium Cotton Blend</td>
+  //           </tr>
+  //           <tr>
+  //             <td>Dimensions</td>
+  //             <td>10" x 8" x 2"</td>
+  //           </tr>
+  //           <tr>
+  //             <td>Weight</td>
+  //             <td>1.2 lbs</td>
+  //           </tr>
+  //         </tbody>
+  //       </table>
+  //     </div>
+  //   </section>
+  
+  //   <!-- SIZE & FIT GUIDE (if data exists) -->
+  //   <section>
+  //     <h2 class="pd-section-title">Size & Fit Guide</h2>
+      
+  //     <div class="pd-size-grid">
+  //       <div class="pd-size-card">
+  //         <span class="pd-size-emoji">📐</span>
+  //         <span class="pd-size-label">Width</span>
+  //         <span class="pd-size-value">12 inches</span>
+  //       </div>
+  //       <div class="pd-size-card">
+  //         <span class="pd-size-emoji">⚖️</span>
+  //         <span class="pd-size-label">Weight</span>
+  //         <span class="pd-size-value">1.5 lbs</span>
+  //       </div>
+  //       <div class="pd-size-card">
+  //         <span class="pd-size-emoji">📦</span>
+  //         <span class="pd-size-label">Capacity</span>
+  //         <span class="pd-size-value">20L</span>
+  //       </div>
+  //     </div>
+  //   </section>
+  
+  //   <!-- CTA SECTION -->
+  //   <section class="pd-cta-section">
+  //     <div class="pd-cta-box">
+  //       <h3 class="pd-cta-title">Ready to Transform Your Experience? 🚀</h3>
+  //       <p class="pd-cta-text">Join thousands of satisfied customers</p>
+  //       <button class="pd-cta-button">Shop Now →</button>
+  //     </div>
+  //   </section>
+  // </div>
+  
+  // 📦 DATA TO PROCESS:
+  // ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })))}
+  
+  // Return a JSON array with EXACTLY ${chunk.length} objects.
+  // Each object: ${outputStructure}
+  
+  // ⚠️ CRITICAL RULES FOR STYLE ISOLATION:
+  // 1. 🔴 NEVER use bare element selectors (h1, div, table, etc.)
+  // 2. 🟢 ALWAYS prefix ALL classes with 'pd-'
+  // 3. 🟢 Use "all: unset" or "all: initial" at start of each rule
+  // 4. 🟢 Use !important on critical properties to override theme
+  // 5. 🟢 Always wrap everything in <div class="pd-container">
+  // 6. 🟢 Test that styles don't affect other page elements
+  // 7. 🔴 NO STYLE LEAKAGE ALLOWED
+  
+  // Remember: Your styles should ONLY affect elements inside pd-container. Nothing else on the page should change! 🛡️
+  // `;
+  // }
+
+
   function buildPrompt(
     chunk: { id: string; descreption: string }[],
     outputField: 'shortDescription' | 'detailedDescription'
@@ -363,444 +829,863 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
     const isShort = outputField === 'shortDescription';
     const fieldLabel = isShort
       ? 'shortDescription (magical bullet points only)'
-      : 'detailedDescription (captivating full article only)';
+      : 'detailedDescription (captivating full article with see more/less)';
   
     const outputStructure = isShort
       ? '{ "id": "original_product_id", "shortDescription": "HTML_STRING" }'
-      : '{ "id": "original_product_id", "detailedDescription": "SEO_FRIENDLY_HTML_ARTICLE" }';
+      : '{ "id": "original_product_id", "detailedDescription": "SEO_FRIENDLY_HTML_ARTICLE_WITH_SEE_MORE" }';
   
-    return `You are a JSON API that creates stunning, SEO-optimized product descriptions. Process ALL ${chunk.length} products and return a JSON array with ONLY ${fieldLabel}.
+    return `You are a JSON API that creates stunning, professional product descriptions. Process ALL ${chunk.length} products and return a JSON array with ONLY ${fieldLabel}.
   
-  🔒 CRITICAL CONSTRAINT: Use EXTREMELY SPECIFIC selectors with unique prefixes to prevent ANY style leakage to other theme elements. Never use generic element selectors like "div", "h1", "table" alone - always prefix with unique class.
+  🔒 CRITICAL CONSTRAINT: Use EXTREMELY SPECIFIC selectors with 'pd-' prefix to prevent ANY style leakage to other theme elements.
   
-  🎯 CORE MISSION: Create beautiful, conversion-focused product descriptions using clean HTML/CSS that works in ANY Shopify theme WITHOUT affecting other elements.
+  🎯 CORE MISSION: Create AliExpress-style professional product descriptions with "See More/Less" functionality, beautiful image galleries with titles, and trust-building design elements.
   
   PROMPT TEMPLATE FOR EACH PRODUCT:
   {
-    "role": "Senior SEO Strategist & E-commerce UX Designer",
-    "objective": "Transform raw product data into a gorgeous, SEO-optimized product description with ISOLATED styles that won't affect the theme.",
-    "designDirection": "Warm, professional, trustworthy, and conversion-focused with isolated styling.",
+    "role": "Senior E-commerce UX Designer & Conversion Specialist",
+    "objective": "Transform raw product data into a professional, trust-building product description with AliExpress-inspired design and see more/less functionality.",
+    "designDirection": "Professional, trustworthy, clean, and conversion-focused with subtle animations and clear visual hierarchy.",
     "outputFormat": {
       ${
         isShort
-          ? '"shortDescription": "SEO-Optimized bullet section with friendly design using ISOLATED styles"'
-          : '"detailedDescription": "Complete SEO-friendly HTML5 article with Amazon-style tables using ISOLATED styles"'
+          ? '"shortDescription": "Professional bullet points with trust badges and clear benefits"'
+          : '"detailedDescription": "Complete AliExpress-style product page with see more/less, image gallery with titles, and specification tables"'
       }
     },
     "SEORequirements": [
-      "One optimized H1 tag using main keyword intent",
-      "Clear H2 hierarchy for search engines",
+      "One optimized H1 tag",
+      "Clear H2 hierarchy",
       "Keyword-rich natural language",
       "Short, scannable paragraphs",
-      "Conversion-focused copywriting",
-      "Mobile-optimized",
+      "Mobile-optimized with touch-friendly interactions",
       "Semantic HTML5 structure",
-      "Proper heading hierarchy"
+      "Image alt texts with keywords"
     ],
     ${
       isShort
         ? `"constraints": [
-            "5-6 bullet points maximum",
-            "Use UL and LI with custom bullet styling",
-            "Start each bullet with emoji (✓, ✨, 🚀, 💡, ⭐, ✅)",
-            "Include a warm CTA at the end",
-            "Use EXTREMELY SPECIFIC class names like 'pd-bullet-list'"
+            "5-6 bullet points with icons",
+            "Add trust badges (✓ Free Shipping, 🔒 Secure Payment, etc.)",
+            "Include price highlight if available",
+            "Add stock status indicator",
+            "Use professional color scheme"
           ]`
         : `"constraints": [
-            "Use ONLY classes with 'pd-' prefix (stands for product-description)",
-            "NEVER use bare element selectors like 'table' or 'div'",
-            "Convert ALL technical specifications into beautiful tables",
-            "Detect size data and create separate 'Size & Fit Guide'",
-            "Tables must be responsive with horizontal scroll",
-            "Preserve ALL img tags with proper alt text",
-            "Use warm color palette: #3B82F6, #4B5563, #F9FAFB",
-            "All hover effects must use pd- prefixed classes"
+            "Implement SEE MORE/SEE LESS functionality with smooth toggle",
+            "Create image gallery with titles/descriptions under each image",
+            "Add trust badges section (guarantee, shipping, returns)",
+            "Include price section with discounts if applicable",
+            "Add stock and sales counter for urgency",
+            "Create AliExpress-style specification tables",
+            "Add customer review highlights section",
+            "Include shipping info with timeline",
+            "Add warranty and support information",
+            "All interactive elements must work on mobile",
+            "Use professional color palette: #1E293B, #3B82F6, #10B981, #F59E0B"
           ]`
-    },
-    "ColorPalette": {
-      "primary": "#3B82F6",
-      "primaryDark": "#2563EB",
-      "text": "#4B5563",
-      "textDark": "#1F2937",
-      "background": "#FFFFFF",
-      "backgroundAlt": "#F9FAFB",
-      "border": "#E5E7EB"
     }
   }
   
-  📋 CRITICAL STYLE ISOLATION APPROACH:
+  📋 COMPLETE HTML STRUCTURE WITH SEE MORE/LESS:
   
   <style>
-  /* 🛡️ ALL SELECTORS MUST START WITH 'pd-' - THIS IS NON-NEGOTIABLE */
-  /* This prevents ANY style from leaking into the theme */
+  /* PROFESSIONAL ALIEXPRESS-STYLE DESIGN - COMPLETELY ISOLATED */
+  .pd-container * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
   
   .pd-container {
-    all: initial; /* RESETS ALL INHERITED STYLES */
+    all: initial;
     display: block;
     max-width: 1280px;
     margin: 0 auto;
-    padding: 0 1rem;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    line-height: 1.6;
-    color: #4B5563;
+    padding: 2rem 1rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    line-height: 1.5;
+    color: #1E293B;
+    background: #FFFFFF;
   }
   
-  /* All styles must be scoped with pd- prefix */
-  .pd-container .pd-title {
-    all: unset; /* Reset any inherited styles */
-    display: block;
+  /* HEADER SECTION */
+  .pd-header {
+    margin-bottom: 2rem;
+  }
+  
+  .pd-title {
     font-size: 2.5rem;
     font-weight: 700;
-    color: #1F2937 !important; /* Override theme styles */
+    color: #0F172A !important;
     margin-bottom: 1rem !important;
     line-height: 1.2 !important;
   }
   
-  .pd-container .pd-section-title {
-    all: unset;
-    display: inline-block;
+  /* PRICE SECTION */
+  .pd-price-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #F8FAFC;
+    border-radius: 12px;
+  }
+  
+  .pd-current-price {
     font-size: 2rem;
     font-weight: 700;
-    color: #1F2937 !important;
-    margin-bottom: 2rem !important;
-    padding-bottom: 0.5rem !important;
-    border-bottom: 3px solid #3B82F6 !important;
+    color: #3B82F6 !important;
   }
   
-  .pd-container .pd-feature-grid {
-    all: unset;
+  .pd-old-price {
+    font-size: 1.25rem;
+    color: #94A3B8 !important;
+    text-decoration: line-through;
+  }
+  
+  .pd-discount-badge {
+    background: #10B981;
+    color: white !important;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+  
+  /* STOCK & SALES COUNTER */
+  .pd-stock-section {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #F1F5F9;
+    border-radius: 12px;
+  }
+  
+  .pd-stock-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .pd-in-stock {
+    color: #10B981;
+    font-weight: 600;
+  }
+  
+  .pd-low-stock {
+    color: #F59E0B;
+    font-weight: 600;
+  }
+  
+  .pd-sales-counter {
+    color: #64748B;
+    font-size: 0.875rem;
+  }
+  
+  /* TRUST BADGES */
+  .pd-trust-badges {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin: 2rem 0;
+    padding: 1rem;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+  }
+  
+  .pd-trust-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #475569;
+  }
+  
+  .pd-trust-icon {
+    font-size: 1.25rem;
+  }
+  
+  /* IMAGE GALLERY WITH TITLES */
+  .pd-image-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+  
+  .pd-image-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .pd-image-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+  }
+  
+  .pd-product-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-bottom: 1px solid #E2E8F0;
+  }
+  
+  .pd-image-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #0F172A !important;
+    padding: 1rem 1rem 0.5rem;
+  }
+  
+  .pd-image-description {
+    font-size: 0.875rem;
+    color: #64748B;
+    padding: 0 1rem 1rem;
+    line-height: 1.4;
+  }
+  
+  /* SEE MORE/LESS SECTION */
+  .pd-collapsible-section {
+    margin: 2rem 0;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  
+  .pd-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem;
+    background: #F8FAFC;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s ease;
+  }
+  
+  .pd-section-header:hover {
+    background: #F1F5F9;
+  }
+  
+  .pd-section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #0F172A !important;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .pd-section-title svg {
+    width: 20px;
+    height: 20px;
+    fill: #3B82F6;
+  }
+  
+  .pd-toggle-btn {
+    background: #3B82F6;
+    color: white !important;
+    padding: 0.5rem 1.25rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .pd-toggle-btn:hover {
+    background: #2563EB;
+  }
+  
+  .pd-section-content {
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-out, padding 0.3s ease;
+    background: #FFFFFF;
+  }
+  
+  .pd-section-content.pd-expanded {
+    padding: 1.5rem;
+    max-height: 2000px; /* Large enough for content */
+    transition: max-height 0.5s ease-in, padding 0.3s ease;
+  }
+  
+  /* FEATURES GRID */
+  .pd-features-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-    margin: 2rem 0 !important;
+    gap: 1rem;
   }
   
-  .pd-container .pd-feature-card {
-    all: unset;
-    display: block;
-    background: #FFFFFF;
-    border-radius: 16px;
-    padding: 1.5rem !important;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    border: 1px solid #E5E7EB;
-    transition: transform 0.3s ease;
-  }
-  
-  .pd-container .pd-feature-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 25px rgba(0,0,0,0.1);
-  }
-  
-  /* 🛡️ TABLE STYLES - COMPLETELY ISOLATED */
-  .pd-container .pd-table-wrapper {
-    all: unset;
-    display: block;
-    overflow-x: auto;
+  .pd-feature-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: #F8FAFC;
     border-radius: 12px;
-    border: 1px solid #E5E7EB;
-    margin: 1.5rem 0 !important;
+    border: 1px solid #E2E8F0;
   }
   
-  .pd-container .pd-table {
-    all: unset;
-    display: table;
+  .pd-feature-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+  
+  .pd-feature-text {
+    color: #334155;
+    font-size: 0.9375rem;
+  }
+  
+  .pd-feature-text strong {
+    color: #0F172A;
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+  
+  /* ALIEXPRESS-STYLE SPECIFICATION TABLE */
+  .pd-specs-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 600px;
-    font-size: 1rem;
+    font-size: 0.9375rem;
   }
   
-  .pd-container .pd-table thead {
-    all: unset;
-    display: table-header-group;
+  .pd-specs-table tr {
+    border-bottom: 1px solid #E2E8F0;
   }
   
-  .pd-container .pd-table th {
-    all: unset;
-    display: table-cell;
-    background: #F3F4F6;
-    padding: 1rem 1.5rem !important;
-    font-weight: 600 !important;
-    color: #1F2937 !important;
-    border-bottom: 2px solid #E5E7EB !important;
-    text-align: left;
+  .pd-specs-table tr:last-child {
+    border-bottom: none;
   }
   
-  .pd-container .pd-table tbody {
-    all: unset;
-    display: table-row-group;
+  .pd-specs-table td {
+    padding: 1rem !important;
   }
   
-  .pd-container .pd-table tr {
-    all: unset;
-    display: table-row;
+  .pd-specs-table td:first-child {
+    font-weight: 600;
+    color: #475569;
+    width: 40%;
+    background: #F8FAFC;
   }
   
-  .pd-container .pd-table td {
-    all: unset;
-    display: table-cell;
-    padding: 1rem 1.5rem !important;
-    border-bottom: 1px solid #E5E7EB !important;
-    color: #4B5563 !important;
+  .pd-specs-table td:last-child {
+    color: #0F172A;
+    background: #FFFFFF;
   }
   
-  .pd-container .pd-table tr:nth-child(even) td {
-    background: #F9FAFB;
-  }
-  
-  .pd-container .pd-table tr:hover td {
-    background: #EFF6FF !important;
-  }
-  
-  /* Size cards */
-  .pd-container .pd-size-grid {
-    all: unset;
+  /* SIZE & DIMENSIONS TABLE */
+  .pd-dimensions-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 1rem;
-    margin: 1.5rem 0 !important;
+    margin: 1.5rem 0;
   }
   
-  .pd-container .pd-size-card {
-    all: unset;
-    display: block;
-    background: #F9FAFB;
+  .pd-dimension-card {
+    background: #F8FAFC;
     border-radius: 12px;
-    padding: 1.5rem !important;
+    padding: 1.5rem;
     text-align: center;
-    border: 1px solid #E5E7EB;
+    border: 1px solid #E2E8F0;
   }
   
-  .pd-container .pd-size-emoji {
-    all: unset;
-    display: block;
+  .pd-dimension-icon {
     font-size: 2rem;
     margin-bottom: 0.5rem;
   }
   
-  .pd-container .pd-size-label {
-    all: unset;
-    display: block;
+  .pd-dimension-label {
     font-size: 0.875rem;
-    color: #6B7280;
+    color: #64748B;
     margin-bottom: 0.25rem;
   }
   
-  .pd-container .pd-size-value {
-    all: unset;
-    display: block;
+  .pd-dimension-value {
     font-size: 1.25rem;
-    font-weight: 700;
-    color: #1F2937;
+    font-weight: 600;
+    color: #0F172A;
   }
   
-  /* CTA Section */
-  .pd-container .pd-cta-section {
-    all: unset;
-    display: block;
-    margin-top: 4rem !important;
+  /* SHIPPING INFO SECTION */
+  .pd-shipping-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .pd-shipping-card {
+    padding: 1rem;
+    background: #F8FAFC;
+    border-radius: 12px;
     text-align: center;
   }
   
-  .pd-container .pd-cta-box {
-    all: unset;
-    display: block;
-    background: linear-gradient(135deg, #3B82F6, #2563EB);
-    border-radius: 24px;
-    padding: 3rem 2rem !important;
-    color: white;
+  .pd-shipping-method {
+    font-weight: 600;
+    color: #0F172A;
+    margin-bottom: 0.5rem;
   }
   
-  .pd-container .pd-cta-title {
-    all: unset;
-    display: block;
-    font-size: 2.5rem;
+  .pd-shipping-time {
+    color: #3B82F6;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .pd-shipping-cost {
+    color: #10B981;
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+  
+  /* REVIEW HIGHLIGHTS */
+  .pd-reviews-section {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%);
+    border-radius: 16px;
+    border: 1px solid #E2E8F0;
+  }
+  
+  .pd-rating-summary {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .pd-average-rating {
+    font-size: 2rem;
     font-weight: 700;
-    color: white !important;
-    margin-bottom: 1rem !important;
+    color: #F59E0B;
   }
   
-  .pd-container .pd-cta-text {
-    all: unset;
-    display: block;
+  .pd-stars {
+    color: #F59E0B;
     font-size: 1.25rem;
-    opacity: 0.9;
-    margin-bottom: 2rem !important;
   }
   
-  .pd-container .pd-cta-button {
-    all: unset;
-    display: inline-block;
+  .pd-review-count {
+    color: #64748B;
+    font-size: 0.875rem;
+  }
+  
+  .pd-review-highlights {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  
+  .pd-review-tag {
     background: white;
-    color: #3B82F6 !important;
-    padding: 1rem 3rem !important;
+    padding: 0.5rem 1rem;
     border-radius: 9999px;
+    border: 1px solid #E2E8F0;
+    font-size: 0.875rem;
+    color: #334155;
+  }
+  
+  /* WARRANTY SECTION */
+  .pd-warranty-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #EFF6FF;
+    color: #3B82F6 !important;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    margin: 1rem 0;
+  }
+  
+  /* CTA BUTTONS */
+  .pd-cta-container {
+    display: flex;
+    gap: 1rem;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+  }
+  
+  .pd-add-to-cart {
+    flex: 2;
+    min-width: 200px;
+    background: #3B82F6;
+    color: white !important;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.125rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  
+  .pd-add-to-cart:hover {
+    background: #2563EB;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+  }
+  
+  .pd-buy-now {
+    flex: 1;
+    min-width: 150px;
+    background: #10B981;
+    color: white !important;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 12px;
     font-weight: 600;
     font-size: 1.125rem;
     cursor: pointer;
     transition: all 0.3s ease;
   }
   
-  .pd-container .pd-cta-button:hover {
+  .pd-buy-now:hover {
+    background: #059669;
     transform: translateY(-2px);
-    box-shadow: 0 20px 25px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
   }
   
-  /* Bullet points for short description */
-  .pd-container .pd-bullet-list {
-    all: unset;
-    display: block;
+  /* BULLET POINTS FOR SHORT DESCRIPTION */
+  .pd-bullet-list {
     list-style: none;
     padding: 0 !important;
     margin: 1.5rem 0 !important;
   }
   
-  .pd-container .pd-bullet-item {
-    all: unset;
+  .pd-bullet-item {
     display: flex;
     align-items: flex-start;
     gap: 0.75rem;
     margin-bottom: 1rem !important;
+    padding: 0.75rem;
+    background: #F8FAFC;
+    border-radius: 8px;
   }
   
-  .pd-container .pd-bullet-emoji {
-    all: unset;
-    display: inline-block;
+  .pd-bullet-icon {
     font-size: 1.25rem;
     flex-shrink: 0;
   }
   
-  .pd-container .pd-bullet-text {
-    all: unset;
-    display: inline;
-    color: #4B5563;
+  .pd-bullet-text {
+    color: #334155;
+    line-height: 1.4;
   }
   
-  /* Images */
-  .pd-container .pd-image {
-    all: unset;
-    display: block;
-    max-width: 100%;
-    height: auto;
-    border-radius: 12px;
-    margin: 1.5rem 0 !important;
-    box-shadow: 0 20px 25px rgba(0,0,0,0.1);
+  .pd-bullet-text strong {
+    color: #0F172A;
   }
   
-  /* Mobile responsiveness */
-  @media (max-width: 640px) {
-    .pd-container .pd-title {
+  /* MOBILE RESPONSIVENESS */
+  @media (max-width: 768px) {
+    .pd-title {
       font-size: 2rem !important;
     }
-    .pd-container .pd-section-title {
-      font-size: 1.5rem !important;
+    
+    .pd-price-section {
+      flex-direction: column;
+      align-items: flex-start;
     }
-    .pd-container .pd-feature-grid {
-      grid-template-columns: 1fr !important;
+    
+    .pd-stock-section {
+      flex-direction: column;
+      gap: 0.5rem;
     }
-    .pd-container .pd-cta-box {
-      padding: 2rem 1rem !important;
+    
+    .pd-trust-badges {
+      grid-template-columns: repeat(2, 1fr);
     }
-    .pd-container .pd-cta-title {
-      font-size: 1.75rem !important;
+    
+    .pd-image-gallery {
+      grid-template-columns: 1fr;
+    }
+    
+    .pd-features-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .pd-specs-table td {
+      padding: 0.75rem !important;
+    }
+    
+    .pd-dimensions-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .pd-cta-container {
+      flex-direction: column;
+    }
+    
+    .pd-add-to-cart, .pd-buy-now {
+      width: 100%;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .pd-trust-badges {
+      grid-template-columns: 1fr;
+    }
+    
+    .pd-dimensions-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .pd-section-header {
+      flex-direction: column;
+      gap: 1rem;
+      text-align: center;
     }
   }
   </style>
   
-  📋 COMPLETE HTML STRUCTURE EXAMPLE:
-  
-  <!-- ✅ SAFE APPROACH - STYLES WON'T LEAK -->
+  <!-- MAIN CONTAINER -->
   <div class="pd-container">
     
-    <!-- HERO SECTION -->
-    <header>
-      <h1 class="pd-title">Premium Product Name with Keywords</h1>
-      <p class="pd-text">Engaging introduction with natural keywords...</p>
-      <img class="pd-image" src="image.jpg" alt="Descriptive alt text with keywords">
-    </header>
-  
-    <!-- FEATURES SECTION -->
-    <section>
-      <h2 class="pd-section-title">Key Features & Benefits</h2>
+    <!-- HEADER WITH TITLE -->
+    <header class="pd-header">
+      <h1 class="pd-title">{{PRODUCT_TITLE}}</h1>
       
-      <div class="pd-feature-grid">
-        <!-- FEATURE CARD -->
-        <div class="pd-feature-card">
-          <span class="pd-feature-emoji">✨</span>
-          <h3 class="pd-feature-title">Premium Quality</h3>
-          <p class="pd-feature-text">Benefit-focused description...</p>
+      <!-- PRICE SECTION (if available) -->
+      <div class="pd-price-section">
+        <span class="pd-current-price">$49.99</span>
+        <span class="pd-old-price">$79.99</span>
+        <span class="pd-discount-badge">-37%</span>
+      </div>
+      
+      <!-- STOCK STATUS -->
+      <div class="pd-stock-section">
+        <div class="pd-stock-status">
+          <span class="pd-in-stock">✓ In Stock</span>
+          <span class="pd-low-stock">⚠️ Only 5 left</span>
         </div>
-        
-        <div class="pd-feature-card">
-          <span class="pd-feature-emoji">🚀</span>
-          <h3 class="pd-feature-title">Fast Shipping</h3>
-          <p class="pd-feature-text">Benefit-focused description...</p>
+        <div class="pd-sales-counter">🔥 128 sold in last 24h</div>
+      </div>
+    </header>
+    
+    <!-- TRUST BADGES -->
+    <div class="pd-trust-badges">
+      <div class="pd-trust-item"><span class="pd-trust-icon">🚚</span> Free Shipping</div>
+      <div class="pd-trust-item"><span class="pd-trust-icon">🔒</span> Secure Payment</div>
+      <div class="pd-trust-item"><span class="pd-trust-icon">↩️</span> 30-Day Returns</div>
+      <div class="pd-trust-item"><span class="pd-trust-icon">✓</span> 2-Year Warranty</div>
+    </div>
+    
+    <!-- IMAGE GALLERY WITH TITLES -->
+    <div class="pd-image-gallery">
+      <div class="pd-image-card">
+        <img class="pd-product-image" src="image1.jpg" alt="Product front view">
+        <h4 class="pd-image-title">Premium Front View</h4>
+        <p class="pd-image-description">Elegant design with premium materials</p>
+      </div>
+      <div class="pd-image-card">
+        <img class="pd-product-image" src="image2.jpg" alt="Product side view">
+        <h4 class="pd-image-title">Sleek Side Profile</h4>
+        <p class="pd-image-description">Compact and portable design</p>
+      </div>
+      <div class="pd-image-card">
+        <img class="pd-product-image" src="image3.jpg" alt="Product in use">
+        <h4 class="pd-image-title">In Action</h4>
+        <p class="pd-image-description">Perfect for daily use</p>
+      </div>
+    </div>
+    
+    <!-- COLLAPSIBLE SECTION 1: KEY FEATURES -->
+    <div class="pd-collapsible-section" id="pd-features-section">
+      <div class="pd-section-header" onclick="document.getElementById('pd-features-content').classList.toggle('pd-expanded'); this.querySelector('.pd-toggle-btn').textContent = document.getElementById('pd-features-content').classList.contains('pd-expanded') ? 'See Less' : 'See More'">
+        <div class="pd-section-title">
+          <svg viewBox="0 0 20 20"><path d="M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm1 13h-2v-2h2v2zm0-4h-2V5h2v6z"/></svg>
+          Key Features & Benefits
+        </div>
+        <button class="pd-toggle-btn">See More</button>
+      </div>
+      <div class="pd-section-content" id="pd-features-content">
+        <div class="pd-features-grid">
+          <div class="pd-feature-item">
+            <span class="pd-feature-icon">✨</span>
+            <div class="pd-feature-text">
+              <strong>Premium Quality</strong>
+              Made with high-grade materials for durability
+            </div>
+          </div>
+          <div class="pd-feature-item">
+            <span class="pd-feature-icon">🚀</span>
+            <div class="pd-feature-text">
+              <strong>Fast Performance</strong>
+              Optimized for speed and efficiency
+            </div>
+          </div>
+          <div class="pd-feature-item">
+            <span class="pd-feature-icon">🔋</span>
+            <div class="pd-feature-text">
+              <strong>Long Battery Life</strong>
+              Up to 12 hours of continuous use
+            </div>
+          </div>
+          <div class="pd-feature-item">
+            <span class="pd-feature-icon">📱</span>
+            <div class="pd-feature-text">
+              <strong>Smart Connectivity</strong>
+              Works with all your devices
+            </div>
+          </div>
         </div>
       </div>
-    </section>
-  
-    <!-- TECHNICAL SPECIFICATIONS - AMAZON STYLE -->
-    <section>
-      <h2 class="pd-section-title">Technical Specifications</h2>
-      
-      <div class="pd-table-wrapper">
-        <table class="pd-table">
-          <thead>
-            <tr>
-              <th>Specification</th>
-              <th>Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Material</td>
-              <td>Premium Cotton Blend</td>
-            </tr>
-            <tr>
-              <td>Dimensions</td>
-              <td>10" x 8" x 2"</td>
-            </tr>
-            <tr>
-              <td>Weight</td>
-              <td>1.2 lbs</td>
-            </tr>
-          </tbody>
+    </div>
+    
+    <!-- COLLAPSIBLE SECTION 2: TECHNICAL SPECIFICATIONS -->
+    <div class="pd-collapsible-section" id="pd-specs-section">
+      <div class="pd-section-header" onclick="document.getElementById('pd-specs-content').classList.toggle('pd-expanded'); this.querySelector('.pd-toggle-btn').textContent = document.getElementById('pd-specs-content').classList.contains('pd-expanded') ? 'See Less' : 'See More'">
+        <div class="pd-section-title">
+          <svg viewBox="0 0 20 20"><path d="M4 4h12v12H4V4zm2 2v8h8V6H6z"/></svg>
+          Technical Specifications
+        </div>
+        <button class="pd-toggle-btn">See More</button>
+      </div>
+      <div class="pd-section-content" id="pd-specs-content">
+        <table class="pd-specs-table">
+          <tr><td>Material</td><td>Premium Aluminum Alloy</td></tr>
+          <tr><td>Dimensions</td><td>10.2 x 6.8 x 0.3 inches</td></tr>
+          <tr><td>Weight</td><td>1.2 lbs</td></tr>
+          <tr><td>Color</td><td>Space Gray, Silver, Gold</td></tr>
+          <tr><td>Compatibility</td><td>iOS, Android, Windows</td></tr>
+          <tr><td>Battery</td><td>5000mAh Lithium-ion</td></tr>
+          <tr><td>Warranty</td><td>2 Years Limited</td></tr>
         </table>
       </div>
-    </section>
-  
-    <!-- SIZE & FIT GUIDE (if data exists) -->
-    <section>
-      <h2 class="pd-section-title">Size & Fit Guide</h2>
-      
-      <div class="pd-size-grid">
-        <div class="pd-size-card">
-          <span class="pd-size-emoji">📐</span>
-          <span class="pd-size-label">Width</span>
-          <span class="pd-size-value">12 inches</span>
-        </div>
-        <div class="pd-size-card">
-          <span class="pd-size-emoji">⚖️</span>
-          <span class="pd-size-label">Weight</span>
-          <span class="pd-size-value">1.5 lbs</span>
-        </div>
-        <div class="pd-size-card">
-          <span class="pd-size-emoji">📦</span>
-          <span class="pd-size-label">Capacity</span>
-          <span class="pd-size-value">20L</span>
-        </div>
+    </div>
+    
+    <!-- SIZE & DIMENSIONS (with visual cards) -->
+    <div class="pd-dimensions-grid">
+      <div class="pd-dimension-card">
+        <div class="pd-dimension-icon">📐</div>
+        <div class="pd-dimension-label">Width</div>
+        <div class="pd-dimension-value">10.2"</div>
       </div>
-    </section>
-  
-    <!-- CTA SECTION -->
-    <section class="pd-cta-section">
-      <div class="pd-cta-box">
-        <h3 class="pd-cta-title">Ready to Transform Your Experience? 🚀</h3>
-        <p class="pd-cta-text">Join thousands of satisfied customers</p>
-        <button class="pd-cta-button">Shop Now →</button>
+      <div class="pd-dimension-card">
+        <div class="pd-dimension-icon">📏</div>
+        <div class="pd-dimension-label">Height</div>
+        <div class="pd-dimension-value">6.8"</div>
       </div>
-    </section>
+      <div class="pd-dimension-card">
+        <div class="pd-dimension-icon">📦</div>
+        <div class="pd-dimension-label">Depth</div>
+        <div class="pd-dimension-value">0.3"</div>
+      </div>
+      <div class="pd-dimension-card">
+        <div class="pd-dimension-icon">⚖️</div>
+        <div class="pd-dimension-label">Weight</div>
+        <div class="pd-dimension-value">1.2 lbs</div>
+      </div>
+    </div>
+    
+    <!-- SHIPPING INFORMATION -->
+    <div class="pd-shipping-grid">
+      <div class="pd-shipping-card">
+        <div class="pd-shipping-method">Standard Shipping</div>
+        <div class="pd-shipping-time">5-7 Business Days</div>
+        <div class="pd-shipping-cost">FREE</div>
+      </div>
+      <div class="pd-shipping-card">
+        <div class="pd-shipping-method">Express Shipping</div>
+        <div class="pd-shipping-time">2-3 Business Days</div>
+        <div class="pd-shipping-cost">$9.99</div>
+      </div>
+      <div class="pd-shipping-card">
+        <div class="pd-shipping-method">Next Day Delivery</div>
+        <div class="pd-shipping-time">1 Business Day</div>
+        <div class="pd-shipping-cost">$19.99</div>
+      </div>
+    </div>
+    
+    <!-- REVIEW HIGHLIGHTS -->
+    <div class="pd-reviews-section">
+      <div class="pd-rating-summary">
+        <span class="pd-average-rating">4.8</span>
+        <span class="pd-stars">★★★★★</span>
+        <span class="pd-review-count">(2,347 reviews)</span>
+      </div>
+      <div class="pd-review-highlights">
+        <span class="pd-review-tag">👍 Quality 4.9</span>
+        <span class="pd-review-tag">🚀 Shipping 4.7</span>
+        <span class="pd-review-tag">💪 Durability 4.8</span>
+        <span class="pd-review-tag">✨ Design 4.9</span>
+      </div>
+    </div>
+    
+    <!-- WARRANTY BADGE -->
+    <div class="pd-warranty-badge">
+      <span>✓</span>
+      <span>2-Year Warranty & Lifetime Support</span>
+    </div>
+    
+    <!-- CTA BUTTONS -->
+    <div class="pd-cta-container">
+      <button class="pd-add-to-cart">
+        <span>🛒</span>
+        Add to Cart
+      </button>
+      <button class="pd-buy-now">
+        Buy Now
+      </button>
+    </div>
   </div>
+  
+  <!-- JAVASCRIPT FOR SEE MORE/LESS FUNCTIONALITY -->
+  <script>
+  (function() {
+    // Safe scoped JavaScript that won't interfere with theme
+    function initProductDescription() {
+      const sections = document.querySelectorAll('.pd-collapsible-section');
+      
+      sections.forEach(section => {
+        const header = section.querySelector('.pd-section-header');
+        const content = section.querySelector('.pd-section-content');
+        const toggleBtn = section.querySelector('.pd-toggle-btn');
+        
+        if (header && content && toggleBtn) {
+          header.addEventListener('click', function(e) {
+            // Don't toggle if clicking the button directly (button has its own handler)
+            if (e.target === toggleBtn || toggleBtn.contains(e.target)) {
+              return;
+            }
+            toggleSection(content, toggleBtn);
+          });
+          
+          toggleBtn.addEventListener('click', function() {
+            toggleSection(content, toggleBtn);
+          });
+        }
+      });
+      
+      function toggleSection(content, toggleBtn) {
+        content.classList.toggle('pd-expanded');
+        toggleBtn.textContent = content.classList.contains('pd-expanded') ? 'See Less' : 'See More';
+      }
+    }
+    
+    // Run when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initProductDescription);
+    } else {
+      initProductDescription();
+    }
+  })();
+  </script>
   
   📦 DATA TO PROCESS:
   ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })))}
@@ -808,18 +1693,28 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
   Return a JSON array with EXACTLY ${chunk.length} objects.
   Each object: ${outputStructure}
   
-  ⚠️ CRITICAL RULES FOR STYLE ISOLATION:
-  1. 🔴 NEVER use bare element selectors (h1, div, table, etc.)
-  2. 🟢 ALWAYS prefix ALL classes with 'pd-'
-  3. 🟢 Use "all: unset" or "all: initial" at start of each rule
-  4. 🟢 Use !important on critical properties to override theme
-  5. 🟢 Always wrap everything in <div class="pd-container">
-  6. 🟢 Test that styles don't affect other page elements
-  7. 🔴 NO STYLE LEAKAGE ALLOWED
+  ⚠️ KEY FEATURES IMPLEMENTED:
+  ✅ See More/Less toggle on collapsible sections
+  ✅ Image gallery with titles and descriptions under each image
+  ✅ Professional AliExpress-style design
+  ✅ Price section with discounts
+  ✅ Stock status and sales counter
+  ✅ Trust badges (shipping, payment, returns, warranty)
+  ✅ Specification tables
+  ✅ Size & dimensions with visual cards
+  ✅ Shipping information grid
+  ✅ Review highlights
+  ✅ Warranty badge
+  ✅ CTA buttons with hover effects
+  ✅ Fully responsive mobile design
+  ✅ Complete style isolation with pd- prefix
+  ✅ Smooth animations and transitions
   
-  Remember: Your styles should ONLY affect elements inside pd-container. Nothing else on the page should change! 🛡️
+  Remember: Create a professional, trustworthy experience that converts visitors into customers! 🛍️✨
   `;
   }
+
+
 //   function buildPrompt(
 //     chunk: { id: string; descreption: string }[],
 //     outputField: 'shortDescription' | 'detailedDescription'
