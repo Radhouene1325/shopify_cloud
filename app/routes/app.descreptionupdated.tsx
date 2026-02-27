@@ -261,6 +261,101 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
   //   CRITICAL: All quotes in strings MUST be escaped (\\"). Return ONLY the JSON array, no markdown.`;
   // }
 
+  // function buildPrompt(
+  //   chunk: { id: string; descreption: string }[],
+  //   outputField: 'shortDescription' | 'detailedDescription'
+  // ): string {
+  //   const isShort = outputField === 'shortDescription';
+  //   const fieldLabel = isShort
+  //     ? 'shortDescription (bullet points only)'
+  //     : 'detailedDescription (full article only)';
+  
+  //   const outputStructure = isShort
+  //     ? '{ "id": "original_product_id", "shortDescription": "PROFESSIONAL_HTML_STRING" }'
+  //     : '{ "id": "original_product_id", "detailedDescription": "COMPLETE_HTML5_ARTICLE_WITH_CSS" }';
+  
+  //   return `You are a JSON API. Process ALL ${chunk.length} products and return a JSON array with ONLY ${fieldLabel}.
+  
+  // PROMPT TEMPLATE FOR EACH PRODUCT:
+  // {
+  //   "role": "Senior E-commerce SEO Specialist, Conversion Strategist & Front-End UX Architect",
+  //   "objective": "Transform raw technical product data into a high-converting, SEO-optimized, fully responsive HTML5 product description using professional embedded CSS and structured data tables.",
+  //   "outputFormat": {
+  //     ${
+  //       isShort
+  //         ? '"shortDescription": "SEO-Optimized HTML bullet list with professional structure"'
+  //         : '"detailedDescription": "Complete HTML5 article with embedded professional CSS, responsive layout, structured specification tables, and automatic size-detection table formatting"'
+  //     }
+  //   },
+  //   "SEORequirements": [
+  //     "Use one <h1> optimized for product keyword intent.",
+  //     "Use logical <h2> hierarchy.",
+  //     "Include semantic HTML5 structure.",
+  //     "Use keyword-rich but natural language.",
+  //     "Optimize for readability and conversion."
+  //   ],
+  //   ${
+  //     isShort
+  //       ? `"constraints": [
+  //           "5-6 Bullet points maximum.",
+  //           "Use <ul> and <li>.",
+  //           "Start each bullet with <strong>Benefit:</strong>.",
+  //           "End with persuasive CTA paragraph."
+  //         ]`
+  //       : `"constraints": [
+  //           "Use <article>, <section>, <header>.",
+  //           "Include embedded <style> block at top of output.",
+  //           "CSS must be clean, modern, professional.",
+  //           "Use responsive design with media queries.",
+  //           "Convert ALL technical specifications into structured <table>.",
+  //           "Detect any size-related information (dimensions, weight, capacity, measurements, fit, etc.) and place it inside a dedicated 'Size & Dimensions' table section.",
+  //           "All tables must be responsive.",
+  //           "Preserve ALL <img> tags exactly as provided.",
+  //           "Limit to 3-4 main sections for clarity."
+  //         ]`
+  //   },
+  //   "CSSGuidelines": {
+  //     "design": "Minimal luxury e-commerce style",
+  //     "typography": "Clean system font stack",
+  //     "layout": "Max-width container centered with spacing",
+  //     "tables": "Professional bordered table with styled header row",
+  //     "responsive": "Mobile-first with breakpoint at 768px",
+  //     "performance": "Lightweight CSS, no external libraries"
+  //   }
+  // }
+  
+  // DETAILED STRUCTURE REQUIREMENTS (for detailedDescription):
+  
+  // 1. Start with:
+  //    <style>
+  //    /* Professional Responsive Product CSS */
+  //    </style>
+  
+  // 2. Wrap everything inside:
+  //    <article class="product-description">
+  
+  // 3. Required Sections:
+  //    - Hero Introduction
+  //    - Key Features Section
+  //    - Specifications Table
+  //    - Size & Dimensions Table (ONLY if size data exists)
+  //    - Closing CTA Section
+  
+  // 4. Table Rules:
+  //    - Use <table>, <thead>, <tbody>
+  //    - Use proper <th> headers
+  //    - No inline styles
+  //    - Must be mobile responsive (overflow-x or stacked layout)
+  
+  // DATA TO PROCESS:
+  // ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })))}
+  
+  // Return a JSON array with EXACTLY ${chunk.length} objects.
+  // Each object: ${outputStructure}
+  // CRITICAL: All quotes in strings MUST be escaped (\\").
+  // Return ONLY the JSON array, no markdown.`;
+  // }
+
   function buildPrompt(
     chunk: { id: string; descreption: string }[],
     outputField: 'shortDescription' | 'detailedDescription'
@@ -271,89 +366,120 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
       : 'detailedDescription (full article only)';
   
     const outputStructure = isShort
-      ? '{ "id": "original_product_id", "shortDescription": "PROFESSIONAL_HTML_STRING" }'
-      : '{ "id": "original_product_id", "detailedDescription": "COMPLETE_HTML5_ARTICLE_WITH_CSS" }';
+      ? '{ "id": "original_product_id", "shortDescription": "TAILWIND_HTML_STRING" }'
+      : '{ "id": "original_product_id", "detailedDescription": "ADVANCED_SEO_TAILWIND_HTML_ARTICLE" }';
   
     return `You are a JSON API. Process ALL ${chunk.length} products and return a JSON array with ONLY ${fieldLabel}.
   
   PROMPT TEMPLATE FOR EACH PRODUCT:
   {
-    "role": "Senior E-commerce SEO Specialist, Conversion Strategist & Front-End UX Architect",
-    "objective": "Transform raw technical product data into a high-converting, SEO-optimized, fully responsive HTML5 product description using professional embedded CSS and structured data tables.",
+    "role": "Senior SEO Strategist, Luxury E-commerce Conversion Architect & Tailwind Frontend Specialist",
+    "objective": "Transform raw product data into a high-converting, SEO-dominant, performance-optimized product description using semantic HTML5 and professional Tailwind CSS utility classes.",
     "outputFormat": {
       ${
         isShort
-          ? '"shortDescription": "SEO-Optimized HTML bullet list with professional structure"'
-          : '"detailedDescription": "Complete HTML5 article with embedded professional CSS, responsive layout, structured specification tables, and automatic size-detection table formatting"'
+          ? '"shortDescription": "SEO-Optimized Tailwind HTML bullet section (conversion-focused)"'
+          : '"detailedDescription": "Advanced SEO-structured HTML5 article using Tailwind CSS with responsive professional design and structured data tables"'
       }
     },
     "SEORequirements": [
-      "Use one <h1> optimized for product keyword intent.",
-      "Use logical <h2> hierarchy.",
-      "Include semantic HTML5 structure.",
-      "Use keyword-rich but natural language.",
-      "Optimize for readability and conversion."
+      "Single optimized <h1> with primary keyword intent.",
+      "Strategic <h2> hierarchy for semantic structure.",
+      "Keyword-rich but natural language.",
+      "Conversion-focused persuasive copy.",
+      "Readable formatting for featured snippet optimization.",
+      "Use proper semantic tags (<article>, <section>, <header>)."
     ],
     ${
       isShort
         ? `"constraints": [
-            "5-6 Bullet points maximum.",
-            "Use <ul> and <li>.",
+            "5-6 bullet points maximum.",
+            "Use <ul> and <li> with Tailwind spacing utilities.",
             "Start each bullet with <strong>Benefit:</strong>.",
-            "End with persuasive CTA paragraph."
+            "End with persuasive CTA paragraph styled with Tailwind.",
+            "Mobile-first responsive layout."
           ]`
         : `"constraints": [
-            "Use <article>, <section>, <header>.",
-            "Include embedded <style> block at top of output.",
-            "CSS must be clean, modern, professional.",
-            "Use responsive design with media queries.",
-            "Convert ALL technical specifications into structured <table>.",
-            "Detect any size-related information (dimensions, weight, capacity, measurements, fit, etc.) and place it inside a dedicated 'Size & Dimensions' table section.",
-            "All tables must be responsive.",
+            "Use Tailwind CSS classes only (NO inline styles, NO <style> block).",
+            "Use clean semantic HTML5 structure.",
+            "Convert ALL specifications into structured responsive <table>.",
+            "Automatically detect size-related information (dimensions, weight, measurements, fit, capacity) and place inside dedicated 'Size & Dimensions' section with its own table.",
+            "Tables must be fully responsive (overflow-x-auto wrapper).",
+            "Use max-w-7xl container with mx-auto and proper spacing.",
             "Preserve ALL <img> tags exactly as provided.",
-            "Limit to 3-4 main sections for clarity."
+            "Limit to 3-4 primary sections for clarity and performance."
           ]`
     },
-    "CSSGuidelines": {
-      "design": "Minimal luxury e-commerce style",
-      "typography": "Clean system font stack",
-      "layout": "Max-width container centered with spacing",
-      "tables": "Professional bordered table with styled header row",
-      "responsive": "Mobile-first with breakpoint at 768px",
-      "performance": "Lightweight CSS, no external libraries"
+    "TailwindDesignSystem": {
+      "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+      "typography": "text-gray-800 leading-relaxed tracking-normal",
+      "headings": "font-bold text-gray-900",
+      "sections": "py-8 md:py-12",
+      "cards": "bg-white rounded-2xl shadow-sm border border-gray-100",
+      "tables": "min-w-full divide-y divide-gray-200",
+      "tableHeader": "bg-gray-50 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider",
+      "tableCells": "px-4 py-3 text-sm text-gray-600",
+      "responsive": "mobile-first with md and lg breakpoints",
+      "performance": "No unnecessary wrappers. Clean utility usage only."
     }
   }
   
   DETAILED STRUCTURE REQUIREMENTS (for detailedDescription):
   
-  1. Start with:
-     <style>
-     /* Professional Responsive Product CSS */
-     </style>
+  1. Wrap everything in:
+     <article class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-gray-800 leading-relaxed">
   
-  2. Wrap everything inside:
-     <article class="product-description">
+  2. Required Sections (SEO-Optimized):
   
-  3. Required Sections:
-     - Hero Introduction
-     - Key Features Section
-     - Specifications Table
-     - Size & Dimensions Table (ONLY if size data exists)
-     - Closing CTA Section
+     • HERO SECTION  
+       - <header>
+       - <h1> primary keyword optimized
+       - Engaging introductory paragraph
+       - Optional image wrapped in responsive container
   
-  4. Table Rules:
-     - Use <table>, <thead>, <tbody>
-     - Use proper <th> headers
-     - No inline styles
-     - Must be mobile responsive (overflow-x or stacked layout)
+     • FEATURES SECTION  
+       - <section>
+       - <h2>
+       - Grid layout: grid md:grid-cols-2 gap-6
+       - Feature cards styled with rounded-xl shadow-sm p-6 bg-white
+  
+     • TECHNICAL SPECIFICATIONS  
+       - <section>
+       - <h2>
+       - Table inside:
+         <div class="overflow-x-auto">
+           <table class="min-w-full divide-y divide-gray-200">
+         - Proper <thead> and <tbody>
+  
+     • SIZE & DIMENSIONS (ONLY if detected)  
+       - Separate <section>
+       - Dedicated table for all size/measurement related data
+  
+     • FINAL CTA SECTION  
+       - Strong persuasive closing paragraph
+       - Styled CTA block using Tailwind:
+         bg-gray-900 text-white rounded-2xl p-8 text-center
+  
+  3. PERFORMANCE RULES:
+     - No inline CSS
+     - No <style> blocks
+     - No external libraries
+     - Clean semantic HTML
+     - Lightweight structure
+     - Mobile-first responsiveness
   
   DATA TO PROCESS:
   ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })))}
   
   Return a JSON array with EXACTLY ${chunk.length} objects.
   Each object: ${outputStructure}
-  CRITICAL: All quotes in strings MUST be escaped (\\").
-  Return ONLY the JSON array, no markdown.`;
+  
+  CRITICAL:
+  - All quotes inside strings MUST be escaped (\\").
+  - Return ONLY the JSON array.
+  - No markdown.
+  - No explanations.
+  `;
   }
 
 //   function buildPrompt(
