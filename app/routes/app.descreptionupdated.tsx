@@ -367,106 +367,118 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
   
     const outputStructure = isShort
       ? '{ "id": "original_product_id", "shortDescription": "TAILWIND_HTML_STRING" }'
-      : '{ "id": "original_product_id", "detailedDescription": "ADVANCED_SEO_TAILWIND_HTML_ARTICLE" }';
+      : '{ "id": "original_product_id", "detailedDescription": "FRIENDLY_SEO_TAILWIND_ARTICLE" }';
   
     return `You are a JSON API. Process ALL ${chunk.length} products and return a JSON array with ONLY ${fieldLabel}.
   
   PROMPT TEMPLATE FOR EACH PRODUCT:
   {
-    "role": "Senior SEO Strategist, Luxury E-commerce Conversion Architect & Tailwind Frontend Specialist",
-    "objective": "Transform raw product data into a high-converting, SEO-dominant, performance-optimized product description using semantic HTML5 and professional Tailwind CSS utility classes.",
+    "role": "Senior SEO Strategist & E-commerce UX Designer specialized in high-converting Amazon-style product pages",
+    "objective": "Transform raw product data into a friendly, colorful, high-converting SEO-optimized product description using semantic HTML5 and Tailwind CSS with Amazon-inspired specification tables.",
+    "designDirection": "Friendly, clean, modern, trustworthy, conversion-focused.",
     "outputFormat": {
       ${
         isShort
-          ? '"shortDescription": "SEO-Optimized Tailwind HTML bullet section (conversion-focused)"'
-          : '"detailedDescription": "Advanced SEO-structured HTML5 article using Tailwind CSS with responsive professional design and structured data tables"'
+          ? '"shortDescription": "SEO-Optimized Tailwind bullet section with friendly design"'
+          : '"detailedDescription": "Complete SEO-friendly Tailwind HTML5 article with Amazon-style specification tables and responsive layout"'
       }
     },
     "SEORequirements": [
-      "Single optimized <h1> with primary keyword intent.",
-      "Strategic <h2> hierarchy for semantic structure.",
-      "Keyword-rich but natural language.",
-      "Conversion-focused persuasive copy.",
-      "Readable formatting for featured snippet optimization.",
-      "Use proper semantic tags (<article>, <section>, <header>)."
+      "One optimized <h1> using main keyword intent.",
+      "Clear <h2> hierarchy.",
+      "Keyword-rich natural language.",
+      "Short readable paragraphs.",
+      "Conversion-focused copywriting.",
+      "Optimized for mobile readability."
     ],
     ${
       isShort
         ? `"constraints": [
             "5-6 bullet points maximum.",
-            "Use <ul> and <li> with Tailwind spacing utilities.",
+            "Use <ul> and <li>.",
             "Start each bullet with <strong>Benefit:</strong>.",
-            "End with persuasive CTA paragraph styled with Tailwind.",
-            "Mobile-first responsive layout."
+            "Use friendly icon indicator (✓).",
+            "End with persuasive CTA block styled with Tailwind."
           ]`
         : `"constraints": [
-            "Use Tailwind CSS classes only (NO inline styles, NO <style> block).",
-            "Use clean semantic HTML5 structure.",
-            "Convert ALL specifications into structured responsive <table>.",
-            "Automatically detect size-related information (dimensions, weight, measurements, fit, capacity) and place inside dedicated 'Size & Dimensions' section with its own table.",
-            "Tables must be fully responsive (overflow-x-auto wrapper).",
-            "Use max-w-7xl container with mx-auto and proper spacing.",
-            "Preserve ALL <img> tags exactly as provided.",
-            "Limit to 3-4 primary sections for clarity and performance."
+            "Use Tailwind CSS only.",
+            "No inline CSS.",
+            "No <style> blocks.",
+            "Convert ALL technical specifications into Amazon-style structured table.",
+            "Detect size-related data (dimensions, weight, fit, measurements, capacity) and create separate 'Size & Dimensions' table.",
+            "Tables must include zebra striping.",
+            "Tables must be wrapped in overflow-x-auto for responsiveness.",
+            "Preserve ALL <img> tags exactly.",
+            "Use friendly color palette utilities."
           ]`
     },
     "TailwindDesignSystem": {
-      "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
-      "typography": "text-gray-800 leading-relaxed tracking-normal",
+      "container": "max-w-6xl mx-auto px-4 sm:px-6 lg:px-8",
+      "text": "text-gray-700 leading-relaxed",
       "headings": "font-bold text-gray-900",
-      "sections": "py-8 md:py-12",
-      "cards": "bg-white rounded-2xl shadow-sm border border-gray-100",
-      "tables": "min-w-full divide-y divide-gray-200",
-      "tableHeader": "bg-gray-50 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider",
-      "tableCells": "px-4 py-3 text-sm text-gray-600",
-      "responsive": "mobile-first with md and lg breakpoints",
-      "performance": "No unnecessary wrappers. Clean utility usage only."
+      "primaryColor": "text-blue-600",
+      "highlightBg": "bg-blue-50",
+      "ctaBg": "bg-blue-600 hover:bg-blue-700 text-white",
+      "card": "bg-white rounded-xl shadow-md border border-gray-100",
+      "tableWrapper": "overflow-x-auto rounded-lg border border-gray-200",
+      "amazonTable": "min-w-full text-sm text-left",
+      "tableHeader": "bg-gray-100 text-gray-700 font-semibold uppercase text-xs",
+      "tableRow": "odd:bg-white even:bg-gray-50",
+      "tableCell": "px-4 py-3"
     }
   }
   
   DETAILED STRUCTURE REQUIREMENTS (for detailedDescription):
   
-  1. Wrap everything in:
-     <article class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-gray-800 leading-relaxed">
+  1. Wrap content inside:
+     <article class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-gray-700 leading-relaxed">
   
-  2. Required Sections (SEO-Optimized):
+  2. HERO SECTION
+     - <header class="mb-8">
+     - <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+     - Intro paragraph
+     - Optional image in responsive wrapper: rounded-xl shadow-md
   
-     • HERO SECTION  
-       - <header>
-       - <h1> primary keyword optimized
-       - Engaging introductory paragraph
-       - Optional image wrapped in responsive container
+  3. KEY FEATURES SECTION
+     - <section class="mb-10">
+     - <h2 class="text-xl font-semibold text-blue-600 mb-4">
+     - Grid layout:
+       grid md:grid-cols-2 gap-6
+     - Feature cards:
+       bg-white rounded-xl shadow-md p-6 border border-gray-100
   
-     • FEATURES SECTION  
-       - <section>
-       - <h2>
-       - Grid layout: grid md:grid-cols-2 gap-6
-       - Feature cards styled with rounded-xl shadow-sm p-6 bg-white
+  4. TECHNICAL SPECIFICATIONS (Amazon Style)
+     - <section class="mb-10">
+     - <h2>
+     - Wrap table in:
+       <div class="overflow-x-auto rounded-lg border border-gray-200">
+     - Table classes:
+       min-w-full text-sm text-left
+     - Header:
+       bg-gray-100 uppercase text-xs font-semibold text-gray-700
+     - Rows:
+       odd:bg-white even:bg-gray-50
+     - Clean two-column layout:
+       Specification | Value
   
-     • TECHNICAL SPECIFICATIONS  
-       - <section>
-       - <h2>
-       - Table inside:
-         <div class="overflow-x-auto">
-           <table class="min-w-full divide-y divide-gray-200">
-         - Proper <thead> and <tbody>
+  5. SIZE & DIMENSIONS (Only if detected)
+     - Separate section
+     - Same Amazon-style table format
+     - Include:
+       Width, Height, Depth, Weight, Capacity, Fit, Measurements
   
-     • SIZE & DIMENSIONS (ONLY if detected)  
-       - Separate <section>
-       - Dedicated table for all size/measurement related data
+  6. FINAL CTA SECTION
+     - <section class="mt-12">
+     - Friendly highlight box:
+       bg-blue-600 text-white rounded-2xl p-8 text-center shadow-lg
+     - Strong conversion closing paragraph
   
-     • FINAL CTA SECTION  
-       - Strong persuasive closing paragraph
-       - Styled CTA block using Tailwind:
-         bg-gray-900 text-white rounded-2xl p-8 text-center
-  
-  3. PERFORMANCE RULES:
-     - No inline CSS
-     - No <style> blocks
-     - No external libraries
-     - Clean semantic HTML
-     - Lightweight structure
-     - Mobile-first responsiveness
+  PERFORMANCE RULES:
+  - Mobile-first.
+  - No unnecessary wrappers.
+  - Lightweight Tailwind utilities only.
+  - No inline styles.
+  - Clean semantic HTML.
   
   DATA TO PROCESS:
   ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })))}
@@ -475,7 +487,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
   Each object: ${outputStructure}
   
   CRITICAL:
-  - All quotes inside strings MUST be escaped (\\").
+  - Escape all quotes as (\\").
   - Return ONLY the JSON array.
   - No markdown.
   - No explanations.
