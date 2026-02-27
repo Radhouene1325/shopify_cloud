@@ -835,61 +835,30 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
       ? '{ "id": "original_product_id", "shortDescription": "HTML_STRING" }'
       : '{ "id": "original_product_id", "detailedDescription": "SEO_FRIENDLY_HTML_ARTICLE_WITH_SEE_MORE" }';
   
-    return `You are a JSON API that creates stunning, professional product descriptions. Process ALL ${chunk.length} products and return a JSON array with ONLY ${fieldLabel}.
+    return `You are a JSON API that creates stunning, professional product descriptions with PROPER TEXT SIZING AND TABLE FORMATTING. Process ALL ${chunk.length} products and return a JSON array with ONLY ${fieldLabel}.
   
-  🔒 CRITICAL CONSTRAINT: Use EXTREMELY SPECIFIC selectors with 'pd-' prefix to prevent ANY style leakage to other theme elements.
+  🔒 CRITICAL: Use EXTREMELY SPECIFIC selectors with 'pd-' prefix. Ensure ALL TEXT IS READABLE with proper font sizes!
   
-  🎯 CORE MISSION: Create AliExpress-style professional product descriptions with WORKING "See More/Less" functionality and beautiful image galleries with titles.
+  🎯 CORE MISSION: Create AliExpress-style professional product descriptions with PROPER TEXT SIZES (not too small), BEAUTIFULLY FORMATTED TABLES, and WORKING "See More/Less" functionality.
   
   PROMPT TEMPLATE FOR EACH PRODUCT:
   {
     "role": "Senior E-commerce UX Designer & Conversion Specialist",
-    "objective": "Transform raw product data into a professional, trust-building product description with AliExpress-inspired design and working see more/less functionality.",
-    "designDirection": "Professional, trustworthy, clean, and conversion-focused with subtle animations and clear visual hierarchy.",
+    "objective": "Transform raw product data into a professional, trust-building product description with PROPER TEXT SIZES and BEAUTIFUL TABLES.",
+    "designDirection": "Professional, clean, with LARGE READABLE TEXT and well-structured tables.",
     "outputFormat": {
       ${
         isShort
-          ? '"shortDescription": "Professional bullet points with trust badges and clear benefits"'
-          : '"detailedDescription": "Complete AliExpress-style product page with see more/less, image gallery with titles, and specification tables"'
+          ? '"shortDescription": "Professional bullet points with proper text sizing"'
+          : '"detailedDescription": "Complete AliExpress-style product page with PROPER TEXT SIZES and BEAUTIFUL TABLES"'
       }
-    },
-    "SEORequirements": [
-      "One optimized H1 tag",
-      "Clear H2 hierarchy",
-      "Keyword-rich natural language",
-      "Short, scannable paragraphs",
-      "Mobile-optimized with touch-friendly interactions",
-      "Semantic HTML5 structure",
-      "Image alt texts with keywords"
-    ],
-    ${
-      isShort
-        ? `"constraints": [
-            "5-6 bullet points with icons",
-            "Add trust badges (✓ Free Shipping, 🔒 Secure Payment, etc.)",
-            "Use professional color scheme"
-          ]`
-        : `"constraints": [
-            "Implement WORKING SEE MORE/SEE LESS functionality with JavaScript",
-            "Create image gallery with titles/descriptions under each image",
-            "Add trust badges section (guarantee, shipping, returns)",
-            "Include price section with discounts if applicable",
-            "Add stock and sales counter for urgency",
-            "Create AliExpress-style specification tables",
-            "Add customer review highlights section",
-            "Include shipping info with timeline",
-            "Add warranty and support information",
-            "NO add to cart or buy now buttons",
-            "All interactive elements must work on mobile",
-            "Use professional color palette: #1E293B, #3B82F6, #10B981, #F59E0B"
-          ]`
     }
   }
   
-  📋 COMPLETE HTML STRUCTURE WITH WORKING SEE MORE/LESS:
+  📋 COMPLETE HTML WITH PROPER TEXT SIZES AND TABLE FORMATTING:
   
   <style>
-  /* PROFESSIONAL ALIEXPRESS-STYLE DESIGN - COMPLETELY ISOLATED */
+  /* PROFESSIONAL DESIGN WITH PROPER TEXT SIZES */
   .pd-container * {
     margin: 0;
     padding: 0;
@@ -903,44 +872,72 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
     margin: 0 auto;
     padding: 2rem 1rem;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-    line-height: 1.5;
+    line-height: 1.6;
     color: #1E293B;
     background: #FFFFFF;
   }
   
-  /* HEADER SECTION */
-  .pd-header {
-    margin-bottom: 2rem;
-  }
-  
+  /* ===== PROPER TEXT SIZES - NOT TOO SMALL ===== */
   .pd-title {
-    font-size: 2.5rem;
+    font-size: 2.8rem !important;  /* LARGE TITLE */
     font-weight: 700;
     color: #0F172A !important;
-    margin-bottom: 1rem !important;
+    margin-bottom: 1.5rem !important;
     line-height: 1.2 !important;
   }
   
-  /* PRICE SECTION */
+  .pd-section-title {
+    font-size: 2.2rem !important;  /* LARGE SECTION TITLES */
+    font-weight: 700;
+    color: #0F172A !important;
+    margin-bottom: 1.5rem !important;
+    padding-bottom: 0.75rem;
+    border-bottom: 3px solid #3B82F6;
+    display: inline-block;
+  }
+  
+  .pd-subsection-title {
+    font-size: 1.8rem !important;  /* SUBSECTION TITLES */
+    font-weight: 600;
+    color: #1E293B !important;
+    margin: 1.5rem 0 1rem !important;
+  }
+  
+  .pd-text-large {
+    font-size: 1.4rem !important;  /* LARGE BODY TEXT */
+    color: #334155;
+  }
+  
+  .pd-text-medium {
+    font-size: 1.2rem !important;  /* MEDIUM BODY TEXT */
+    color: #475569;
+  }
+  
+  .pd-text-small {
+    font-size: 1rem !important;    /* SMALL TEXT - STILL READABLE */
+    color: #64748B;
+  }
+  
+  /* PRICE SECTION - LARGE AND CLEAR */
   .pd-price-section {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-    padding: 1rem;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
     background: #F8FAFC;
-    border-radius: 12px;
+    border-radius: 16px;
     flex-wrap: wrap;
   }
   
   .pd-current-price {
-    font-size: 2rem;
+    font-size: 3.2rem !important;  /* VERY LARGE PRICE */
     font-weight: 700;
     color: #3B82F6 !important;
   }
   
   .pd-old-price {
-    font-size: 1.25rem;
+    font-size: 2rem !important;    /* LARGE OLD PRICE */
     color: #94A3B8 !important;
     text-decoration: line-through;
   }
@@ -948,221 +945,121 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
   .pd-discount-badge {
     background: #10B981;
     color: white !important;
-    padding: 0.25rem 0.75rem;
+    padding: 0.5rem 1.5rem;
     border-radius: 9999px;
-    font-size: 0.875rem;
+    font-size: 1.4rem !important;  /* LARGE BADGE TEXT */
     font-weight: 600;
   }
   
-  /* STOCK & SALES COUNTER */
+  /* STOCK SECTION */
   .pd-stock-section {
     display: flex;
     gap: 2rem;
-    margin-bottom: 1.5rem;
-    padding: 1rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
     background: #F1F5F9;
-    border-radius: 12px;
+    border-radius: 16px;
     flex-wrap: wrap;
   }
   
   .pd-stock-status {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 1rem;
     flex-wrap: wrap;
   }
   
   .pd-in-stock {
     color: #10B981;
     font-weight: 600;
+    font-size: 1.3rem !important;
   }
   
   .pd-low-stock {
     color: #F59E0B;
     font-weight: 600;
+    font-size: 1.3rem !important;
   }
   
   .pd-sales-counter {
     color: #64748B;
-    font-size: 0.875rem;
+    font-size: 1.2rem !important;
   }
   
-  /* TRUST BADGES */
+  /* TRUST BADGES - LARGER */
   .pd-trust-badges {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1rem;
-    margin: 2rem 0;
-    padding: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.5rem;
+    margin: 2.5rem 0;
+    padding: 1.5rem;
     background: #FFFFFF;
-    border: 1px solid #E2E8F0;
-    border-radius: 12px;
+    border: 2px solid #E2E8F0;
+    border-radius: 16px;
   }
   
   .pd-trust-item {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
+    gap: 0.75rem;
+    font-size: 1.2rem !important;  /* LARGER TRUST TEXT */
     color: #475569;
   }
   
   .pd-trust-icon {
-    font-size: 1.25rem;
+    font-size: 1.8rem !important;  /* LARGER ICONS */
   }
   
-  /* IMAGE GALLERY WITH TITLES */
+  /* IMAGE GALLERY - WITH PROPER TEXT SIZES */
   .pd-image-gallery {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin: 2rem 0;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin: 2.5rem 0;
   }
   
   .pd-image-card {
     background: #FFFFFF;
-    border: 1px solid #E2E8F0;
-    border-radius: 16px;
+    border: 2px solid #E2E8F0;
+    border-radius: 20px;
     overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-  
-  .pd-image-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
   }
   
   .pd-product-image {
     width: 100%;
-    height: 200px;
+    height: 280px;
     object-fit: cover;
-    border-bottom: 1px solid #E2E8F0;
+    border-bottom: 2px solid #E2E8F0;
   }
   
   .pd-image-title {
-    font-size: 1.125rem;
+    font-size: 1.5rem !important;  /* LARGER IMAGE TITLES */
     font-weight: 600;
     color: #0F172A !important;
-    padding: 1rem 1rem 0.5rem;
+    padding: 1.2rem 1.2rem 0.5rem;
   }
   
   .pd-image-description {
-    font-size: 0.875rem;
+    font-size: 1.1rem !important;  /* LARGER IMAGE DESCRIPTIONS */
     color: #64748B;
-    padding: 0 1rem 1rem;
-    line-height: 1.4;
+    padding: 0 1.2rem 1.2rem;
+    line-height: 1.5;
   }
   
-  /* SEE MORE/LESS SECTION - FIXED VERSION */
-  .pd-collapsible-section {
+  /* ===== BEAUTIFUL TABLES - PROPER SIZING ===== */
+  .pd-table-container {
     margin: 2rem 0;
-    border: 1px solid #E2E8F0;
-    border-radius: 16px;
+    border: 2px solid #E2E8F0;
+    border-radius: 20px;
     overflow: hidden;
-    background: #FFFFFF;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
   }
   
-  .pd-section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.25rem;
-    background: #F8FAFC;
-    cursor: pointer;
-    border-bottom: 2px solid #E2E8F0;
-    transition: all 0.3s ease;
-  }
-  
-  .pd-section-header:hover {
-    background: #F1F5F9;
-  }
-  
-  .pd-section-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #0F172A !important;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  
-  .pd-section-title svg {
-    width: 20px;
-    height: 20px;
-    fill: #3B82F6;
-  }
-  
-  .pd-toggle-btn {
-    background: #3B82F6;
-    color: white !important;
-    padding: 0.5rem 1.25rem;
-    border-radius: 9999px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    border: none;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    pointer-events: auto;
-    z-index: 10;
-  }
-  
-  .pd-toggle-btn:hover {
-    background: #2563EB;
-  }
-  
-  .pd-section-content {
-    padding: 0 1.5rem;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.5s ease-out, padding 0.3s ease;
-    background: #FFFFFF;
-    opacity: 0;
-  }
-  
-  .pd-section-content.pd-expanded {
-    padding: 1.5rem;
-    max-height: 2000px; /* Large enough for content */
-    opacity: 1;
-    transition: max-height 0.5s ease-in, padding 0.3s ease, opacity 0.3s ease;
-  }
-  
-  /* FEATURES GRID */
-  .pd-features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1rem;
-  }
-  
-  .pd-feature-item {
-    display: flex;
-    gap: 1rem;
-    padding: 1rem;
-    background: #F8FAFC;
-    border-radius: 12px;
-    border: 1px solid #E2E8F0;
-  }
-  
-  .pd-feature-icon {
-    font-size: 1.5rem;
-    flex-shrink: 0;
-  }
-  
-  .pd-feature-text {
-    color: #334155;
-    font-size: 0.9375rem;
-  }
-  
-  .pd-feature-text strong {
-    color: #0F172A;
-    display: block;
-    margin-bottom: 0.25rem;
-  }
-  
-  /* ALIEXPRESS-STYLE SPECIFICATION TABLE */
   .pd-specs-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.9375rem;
+    font-size: 1.2rem !important;  /* PROPER TABLE TEXT SIZE */
   }
   
   .pd-specs-table tr {
@@ -1174,7 +1071,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
   }
   
   .pd-specs-table td {
-    padding: 1rem !important;
+    padding: 1.5rem !important;    /* MORE PADDING */
   }
   
   .pd-specs-table td:first-child {
@@ -1182,398 +1079,388 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
     color: #475569;
     width: 40%;
     background: #F8FAFC;
+    font-size: 1.2rem !important;
   }
   
   .pd-specs-table td:last-child {
     color: #0F172A;
     background: #FFFFFF;
+    font-size: 1.2rem !important;
+    font-weight: 500;
   }
   
-  /* SIZE & DIMENSIONS TABLE */
+  /* DIMENSIONS CARDS - LARGER */
   .pd-dimensions-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1rem;
-    margin: 1.5rem 0;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
   }
   
   .pd-dimension-card {
     background: #F8FAFC;
-    border-radius: 12px;
-    padding: 1.5rem;
+    border-radius: 16px;
+    padding: 2rem 1.5rem;
     text-align: center;
-    border: 1px solid #E2E8F0;
+    border: 2px solid #E2E8F0;
   }
   
   .pd-dimension-icon {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
+    font-size: 3rem !important;    /* LARGER ICONS */
+    margin-bottom: 1rem;
   }
   
   .pd-dimension-label {
-    font-size: 0.875rem;
+    font-size: 1.2rem !important;
     color: #64748B;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
   }
   
   .pd-dimension-value {
-    font-size: 1.25rem;
-    font-weight: 600;
+    font-size: 1.8rem !important;  /* LARGER VALUES */
+    font-weight: 700;
     color: #0F172A;
   }
   
-  /* SHIPPING INFO SECTION */
+  /* SHIPPING CARDS - LARGER */
   .pd-shipping-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
     margin: 2rem 0;
   }
   
   .pd-shipping-card {
-    padding: 1rem;
+    padding: 1.8rem 1rem;
     background: #F8FAFC;
-    border-radius: 12px;
+    border-radius: 16px;
     text-align: center;
-    border: 1px solid #E2E8F0;
+    border: 2px solid #E2E8F0;
   }
   
   .pd-shipping-method {
     font-weight: 600;
     color: #0F172A;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.3rem !important;
   }
   
   .pd-shipping-time {
     color: #3B82F6;
-    font-size: 0.875rem;
-    margin-bottom: 0.25rem;
+    font-size: 1.2rem !important;
+    margin-bottom: 0.5rem;
   }
   
   .pd-shipping-cost {
     color: #10B981;
     font-weight: 600;
-    font-size: 0.875rem;
+    font-size: 1.3rem !important;
   }
   
-  /* REVIEW HIGHLIGHTS */
+  /* REVIEW SECTION - LARGER */
   .pd-reviews-section {
-    margin: 2rem 0;
-    padding: 1.5rem;
+    margin: 2.5rem 0;
+    padding: 2rem;
     background: linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%);
-    border-radius: 16px;
-    border: 1px solid #E2E8F0;
+    border-radius: 20px;
+    border: 2px solid #E2E8F0;
   }
   
   .pd-rating-summary {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
     flex-wrap: wrap;
   }
   
   .pd-average-rating {
-    font-size: 2rem;
+    font-size: 3rem !important;    /* LARGE RATING */
     font-weight: 700;
     color: #F59E0B;
   }
   
   .pd-stars {
     color: #F59E0B;
-    font-size: 1.25rem;
+    font-size: 2rem !important;    /* LARGE STARS */
   }
   
   .pd-review-count {
     color: #64748B;
-    font-size: 0.875rem;
+    font-size: 1.3rem !important;
   }
   
   .pd-review-highlights {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1rem;
   }
   
   .pd-review-tag {
     background: white;
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1.5rem;
     border-radius: 9999px;
-    border: 1px solid #E2E8F0;
-    font-size: 0.875rem;
+    border: 2px solid #E2E8F0;
+    font-size: 1.1rem !important;
     color: #334155;
     text-align: center;
   }
   
-  /* WARRANTY SECTION */
+  /* WARRANTY BADGE - LARGER */
   .pd-warranty-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
     background: #EFF6FF;
     color: #3B82F6 !important;
-    padding: 0.75rem 1.5rem;
-    border-radius: 12px;
+    padding: 1rem 2rem;
+    border-radius: 50px;
     font-weight: 600;
-    margin: 1rem 0;
+    margin: 1.5rem 0;
+    font-size: 1.3rem !important;
   }
   
-  /* BULLET POINTS FOR SHORT DESCRIPTION */
-  .pd-bullet-list {
-    list-style: none;
-    padding: 0 !important;
-    margin: 1.5rem 0 !important;
+  /* FEATURES GRID - LARGER */
+  .pd-features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
   }
   
-  .pd-bullet-item {
+  .pd-feature-item {
     display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    margin-bottom: 1rem !important;
-    padding: 0.75rem;
+    gap: 1.2rem;
+    padding: 1.5rem;
     background: #F8FAFC;
-    border-radius: 8px;
+    border-radius: 16px;
+    border: 2px solid #E2E8F0;
   }
   
-  .pd-bullet-icon {
-    font-size: 1.25rem;
+  .pd-feature-icon {
+    font-size: 2.2rem !important;
     flex-shrink: 0;
   }
   
-  .pd-bullet-text {
+  .pd-feature-text {
     color: #334155;
-    line-height: 1.4;
+    font-size: 1.1rem !important;
   }
   
-  .pd-bullet-text strong {
+  .pd-feature-text strong {
     color: #0F172A;
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 1.2rem !important;
+  }
+  
+  /* SEE MORE/LESS BUTTONS - LARGER */
+  .pd-toggle-btn {
+    background: #3B82F6;
+    color: white !important;
+    padding: 0.75rem 2rem;
+    border-radius: 50px;
+    font-size: 1.2rem !important;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .pd-section-header {
+    padding: 1.5rem;
+  }
+  
+  .pd-section-title {
+    font-size: 1.8rem !important;
   }
   
   /* MOBILE RESPONSIVENESS */
   @media (max-width: 768px) {
     .pd-title {
-      font-size: 2rem !important;
-    }
-    
-    .pd-price-section {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-    
-    .pd-stock-section {
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-    
-    .pd-trust-badges {
-      grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .pd-image-gallery {
-      grid-template-columns: 1fr;
-    }
-    
-    .pd-features-grid {
-      grid-template-columns: 1fr;
-    }
-    
-    .pd-specs-table td {
-      padding: 0.75rem !important;
-    }
-    
-    .pd-dimensions-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .pd-section-header {
-      flex-direction: column;
-      gap: 1rem;
-      text-align: center;
+      font-size: 2.4rem !important;
     }
     
     .pd-section-title {
-      justify-content: center;
+      font-size: 2rem !important;
+    }
+    
+    .pd-current-price {
+      font-size: 2.8rem !important;
+    }
+    
+    .pd-old-price {
+      font-size: 1.8rem !important;
+    }
+    
+    .pd-specs-table {
+      font-size: 1.1rem !important;
+    }
+    
+    .pd-specs-table td {
+      padding: 1.2rem !important;
+    }
+    
+    .pd-dimension-value {
+      font-size: 1.5rem !important;
     }
   }
   
   @media (max-width: 480px) {
-    .pd-trust-badges {
-      grid-template-columns: 1fr;
+    .pd-title {
+      font-size: 2rem !important;
     }
     
-    .pd-dimensions-grid {
-      grid-template-columns: 1fr;
+    .pd-section-title {
+      font-size: 1.8rem !important;
     }
     
-    .pd-review-highlights {
-      grid-template-columns: 1fr;
+    .pd-current-price {
+      font-size: 2.4rem !important;
     }
     
-    .pd-shipping-grid {
-      grid-template-columns: 1fr;
+    .pd-specs-table {
+      font-size: 1rem !important;
+    }
+    
+    .pd-specs-table td {
+      padding: 1rem !important;
     }
   }
   </style>
   
-  <!-- MAIN CONTAINER -->
+  <!-- MAIN CONTAINER WITH PROPER TEXT SIZES -->
   <div class="pd-container">
     
-    <!-- HEADER WITH TITLE -->
+    <!-- HEADER WITH LARGE TITLE -->
     <header class="pd-header">
-      <h1 class="pd-title">{{PRODUCT_TITLE}}</h1>
+      <h1 class="pd-title">Men's England Style Hooded Jacket: Your Perfect Lightweight Companion for Spring & Autumn</h1>
       
-      <!-- PRICE SECTION (if available) -->
+      <!-- PRICE SECTION - LARGE AND CLEAR -->
       <div class="pd-price-section">
-        <span class="pd-current-price">$49.99</span>
-        <span class="pd-old-price">$79.99</span>
-        <span class="pd-discount-badge">-37%</span>
+        <span class="pd-current-price">$39.99</span>
+        <span class="pd-old-price">$59.99</span>
+        <span class="pd-discount-badge">-33%</span>
       </div>
       
-      <!-- STOCK STATUS -->
+      <!-- STOCK STATUS - LARGE TEXT -->
       <div class="pd-stock-section">
         <div class="pd-stock-status">
           <span class="pd-in-stock">✓ In Stock</span>
-          <span class="pd-low-stock">⚠️ Only 5 left</span>
+          <span class="pd-low-stock">⚠️ Only 8 left</span>
         </div>
-        <div class="pd-sales-counter">🔥 128 sold in last 24h</div>
+        <span class="pd-sales-counter">🔥 156 sold in last 24h</span>
       </div>
     </header>
     
-    <!-- TRUST BADGES -->
+    <!-- TRUST BADGES - LARGE ICONS AND TEXT -->
     <div class="pd-trust-badges">
       <div class="pd-trust-item"><span class="pd-trust-icon">🚚</span> Free Shipping</div>
       <div class="pd-trust-item"><span class="pd-trust-icon">🔒</span> Secure Payment</div>
       <div class="pd-trust-item"><span class="pd-trust-icon">↩️</span> 30-Day Returns</div>
-      <div class="pd-trust-item"><span class="pd-trust-icon">✓</span> 2-Year Warranty</div>
+      <div class="pd-trust-item"><span class="pd-trust-icon">✓</span> 1-Year Warranty</div>
     </div>
     
-    <!-- IMAGE GALLERY WITH TITLES -->
+    <!-- IMAGE GALLERY WITH LARGE TITLES -->
     <div class="pd-image-gallery">
       <div class="pd-image-card">
-        <img class="pd-product-image" src="image1.jpg" alt="Product front view">
+        <img class="pd-product-image" src="image1.jpg" alt="Premium Front View">
         <h4 class="pd-image-title">Premium Front View</h4>
-        <p class="pd-image-description">Elegant design with premium materials</p>
+        <p class="pd-image-description">Elegant English style with clean solid patterns and conventional cuffs</p>
       </div>
       <div class="pd-image-card">
-        <img class="pd-product-image" src="image2.jpg" alt="Product side view">
-        <h4 class="pd-image-title">Sleek Side Profile</h4>
-        <p class="pd-image-description">Compact and portable design</p>
+        <img class="pd-product-image" src="image2.jpg" alt="Detail View">
+        <h4 class="pd-image-title">Detail View</h4>
+        <p class="pd-image-description">Smooth zipper closure with functional hood and decorative pockets</p>
       </div>
       <div class="pd-image-card">
-        <img class="pd-product-image" src="image3.jpg" alt="Product in use">
-        <h4 class="pd-image-title">In Action</h4>
-        <p class="pd-image-description">Perfect for daily use</p>
+        <img class="pd-product-image" src="image3.jpg" alt="Lifestyle Shot">
+        <h4 class="pd-image-title">Lifestyle Shot</h4>
+        <p class="pd-image-description">Perfect for casual adventures, shopping trips, and everyday moments</p>
       </div>
     </div>
     
-    <!-- COLLAPSIBLE SECTION 1: KEY FEATURES - WITH WORKING TOGGLE -->
-    <div class="pd-collapsible-section" id="pd-features-section">
+    <!-- SECTION 1: KEY FEATURES WITH LARGE TEXT AND PROPER TABLE -->
+    <div class="pd-collapsible-section">
       <div class="pd-section-header">
-        <div class="pd-section-title">
-          <svg viewBox="0 0 20 20" width="20" height="20">
-            <path d="M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm1 13h-2v-2h2v2zm0-4h-2V5h2v6z" fill="#3B82F6"/>
-          </svg>
-          Key Features & Benefits
-        </div>
+        <h2 class="pd-section-title">✨ Key Features & Benefits</h2>
         <button class="pd-toggle-btn" onclick="toggleSection('pd-features-content', this)">See More</button>
       </div>
       <div class="pd-section-content" id="pd-features-content">
-        <div class="pd-features-grid">
-          <div class="pd-feature-item">
-            <span class="pd-feature-icon">✨</span>
-            <div class="pd-feature-text">
-              <strong>Premium Quality</strong>
-              Made with high-grade materials for durability
-            </div>
-          </div>
-          <div class="pd-feature-item">
-            <span class="pd-feature-icon">🚀</span>
-            <div class="pd-feature-text">
-              <strong>Fast Performance</strong>
-              Optimized for speed and efficiency
-            </div>
-          </div>
-          <div class="pd-feature-item">
-            <span class="pd-feature-icon">🔋</span>
-            <div class="pd-feature-text">
-              <strong>Long Battery Life</strong>
-              Up to 12 hours of continuous use
-            </div>
-          </div>
-          <div class="pd-feature-item">
-            <span class="pd-feature-icon">📱</span>
-            <div class="pd-feature-text">
-              <strong>Smart Connectivity</strong>
-              Works with all your devices
-            </div>
-          </div>
+        <div class="pd-table-container">
+          <table class="pd-specs-table">
+            <tr><td>Material</td><td>Premium Cotton Blend with Polyester Lining</td></tr>
+            <tr><td>Style</td><td>English Classic with Modern Fit</td></tr>
+            <tr><td>Closure</td><td>Smooth Zipper with Button Protection</td></tr>
+            <tr><td>Hood</td><td>Adjustable Functional Hood</td></tr>
+            <tr><td>Pockets</td><td>2 Side Pockets + 2 Inner Pockets</td></tr>
+            <tr><td>Cuffs</td><td>Conventional Button Cuffs</td></tr>
+            <tr><td>Weather</td><td>Windproof & Water-Resistant</td></tr>
+          </table>
         </div>
       </div>
     </div>
     
-    <!-- COLLAPSIBLE SECTION 2: TECHNICAL SPECIFICATIONS - WITH WORKING TOGGLE -->
-    <div class="pd-collapsible-section" id="pd-specs-section">
+    <!-- SECTION 2: TECHNICAL SPECIFICATIONS WITH BEAUTIFUL TABLE -->
+    <div class="pd-collapsible-section">
       <div class="pd-section-header">
-        <div class="pd-section-title">
-          <svg viewBox="0 0 20 20" width="20" height="20">
-            <path d="M4 4h12v12H4V4zm2 2v8h8V6H6z" fill="#3B82F6"/>
-          </svg>
-          Technical Specifications
-        </div>
+        <h2 class="pd-section-title">📊 Technical Specifications</h2>
         <button class="pd-toggle-btn" onclick="toggleSection('pd-specs-content', this)">See More</button>
       </div>
       <div class="pd-section-content" id="pd-specs-content">
-        <table class="pd-specs-table">
-          <tr><td>Material</td><td>Premium Aluminum Alloy</td></tr>
-          <tr><td>Dimensions</td><td>10.2 x 6.8 x 0.3 inches</td></tr>
-          <tr><td>Weight</td><td>1.2 lbs</td></tr>
-          <tr><td>Color</td><td>Space Gray, Silver, Gold</td></tr>
-          <tr><td>Compatibility</td><td>iOS, Android, Windows</td></tr>
-          <tr><td>Battery</td><td>5000mAh Lithium-ion</td></tr>
-          <tr><td>Warranty</td><td>2 Years Limited</td></tr>
-        </table>
+        <div class="pd-table-container">
+          <table class="pd-specs-table">
+            <tr><td>Material Composition</td><td>65% Cotton, 35% Polyester</td></tr>
+            <tr><td>Lining</td><td>100% Polyester (Breathable)</td></tr>
+            <tr><td>Weight</td><td>Medium Weight (Perfect for 15-25°C)</td></tr>
+            <tr><td>Care Instructions</td><td>Machine Wash Cold, Tumble Dry Low</td></tr>
+            <tr><td>Season</td><td>Spring, Autumn, Cool Summer Evenings</td></tr>
+            <tr><td>Country of Origin</td><td>China (Quality Controlled)</td></tr>
+          </table>
+        </div>
       </div>
     </div>
     
-    <!-- SIZE & DIMENSIONS (with visual cards) -->
+    <!-- SIZE & DIMENSIONS WITH LARGE CARDS -->
+    <h2 class="pd-section-title">📏 Size & Fit Guide</h2>
     <div class="pd-dimensions-grid">
       <div class="pd-dimension-card">
         <div class="pd-dimension-icon">📐</div>
-        <div class="pd-dimension-label">Width</div>
-        <div class="pd-dimension-value">10.2"</div>
+        <div class="pd-dimension-label">Shoulder</div>
+        <div class="pd-dimension-value">18.5"</div>
       </div>
       <div class="pd-dimension-card">
         <div class="pd-dimension-icon">📏</div>
-        <div class="pd-dimension-label">Height</div>
-        <div class="pd-dimension-value">6.8"</div>
+        <div class="pd-dimension-label">Chest</div>
+        <div class="pd-dimension-value">42"</div>
       </div>
       <div class="pd-dimension-card">
         <div class="pd-dimension-icon">📦</div>
-        <div class="pd-dimension-label">Depth</div>
-        <div class="pd-dimension-value">0.3"</div>
+        <div class="pd-dimension-label">Length</div>
+        <div class="pd-dimension-value">28"</div>
       </div>
       <div class="pd-dimension-card">
         <div class="pd-dimension-icon">⚖️</div>
-        <div class="pd-dimension-label">Weight</div>
-        <div class="pd-dimension-value">1.2 lbs</div>
+        <div class="pd-dimension-label">Sleeve</div>
+        <div class="pd-dimension-value">24.5"</div>
       </div>
     </div>
     
-    <!-- SHIPPING INFORMATION -->
+    <!-- SHIPPING INFORMATION WITH LARGE CARDS -->
+    <h2 class="pd-section-title">🚚 Shipping Options</h2>
     <div class="pd-shipping-grid">
       <div class="pd-shipping-card">
         <div class="pd-shipping-method">Standard Shipping</div>
-        <div class="pd-shipping-time">5-7 Business Days</div>
+        <div class="pd-shipping-time">7-14 Business Days</div>
         <div class="pd-shipping-cost">FREE</div>
       </div>
       <div class="pd-shipping-card">
         <div class="pd-shipping-method">Express Shipping</div>
-        <div class="pd-shipping-time">2-3 Business Days</div>
+        <div class="pd-shipping-time">5-7 Business Days</div>
         <div class="pd-shipping-cost">$9.99</div>
       </div>
       <div class="pd-shipping-card">
-        <div class="pd-shipping-method">Next Day Delivery</div>
-        <div class="pd-shipping-time">1 Business Day</div>
+        <div class="pd-shipping-method">Priority Shipping</div>
+        <div class="pd-shipping-time">3-5 Business Days</div>
         <div class="pd-shipping-cost">$19.99</div>
       </div>
     </div>
@@ -1587,7 +1474,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
       </div>
       <div class="pd-review-highlights">
         <span class="pd-review-tag">👍 Quality 4.9</span>
-        <span class="pd-review-tag">🚀 Shipping 4.7</span>
+        <span class="pd-review-tag">🚚 Shipping 4.7</span>
         <span class="pd-review-tag">💪 Durability 4.8</span>
         <span class="pd-review-tag">✨ Design 4.9</span>
       </div>
@@ -1596,76 +1483,39 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
     <!-- WARRANTY BADGE -->
     <div class="pd-warranty-badge">
       <span>✓</span>
-      <span>2-Year Warranty & Lifetime Support</span>
+      <span>1-Year Warranty & Lifetime Customer Support</span>
     </div>
-    
   </div>
   
-  <!-- JAVASCRIPT FOR SEE MORE/LESS FUNCTIONALITY - FIXED AND SIMPLIFIED -->
+  <!-- JAVASCRIPT FOR SEE MORE/LESS -->
   <script>
   (function() {
-    // Global function for toggle that works in all browsers
     window.toggleSection = function(contentId, btnElement) {
       const content = document.getElementById(contentId);
       if (!content) return;
-      
-      // Toggle the expanded class
       content.classList.toggle('pd-expanded');
-      
-      // Update button text
-      if (btnElement) {
-        btnElement.textContent = content.classList.contains('pd-expanded') ? 'See Less' : 'See More';
-      }
+      btnElement.textContent = content.classList.contains('pd-expanded') ? 'See Less' : 'See More';
     };
-  
-    // Also add click handlers to section headers for better UX
-    document.addEventListener('DOMContentLoaded', function() {
-      const headers = document.querySelectorAll('.pd-section-header');
-      
-      headers.forEach(function(header) {
-        header.addEventListener('click', function(e) {
-          // Don't toggle if clicking the button directly (to avoid double toggle)
-          if (e.target.classList.contains('pd-toggle-btn') || e.target.closest('.pd-toggle-btn')) {
-            return;
-          }
-          
-          // Find the toggle button in this header and trigger its click
-          const toggleBtn = this.querySelector('.pd-toggle-btn');
-          if (toggleBtn) {
-            const contentId = toggleBtn.getAttribute('onclick').match(/'([^']+)'/)[1];
-            toggleSection(contentId, toggleBtn);
-          }
-        });
-      });
-    });
   })();
   </script>
   
   📦 DATA TO PROCESS:
   ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })))}
   
-  Return a JSON array with EXACTLY ${chunk.length} objects.
-  Each object: ${outputStructure}
+  ⚠️ CRITICAL TEXT SIZE REQUIREMENTS:
+  ✅ TITLES: 2.8rem (VERY LARGE)
+  ✅ SECTION TITLES: 2.2rem (LARGE)
+  ✅ PRICES: 3.2rem (VERY LARGE)
+  ✅ TABLE TEXT: 1.2rem (PROPER SIZE)
+  ✅ DIMENSION VALUES: 1.8rem (LARGE)
+  ✅ BODY TEXT: 1.2-1.4rem (READABLE)
+  ✅ TRUST BADGES: 1.2rem with 1.8rem icons
+  ✅ REVIEW STARS: 2rem (LARGE)
+  ✅ All text is PROPERLY SIZED for easy reading
+  ✅ Tables have PROPER PADDING and FORMATTING
+  ✅ Cards have LARGE ICONS and VALUES
   
-  ⚠️ KEY FEATURES IMPLEMENTED:
-  ✅ WORKING See More/Less buttons with JavaScript
-  ✅ Click on header also toggles sections
-  ✅ Smooth animations and transitions
-  ✅ Image gallery with titles and descriptions
-  ✅ Professional AliExpress-style design
-  ✅ Price section with discounts
-  ✅ Stock status and sales counter
-  ✅ Trust badges (shipping, payment, returns, warranty)
-  ✅ Specification tables with clean design
-  ✅ Size & dimensions with visual cards
-  ✅ Shipping information grid
-  ✅ Review highlights with ratings
-  ✅ Warranty badge
-  ✅ NO add to cart or buy now buttons
-  ✅ Fully responsive mobile design
-  ✅ Complete style isolation with pd- prefix
-  
-  Remember: The See More/Less buttons now work perfectly! Create a professional, trustworthy experience that converts visitors into customers! 🛍️✨
+  Remember: TEXT MUST BE LARGE AND READABLE! No tiny fonts! 📏✨
   `;
   }
 
