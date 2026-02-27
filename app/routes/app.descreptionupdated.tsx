@@ -366,140 +366,321 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
       : 'detailedDescription (captivating full article only)';
   
     const outputStructure = isShort
-      ? '{ "id": "original_product_id", "shortDescription": "TAILWIND_HTML_STRING" }'
-      : '{ "id": "original_product_id", "detailedDescription": "FRIENDLY_SEO_TAILWIND_ARTICLE" }';
+      ? '{ "id": "original_product_id", "shortDescription": "HTML_STRING" }'
+      : '{ "id": "original_product_id", "detailedDescription": "SEO_FRIENDLY_HTML_ARTICLE" }';
   
-    return `You are a JSON API with a passion for beautiful design. Process ALL ${chunk.length} products and return a JSON array with ONLY ${fieldLabel}.
+    return `You are a JSON API that creates stunning, SEO-optimized product descriptions. Process ALL ${chunk.length} products and return a JSON array with ONLY ${fieldLabel}.
   
-  🎨 DESIGN PHILOSOPHY: Create descriptions that feel like a warm handshake - professional yet approachable, clean yet characterful. Every element should spark joy while driving conversions.
+  🎯 CORE MISSION: Create beautiful, conversion-focused product descriptions using clean HTML/CSS that works in ANY Shopify theme. No Tailwind - just semantic HTML with inline styles or style tags that will render perfectly everywhere.
   
   PROMPT TEMPLATE FOR EACH PRODUCT:
   {
     "role": "Senior SEO Strategist & E-commerce UX Designer specialized in high-converting Amazon-style product pages",
-    "objective": "Transform raw product data into a delightful, conversion-optimized product description using semantic HTML5 and Tailwind CSS with beautifully crafted specification tables.",
-    "designDirection": "Warm, modern, trustworthy, and conversion-focused with personality. Think Apple meets Mailchimp - clean but playful.",
+    "objective": "Transform raw product data into a gorgeous, SEO-optimized product description using semantic HTML5 and clean CSS that works in all Shopify themes.",
+    "designDirection": "Warm, professional, trustworthy, and conversion-focused. Clean typography, friendly colors, and excellent visual hierarchy.",
     "outputFormat": {
       ${
         isShort
-          ? '"shortDescription": "SEO-Optimized Tailwind bullet section with friendly, scannable design"'
-          : '"detailedDescription": "Complete SEO-friendly Tailwind HTML5 article with stunning Amazon-style specification tables and responsive layout"'
+          ? '"shortDescription": "SEO-Optimized bullet section with friendly, scannable design using inline styles or style tags"'
+          : '"detailedDescription": "Complete SEO-friendly HTML5 article with stunning Amazon-style specification tables and responsive layout"'
       }
     },
     "SEORequirements": [
-      "One optimized <h1> using main keyword intent with subtle gradient effect",
-      "Clear <h2> hierarchy with elegant underlines or left borders",
+      "One optimized H1 tag using main keyword intent",
+      "Clear H2 hierarchy for search engines",
       "Keyword-rich natural language that reads like a helpful friend",
       "Short, scannable paragraphs with ample white space",
       "Conversion-focused copywriting that builds trust",
-      "Optimized for mobile with touch-friendly tap targets"
+      "Mobile-optimized with touch-friendly tap targets",
+      "Semantic HTML5 structure (article, section, header, etc.)",
+      "Proper heading hierarchy for screen readers"
     ],
     ${
       isShort
         ? `"constraints": [
-            "5-6 bullet points maximum - each a tiny masterpiece.",
-            "Use <ul> and <li> with custom bullet styling.",
-            "Start each bullet with <strong class='text-blue-600'>Benefit:</strong>.",
-            "Use friendly emoji indicators (✨, 🚀, 💡, 🎯, ⭐, ✅).",
-            "End with persuasive CTA block styled with Tailwind and subtle hover effects.",
-            "Add micro-interactions like hover scale transforms on CTAs."
+            "5-6 bullet points maximum - each compelling and benefit-focused.",
+            "Use UL and LI with custom bullet styling.",
+            "Start each bullet with a friendly emoji (✓, ✨, 🚀, 💡, ⭐, ✅).",
+            "Include a warm CTA at the end.",
+            "Use inline styles OR a style tag - both work in Shopify.",
+            "Keep it lightweight and fast-loading."
           ]`
         : `"constraints": [
-            "Use Tailwind CSS only - no exceptions.",
-            "No inline CSS or <style> blocks.",
-            "Convert ALL technical specifications into stunning Amazon-style tables with visual hierarchy.",
-            "Detect size-related data (dimensions, weight, fit, measurements, capacity) and create separate 'Perfect Fit Guide' section.",
-            "Tables must include soft zebra striping with gentle colors.",
-            "Tables must be wrapped in overflow-x-auto with subtle shadows for depth.",
-            "Preserve ALL <img> tags and wrap them in elegant rounded corners with soft shadows.",
-            "Use friendly color palette utilities - think warm blues, soft grays, and accent greens.",
-            "Add subtle hover effects on interactive elements.",
-            "Include micro-animations via Tailwind transition utilities."
+            "Use inline styles OR a style tag with classes - both work perfectly in Shopify.",
+            "Convert ALL technical specifications into beautiful Amazon-style tables with visual hierarchy.",
+            "Detect size-related data (dimensions, weight, fit, measurements, capacity) and create separate 'Size & Fit Guide' section.",
+            "Tables must be responsive with horizontal scroll on mobile.",
+            "Preserve ALL img tags and wrap them in responsive containers.",
+            "Use warm, friendly color palette: soft blues, warm grays, and accent greens.",
+            "Add subtle hover effects for interactivity.",
+            "Include proper spacing and visual hierarchy.",
+            "Use system fonts (Arial, Helvetica, sans-serif) for maximum compatibility."
           ]`
     },
-    "TailwindDesignSystem": {
-      "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
-      "text": "text-gray-600 leading-relaxed text-base sm:text-lg",
-      "headings": "font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent",
-      "primaryColor": "text-blue-600",
-      "accentColor": "text-emerald-500",
-      "highlightBg": "bg-gradient-to-br from-blue-50 to-indigo-50",
-      "ctaBg": "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300",
-      "card": "bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100 hover:shadow-2xl transition-shadow duration-300",
-      "tableWrapper": "overflow-x-auto rounded-xl border border-gray-200 shadow-sm",
-      "amazonTable": "min-w-full text-sm sm:text-base",
-      "tableHeader": "bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 font-semibold uppercase tracking-wider text-xs sm:text-sm",
-      "tableRow": "odd:bg-white even:bg-gray-50/80 hover:bg-blue-50/50 transition-colors duration-200",
-      "tableCell": "px-6 py-4 border-b border-gray-100"
+    "Color Palette": {
+      "primary": "#3B82F6",
+      "primaryDark": "#2563EB",
+      "secondary": "#10B981",
+      "text": "#4B5563",
+      "textDark": "#1F2937",
+      "background": "#FFFFFF",
+      "backgroundAlt": "#F9FAFB",
+      "border": "#E5E7EB",
+      "tableHeader": "#F3F4F6",
+      "tableRowEven": "#F9FAFB"
     }
   }
   
   📋 DETAILED STRUCTURE REQUIREMENTS (for detailedDescription):
   
   1. MAIN CONTAINER:
-     <article class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-gray-600 leading-relaxed space-y-12">
+     <div style="max-width: 1280px; margin: 0 auto; padding: 0 1rem; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; line-height: 1.6; color: #4B5563;">
+       <!-- ALL CONTENT HERE -->
+     </div>
   
   2. ✨ HERO SECTION - First Impressions Matter
-     - <header class="mb-12 text-center sm:text-left">
-     - <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-gray-900 bg-clip-text text-transparent mb-6">
-     - <p class="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto sm:mx-0 leading-relaxed">
-     - Optional image: <img class="rounded-2xl shadow-2xl hover:shadow-3xl transition-shadow duration-500 w-full object-cover">
+     <header style="margin-bottom: 3rem; text-align: left;">
+       <h1 style="font-size: 2.5rem; font-weight: 700; color: #1F2937; margin-bottom: 1rem; line-height: 1.2;">
+         Product Title with Keywords
+       </h1>
+       <p style="font-size: 1.25rem; color: #4B5563; max-width: 800px; margin-bottom: 2rem;">
+         Engaging introduction paragraph that hooks the reader and includes primary keywords naturally.
+       </p>
+       <img src="product-image.jpg" alt="Descriptive alt text with keywords" style="width: 100%; max-width: 800px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);">
+     </header>
   
-  3. 💫 KEY FEATURES SECTION - Benefits That Shine
-     - <section class="mb-16">
-     - <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-8 pb-2 border-b-2 border-blue-200 inline-block">
-     - Grid layout: grid md:grid-cols-2 lg:grid-cols-3 gap-8
-     - Feature cards:
-       <div class="group bg-white rounded-2xl shadow-md hover:shadow-xl p-6 border border-gray-100 transition-all duration-300 hover:-translate-y-1">
-         <div class="text-3xl mb-4">✨</div>
-         <h3 class="text-xl font-semibold text-gray-900 mb-3">
-         <p class="text-gray-600">
-  
-  4. 📊 TECHNICAL SPECIFICATIONS (Amazon Style - But Better)
-     - <section class="mb-16">
-     - <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-8 pb-2 border-b-2 border-blue-200 inline-block">
-     - Wrap table in:
-       <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300">
-     - Table structure:
-       <table class="min-w-full text-sm sm:text-base divide-y divide-gray-200">
-         <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
-           <tr>
-             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Specification</th>
-             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Details</th>
-           </tr>
-         </thead>
-         <tbody class="bg-white divide-y divide-gray-100">
-     - Row styling:
-       <tr class="odd:bg-white even:bg-gray-50/80 hover:bg-blue-50/30 transition-colors duration-200">
-         <td class="px-6 py-4 font-medium text-gray-900">Spec name</td>
-         <td class="px-6 py-4 text-gray-600">Value with optional <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">badge</span></td>
-       </tr>
-  
-  5. 📏 PERFECT FIT GUIDE (Size & Dimensions - Only if detected)
-     - Same Amazon-style table with enhanced visual hierarchy
-     - Add measurement icons: 📐 Width, ⚖️ Weight, 📦 Capacity
-     - Include helpful tooltips or micro-copy for complex measurements
-     - Use visual indicators for size comparisons
-  
-  6. 🎯 FINAL CTA SECTION - The Grand Finale
-     - <section class="mt-20 text-center">
-     - Friendly highlight box:
-       <div class="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white rounded-3xl p-10 sm:p-12 shadow-2xl transform hover:scale-[1.02] transition-transform duration-500">
-         <h3 class="text-3xl sm:text-4xl font-bold mb-4">Ready to Transform Your Experience? 🚀</h3>
-         <p class="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
-         <button class="bg-white text-blue-600 px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 inline-flex items-center gap-2">
-           Get Yours Now <span class="text-xl">→</span>
-         </button>
+  3. 💫 KEY FEATURES SECTION - Benefits That Convert
+     <section style="margin-bottom: 4rem;">
+       <h2 style="font-size: 2rem; font-weight: 700; color: #1F2937; margin-bottom: 2rem; padding-bottom: 0.5rem; border-bottom: 3px solid #3B82F6; display: inline-block;">
+         Key Features & Benefits
+       </h2>
+       
+       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+         <!-- Feature Card 1 -->
+         <div style="background: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); border: 1px solid #E5E7EB; transition: all 0.3s ease;">
+           <div style="font-size: 2.5rem; margin-bottom: 1rem;">✨</div>
+           <h3 style="font-size: 1.25rem; font-weight: 600; color: #1F2937; margin-bottom: 0.75rem;">Feature Title</h3>
+           <p style="color: #4B5563;">Benefit-focused description that sells the feature.</p>
+         </div>
+         
+         <!-- More feature cards... -->
        </div>
+     </section>
   
-  🎯 PERFORMANCE & BEAUTY RULES:
-  - Mobile-first with graceful scaling on larger screens.
-  - Smooth transitions and hover states for interactive elements.
-  - Consistent spacing using Tailwind's spacing scale.
-  - Accessibility: Maintain contrast ratios and focus states.
-  - No unnecessary wrappers - keep HTML semantic and clean.
-  - Use Tailwind's built-in modifiers for dark mode readiness.
-  - Add subtle shadows for depth and visual hierarchy.
-  - Include micro-interactions that feel responsive and alive.
+  4. 📊 TECHNICAL SPECIFICATIONS (Amazon Style - Beautiful & Clear)
+     <section style="margin-bottom: 4rem;">
+       <h2 style="font-size: 2rem; font-weight: 700; color: #1F2937; margin-bottom: 2rem; padding-bottom: 0.5rem; border-bottom: 3px solid #3B82F6; display: inline-block;">
+         Technical Specifications
+       </h2>
+       
+       <div style="overflow-x: auto; border-radius: 12px; border: 1px solid #E5E7EB; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+         <table style="width: 100%; border-collapse: collapse; font-size: 1rem; min-width: 600px;">
+           <thead>
+             <tr style="background: #F3F4F6;">
+               <th style="padding: 1rem 1.5rem; text-align: left; font-weight: 600; color: #1F2937; border-bottom: 2px solid #E5E7EB;">Specification</th>
+               <th style="padding: 1rem 1.5rem; text-align: left; font-weight: 600; color: #1F2937; border-bottom: 2px solid #E5E7EB;">Details</th>
+             </tr>
+           </thead>
+           <tbody>
+             <tr style="background: white;">
+               <td style="padding: 1rem 1.5rem; border-bottom: 1px solid #E5E7EB; font-weight: 500; color: #1F2937;">Material</td>
+               <td style="padding: 1rem 1.5rem; border-bottom: 1px solid #E5E7EB; color: #4B5563;">Premium Cotton Blend</td>
+             </tr>
+             <tr style="background: #F9FAFB;">
+               <td style="padding: 1rem 1.5rem; border-bottom: 1px solid #E5E7EB; font-weight: 500; color: #1F2937;">Dimensions</td>
+               <td style="padding: 1rem 1.5rem; border-bottom: 1px solid #E5E7EB; color: #4B5563;">10" x 8" x 2"</td>
+             </tr>
+             <!-- More rows with alternating backgrounds -->
+           </tbody>
+         </table>
+       </div>
+     </section>
+  
+  5. 📏 SIZE & FIT GUIDE (Only if dimensions/capacity data exists)
+     <section style="margin-bottom: 4rem;">
+       <h2 style="font-size: 2rem; font-weight: 700; color: #1F2937; margin-bottom: 2rem; padding-bottom: 0.5rem; border-bottom: 3px solid #3B82F6; display: inline-block;">
+         Size & Fit Guide
+       </h2>
+       
+       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+         <!-- Measurement Card -->
+         <div style="background: #F9FAFB; border-radius: 12px; padding: 1.5rem; text-align: center;">
+           <div style="font-size: 2rem; margin-bottom: 0.5rem;">📐</div>
+           <div style="font-size: 1rem; color: #6B7280;">Width</div>
+           <div style="font-size: 1.5rem; font-weight: 700; color: #1F2937;">12 inches</div>
+         </div>
+         <!-- More measurement cards -->
+       </div>
+       
+       <!-- Amazon-style size table -->
+       <div style="overflow-x: auto; border-radius: 12px; border: 1px solid #E5E7EB;">
+         <table style="width: 100%; border-collapse: collapse;">
+           <!-- Table structure as above -->
+         </table>
+       </div>
+     </section>
+  
+  6. 🎯 FINAL CTA SECTION - Close with Confidence
+     <section style="margin-top: 5rem; text-align: center;">
+       <div style="background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); border-radius: 24px; padding: 3rem 2rem; color: white; box-shadow: 0 25px 50px -12px rgba(37, 99, 235, 0.5);">
+         <h3 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem; color: white;">Ready to Upgrade? 🚀</h3>
+         <p style="font-size: 1.25rem; margin-bottom: 2rem; opacity: 0.9; max-width: 600px; margin-left: auto; margin-right: auto;">
+           Join thousands of happy customers who've transformed their experience.
+         </p>
+         <a href="#" style="display: inline-block; background: white; color: #3B82F6; padding: 1rem 3rem; border-radius: 9999px; font-weight: 600; font-size: 1.125rem; text-decoration: none; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); transition: all 0.3s ease;">
+           Shop Now →
+         </a>
+       </div>
+     </section>
+  
+  🎨 STYLE GUIDE (Use these consistently):
+  
+  <!-- Style tag approach (PREFERRED for cleaner HTML) -->
+  <style>
+  .product-description * {
+    margin: 0;
+    box-sizing: border-box;
+  }
+  
+  .product-description {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    line-height: 1.6;
+    color: #4B5563;
+  }
+  
+  .product-description h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1F2937;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+  
+  .product-description h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1F2937;
+    margin-bottom: 2rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 3px solid #3B82F6;
+    display: inline-block;
+  }
+  
+  .product-description h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1F2937;
+    margin-bottom: 0.75rem;
+  }
+  
+  .product-description .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin: 2rem 0;
+  }
+  
+  .product-description .feature-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    border: 1px solid #E5E7EB;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .product-description .feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+  }
+  
+  .product-description .table-wrapper {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+  }
+  
+  .product-description table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+  }
+  
+  .product-description th {
+    background: #F3F4F6;
+    padding: 1rem 1.5rem;
+    text-align: left;
+    font-weight: 600;
+    color: #1F2937;
+    border-bottom: 2px solid #E5E7EB;
+  }
+  
+  .product-description td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #E5E7EB;
+    color: #4B5563;
+  }
+  
+  .product-description tr:last-child td {
+    border-bottom: none;
+  }
+  
+  .product-description tr:nth-child(even) {
+    background: #F9FAFB;
+  }
+  
+  .product-description tr:hover td {
+    background: #EFF6FF;
+  }
+  
+  .product-description .cta-section {
+    margin-top: 5rem;
+    text-align: center;
+  }
+  
+  .product-description .cta-box {
+    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    border-radius: 24px;
+    padding: 3rem 2rem;
+    color: white;
+    box-shadow: 0 25px 50px -12px rgba(37, 99, 235, 0.5);
+  }
+  
+  .product-description .cta-button {
+    display: inline-block;
+    background: white;
+    color: #3B82F6;
+    padding: 1rem 3rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 1.125rem;
+    text-decoration: none;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .product-description .cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
+  }
+  
+  @media (max-width: 640px) {
+    .product-description h1 { font-size: 2rem; }
+    .product-description h2 { font-size: 1.5rem; }
+    .product-description .feature-grid { grid-template-columns: 1fr; }
+    .product-description .cta-box { padding: 2rem 1rem; }
+    .product-description .cta-box h3 { font-size: 1.75rem; }
+  }
+  </style>
+  
+  <!-- Then wrap content in -->
+  <div class="product-description">
+    <!-- ALL CONTENT HERE -->
+  </div>
   
   📦 DATA TO PROCESS:
   ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })))}
@@ -510,12 +691,14 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
   ⚠️ CRITICAL INSTRUCTIONS:
   - Escape all quotes as (\\") for JSON compatibility.
   - Return ONLY the JSON array - no markdown, no explanations.
-  - Make every detail count - each product description should feel hand-crafted.
-  - Tables should be so beautiful they make data exciting to read.
-  - Use emojis sparingly but effectively to add personality.
-  - Ensure all Tailwind classes are valid and commonly used.
+  - Use the style tag approach for cleaner, more maintainable HTML.
+  - Ensure all styles are responsive and mobile-friendly.
+  - Include alt text on all images with keywords.
+  - Use semantic HTML5 for better SEO.
+  - Keep copy warm, friendly, and benefit-focused.
+  - Tables must be beautiful AND functional - easy to read on all devices.
   
-  Remember: You're not just writing descriptions - you're creating digital experiences that convert browsers into buyers! 🎨✨
+  Remember: This will be embedded in Shopify themes - it must work everywhere! Focus on clean, compatible CSS that renders consistently across all browsers. 🌟
   `;
   }
 
