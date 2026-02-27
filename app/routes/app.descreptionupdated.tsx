@@ -221,561 +221,6 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
 
 
 
-// function buildPrompt(
-//   chunk: { id: string; descreption: string }[],
-//   outputField: 'shortDescription' | 'detailedDescription'
-// ): string {
-//   const isShort = outputField === 'shortDescription';
-//   const fieldLabel = isShort
-//     ? 'shortDescription (B2B conversion-optimized bullet points)'
-//     : 'detailedDescription (comprehensive B2B SEO article)';
-//   const outputStructure = isShort
-//     ? '{ "id": "original_product_id", "shortDescription": "SAFE_HTML_STRING", "trackingMetadata": { "characterCount": number, "keywordDensity": object, "facebookOptimized": boolean, "tiktokOptimized": boolean, "b2bCompatible": boolean } }'
-//     : '{ "id": "original_product_id", "detailedDescription": "SAFE_EXPANDABLE_HTML_STRING", "trackingMetadata": { "characterCount": number, "sections": number, "keywordDensity": object, "facebookOptimized": boolean, "tiktokOptimized": boolean, "b2bCompatible": boolean, "tablesCount": number, "allTablesResponsive": boolean } }';
-
-//   const basePrompt = `You are a JSON API specializing in multi-platform e-commerce content optimization. Process ALL ${chunk.length} products and return a JSON array with EXCLUSIVELY ${fieldLabel}.
-
-// CRITICAL REQUIREMENT: ALL TABLES MUST BE RESPONSIVE - EVERY SINGLE TABLE MUST FOLLOW THE EXACT SAME PATTERN
-
-// PROMPT TEMPLATE FOR EACH PRODUCT:
-// {
-//   "role": "Senior Multi-Platform E-commerce SEO Strategist & Social Commerce Expert",
-//   "objective": "Create high-converting, platform-optimized product content using semantic HTML5 that drives organic traffic, maximizes conversion rates across all channels, and integrates seamlessly with Facebook Ads, TikTok Ads, B2B platforms, and SEO Hoot Pro.",
-  
-//   "platformOptimization": {
-//     "facebookAds": {
-//       "requirements": [
-//         "Content must be scannable within 3 seconds for mobile feed",
-//         "First 125 characters must contain the primary hook and value proposition",
-//         "Include emotional triggers optimized for Facebook's algorithm",
-//         "Format for Collection Ads, Dynamic Ads, and Carousel compatibility",
-//         "Add Open Graph meta tags structure:",
-//         "<meta property=\\"og:title\\" content=\\"COMPELLING_HEADLINE\\">",
-//         "<meta property=\\"og:description\\" content=\\"BENEFIT_DRIVEN_SNIPPET\\">",
-//         "<meta property=\\"og:image\\" content=\\"PRODUCT_IMAGE_URL\\">",
-//         "Include Facebook Pixel event tracking:",
-//         "data-fb-pixel=\\"ViewContent\\" data-content-name=\\"product\\" data-content-ids=\\"[PRODUCT_ID]\\"",
-//         "Structure for Dynamic Product Ads: data-fb-product-id, data-fb-price, data-fb-availability",
-//         "Create attention-grabbing hooks for video views and image stops",
-//         "Optimize for Facebook's 20% text rule (minimal text overlay)",
-//         "Include social proof indicators for social commerce",
-//         "Format for Instant Experience/Canvas ads compatibility"
-//       ],
-//       "characterLimits": {
-//         "primaryText": "125 characters max for hook",
-//         "headline": "25 characters max for newsfeed",
-//         "description": "30 characters max for link description"
-//       }
-//     },
-    
-//     "tiktokAds": {
-//       "requirements": [
-//         "Content optimized for TikTok's algorithm and For You Page",
-//         "First 3 seconds must contain maximum impact",
-//         "Use trending hashtags structure: #ProductCategory #Benefit #Viral",
-//         "Format for Spark Ads and In-Feed native content",
-//         "Include TikTok Pixel events: data-tt-pixel=\\"ViewContent\\"",
-//         "Structure for TikTok Shopping: data-tt-product-id, data-tt-category",
-//         "Add sound/music cues in text: [UPBEAT MUSIC] [SATISFYING SOUND]",
-//         "Use vertical video text overlays structure",
-//         "Include engagement hooks: \\"Wait for it...\\" \\"Here's how it works\\"",
-//         "Format for TikTok's 9:16 aspect ratio in mind",
-//         "Add trending effect suggestions: [GREEN SCREEN EFFECT] [TRANSITION]",
-//         "Include creator collaboration indicators",
-//         "Optimize for TikTok's algorithm preferences: authenticity, trends, challenges"
-//       ],
-//       "characterLimits": {
-//         "caption": "150 characters max with hashtags",
-//         "hashtags": "3-5 relevant hashtags",
-//         "displayName": "30 characters max"
-//       }
-//     },
-    
-//     "b2bOptimization": {
-//       "requirements": [
-//         "Include professional terminology and industry-specific keywords",
-//         "Add ROI-focused statements and business value propositions",
-//         "Structure for B2B buying committees (multiple decision makers)",
-//         "Include technical specifications for procurement teams",
-//         "Add compliance and certification information",
-//         "Format for LinkedIn B2B content sharing",
-//         "Include case study structure: Problem -> Solution -> Result",
-//         "Add integration capabilities and API compatibility",
-//         "Include bulk ordering and enterprise pricing indicators",
-//         "Format for B2B marketplaces (Amazon Business, Alibaba)",
-//         "Add professional certifications and standards compliance",
-//         "Include implementation timeline and support structure"
-//       ],
-//       "b2bElements": [
-//         "ROI Calculator structure",
-//         "Total Cost of Ownership breakdown",
-//         "Enterprise support levels",
-//         "Integration capabilities",
-//         "Compliance certifications (ISO, GDPR, SOC2)",
-//         "Case study references",
-//         "White paper download triggers"
-//       ]
-//     },
-    
-//     "seoHootPro": {
-//       "requirements": [
-//         "Optimize for SEO Hoot Pro's ranking algorithm preferences",
-//         "Include exact match keywords in H2 headings",
-//         "Add long-tail variations in content body",
-//         "Structure for featured snippet capture",
-//         "Include FAQ schema markup for voice search",
-//         "Optimize for topical authority and semantic relevance",
-//         "Add internal linking structure suggestions",
-//         "Include image alt-text optimization for SEO Hoot Pro crawler",
-//         "Format for knowledge graph compatibility",
-//         "Add video content optimization (if applicable)",
-//         "Include local SEO elements (if relevant)",
-//         "Structure for mobile-first indexing"
-//       ],
-//       "seoHootProMetrics": {
-//         "keywordDensity": "1.5-2.5% primary, 0.5-1.5% secondary",
-//         "readabilityScore": "60-70 Flesch Reading Ease",
-//         "headingStructure": "Proper H2 to H3 hierarchy",
-//         "internalLinks": "3-5 relevant internal links suggested"
-//       }
-//     }
-//   },
-
-//   "corePrinciples": {
-//     "seoStrategy": [
-//       "Implement latent semantic indexing (LSI) keywords naturally throughout content",
-//       "Maintain optimal keyword density (1.5-2.5% for primary, 0.5-1.5% for secondary)",
-//       "Include long-tail keywords matching user search intent",
-//       "Structure content for featured snippets (questions/answers format)",
-//       "Use schema markup strategically for rich results",
-//       "Optimize for voice search with natural language patterns",
-//       "SEO Hoot Pro specific: Optimize for their proprietary ranking algorithm"
-//     ],
-    
-//     "socialCommerce": {
-//       "facebook": [
-//         "Add Facebook Open Graph tags structure",
-//         "Include Facebook Pixel event tracking",
-//         "Format for Collection Ads compatibility",
-//         "Optimize for mobile newsfeed consumption"
-//       ],
-//       "tiktok": [
-//         "Add TikTok Pixel events",
-//         "Include trending audio/text cues",
-//         "Format for TikTok Shopping",
-//         "Optimize for viral potential"
-//       ]
-//     },
-    
-//     "analyticsIntegration": [
-//       "Include data attributes for enhanced e-commerce tracking: data-product-id, data-category, data-price",
-//       "Structure content to support Google Analytics 4 enhanced measurement",
-//       "Create clickable elements with meaningful data-event-name attributes",
-//       "Support cross-domain tracking with proper UTM parameter compatibility",
-//       "Enable scroll depth tracking through logical content segmentation",
-//       "Add Facebook Pixel standard events: ViewContent, AddToCart, Purchase",
-//       "Add TikTok Pixel standard events: ViewContent, AddToCart, CompletePayment",
-//       "Include LinkedIn Insight Tag for B2B tracking"
-//     ],
-    
-//     "responsiveDesign": {
-//       "mobileFirst": [
-//         "Use viewport-relative units (%, vw, vh) through CSS classes only",
-//         "Implement fluid typography scale (min 16px for body text)",
-//         "Ensure touch targets are minimum 44x44px",
-//         "Stack content vertically on mobile breakpoints (<768px)",
-//         "Optimize image loading with loading=\\"lazy\\" and srcset compatibility"
-//       ],
-//       "tabletOptimization": [
-//         "Two-column layouts only when beneficial for comprehension",
-//         "Maintain readable font sizes (min 15px)",
-//         "Preserve table readability with horizontal scroll on overflow"
-//       ],
-//       "desktopEnhancement": [
-//         "Multi-column layouts for efficient space usage",
-//         "Hover states for interactive elements (via external CSS)",
-//         "Higher information density without compromising readability"
-//       ]
-//     }
-//   },
-  
-//   "rules": {
-//     "critical": [
-//       "ZERO inline styles - use semantic classes only",
-//       "ZERO background colors or fixed dimensions",
-//       "ZERO layout-altering properties (position, float, margin, padding)",
-//       "NO <html>, <body>, or full page structures",
-//       "AVOID <h1> - hierarchy starts at <h2> for SEO optimization",
-//       "ALL content must be wrapped in device-agnostic containers",
-//       "PRESERVE original image tags exactly with added loading=\\"lazy\\" for performance"
-//     ],
-    
-//     "seoEnhancements": [
-//       "Implement keyword-rich <h2> headings with primary keywords",
-//       "Use <h3> for subsections with long-tail variations",
-//       "Include FAQ schema compatibility through Q&A formatting",
-//       "Optimize meta-description length snippets (155-160 chars)",
-//       "Create SEO-friendly URLs through content structure",
-//       "Implement breadcrumb compatibility indicators",
-//       "Add alt-text attributes to all images with keyword optimization"
-//     ],
-    
-//     "platformTracking": [
-//       "Google Analytics 4: data-ga-category, data-ga-label, data-ga-value",
-//       "Facebook Pixel: data-fb-pixel, data-content-name, data-content-ids",
-//       "TikTok Pixel: data-tt-pixel, data-tt-product-id, data-tt-price",
-//       "LinkedIn: data-li-tracking=\\"b2b-conversion\\"",
-//       "SEO Hoot Pro: data-seohoot-optimized=\\"true\\" data-primary-keyword=\\"KEYWORD\\""
-//     ],
-    
-//     "responsiveSafety": {
-//       "tableResponsiveness": [
-//         "█████████████████████████████████████████████████████████████████",
-//         "███  CRITICAL: EVERY TABLE MUST BE RESPONSIVE - NO EXCEPTIONS  ███",
-//         "█████████████████████████████████████████████████████████████████",
-//         "",
-//         "EXAMPLE OF CORRECT TABLE (TABLE 1 - MUST BE RESPONSIVE):",
-//         "<div class=\\"table-responsive-wrapper\\" data-ga-section=\\"specifications-1\\">",
-//         "  <table class=\\"specs-table\\">",
-//         "    <thead>",
-//         "      <tr>",
-//         "        <th>SPECIFICATION</th>",
-//         "        <th>DETAIL</th>",
-//         "        <th>E</th>",
-//         "      </tr>",
-//         "    </thead>",
-//         "    <tbody>",
-//         "      <tr>",
-//         "        <td data-label=\\"SPECIFICATION\\">Material</td>",
-//         "        <td data-label=\\"DETAIL\\">High-Grade Polyester</td>",
-//         "        <td data-label=\\"E\\">L</td>",
-//         "      </tr>",
-//         "      <tr>",
-//         "        <td data-label=\\"SPECIFICATION\\">Seasonality</td>",
-//         "        <td data-label=\\"DETAIL\\">Four Seasons</td>",
-//         "        <td data-label=\\"E\\">L</td>",
-//         "      </tr>",
-//         "    </tbody>",
-//         "  </table>",
-//         "</div>",
-//         "",
-//         "EXAMPLE OF CORRECT TABLE (TABLE 2 - MUST ALSO BE RESPONSIVE - SAME PATTERN):",
-//         "<div class=\\"table-responsive-wrapper\\" data-ga-section=\\"specifications-2\\">",
-//         "  <table class=\\"specs-table\\">",
-//         "    <thead>",
-//         "      <tr>",
-//         "        <th>SIZE RANGE</th>",
-//         "        <th>FIT GUIDANCE</th>",
-//         "        <th>NOTES</th>",
-//         "      </tr>",
-//         "    </thead>",
-//         "    <tbody>",
-//         "      <tr>",
-//         "        <td data-label=\\"SIZE RANGE\\">Size Range</td>",
-//         "        <td data-label=\\"FIT GUIDANCE\\">Universal Fit</td>",
-//         "        <td data-label=\\"NOTES\\">Tailored for layered comfort</td>",
-//         "      </tr>",
-//         "      <tr>",
-//         "        <td data-label=\\"SIZE RANGE\\">Profile</td>",
-//         "        <td data-label=\\"FIT GUIDANCE\\">True to Size</td>",
-//         "        <td data-label=\\"NOTES\\">Maintains structural integrity</td>",
-//         "      </tr>",
-//         "    </tbody>",
-//         "  </table>",
-//         "</div>",
-//         "",
-//         "█████████████████████████████████████████████████████████████████",
-//         "███  BOTH TABLES ABOVE USE EXACTLY THE SAME RESPONSIVE PATTERN  ███",
-//         "█████████████████████████████████████████████████████████████████",
-//         "",
-//         "MANDATORY REQUIREMENTS FOR EVERY TABLE:",
-//         "1. ALWAYS wrap in <div class=\\"table-responsive-wrapper\\">",
-//         "2. ALWAYS use <table class=\\"specs-table\\">",
-//         "3. ALWAYS include <thead> with column headers",
-//         "4. ALWAYS add data-label attribute to EVERY <td> that matches the column header",
-//         "5. ALWAYS use unique data-ga-section for each table (specifications-1, specifications-2, etc.)",
-//         "6. NEVER use width attributes on table, tr, td, or th",
-//         "7. NEVER use colspan or rowspan that breaks mobile view",
-//         "8. NEVER nest tables",
-//         "",
-//         "MOBILE BEHAVIOR (ALL TABLES):",
-//         "- On screens < 768px, tables transform to cards",
-//         "- Each cell becomes a flex row with data-label as left column",
-//         "- The data-label text appears in bold on the left, value on the right",
-//         "- Horizontal scroll appears only if absolutely necessary",
-//         "- ALL tables behave IDENTICALLY on mobile",
-//         "",
-//         "VERIFICATION CHECK:",
-//         "✓ Table 1 has data-label on each <td>",
-//         "✓ Table 2 has data-label on each <td>",
-//         "✓ Both tables use the same wrapper class",
-//         "✓ Both tables use the same table class",
-//         "✓ No table is left without the responsive pattern"
-//       ],
-//       "imageResponsiveness": [
-//         "Images: <img ... loading=\\"lazy\\" class=\\"responsive-image\\" data-fb-image=\\"true\\" data-tt-image=\\"true\\">",
-//         "Use fluid containers: class=\\"content-section\\", \\"feature-grid\\", \\"specifications\\"",
-//         "Ensure 100% width compatibility with parent containers"
-//       ]
-//     }
-//   },
-  
-//   "tone": "Multi-platform adaptive: Premium yet approachable, data-driven, emotionally resonant, B2B professional, social media native",
-  
-//   ${isShort ? `"constraints": [
-//     "SHORT DESCRIPTION SPECIFICATIONS:",
-//     "1. Structure:",
-//     "   - Maximum 5 high-impact bullet points within <ul class=\\"product-highlights\\">",
-//     "   - Each <li> format: 🔹 <strong>Benefit-Driven Headline:</strong> persuasive explanation",
-//     "   - Include micro-conversions: <span class=\\"micro-text\\">(based on 127 reviews)</span>",
-    
-//     "2. Facebook Ads Optimization:",
-//     "   - First 125 chars: \\"🔥 Transform Your [Result] with [Product]\\"",
-//     "   - Include hook for mobile feed: ⚡️ Limited Time • ⭐️ 5-Star Rated",
-//     "   - Add Open Graph meta structure in comments",
-//     "   - Format for Collection Ads: Main benefit + 3 supporting points",
-    
-//     "3. TikTok Ads Optimization:",
-//     "   - Add sound cue: [TRENDING AUDIO]",
-//     "   - Include hook: \\"POV: You finally found the perfect [product]\\"",
-//     "   - Add 3 trending hashtags: #[Category]Tok #[Benefit]Check #[Brand]",
-//     "   - Format for In-Feed: Problem -> Solution -> Reaction",
-    
-//     "4. B2B Elements:",
-//     "   - Include ROI statement: \\"Enterprise Solution: 200% ROI within 6 months\\"",
-//     "   - Add certification badges: <span class=\\"cert-badge\\">ISO 9001</span>",
-//     "   - Include integration capability: \\"API Ready • SSO Compatible\\"",
-    
-//     "5. SEO Hoot Pro Optimization:",
-//     "   - Primary keyword in first 50 characters",
-//     "   - LSI keywords in bullets: \\"seamless integration\\", \\"enterprise-grade\\"",
-//     "   - Add FAQ schema structure in comments",
-    
-//     "6. Badge System:",
-//     "   - Discount: <div class=\\"badge badge-savings\\" data-fb-event=\\"view-promotion\\" data-tt-event=\\"promotion\\">🎯 Limited Time: Save XX%</div>",
-//     "   - Scarcity: <div class=\\"badge badge-urgency\\" data-fb-event=\\"scarcity\\">⚡ Only Y left</div>",
-//     "   - B2B: <div class=\\"badge badge-enterprise\\">🏢 Enterprise Ready</div>",
-    
-//     "7. Platform Tracking:",
-//     "   - Wrapper: <div class=\\"short-description\\" data-ga-content-type=\\"short-description\\" data-fb-content=\\"true\\" data-tt-content=\\"true\\" data-b2b=\\"true\\">",
-//     "   - Each bullet: data-ga-position data-fb-highlight data-tt-hook"
-//   ]` : `"constraints": [
-//     "DETAILED DESCRIPTION ARCHITECTURE:",
-    
-//     "1. Content Structure:",
-//     "   Section 1 - Hook & Value Prop:",
-//     "     - Facebook optimized hook (first 125 chars)",
-//     "     - TikTok trending format integration",
-//     "     - B2B executive summary with ROI metrics",
-//     "   ",
-//     "   Section 2 - Features Deep Dive:",
-//     "     - SEO Hoot Pro optimized headings",
-//     "     - LSI keyword integration",
-//     "     - B2B technical specifications",
-//     "   ",
-//     "   Section 3 - Technical Specifications:",
-//     "     - THIS SECTION MAY CONTAIN MULTIPLE TABLES",
-//     "     - CRITICAL: EVERY TABLE MUST BE RESPONSIVE USING THE SAME PATTERN",
-//     "     - Example with MULTIPLE TABLES (like your image):",
-//     "     ",
-//     "     <!-- TABLE 1: Main Specifications -->",
-//     "     <div class=\\"table-responsive-wrapper\\" data-ga-section=\\"specifications-main\\">",
-//     "       <table class=\\"specs-table\\">",
-//     "         <thead>",
-//     "           <tr>",
-//     "             <th>SPECIFICATION</th>",
-//     "             <th>DETAIL</th>",
-//     "             <th>E</th>",
-//     "           </tr>",
-//     "         </thead>",
-//     "         <tbody>",
-//     "           <tr>",
-//     "             <td data-label=\\"SPECIFICATION\\">Material</td>",
-//     "             <td data-label=\\"DETAIL\\">High-Grade Polyester</td>",
-//     "             <td data-label=\\"E\\">L</td>",
-//     "           </tr>",
-//     "           <tr>",
-//     "             <td data-label=\\"SPECIFICATION\\">Seasonality</td>",
-//     "             <td data-label=\\"DETAIL\\">Four Seasons</td>",
-//     "             <td data-label=\\"E\\">L</td>",
-//     "           </tr>",
-//     "           <tr>",
-//     "             <td data-label=\\"SPECIFICATION\\">Closure</td>",
-//     "             <td data-label=\\"DETAIL\\">Single Breasted</td>",
-//     "             <td data-label=\\"E\\">S</td>",
-//     "           </tr>",
-//     "           <tr>",
-//     "             <td data-label=\\"SPECIFICATION\\">Craftsmanship</td>",
-//     "             <td data-label=\\"DETAIL\\">Non-Woven Weave</td>",
-//     "             <td data-label=\\"E\\">C</td>",
-//     "           </tr>",
-//     "         </tbody>",
-//     "       </table>",
-//     "     </div>",
-//     "     ",
-//     "     <!-- SECTION HEADER FOR MEASUREMENT -->",
-//     "     <h3>MEASUREMENT VALUE</h3>",
-//     "     ",
-//     "     <!-- TABLE 2: Size & Fit Guide - MUST BE RESPONSIVE TOO! -->",
-//     "     <div class=\\"table-responsive-wrapper\\" data-ga-section=\\"specifications-size-guide\\">",
-//     "       <table class=\\"specs-table\\">",
-//     "         <thead>",
-//     "           <tr>",
-//     "             <th>SIZE RANGE</th>",
-//     "             <th>FIT GUIDANCE</th>",
-//     "             <th>NOTES</th>",
-//     "           </tr>",
-//     "         </thead>",
-//     "         <tbody>",
-//     "           <tr>",
-//     "             <td data-label=\\"SIZE RANGE\\">Size Range</td>",
-//     "             <td data-label=\\"FIT GUIDANCE\\">Universal Fit</td>",
-//     "             <td data-label=\\"NOTES\\">Tailored for layered comfort</td>",
-//     "           </tr>",
-//     "           <tr>",
-//     "             <td data-label=\\"SIZE RANGE\\">Profile</td>",
-//     "             <td data-label=\\"FIT GUIDANCE\\">True to Size</td>",
-//     "             <td data-label=\\"NOTES\\">Maintains structural integrity</td>",
-//     "           </tr>",
-//     "         </tbody>",
-//     "       </table>",
-//     "     </div>",
-//     "     ",
-//     "     ",
-//     "   Section 4 - Social Proof & B2B Case Studies:",
-//     "     - Facebook: Social proof badges",
-//     "     - TikTok: User generated content cues",
-//     "     - B2B: Enterprise case study highlights",
-//     "   ",
-//     "   Section 5 - FAQ (SEO Hoot Pro Optimized):",
-//     "     - Question format for featured snippets",
-//     "     - Voice search optimized answers",
-//     "     - Schema.org/FAQPage compatibility",
-    
-//     "2. Platform-Specific Requirements:",
-//     "   Facebook:",
-//     "   - Add data-fb-pixel=\\"ViewContent\\" to main sections",
-//     "   - Include Open Graph meta structure",
-//     "   - Format for Collection Ads compatibility",
-//     "   ",
-//     "   TikTok:",
-//     "   - Add data-tt-pixel=\\"ViewContent\\"",
-//     "   - Include trending hashtag suggestions",
-//     "   - Format for Spark Ads native content",
-//     "   ",
-//     "   B2B:",
-//     "   - Add data-b2b-segment=\\"enterprise|mid-market|smb\\"",
-//     "   - Include ROI calculator structure",
-//     "   - Add certification and compliance badges",
-//     "   ",
-//     "   SEO Hoot Pro:",
-//     "   - Add data-primary-keyword and data-lsi-keywords",
-//     "   - Include readability score optimization",
-//     "   - Structure for featured snippet capture",
-    
-//     "3. TABLE RESPONSIVENESS - ABSOLUTE REQUIREMENTS:",
-//     "   ███████████████████████████████████████████████████████████████████████",
-//     "   ███  EVERY TABLE MUST USE THIS EXACT PATTERN - NO EXCEPTIONS  ███",
-//     "   ███████████████████████████████████████████████████████████████████████",
-//     "   ",
-//     "   <div class=\\"table-responsive-wrapper\\" data-ga-section=\\"UNIQUE_ID_FOR_EACH_TABLE\\">",
-//     "     <table class=\\"specs-table\\">",
-//     "       <thead>",
-//     "         <tr>",
-//     "           <th>COLUMN 1 HEADER</th>",
-//     "           <th>COLUMN 2 HEADER</th>",
-//     "           <th>COLUMN 3 HEADER (IF APPLICABLE)</th>",
-//     "         </tr>",
-//     "       </thead>",
-//     "       <tbody>",
-//     "         <tr>",
-//     "           <td data-label=\\"COLUMN 1 HEADER\\">Value 1</td>",
-//     "           <td data-label=\\"COLUMN 2 HEADER\\">Value 2</td>",
-//     "           <td data-label=\\"COLUMN 3 HEADER\\">Value 3</td>",
-//     "         </tr>",
-//     "       </tbody>",
-//     "     </table>",
-//     "   </div>",
-//     "   ",
-//     "   CRITICAL RULES FOR MULTIPLE TABLES:",
-//     "   - NEVER use same data-ga-section for different tables",
-//     "   - ALWAYS include data-label on EVERY <td> (matches column header)",
-//     "   - ALWAYS use <thead> with headers (even with one table)",
-//     "   - NEVER use width attributes anywhere",
-//     "   - NEVER use colspan or rowspan that breaks mobile view",
-//     "   - If you have 2 tables (like in the image), BOTH must follow this pattern",
-//     "   - TEST MENTALLY: On mobile, Table 1 and Table 2 should look similar in structure",
-//     "   - On mobile, data-label becomes visible on the left side of each cell",
-//     "   ",
-//     "   VERIFICATION:",
-//     "   ✓ Table 1 has data-label on each <td>",
-//     "   ✓ Table 2 has data-label on each <td>",
-//     "   ✓ Table 1 uses table-responsive-wrapper",
-//     "   ✓ Table 2 uses table-responsive-wrapper",
-//     "   ✓ Table 1 has unique data-ga-section",
-//     "   ✓ Table 2 has unique data-ga-section",
-//     "   ✓ No table is left without the responsive pattern",
-    
-//     "4. Schema Implementation:",
-//     "<script type=\\"application/ld+json\\">",
-//     "{",
-//     "  \\"@context\\": \\"https://schema.org/\\",",
-//     "  \\"@type\\": \\"Product\\",",
-//     "  \\"name\\": \\"PRODUCT_NAME\\",",
-//     "  \\"description\\": \\"DESCRIPTION\\",",
-//     "  \\"sku\\": \\"SKU\\",",
-//     "  \\"brand\\": { \\"@type\\": \\"Brand\\", \\"name\\": \\"BRAND\\" },",
-//     "  \\"offers\\": {",
-//     "    \\"@type\\": \\"Offer\\",",
-//     "    \\"price\\": \\"PRICE\\",",
-//     "    \\"priceCurrency\\": \\"USD\\",",
-//     "    \\"availability\\": \\"https://schema.org/InStock\\"",
-//     "  },",
-//     "  \\"aggregateRating\\": {",
-//     "    \\"@type\\": \\"AggregateRating\\",",
-//     "    \\"ratingValue\\": \\"4.8\\",",
-//     "    \\"reviewCount\\": \\"127\\"",
-//     "  }",
-//     "}",
-//     "</script>"
-//   ]`}
-// }
-
-// DATA TO PROCESS:
-// ${JSON.stringify(chunk.map(p => ({ 
-//   id: p.id, 
-//   content: p.descreption,
-//   platformMetadata: {
-//     facebook: { pixelEnabled: true, catalogId: 'FB_CATALOG_ID' },
-//     tiktok: { pixelEnabled: true, shopId: 'TT_SHOP_ID' },
-//     b2b: { segment: 'enterprise', certifications: ['ISO', 'GDPR'] },
-//     seoHootPro: { primaryKeyword: 'auto-detect', lsiKeywords: [] }
-//   }
-// })))}
-
-// OUTPUT REQUIREMENTS:
-// - Return EXACTLY ${chunk.length} objects
-// - Each object: ${outputStructure}
-// - Include platform-specific tracking metadata
-// - Escape all double quotes (\\")
-// - NO markdown, NO explanations
-// - VALID JSON array only
-
-// FINAL VERIFICATION - CHECKLIST BEFORE RETURNING:
-// - [ ] EVERY table is wrapped in <div class=\\"table-responsive-wrapper\\">
-// - [ ] EVERY table uses <table class=\\"specs-table\\">
-// - [ ] EVERY <td> has data-label attribute matching the column header
-// - [ ] Tables with 2 columns AND tables with 3 columns BOTH follow the same pattern
-// - [ ] Table 1 and Table 2 (if multiple) use the same responsive structure
-// - [ ] No table is left without data-label attributes
-// - [ ] No width attributes are used anywhere
-// - [ ] All tables have unique data-ga-section identifiers
-
-// Return ONLY the valid JSON array.`;
-
-//   return basePrompt;
-// }
-
 function buildPrompt(
   chunk: { id: string; descreption: string }[],
   outputField: 'shortDescription' | 'detailedDescription'
@@ -785,515 +230,511 @@ function buildPrompt(
     ? 'shortDescription (B2B conversion-optimized bullet points)'
     : 'detailedDescription (comprehensive B2B SEO article)';
   const outputStructure = isShort
-    ? '{ "id": "original_product_id", "shortDescription": "SAFE_HTML_STRING", "trackingMetadata": { "characterCount": number, "keywordDensity": object, "b2bScore": number, "enterpriseReady": boolean, "platformTracking": object } }'
-    : '{ "id": "original_product_id", "detailedDescription": "SAFE_EXPANDABLE_HTML_STRING", "trackingMetadata": { "characterCount": number, "sections": number, "keywordDensity": object, "b2bScore": number, "enterpriseReady": boolean, "tablesCount": number, "allTablesResponsive": boolean, "platformTracking": object } }';
+    ? '{ "id": "original_product_id", "shortDescription": "SAFE_HTML_STRING", "trackingMetadata": { "characterCount": number, "keywordDensity": object, "facebookOptimized": boolean, "tiktokOptimized": boolean, "b2bCompatible": boolean } }'
+    : '{ "id": "original_product_id", "detailedDescription": "SAFE_EXPANDABLE_HTML_STRING", "trackingMetadata": { "characterCount": number, "sections": number, "keywordDensity": object, "facebookOptimized": boolean, "tiktokOptimized": boolean, "b2bCompatible": boolean, "tablesCount": number, "allTablesResponsive": boolean } }';
 
-  const basePrompt = `You are a **B2B Enterprise JSON API** specializing in multi-platform e-commerce content optimization for high-value business clients. Process ALL ${chunk.length} products and return a JSON array with EXCLUSIVELY ${fieldLabel}.
+  const basePrompt = `You are a JSON API specializing in multi-platform e-commerce content optimization. Process ALL ${chunk.length} products and return a JSON array with EXCLUSIVELY ${fieldLabel}.
 
-╔══════════════════════════════════════════════════════════════════════════════╗
-║                     🏢 ENTERPRISE B2B OPTIMIZATION ENGINE 🏢                ║
-╚══════════════════════════════════════════════════════════════════════════════╝
-
-CRITICAL REQUIREMENTS:
-• ALL TABLES MUST BE RESPONSIVE - EVERY SINGLE TABLE FOLLOWS EXACT SAME PATTERN
-• B2B DECISION-MAKER OPTIMIZED (CFO, CTO, Procurement, Operations)
-• ENTERPRISE-READY CONTENT with ROI focus
-• MULTI-PLATFORM TRACKING (Google, Facebook, TikTok, Analytics)
+CRITICAL REQUIREMENT: ALL TABLES MUST BE RESPONSIVE - EVERY SINGLE TABLE MUST FOLLOW THE EXACT SAME PATTERN
 
 PROMPT TEMPLATE FOR EACH PRODUCT:
 {
-  "role": "🏢 Chief B2B E-commerce Strategist & Enterprise SEO Architect",
-  "objective": "Create high-converting, enterprise-grade product content using semantic HTML5 that drives B2B sales, imports decision committees, and integrates with all major advertising platforms.",
+  "role": "Senior Multi-Platform E-commerce SEO Strategist & Social Commerce Expert",
+  "objective": "Create high-converting, platform-optimized product content using semantic HTML5 that drives organic traffic, maximizes conversion rates across all channels, and integrates seamlessly with Facebook Ads, TikTok Ads, B2B platforms, and SEO Hoot Pro.",
   
-  "b2bEnterpriseOptimization": {
-    "decisionMakerSegments": {
-      "cfo": {
-        "focus": ["ROI calculations", "Total Cost of Ownership", "Budget optimization", "Cost savings"],
-        "triggers": ["💰 ROI: 200% within 6 months", "📊 TCO reduction: 35%", "💵 Enterprise pricing available"]
-      },
-      "cto": {
-        "focus": ["Technical specifications", "Integration capabilities", "API documentation", "Security compliance"],
-        "triggers": ["🔧 API-first architecture", "🔒 SOC2 Type II compliant", "⚡ 99.9% uptime SLA"]
-      },
-      "procurement": {
-        "focus": ["Bulk ordering", "Supply chain reliability", "Certifications", "Vendor compliance"],
-        "triggers": ["📦 Volume discounts available", "🏭 ISO 9001 certified", "🌍 Global shipping"]
-      },
-      "operations": {
-        "focus": ["Implementation timeline", "Training requirements", "Support structure", "Scalability"],
-        "triggers": ["⚡ 48-hour implementation", "🎓 Enterprise training included", "🔄 Seamless scaling"]
+  "platformOptimization": {
+    "facebookAds": {
+      "requirements": [
+        "Content must be scannable within 3 seconds for mobile feed",
+        "First 125 characters must contain the primary hook and value proposition",
+        "Include emotional triggers optimized for Facebook's algorithm",
+        "Format for Collection Ads, Dynamic Ads, and Carousel compatibility",
+        "Add Open Graph meta tags structure:",
+        "<meta property=\\"og:title\\" content=\\"COMPELLING_HEADLINE\\">",
+        "<meta property=\\"og:description\\" content=\\"BENEFIT_DRIVEN_SNIPPET\\">",
+        "<meta property=\\"og:image\\" content=\\"PRODUCT_IMAGE_URL\\">",
+        "Include Facebook Pixel event tracking:",
+        "data-fb-pixel=\\"ViewContent\\" data-content-name=\\"product\\" data-content-ids=\\"[PRODUCT_ID]\\"",
+        "Structure for Dynamic Product Ads: data-fb-product-id, data-fb-price, data-fb-availability",
+        "Create attention-grabbing hooks for video views and image stops",
+        "Optimize for Facebook's 20% text rule (minimal text overlay)",
+        "Include social proof indicators for social commerce",
+        "Format for Instant Experience/Canvas ads compatibility"
+      ],
+      "characterLimits": {
+        "primaryText": "125 characters max for hook",
+        "headline": "25 characters max for newsfeed",
+        "description": "30 characters max for link description"
       }
     },
     
-    "b2bContentStructure": {
-      "executiveSummary": "C-level focused overview with key metrics",
-      "technicalDeepDive": "Engineering and IT specifications",
-      "roiAnalysis": "Financial impact and business case",
-      "implementationGuide": "Deployment and integration roadmap",
-      "caseStudies": "Enterprise client success stories",
-      "complianceSection": "Certifications and standards"
-    }
-  },
-
-  "platformOptimization": {
-    "googleAds": {
-      "enterpriseRequirements": [
-        "Google Ads Conversion Tracking:",
-        "<div data-google-conversion=\\"true\\" data-conversion-category=\\"b2b-product-view\\" data-conversion-label=\\"PRODUCT_ID\\" data-conversion-value=\\"PRICE\\">",
-        
-        "Google Dynamic Remarketing for B2B:",
-        "<script type=\\"application/ld+json\\">",
-        "{",
-        "  \\"@context\\": \\"https://schema.org/\\",",
-        "  \\"@type\\": \\"Product\\",",
-        "  \\"sku\\": \\"PRODUCT_SKU\\",",
-        "  \\"gtin\\": \\"GTIN\\",",
-        "  \\"category\\": \\"B2B_CATEGORY\\",",
-        "  \\"businessFunction\\": \\"https://schema.org/Wholesale\\"",
-        "}",
-        "</script>",
-        
-        "Google Ads Custom Parameters for B2B:",
-        "<div data-google-params='{",
-        "  \\"ecomm_prodid\\": \\"PRODUCT_ID\\",",
-        "  \\"ecomm_pagetype\\": \\"b2b_product\\",",
-        "  \\"ecomm_totalvalue\\": \\"PRICE\\",",
-        "  \\"ecomm_category\\": \\"B2B_CATEGORY\\",",
-        "  \\"ecomm_business_segment\\": \\"enterprise\\"",
-        "}'></div>",
-        
-        "Google Customer Match for B2B audiences",
-        "B2B keyword targeting optimization",
-        "Account-based marketing (ABM) compatibility"
-      ]
-    },
-    
-    "facebookAds": {
-      "b2bRequirements": [
-        "Facebook Pixel for B2B:",
-        "<div data-fb-pixel=\\"ViewContent\\"",
-        "     data-content-name=\\"b2b_product\\"",
-        "     data-content-ids='[\\"PRODUCT_ID\\"]'",
-        "     data-content-type=\\"b2b_product\\"",
-        "     data-value=\\"PRICE\\"",
-        "     data-currency=\\"USD\\"",
-        "     data-business-segment=\\"enterprise\\">",
-        
-        "Facebook Open Graph for B2B:",
-        "<meta property=\\"og:type\\" content=\\"product\\">",
-        "<meta property=\\"og:title\\" content=\\"B2B: PRODUCT_TITLE\\">",
-        "<meta property=\\"og:description\\" content=\\"Enterprise-grade solution for [INDUSTRY]\\">",
-        "<meta property=\\"product:price:amount\\" content=\\"PRICE\\">",
-        "<meta property=\\"product:price:currency\\" content=\\"USD\\">",
-        "<meta property=\\"product:business_type\\" content=\\"b2b\\">",
-        
-        "Facebook Catalog for B2B:",
-        "<div data-fb-catalog=\\"true\\"",
-        "     data-fb-id=\\"PRODUCT_ID\\"",
-        "     data-fb-name=\\"PRODUCT_NAME\\"",
-        "     data-fb-description=\\"B2B_SHORT_DESCRIPTION\\"",
-        "     data-fb-price=\\"PRICE\\"",
-        "     data-fb-category=\\"B2B_CATEGORY\\"",
-        "     data-fb-availability=\\"in stock\\">",
-        
-        "LinkedIn B2B targeting integration",
-        "Professional audience optimization",
-        "B2B lead generation forms compatibility"
-      ]
-    },
-    
     "tiktokAds": {
-      "b2bRequirements": [
-        "TikTok Pixel for B2B:",
-        "<div data-tt-pixel=\\"ViewContent\\"",
-        "     data-tt-content-id=\\"PRODUCT_ID\\"",
-        "     data-tt-content-type=\\"b2b_product\\"",
-        "     data-tt-content-name=\\"PRODUCT_NAME\\"",
-        "     data-tt-price=\\"PRICE\\"",
-        "     data-tt-currency=\\"USD\\"",
-        "     data-tt-value=\\"PRICE\\"",
-        "     data-tt-business-segment=\\"enterprise\\">",
-        
-        "TikTok Dynamic Product Ads for B2B:",
-        "<div data-tt-dpa=\\"true\\"",
-        "     data-tt-product-id=\\"PRODUCT_ID\\"",
-        "     data-tt-product-price=\\"PRICE\\"",
-        "     data-tt-product-name=\\"PRODUCT_NAME\\"",
-        "     data-tt-product-category=\\"B2B_CATEGORY\\">",
-        
-        "TikTok Shopping for Business:",
-        "<meta property=\\"tt:product:availability\\" content=\\"in stock\\">",
-        "<meta property=\\"tt:product:brand\\" content=\\"BRAND_NAME\\">",
-        "<meta property=\\"tt:product:business_type\\" content=\\"b2b\\">",
-        
-        "Professional content hooks",
-        "Industry trend optimization",
-        "B2B thought leadership angles"
+      "requirements": [
+        "Content optimized for TikTok's algorithm and For You Page",
+        "First 3 seconds must contain maximum impact",
+        "Use trending hashtags structure: #ProductCategory #Benefit #Viral",
+        "Format for Spark Ads and In-Feed native content",
+        "Include TikTok Pixel events: data-tt-pixel=\\"ViewContent\\"",
+        "Structure for TikTok Shopping: data-tt-product-id, data-tt-category",
+        "Add sound/music cues in text: [UPBEAT MUSIC] [SATISFYING SOUND]",
+        "Use vertical video text overlays structure",
+        "Include engagement hooks: \\"Wait for it...\\" \\"Here's how it works\\"",
+        "Format for TikTok's 9:16 aspect ratio in mind",
+        "Add trending effect suggestions: [GREEN SCREEN EFFECT] [TRANSITION]",
+        "Include creator collaboration indicators",
+        "Optimize for TikTok's algorithm preferences: authenticity, trends, challenges"
+      ],
+      "characterLimits": {
+        "caption": "150 characters max with hashtags",
+        "hashtags": "3-5 relevant hashtags",
+        "displayName": "30 characters max"
+      }
+    },
+    
+    "b2bOptimization": {
+      "requirements": [
+        "Include professional terminology and industry-specific keywords",
+        "Add ROI-focused statements and business value propositions",
+        "Structure for B2B buying committees (multiple decision makers)",
+        "Include technical specifications for procurement teams",
+        "Add compliance and certification information",
+        "Format for LinkedIn B2B content sharing",
+        "Include case study structure: Problem -> Solution -> Result",
+        "Add integration capabilities and API compatibility",
+        "Include bulk ordering and enterprise pricing indicators",
+        "Format for B2B marketplaces (Amazon Business, Alibaba)",
+        "Add professional certifications and standards compliance",
+        "Include implementation timeline and support structure"
+      ],
+      "b2bElements": [
+        "ROI Calculator structure",
+        "Total Cost of Ownership breakdown",
+        "Enterprise support levels",
+        "Integration capabilities",
+        "Compliance certifications (ISO, GDPR, SOC2)",
+        "Case study references",
+        "White paper download triggers"
       ]
     },
     
-    "googleAnalytics4": {
-      "b2bRequirements": [
-        "GA4 Enhanced Measurement for B2B:",
-        "<div data-ga-category=\\"b2b-product-interaction\\"",
-        "     data-ga-action=\\"view-item\\"",
-        "     data-ga-label=\\"PRODUCT_ID\\"",
-        "     data-ga-value=\\"PRICE\\"",
-        "     data-ga-business-segment=\\"enterprise\\">",
-        
-        "GA4 E-commerce B2B Parameters:",
-        "<script>",
-        "dataLayer.push({ ecommerce: null });",
-        "dataLayer.push({",
-        "  event: \\"view_item\\",",
-        "  ecommerce: {",
-        "    currency: \\"USD\\",",
-        "    value: PRICE,",
-        "    items: [{",
-        "      item_id: \\"PRODUCT_ID\\",",
-        "      item_name: \\"PRODUCT_NAME\\",",
-        "      item_category: \\"B2B_CATEGORY\\",",
-        "      price: PRICE,",
-        "      quantity: 1,",
-        "      business_type: \\"b2b\\",",
-        "      customer_segment: \\"enterprise\\"",
-        "    }]",
-        "  }",
-        "});",
-        "</script>",
-        
-        "GA4 Scroll Tracking for B2B content depth:",
-        "<div class=\\"scroll-marker\\"",
-        "     data-ga-scroll=\\"25,50,75,100\\"",
-        "     data-ga-category=\\"b2b-engagement\\"",
-        "     data-ga-action=\\"scroll-depth\\">",
-        
-        "B2B conversion funnel tracking",
-        "Enterprise user behavior analytics",
-        "Cross-domain tracking for B2B portals"
-      ]
+    "seoHootPro": {
+      "requirements": [
+        "Optimize for SEO Hoot Pro's ranking algorithm preferences",
+        "Include exact match keywords in H2 headings",
+        "Add long-tail variations in content body",
+        "Structure for featured snippet capture",
+        "Include FAQ schema markup for voice search",
+        "Optimize for topical authority and semantic relevance",
+        "Add internal linking structure suggestions",
+        "Include image alt-text optimization for SEO Hoot Pro crawler",
+        "Format for knowledge graph compatibility",
+        "Add video content optimization (if applicable)",
+        "Include local SEO elements (if relevant)",
+        "Structure for mobile-first indexing"
+      ],
+      "seoHootProMetrics": {
+        "keywordDensity": "1.5-2.5% primary, 0.5-1.5% secondary",
+        "readabilityScore": "60-70 Flesch Reading Ease",
+        "headingStructure": "Proper H2 to H3 hierarchy",
+        "internalLinks": "3-5 relevant internal links suggested"
+      }
     }
   },
 
   "corePrinciples": {
-    "b2bSeoStrategy": [
-      "Implement enterprise-level latent semantic indexing (LSI) keywords",
-      "Maintain optimal keyword density: 2-3% primary B2B terms, 1-2% secondary",
-      "Include long-tail B2B keywords: \\"enterprise procurement solution\\", \\"bulk ordering system\\"",
-      "Structure for B2B featured snippets: \\"How to implement [product] in enterprise\\"",
-      "Use B2B schema markup strategically",
-      "Optimize for professional voice search"
+    "seoStrategy": [
+      "Implement latent semantic indexing (LSI) keywords naturally throughout content",
+      "Maintain optimal keyword density (1.5-2.5% for primary, 0.5-1.5% for secondary)",
+      "Include long-tail keywords matching user search intent",
+      "Structure content for featured snippets (questions/answers format)",
+      "Use schema markup strategically for rich results",
+      "Optimize for voice search with natural language patterns",
+      "SEO Hoot Pro specific: Optimize for their proprietary ranking algorithm"
     ],
     
-    "b2bSocialCommerce": {
-      "linkedin": [
-        "Professional network optimization",
-        "Thought leadership formatting",
-        "B2B case study structure"
-      ],
+    "socialCommerce": {
       "facebook": [
-        "Add B2B-focused Open Graph tags",
-        "Include Facebook Pixel for business audiences",
-        "Format for B2B Collection Ads"
+        "Add Facebook Open Graph tags structure",
+        "Include Facebook Pixel event tracking",
+        "Format for Collection Ads compatibility",
+        "Optimize for mobile newsfeed consumption"
       ],
       "tiktok": [
-        "Professional industry trends",
-        "B2B educational content format",
-        "Business-focused hooks"
+        "Add TikTok Pixel events",
+        "Include trending audio/text cues",
+        "Format for TikTok Shopping",
+        "Optimize for viral potential"
       ]
     },
     
-    "b2bAnalyticsIntegration": [
-      "Multi-platform B2B tracking:",
-      "- Google Ads: data-google-conversion, data-google-params",
-      "- Facebook: data-fb-pixel, data-fb-catalog", 
-      "- TikTok: data-tt-pixel, data-tt-dpa",
-      "- GA4: data-ga-category, data-ga-action",
-      "- LinkedIn: data-li-tracking=\\"b2b-conversion\\""
+    "analyticsIntegration": [
+      "Include data attributes for enhanced e-commerce tracking: data-product-id, data-category, data-price",
+      "Structure content to support Google Analytics 4 enhanced measurement",
+      "Create clickable elements with meaningful data-event-name attributes",
+      "Support cross-domain tracking with proper UTM parameter compatibility",
+      "Enable scroll depth tracking through logical content segmentation",
+      "Add Facebook Pixel standard events: ViewContent, AddToCart, Purchase",
+      "Add TikTok Pixel standard events: ViewContent, AddToCart, CompletePayment",
+      "Include LinkedIn Insight Tag for B2B tracking"
     ],
     
     "responsiveDesign": {
-      "enterpriseMobileFirst": [
+      "mobileFirst": [
         "Use viewport-relative units (%, vw, vh) through CSS classes only",
-        "Implement fluid typography scale (min 16px for body text, 18px for readability)",
-        "Ensure touch targets are minimum 48x48px for enterprise users",
+        "Implement fluid typography scale (min 16px for body text)",
+        "Ensure touch targets are minimum 44x44px",
         "Stack content vertically on mobile breakpoints (<768px)",
         "Optimize image loading with loading=\\"lazy\\" and srcset compatibility"
       ],
-      "b2bTabletOptimization": [
-        "Two-column layouts for specification comparison",
-        "Maintain readable font sizes (min 16px)",
-        "Preserve complex B2B table readability with horizontal scroll"
+      "tabletOptimization": [
+        "Two-column layouts only when beneficial for comprehension",
+        "Maintain readable font sizes (min 15px)",
+        "Preserve table readability with horizontal scroll on overflow"
       ],
-      "enterpriseDesktop": [
-        "Multi-column layouts for comprehensive B2B data",
-        "Hover states with additional B2B information",
-        "High information density for procurement teams"
+      "desktopEnhancement": [
+        "Multi-column layouts for efficient space usage",
+        "Hover states for interactive elements (via external CSS)",
+        "Higher information density without compromising readability"
       ]
     }
   },
   
   "rules": {
-    "b2bCritical": [
-      "ZERO inline styles - use semantic enterprise classes only",
+    "critical": [
+      "ZERO inline styles - use semantic classes only",
       "ZERO background colors or fixed dimensions",
       "ZERO layout-altering properties (position, float, margin, padding)",
       "NO <html>, <body>, or full page structures",
-      "AVOID <h1> - hierarchy starts at <h2> for B2B SEO optimization",
-      "ALL content must be wrapped in enterprise-agnostic containers",
-      "PRESERVE original image tags with added loading=\\"lazy\\" and data-b2b-image=\\"true\\""
+      "AVOID <h1> - hierarchy starts at <h2> for SEO optimization",
+      "ALL content must be wrapped in device-agnostic containers",
+      "PRESERVE original image tags exactly with added loading=\\"lazy\\" for performance"
     ],
     
-    "b2bSeoEnhancements": [
-      "Implement keyword-rich <h2> headings with primary B2B keywords",
-      "Use <h3> for subsections with long-tail enterprise variations",
-      "Include B2B FAQ schema compatibility",
-      "Optimize meta-description for procurement searches (155-160 chars)",
-      "Create B2B-friendly URL structure suggestions",
-      "Add alt-text with B2B keywords to all images"
+    "seoEnhancements": [
+      "Implement keyword-rich <h2> headings with primary keywords",
+      "Use <h3> for subsections with long-tail variations",
+      "Include FAQ schema compatibility through Q&A formatting",
+      "Optimize meta-description length snippets (155-160 chars)",
+      "Create SEO-friendly URLs through content structure",
+      "Implement breadcrumb compatibility indicators",
+      "Add alt-text attributes to all images with keyword optimization"
     ],
     
-    "multiPlatformTracking": {
-      "googleAds": "data-google-conversion, data-conversion-category, data-google-params",
-      "facebookAds": "data-fb-pixel, data-content-ids, data-fb-catalog", 
-      "tiktokAds": "data-tt-pixel, data-tt-product-id, data-tt-dpa",
-      "googleAnalytics4": "data-ga-category, data-ga-action, data-ga-label",
-      "linkedIn": "data-li-tracking, data-li-segment"
-    },
+    "platformTracking": [
+      "Google Analytics 4: data-ga-category, data-ga-label, data-ga-value",
+      "Facebook Pixel: data-fb-pixel, data-content-name, data-content-ids",
+      "TikTok Pixel: data-tt-pixel, data-tt-product-id, data-tt-price",
+      "LinkedIn: data-li-tracking=\\"b2b-conversion\\"",
+      "SEO Hoot Pro: data-seohoot-optimized=\\"true\\" data-primary-keyword=\\"KEYWORD\\""
+    ],
     
-    "b2bTableResponsiveness": {
-      "criticalMessage": [
-        "██████████████████████████████████████████████████████████████████████████",
-        "███  B2B ENTERPRISE REQUIREMENT: EVERY TABLE MUST BE RESPONSIVE  ███",
-        "██████████████████████████████████████████████████████████████████████████",
+    "responsiveSafety": {
+      "tableResponsiveness": [
+        "█████████████████████████████████████████████████████████████████",
+        "███  CRITICAL: EVERY TABLE MUST BE RESPONSIVE - NO EXCEPTIONS  ███",
+        "█████████████████████████████████████████████████████████████████",
         "",
-        "EXAMPLE 1: B2B SPECIFICATIONS TABLE (MUST BE RESPONSIVE):",
-        "<div class=\\"b2b-table-responsive-wrapper\\" data-ga-section=\\"b2b-specs-1\\" data-b2b-table=\\"specifications\\">",
-        "  <table class=\\"b2b-specs-table\\">",
+        "EXAMPLE OF CORRECT TABLE (TABLE 1 - MUST BE RESPONSIVE):",
+        "<div class=\\"table-responsive-wrapper\\" data-ga-section=\\"specifications-1\\">",
+        "  <table class=\\"specs-table\\">",
         "    <thead>",
         "      <tr>",
         "        <th>SPECIFICATION</th>",
-        "        <th>ENTERPRISE DETAIL</th>",
-        "        <th>COMPLIANCE</th>",
+        "        <th>DETAIL</th>",
+        "        <th>E</th>",
         "      </tr>",
         "    </thead>",
         "    <tbody>",
         "      <tr>",
         "        <td data-label=\\"SPECIFICATION\\">Material</td>",
-        "        <td data-label=\\"ENTERPRISE DETAIL\\">High-Grade Polyester (ISO 9001)</td>",
-        "        <td data-label=\\"COMPLIANCE\\">✅ Certified</td>",
+        "        <td data-label=\\"DETAIL\\">High-Grade Polyester</td>",
+        "        <td data-label=\\"E\\">L</td>",
+        "      </tr>",
+        "      <tr>",
+        "        <td data-label=\\"SPECIFICATION\\">Seasonality</td>",
+        "        <td data-label=\\"DETAIL\\">Four Seasons</td>",
+        "        <td data-label=\\"E\\">L</td>",
         "      </tr>",
         "    </tbody>",
         "  </table>",
         "</div>",
         "",
-        "EXAMPLE 2: B2B SIZE & FIT GUIDE FOR PROCUREMENT (MUST ALSO BE RESPONSIVE):",
-        "<div class=\\"b2b-table-responsive-wrapper\\" data-ga-section=\\"b2b-size-guide-1\\" data-b2b-table=\\"size-guide\\">",
-        "  <table class=\\"b2b-specs-table\\">",
+        "EXAMPLE OF CORRECT TABLE (TABLE 2 - MUST ALSO BE RESPONSIVE - SAME PATTERN):",
+        "<div class=\\"table-responsive-wrapper\\" data-ga-section=\\"specifications-2\\">",
+        "  <table class=\\"specs-table\\">",
         "    <thead>",
         "      <tr>",
-        "        <th>SIZE RANGE (B2B ORDER)</th>",
+        "        <th>SIZE RANGE</th>",
         "        <th>FIT GUIDANCE</th>",
-        "        <th>BULK NOTES</th>",
+        "        <th>NOTES</th>",
         "      </tr>",
         "    </thead>",
         "    <tbody>",
         "      <tr>",
-        "        <td data-label=\\"SIZE RANGE (B2B ORDER)\\">Enterprise (100-500 units)</td>",
-        "        <td data-label=\\"FIT GUIDANCE\\">Universal Commercial Fit</td>",
-        "        <td data-label=\\"BULK NOTES\\">Volume pricing available</td>",
+        "        <td data-label=\\"SIZE RANGE\\">Size Range</td>",
+        "        <td data-label=\\"FIT GUIDANCE\\">Universal Fit</td>",
+        "        <td data-label=\\"NOTES\\">Tailored for layered comfort</td>",
+        "      </tr>",
+        "      <tr>",
+        "        <td data-label=\\"SIZE RANGE\\">Profile</td>",
+        "        <td data-label=\\"FIT GUIDANCE\\">True to Size</td>",
+        "        <td data-label=\\"NOTES\\">Maintains structural integrity</td>",
         "      </tr>",
         "    </tbody>",
         "  </table>",
         "</div>",
         "",
-        "██████████████████████████████████████████████████████████████████████████",
-        "███  BOTH TABLES ABOVE USE IDENTICAL RESPONSIVE PATTERN  ███",
-        "██████████████████████████████████████████████████████████████████████████",
+        "█████████████████████████████████████████████████████████████████",
+        "███  BOTH TABLES ABOVE USE EXACTLY THE SAME RESPONSIVE PATTERN  ███",
+        "█████████████████████████████████████████████████████████████████",
         "",
-        "B2B TABLE MANDATORY REQUIREMENTS:",
-        "1. ALWAYS wrap in <div class=\\"b2b-table-responsive-wrapper\\">",
-        "2. ALWAYS use <table class=\\"b2b-specs-table\\">",
-        "3. ALWAYS include <thead> with B2B-appropriate headers",
-        "4. ALWAYS add data-label attribute to EVERY <td> matching header",
-        "5. ALWAYS use unique data-ga-section for each table",
-        "6. ALWAYS add data-b2b-table attribute with table type",
-        "7. NEVER use width attributes",
-        "8. NEVER use colspan/rowspan that breaks mobile B2B view",
+        "MANDATORY REQUIREMENTS FOR EVERY TABLE:",
+        "1. ALWAYS wrap in <div class=\\"table-responsive-wrapper\\">",
+        "2. ALWAYS use <table class=\\"specs-table\\">",
+        "3. ALWAYS include <thead> with column headers",
+        "4. ALWAYS add data-label attribute to EVERY <td> that matches the column header",
+        "5. ALWAYS use unique data-ga-section for each table (specifications-1, specifications-2, etc.)",
+        "6. NEVER use width attributes on table, tr, td, or th",
+        "7. NEVER use colspan or rowspan that breaks mobile view",
+        "8. NEVER nest tables",
         "",
-        "B2B MOBILE BEHAVIOR:",
-        "- Screens < 768px: Tables transform to procurement cards",
-        "- Each cell: data-label (bold left) + value (right)",
-        "- Critical B2B data always visible",
-        "- Procurement teams can scan efficiently on mobile"
+        "MOBILE BEHAVIOR (ALL TABLES):",
+        "- On screens < 768px, tables transform to cards",
+        "- Each cell becomes a flex row with data-label as left column",
+        "- The data-label text appears in bold on the left, value on the right",
+        "- Horizontal scroll appears only if absolutely necessary",
+        "- ALL tables behave IDENTICALLY on mobile",
+        "",
+        "VERIFICATION CHECK:",
+        "✓ Table 1 has data-label on each <td>",
+        "✓ Table 2 has data-label on each <td>",
+        "✓ Both tables use the same wrapper class",
+        "✓ Both tables use the same table class",
+        "✓ No table is left without the responsive pattern"
+      ],
+      "imageResponsiveness": [
+        "Images: <img ... loading=\\"lazy\\" class=\\"responsive-image\\" data-fb-image=\\"true\\" data-tt-image=\\"true\\">",
+        "Use fluid containers: class=\\"content-section\\", \\"feature-grid\\", \\"specifications\\"",
+        "Ensure 100% width compatibility with parent containers"
       ]
     }
   },
   
-  "tone": "🏢 B2B ENTERPRISE: Authoritative, data-driven, ROI-focused, professional yet accessible, trusted advisor, industry leader",
+  "tone": "Multi-platform adaptive: Premium yet approachable, data-driven, emotionally resonant, B2B professional, social media native",
   
-  ${isShort ? `"b2bConstraints": [
-    "B2B SHORT DESCRIPTION - PROCUREMENT OPTIMIZED:",
+  ${isShort ? `"constraints": [
+    "SHORT DESCRIPTION SPECIFICATIONS:",
+    "1. Structure:",
+    "   - Maximum 5 high-impact bullet points within <ul class=\\"product-highlights\\">",
+    "   - Each <li> format: 🔹 <strong>Benefit-Driven Headline:</strong> persuasive explanation",
+    "   - Include micro-conversions: <span class=\\"micro-text\\">(based on 127 reviews)</span>",
     
-    "1. B2B Structure:",
-    "   - Maximum 5 high-impact bullet points within <ul class=\\"b2b-highlights\\">",
-    "   - Each <li> format: 💼 <strong>Business Value:</strong> ROI-focused explanation",
-    "   - Include procurement metrics: <span class=\\"b2b-metric\\">(ROI: 200% | TCO: -35%)</span>",
+    "2. Facebook Ads Optimization:",
+    "   - First 125 chars: \\"🔥 Transform Your [Result] with [Product]\\"",
+    "   - Include hook for mobile feed: ⚡️ Limited Time • ⭐️ 5-Star Rated",
+    "   - Add Open Graph meta structure in comments",
+    "   - Format for Collection Ads: Main benefit + 3 supporting points",
     
-    "2. Google Ads B2B Optimization:",
-    "   - First 125 chars: \\"🏢 Enterprise [Product] - 200% ROI for [Industry]\\"",
-    "   - Include B2B hooks: ⚡ Bulk Pricing • 🔒 SOC2 Certified • 🌍 Global Shipping",
-    "   - Add Google conversion tracking attributes",
+    "3. TikTok Ads Optimization:",
+    "   - Add sound cue: [TRENDING AUDIO]",
+    "   - Include hook: \\"POV: You finally found the perfect [product]\\"",
+    "   - Add 3 trending hashtags: #[Category]Tok #[Benefit]Check #[Brand]",
+    "   - Format for In-Feed: Problem -> Solution -> Reaction",
     
-    "3. Facebook Ads B2B:",
-    "   - Professional audience hooks",
-    "   - LinkedIn integration ready",
-    "   - B2B lead gen form compatibility",
+    "4. B2B Elements:",
+    "   - Include ROI statement: \\"Enterprise Solution: 200% ROI within 6 months\\"",
+    "   - Add certification badges: <span class=\\"cert-badge\\">ISO 9001</span>",
+    "   - Include integration capability: \\"API Ready • SSO Compatible\\"",
     
-    "4. TikTok Ads B2B:",
-    "   - Industry trend hooks: \\"How enterprises use [Product]\\"",
-    "   - Professional hashtags: #B2B #Enterprise #Procurement",
-    "   - Educational content format",
+    "5. SEO Hoot Pro Optimization:",
+    "   - Primary keyword in first 50 characters",
+    "   - LSI keywords in bullets: \\"seamless integration\\", \\"enterprise-grade\\"",
+    "   - Add FAQ schema structure in comments",
     
-    "5. B2B Enterprise Elements:",
-    "   - ROI statement: 💰 \\"Enterprise Solution: 200% ROI within 6 months\\"",
-    "   - Certification badges: <span class=\\"b2b-cert\\">ISO 9001 • SOC2 • GDPR</span>",
-    "   - Integration: 🔌 \\"API Ready • SSO Compatible • ERP Integration\\"",
+    "6. Badge System:",
+    "   - Discount: <div class=\\"badge badge-savings\\" data-fb-event=\\"view-promotion\\" data-tt-event=\\"promotion\\">🎯 Limited Time: Save XX%</div>",
+    "   - Scarcity: <div class=\\"badge badge-urgency\\" data-fb-event=\\"scarcity\\">⚡ Only Y left</div>",
+    "   - B2B: <div class=\\"badge badge-enterprise\\">🏢 Enterprise Ready</div>",
     
-    "6. Multi-Platform Tracking:",
-    "   - Wrapper: <div class=\\"b2b-short-description\\"",
-    "        data-google-conversion=\\"true\\"",
-    "        data-fb-pixel=\\"ViewContent\\"", 
-    "        data-tt-pixel=\\"ViewContent\\"",
-    "        data-ga-category=\\"b2b-view\\">"
-  ]` : `"b2bConstraints": [
-    "🏢 B2B ENTERPRISE DETAILED DESCRIPTION ARCHITECTURE:",
+    "7. Platform Tracking:",
+    "   - Wrapper: <div class=\\"short-description\\" data-ga-content-type=\\"short-description\\" data-fb-content=\\"true\\" data-tt-content=\\"true\\" data-b2b=\\"true\\">",
+    "   - Each bullet: data-ga-position data-fb-highlight data-tt-hook"
+  ]` : `"constraints": [
+    "DETAILED DESCRIPTION ARCHITECTURE:",
     
-    "SECTION 1 - EXECUTIVE SUMMARY (C-Level Focused):",
-    "<div class=\\"b2b-executive-summary\\"",
-    "     data-ga-section=\\"b2b-executive\\"",
-    "     data-google-conversion=\\"true\\">",
-    "  <h2>Enterprise [Product]: Transform Your [Business Function]</h2>",
-    "  <p class=\\"b2b-roi-statement\\">💰 200% Average ROI • 35% TCO Reduction • 99.9% Uptime SLA</p>",
-    "  <p>First 125 characters optimized for Google Ads B2B hook...</p>",
-    "</div>",
+    "1. Content Structure:",
+    "   Section 1 - Hook & Value Prop:",
+    "     - Facebook optimized hook (first 125 chars)",
+    "     - TikTok trending format integration",
+    "     - B2B executive summary with ROI metrics",
+    "   ",
+    "   Section 2 - Features Deep Dive:",
+    "     - SEO Hoot Pro optimized headings",
+    "     - LSI keyword integration",
+    "     - B2B technical specifications",
+    "   ",
+    "   Section 3 - Technical Specifications:",
+    "     - THIS SECTION MAY CONTAIN MULTIPLE TABLES",
+    "     - CRITICAL: EVERY TABLE MUST BE RESPONSIVE USING THE SAME PATTERN",
+    "     - Example with MULTIPLE TABLES (like your image):",
+    "     ",
+    "     <!-- TABLE 1: Main Specifications -->",
+    "     <div class=\\"table-responsive-wrapper\\" data-ga-section=\\"specifications-main\\">",
+    "       <table class=\\"specs-table\\">",
+    "         <thead>",
+    "           <tr>",
+    "             <th>SPECIFICATION</th>",
+    "             <th>DETAIL</th>",
+    "             <th>E</th>",
+    "           </tr>",
+    "         </thead>",
+    "         <tbody>",
+    "           <tr>",
+    "             <td data-label=\\"SPECIFICATION\\">Material</td>",
+    "             <td data-label=\\"DETAIL\\">High-Grade Polyester</td>",
+    "             <td data-label=\\"E\\">L</td>",
+    "           </tr>",
+    "           <tr>",
+    "             <td data-label=\\"SPECIFICATION\\">Seasonality</td>",
+    "             <td data-label=\\"DETAIL\\">Four Seasons</td>",
+    "             <td data-label=\\"E\\">L</td>",
+    "           </tr>",
+    "           <tr>",
+    "             <td data-label=\\"SPECIFICATION\\">Closure</td>",
+    "             <td data-label=\\"DETAIL\\">Single Breasted</td>",
+    "             <td data-label=\\"E\\">S</td>",
+    "           </tr>",
+    "           <tr>",
+    "             <td data-label=\\"SPECIFICATION\\">Craftsmanship</td>",
+    "             <td data-label=\\"DETAIL\\">Non-Woven Weave</td>",
+    "             <td data-label=\\"E\\">C</td>",
+    "           </tr>",
+    "         </tbody>",
+    "       </table>",
+    "     </div>",
+    "     ",
+    "     <!-- SECTION HEADER FOR MEASUREMENT -->",
+    "     <h3>MEASUREMENT VALUE</h3>",
+    "     ",
+    "     <!-- TABLE 2: Size & Fit Guide - MUST BE RESPONSIVE TOO! -->",
+    "     <div class=\\"table-responsive-wrapper\\" data-ga-section=\\"specifications-size-guide\\">",
+    "       <table class=\\"specs-table\\">",
+    "         <thead>",
+    "           <tr>",
+    "             <th>SIZE RANGE</th>",
+    "             <th>FIT GUIDANCE</th>",
+    "             <th>NOTES</th>",
+    "           </tr>",
+    "         </thead>",
+    "         <tbody>",
+    "           <tr>",
+    "             <td data-label=\\"SIZE RANGE\\">Size Range</td>",
+    "             <td data-label=\\"FIT GUIDANCE\\">Universal Fit</td>",
+    "             <td data-label=\\"NOTES\\">Tailored for layered comfort</td>",
+    "           </tr>",
+    "           <tr>",
+    "             <td data-label=\\"SIZE RANGE\\">Profile</td>",
+    "             <td data-label=\\"FIT GUIDANCE\\">True to Size</td>",
+    "             <td data-label=\\"NOTES\\">Maintains structural integrity</td>",
+    "           </tr>",
+    "         </tbody>",
+    "       </table>",
+    "     </div>",
+    "     ",
+    "     ",
+    "   Section 4 - Social Proof & B2B Case Studies:",
+    "     - Facebook: Social proof badges",
+    "     - TikTok: User generated content cues",
+    "     - B2B: Enterprise case study highlights",
+    "   ",
+    "   Section 5 - FAQ (SEO Hoot Pro Optimized):",
+    "     - Question format for featured snippets",
+    "     - Voice search optimized answers",
+    "     - Schema.org/FAQPage compatibility",
     
-    "SECTION 2 - TECHNICAL DEEP DIVE (CTO/Engineering):",
-    "<div class=\\"b2b-technical-section\\" data-ga-section=\\"b2b-technical\\">",
-    "  <h3>🔧 Enterprise Technical Specifications</h3>",
-    "  ",
-    "  <!-- TABLE 1: Technical Specifications - MUST BE RESPONSIVE -->",
-    "  <div class=\\"b2b-table-responsive-wrapper\\" data-ga-section=\\"b2b-tech-specs\\">",
-    "    <table class=\\"b2b-specs-table\\">",
-    "      <thead>",
-    "        <tr><th>SPECIFICATION</th><th>ENTERPRISE DETAIL</th><th>CERTIFICATION</th></tr>",
-    "      </thead>",
-    "      <tbody>",
-    "        <tr>",
-    "          <td data-label=\\"SPECIFICATION\\">Architecture</td>",
-    "          <td data-label=\\"ENTERPRISE DETAIL\\">Microservices-based, API-first</td>",
-    "          <td data-label=\\"CERTIFICATION\\">SOC2 Type II</td>",
-    "        </tr>",
-    "      </tbody>",
-    "    </table>",
-    "  </div>",
-    "</div>",
+    "2. Platform-Specific Requirements:",
+    "   Facebook:",
+    "   - Add data-fb-pixel=\\"ViewContent\\" to main sections",
+    "   - Include Open Graph meta structure",
+    "   - Format for Collection Ads compatibility",
+    "   ",
+    "   TikTok:",
+    "   - Add data-tt-pixel=\\"ViewContent\\"",
+    "   - Include trending hashtag suggestions",
+    "   - Format for Spark Ads native content",
+    "   ",
+    "   B2B:",
+    "   - Add data-b2b-segment=\\"enterprise|mid-market|smb\\"",
+    "   - Include ROI calculator structure",
+    "   - Add certification and compliance badges",
+    "   ",
+    "   SEO Hoot Pro:",
+    "   - Add data-primary-keyword and data-lsi-keywords",
+    "   - Include readability score optimization",
+    "   - Structure for featured snippet capture",
     
-    "SECTION 3 - PROCUREMENT & COMPLIANCE (Procurement Teams):",
-    "<div class=\\"b2b-procurement-section\\" data-ga-section=\\"b2b-procurement\\">",
-    "  <h3>📦 Bulk Ordering & Compliance</h3>",
-    "  ",
-    "  <!-- TABLE 2: Bulk Pricing - MUST BE RESPONSIVE (SAME PATTERN) -->",
-    "  <div class=\\"b2b-table-responsive-wrapper\\" data-ga-section=\\"b2b-pricing\\">",
-    "    <table class=\\"b2b-specs-table\\">",
-    "      <thead>",
-    "        <tr><th>QUANTITY</th><th>UNIT PRICE</th><th>SAVINGS</th></tr>",
-    "      </thead>",
-    "      <tbody>",
-    "        <tr>",
-    "          <td data-label=\\"QUANTITY\\">100-499 units</td>",
-    "          <td data-label=\\"UNIT PRICE\\">$99.99/unit</td>",
-    "          <td data-label=\\"SAVINGS\\">15% volume discount</td>",
-    "        </tr>",
-    "      </tbody>",
-    "    </table>",
-    "  </div>",
-    "  ",
-    "  <!-- TABLE 3: Compliance Certifications - MUST BE RESPONSIVE TOO -->",
-    "  <div class=\\"b2b-table-responsive-wrapper\\" data-ga-section=\\"b2b-compliance\\">",
-    "    <table class=\\"b2b-specs-table\\">",
-    "      <thead>",
-    "        <tr><th>CERTIFICATION</th><th>STANDARD</th><th>VALID UNTIL</th></tr>",
-    "      </thead>",
-    "      <tbody>",
-    "        <tr>",
-    "          <td data-label=\\"CERTIFICATION\\">ISO 9001</td>",
-    "          <td data-label=\\"STANDARD\\">Quality Management</td>",
-    "          <td data-label=\\"VALID UNTIL\\">2025</td>",
-    "        </tr>",
-    "      </tbody>",
-    "    </table>",
-    "  </div>",
-    "</div>",
+    "3. TABLE RESPONSIVENESS - ABSOLUTE REQUIREMENTS:",
+    "   ███████████████████████████████████████████████████████████████████████",
+    "   ███  EVERY TABLE MUST USE THIS EXACT PATTERN - NO EXCEPTIONS  ███",
+    "   ███████████████████████████████████████████████████████████████████████",
+    "   ",
+    "   <div class=\\"table-responsive-wrapper\\" data-ga-section=\\"UNIQUE_ID_FOR_EACH_TABLE\\">",
+    "     <table class=\\"specs-table\\">",
+    "       <thead>",
+    "         <tr>",
+    "           <th>COLUMN 1 HEADER</th>",
+    "           <th>COLUMN 2 HEADER</th>",
+    "           <th>COLUMN 3 HEADER (IF APPLICABLE)</th>",
+    "         </tr>",
+    "       </thead>",
+    "       <tbody>",
+    "         <tr>",
+    "           <td data-label=\\"COLUMN 1 HEADER\\">Value 1</td>",
+    "           <td data-label=\\"COLUMN 2 HEADER\\">Value 2</td>",
+    "           <td data-label=\\"COLUMN 3 HEADER\\">Value 3</td>",
+    "         </tr>",
+    "       </tbody>",
+    "     </table>",
+    "   </div>",
+    "   ",
+    "   CRITICAL RULES FOR MULTIPLE TABLES:",
+    "   - NEVER use same data-ga-section for different tables",
+    "   - ALWAYS include data-label on EVERY <td> (matches column header)",
+    "   - ALWAYS use <thead> with headers (even with one table)",
+    "   - NEVER use width attributes anywhere",
+    "   - NEVER use colspan or rowspan that breaks mobile view",
+    "   - If you have 2 tables (like in the image), BOTH must follow this pattern",
+    "   - TEST MENTALLY: On mobile, Table 1 and Table 2 should look similar in structure",
+    "   - On mobile, data-label becomes visible on the left side of each cell",
+    "   ",
+    "   VERIFICATION:",
+    "   ✓ Table 1 has data-label on each <td>",
+    "   ✓ Table 2 has data-label on each <td>",
+    "   ✓ Table 1 uses table-responsive-wrapper",
+    "   ✓ Table 2 uses table-responsive-wrapper",
+    "   ✓ Table 1 has unique data-ga-section",
+    "   ✓ Table 2 has unique data-ga-section",
+    "   ✓ No table is left without the responsive pattern",
     
-    "SECTION 4 - ROI ANALYSIS & CASE STUDIES (CFO Focus):",
-    "<div class=\\"b2b-roi-section\\" data-ga-section=\\"b2b-roi\\">",
-    "  <h3>💰 Financial Impact & Enterprise Case Studies</h3>",
-    "  <div class=\\"b2b-case-study\\" data-fb-pixel=\\"Lead\\" data-tt-pixel=\\"CompletePayment\\">",
-    "    <p><strong>Enterprise Client:</strong> Fortune 500 Manufacturing</p>",
-    "    <p><strong>ROI Achieved:</strong> 245% within 8 months</p>",
-    "  </div>",
-    "</div>",
-    
-    "SECTION 5 - FAQ (SEO Hoot Pro Optimized for B2B):",
-    "<div class=\\"b2b-faq-section\\" data-ga-section=\\"b2b-faq\\">",
-    "  <h3>❓ Enterprise Frequently Asked Questions</h3>",
-    "  <div itemscope itemtype=\\"https://schema.org/FAQPage\\">",
-    "    <div itemprop=\\"mainEntity\\" itemscope itemtype=\\"https://schema.org/Question\\">",
-    "      <h4 itemprop=\\"name\\">What is the minimum enterprise order quantity?</h4>",
-    "      <div itemprop=\\"acceptedAnswer\\" itemscope itemtype=\\"https://schema.org/Answer\\">",
-    "        <div itemprop=\\"text\\">Minimum 100 units with volume discounts available.</div>",
-    "      </div>",
-    "    </div>",
-    "  </div>",
-    "</div>",
-    
-    "MULTI-PLATFORM B2B TRACKING - EVERY SECTION MUST INCLUDE:",
-    "- Google Ads: data-google-conversion attributes",
-    "- Facebook Pixel: data-fb-pixel events", 
-    "- TikTok Pixel: data-tt-pixel events",
-    "- GA4: data-ga-category, data-ga-action",
-    
-    "B2B TABLE VERIFICATION (MANDATORY):",
-    "✓ Table 1 (Technical): Has data-label on ALL <td>",
-    "✓ Table 2 (Pricing): Has data-label on ALL <td>",
-    "✓ Table 3 (Compliance): Has data-label on ALL <td>", 
-    "✓ ALL tables use b2b-table-responsive-wrapper",
-    "✓ ALL tables use b2b-specs-table class",
-    "✓ ALL tables have unique data-ga-section",
-    "✓ NO tables left without responsive pattern",
-    
-    "ENTERPRISE SCHEMA IMPLEMENTATION:",
+    "4. Schema Implementation:",
     "<script type=\\"application/ld+json\\">",
     "{",
     "  \\"@context\\": \\"https://schema.org/\\",",
     "  \\"@type\\": \\"Product\\",",
     "  \\"name\\": \\"PRODUCT_NAME\\",",
-    "  \\"description\\": \\"B2B_ENTERPRISE_DESCRIPTION\\",",
+    "  \\"description\\": \\"DESCRIPTION\\",",
     "  \\"sku\\": \\"SKU\\",",
     "  \\"brand\\": { \\"@type\\": \\"Brand\\", \\"name\\": \\"BRAND\\" },",
     "  \\"offers\\": {",
     "    \\"@type\\": \\"Offer\\",",
     "    \\"price\\": \\"PRICE\\",",
     "    \\"priceCurrency\\": \\"USD\\",",
-    "    \\"availability\\": \\"https://schema.org/InStock\\",",
-    "    \\"businessFunction\\": \\"https://schema.org/Wholesale\\"",
+    "    \\"availability\\": \\"https://schema.org/InStock\\"",
     "  },",
     "  \\"aggregateRating\\": {",
     "    \\"@type\\": \\"AggregateRating\\",",
-    "    \\"ratingValue\\": \\"4.9\\",",
-    "    \\"reviewCount\\": \\"127\\",",
-    "    \\"ratingCount\\": \\"87 enterprise reviews\\"",
+    "    \\"ratingValue\\": \\"4.8\\",",
+    "    \\"reviewCount\\": \\"127\\"",
     "  }",
     "}",
     "</script>"
@@ -1304,46 +745,605 @@ DATA TO PROCESS:
 ${JSON.stringify(chunk.map(p => ({ 
   id: p.id, 
   content: p.descreption,
-  b2bMetadata: {
-    segment: 'enterprise',
-    decisionMakers: ['CFO', 'CTO', 'CPO', 'COO'],
-    certifications: ['ISO 9001', 'SOC2', 'GDPR'],
-    integrations: ['API', 'SSO', 'ERP'],
-    platformTracking: {
-      googleAds: { conversionTracking: true, dynamicRemarketing: true },
-      facebookAds: { pixelEnabled: true, catalogEnabled: true },
-      tiktokAds: { pixelEnabled: true, dpaEnabled: true },
-      googleAnalytics4: { enhancedMeasurement: true, ecommerceTracking: true }
-    }
+  platformMetadata: {
+    facebook: { pixelEnabled: true, catalogId: 'FB_CATALOG_ID' },
+    tiktok: { pixelEnabled: true, shopId: 'TT_SHOP_ID' },
+    b2b: { segment: 'enterprise', certifications: ['ISO', 'GDPR'] },
+    seoHootPro: { primaryKeyword: 'auto-detect', lsiKeywords: [] }
   }
 })))}
 
 OUTPUT REQUIREMENTS:
 - Return EXACTLY ${chunk.length} objects
 - Each object: ${outputStructure}
-- Include B2B enterprise tracking metadata
+- Include platform-specific tracking metadata
 - Escape all double quotes (\\")
 - NO markdown, NO explanations
 - VALID JSON array only
 
-🏢 FINAL B2B ENTERPRISE VERIFICATION CHECKLIST:
-- [ ] EVERY table wrapped in b2b-table-responsive-wrapper
-- [ ] EVERY table uses b2b-specs-table class
-- [ ] EVERY <td> has data-label attribute
-- [ ] ALL tables (even 3+) follow SAME responsive pattern
-- [ ] Google Ads tracking attributes present
-- [ ] Facebook Pixel events included
-- [ ] TikTok Pixel events included
-- [ ] GA4 tracking attributes present
-- [ ] B2B decision-maker segments addressed
-- [ ] ROI metrics included
-- [ ] Compliance certifications listed
-- [ ] Enterprise schema implemented
+FINAL VERIFICATION - CHECKLIST BEFORE RETURNING:
+- [ ] EVERY table is wrapped in <div class=\\"table-responsive-wrapper\\">
+- [ ] EVERY table uses <table class=\\"specs-table\\">
+- [ ] EVERY <td> has data-label attribute matching the column header
+- [ ] Tables with 2 columns AND tables with 3 columns BOTH follow the same pattern
+- [ ] Table 1 and Table 2 (if multiple) use the same responsive structure
+- [ ] No table is left without data-label attributes
+- [ ] No width attributes are used anywhere
+- [ ] All tables have unique data-ga-section identifiers
 
 Return ONLY the valid JSON array.`;
 
   return basePrompt;
 }
+
+// function buildPrompt(
+//   chunk: { id: string; descreption: string }[],
+//   outputField: 'shortDescription' | 'detailedDescription'
+// ): string {
+//   const isShort = outputField === 'shortDescription';
+//   const fieldLabel = isShort
+//     ? 'shortDescription (B2B conversion-optimized bullet points)'
+//     : 'detailedDescription (comprehensive B2B SEO article)';
+//   const outputStructure = isShort
+//     ? '{ "id": "original_product_id", "shortDescription": "SAFE_HTML_STRING", "trackingMetadata": { "characterCount": number, "keywordDensity": object, "b2bScore": number, "enterpriseReady": boolean, "platformTracking": object } }'
+//     : '{ "id": "original_product_id", "detailedDescription": "SAFE_EXPANDABLE_HTML_STRING", "trackingMetadata": { "characterCount": number, "sections": number, "keywordDensity": object, "b2bScore": number, "enterpriseReady": boolean, "tablesCount": number, "allTablesResponsive": boolean, "platformTracking": object } }';
+
+//   const basePrompt = `You are a **B2B Enterprise JSON API** specializing in multi-platform e-commerce content optimization for high-value business clients. Process ALL ${chunk.length} products and return a JSON array with EXCLUSIVELY ${fieldLabel}.
+
+// ╔══════════════════════════════════════════════════════════════════════════════╗
+// ║                     🏢 ENTERPRISE B2B OPTIMIZATION ENGINE 🏢                ║
+// ╚══════════════════════════════════════════════════════════════════════════════╝
+
+// CRITICAL REQUIREMENTS:
+// • ALL TABLES MUST BE RESPONSIVE - EVERY SINGLE TABLE FOLLOWS EXACT SAME PATTERN
+// • B2B DECISION-MAKER OPTIMIZED (CFO, CTO, Procurement, Operations)
+// • ENTERPRISE-READY CONTENT with ROI focus
+// • MULTI-PLATFORM TRACKING (Google, Facebook, TikTok, Analytics)
+
+// PROMPT TEMPLATE FOR EACH PRODUCT:
+// {
+//   "role": "🏢 Chief B2B E-commerce Strategist & Enterprise SEO Architect",
+//   "objective": "Create high-converting, enterprise-grade product content using semantic HTML5 that drives B2B sales, imports decision committees, and integrates with all major advertising platforms.",
+  
+//   "b2bEnterpriseOptimization": {
+//     "decisionMakerSegments": {
+//       "cfo": {
+//         "focus": ["ROI calculations", "Total Cost of Ownership", "Budget optimization", "Cost savings"],
+//         "triggers": ["💰 ROI: 200% within 6 months", "📊 TCO reduction: 35%", "💵 Enterprise pricing available"]
+//       },
+//       "cto": {
+//         "focus": ["Technical specifications", "Integration capabilities", "API documentation", "Security compliance"],
+//         "triggers": ["🔧 API-first architecture", "🔒 SOC2 Type II compliant", "⚡ 99.9% uptime SLA"]
+//       },
+//       "procurement": {
+//         "focus": ["Bulk ordering", "Supply chain reliability", "Certifications", "Vendor compliance"],
+//         "triggers": ["📦 Volume discounts available", "🏭 ISO 9001 certified", "🌍 Global shipping"]
+//       },
+//       "operations": {
+//         "focus": ["Implementation timeline", "Training requirements", "Support structure", "Scalability"],
+//         "triggers": ["⚡ 48-hour implementation", "🎓 Enterprise training included", "🔄 Seamless scaling"]
+//       }
+//     },
+    
+//     "b2bContentStructure": {
+//       "executiveSummary": "C-level focused overview with key metrics",
+//       "technicalDeepDive": "Engineering and IT specifications",
+//       "roiAnalysis": "Financial impact and business case",
+//       "implementationGuide": "Deployment and integration roadmap",
+//       "caseStudies": "Enterprise client success stories",
+//       "complianceSection": "Certifications and standards"
+//     }
+//   },
+
+//   "platformOptimization": {
+//     "googleAds": {
+//       "enterpriseRequirements": [
+//         "Google Ads Conversion Tracking:",
+//         "<div data-google-conversion=\\"true\\" data-conversion-category=\\"b2b-product-view\\" data-conversion-label=\\"PRODUCT_ID\\" data-conversion-value=\\"PRICE\\">",
+        
+//         "Google Dynamic Remarketing for B2B:",
+//         "<script type=\\"application/ld+json\\">",
+//         "{",
+//         "  \\"@context\\": \\"https://schema.org/\\",",
+//         "  \\"@type\\": \\"Product\\",",
+//         "  \\"sku\\": \\"PRODUCT_SKU\\",",
+//         "  \\"gtin\\": \\"GTIN\\",",
+//         "  \\"category\\": \\"B2B_CATEGORY\\",",
+//         "  \\"businessFunction\\": \\"https://schema.org/Wholesale\\"",
+//         "}",
+//         "</script>",
+        
+//         "Google Ads Custom Parameters for B2B:",
+//         "<div data-google-params='{",
+//         "  \\"ecomm_prodid\\": \\"PRODUCT_ID\\",",
+//         "  \\"ecomm_pagetype\\": \\"b2b_product\\",",
+//         "  \\"ecomm_totalvalue\\": \\"PRICE\\",",
+//         "  \\"ecomm_category\\": \\"B2B_CATEGORY\\",",
+//         "  \\"ecomm_business_segment\\": \\"enterprise\\"",
+//         "}'></div>",
+        
+//         "Google Customer Match for B2B audiences",
+//         "B2B keyword targeting optimization",
+//         "Account-based marketing (ABM) compatibility"
+//       ]
+//     },
+    
+//     "facebookAds": {
+//       "b2bRequirements": [
+//         "Facebook Pixel for B2B:",
+//         "<div data-fb-pixel=\\"ViewContent\\"",
+//         "     data-content-name=\\"b2b_product\\"",
+//         "     data-content-ids='[\\"PRODUCT_ID\\"]'",
+//         "     data-content-type=\\"b2b_product\\"",
+//         "     data-value=\\"PRICE\\"",
+//         "     data-currency=\\"USD\\"",
+//         "     data-business-segment=\\"enterprise\\">",
+        
+//         "Facebook Open Graph for B2B:",
+//         "<meta property=\\"og:type\\" content=\\"product\\">",
+//         "<meta property=\\"og:title\\" content=\\"B2B: PRODUCT_TITLE\\">",
+//         "<meta property=\\"og:description\\" content=\\"Enterprise-grade solution for [INDUSTRY]\\">",
+//         "<meta property=\\"product:price:amount\\" content=\\"PRICE\\">",
+//         "<meta property=\\"product:price:currency\\" content=\\"USD\\">",
+//         "<meta property=\\"product:business_type\\" content=\\"b2b\\">",
+        
+//         "Facebook Catalog for B2B:",
+//         "<div data-fb-catalog=\\"true\\"",
+//         "     data-fb-id=\\"PRODUCT_ID\\"",
+//         "     data-fb-name=\\"PRODUCT_NAME\\"",
+//         "     data-fb-description=\\"B2B_SHORT_DESCRIPTION\\"",
+//         "     data-fb-price=\\"PRICE\\"",
+//         "     data-fb-category=\\"B2B_CATEGORY\\"",
+//         "     data-fb-availability=\\"in stock\\">",
+        
+//         "LinkedIn B2B targeting integration",
+//         "Professional audience optimization",
+//         "B2B lead generation forms compatibility"
+//       ]
+//     },
+    
+//     "tiktokAds": {
+//       "b2bRequirements": [
+//         "TikTok Pixel for B2B:",
+//         "<div data-tt-pixel=\\"ViewContent\\"",
+//         "     data-tt-content-id=\\"PRODUCT_ID\\"",
+//         "     data-tt-content-type=\\"b2b_product\\"",
+//         "     data-tt-content-name=\\"PRODUCT_NAME\\"",
+//         "     data-tt-price=\\"PRICE\\"",
+//         "     data-tt-currency=\\"USD\\"",
+//         "     data-tt-value=\\"PRICE\\"",
+//         "     data-tt-business-segment=\\"enterprise\\">",
+        
+//         "TikTok Dynamic Product Ads for B2B:",
+//         "<div data-tt-dpa=\\"true\\"",
+//         "     data-tt-product-id=\\"PRODUCT_ID\\"",
+//         "     data-tt-product-price=\\"PRICE\\"",
+//         "     data-tt-product-name=\\"PRODUCT_NAME\\"",
+//         "     data-tt-product-category=\\"B2B_CATEGORY\\">",
+        
+//         "TikTok Shopping for Business:",
+//         "<meta property=\\"tt:product:availability\\" content=\\"in stock\\">",
+//         "<meta property=\\"tt:product:brand\\" content=\\"BRAND_NAME\\">",
+//         "<meta property=\\"tt:product:business_type\\" content=\\"b2b\\">",
+        
+//         "Professional content hooks",
+//         "Industry trend optimization",
+//         "B2B thought leadership angles"
+//       ]
+//     },
+    
+//     "googleAnalytics4": {
+//       "b2bRequirements": [
+//         "GA4 Enhanced Measurement for B2B:",
+//         "<div data-ga-category=\\"b2b-product-interaction\\"",
+//         "     data-ga-action=\\"view-item\\"",
+//         "     data-ga-label=\\"PRODUCT_ID\\"",
+//         "     data-ga-value=\\"PRICE\\"",
+//         "     data-ga-business-segment=\\"enterprise\\">",
+        
+//         "GA4 E-commerce B2B Parameters:",
+//         "<script>",
+//         "dataLayer.push({ ecommerce: null });",
+//         "dataLayer.push({",
+//         "  event: \\"view_item\\",",
+//         "  ecommerce: {",
+//         "    currency: \\"USD\\",",
+//         "    value: PRICE,",
+//         "    items: [{",
+//         "      item_id: \\"PRODUCT_ID\\",",
+//         "      item_name: \\"PRODUCT_NAME\\",",
+//         "      item_category: \\"B2B_CATEGORY\\",",
+//         "      price: PRICE,",
+//         "      quantity: 1,",
+//         "      business_type: \\"b2b\\",",
+//         "      customer_segment: \\"enterprise\\"",
+//         "    }]",
+//         "  }",
+//         "});",
+//         "</script>",
+        
+//         "GA4 Scroll Tracking for B2B content depth:",
+//         "<div class=\\"scroll-marker\\"",
+//         "     data-ga-scroll=\\"25,50,75,100\\"",
+//         "     data-ga-category=\\"b2b-engagement\\"",
+//         "     data-ga-action=\\"scroll-depth\\">",
+        
+//         "B2B conversion funnel tracking",
+//         "Enterprise user behavior analytics",
+//         "Cross-domain tracking for B2B portals"
+//       ]
+//     }
+//   },
+
+//   "corePrinciples": {
+//     "b2bSeoStrategy": [
+//       "Implement enterprise-level latent semantic indexing (LSI) keywords",
+//       "Maintain optimal keyword density: 2-3% primary B2B terms, 1-2% secondary",
+//       "Include long-tail B2B keywords: \\"enterprise procurement solution\\", \\"bulk ordering system\\"",
+//       "Structure for B2B featured snippets: \\"How to implement [product] in enterprise\\"",
+//       "Use B2B schema markup strategically",
+//       "Optimize for professional voice search"
+//     ],
+    
+//     "b2bSocialCommerce": {
+//       "linkedin": [
+//         "Professional network optimization",
+//         "Thought leadership formatting",
+//         "B2B case study structure"
+//       ],
+//       "facebook": [
+//         "Add B2B-focused Open Graph tags",
+//         "Include Facebook Pixel for business audiences",
+//         "Format for B2B Collection Ads"
+//       ],
+//       "tiktok": [
+//         "Professional industry trends",
+//         "B2B educational content format",
+//         "Business-focused hooks"
+//       ]
+//     },
+    
+//     "b2bAnalyticsIntegration": [
+//       "Multi-platform B2B tracking:",
+//       "- Google Ads: data-google-conversion, data-google-params",
+//       "- Facebook: data-fb-pixel, data-fb-catalog", 
+//       "- TikTok: data-tt-pixel, data-tt-dpa",
+//       "- GA4: data-ga-category, data-ga-action",
+//       "- LinkedIn: data-li-tracking=\\"b2b-conversion\\""
+//     ],
+    
+//     "responsiveDesign": {
+//       "enterpriseMobileFirst": [
+//         "Use viewport-relative units (%, vw, vh) through CSS classes only",
+//         "Implement fluid typography scale (min 16px for body text, 18px for readability)",
+//         "Ensure touch targets are minimum 48x48px for enterprise users",
+//         "Stack content vertically on mobile breakpoints (<768px)",
+//         "Optimize image loading with loading=\\"lazy\\" and srcset compatibility"
+//       ],
+//       "b2bTabletOptimization": [
+//         "Two-column layouts for specification comparison",
+//         "Maintain readable font sizes (min 16px)",
+//         "Preserve complex B2B table readability with horizontal scroll"
+//       ],
+//       "enterpriseDesktop": [
+//         "Multi-column layouts for comprehensive B2B data",
+//         "Hover states with additional B2B information",
+//         "High information density for procurement teams"
+//       ]
+//     }
+//   },
+  
+//   "rules": {
+//     "b2bCritical": [
+//       "ZERO inline styles - use semantic enterprise classes only",
+//       "ZERO background colors or fixed dimensions",
+//       "ZERO layout-altering properties (position, float, margin, padding)",
+//       "NO <html>, <body>, or full page structures",
+//       "AVOID <h1> - hierarchy starts at <h2> for B2B SEO optimization",
+//       "ALL content must be wrapped in enterprise-agnostic containers",
+//       "PRESERVE original image tags with added loading=\\"lazy\\" and data-b2b-image=\\"true\\""
+//     ],
+    
+//     "b2bSeoEnhancements": [
+//       "Implement keyword-rich <h2> headings with primary B2B keywords",
+//       "Use <h3> for subsections with long-tail enterprise variations",
+//       "Include B2B FAQ schema compatibility",
+//       "Optimize meta-description for procurement searches (155-160 chars)",
+//       "Create B2B-friendly URL structure suggestions",
+//       "Add alt-text with B2B keywords to all images"
+//     ],
+    
+//     "multiPlatformTracking": {
+//       "googleAds": "data-google-conversion, data-conversion-category, data-google-params",
+//       "facebookAds": "data-fb-pixel, data-content-ids, data-fb-catalog", 
+//       "tiktokAds": "data-tt-pixel, data-tt-product-id, data-tt-dpa",
+//       "googleAnalytics4": "data-ga-category, data-ga-action, data-ga-label",
+//       "linkedIn": "data-li-tracking, data-li-segment"
+//     },
+    
+//     "b2bTableResponsiveness": {
+//       "criticalMessage": [
+//         "██████████████████████████████████████████████████████████████████████████",
+//         "███  B2B ENTERPRISE REQUIREMENT: EVERY TABLE MUST BE RESPONSIVE  ███",
+//         "██████████████████████████████████████████████████████████████████████████",
+//         "",
+//         "EXAMPLE 1: B2B SPECIFICATIONS TABLE (MUST BE RESPONSIVE):",
+//         "<div class=\\"b2b-table-responsive-wrapper\\" data-ga-section=\\"b2b-specs-1\\" data-b2b-table=\\"specifications\\">",
+//         "  <table class=\\"b2b-specs-table\\">",
+//         "    <thead>",
+//         "      <tr>",
+//         "        <th>SPECIFICATION</th>",
+//         "        <th>ENTERPRISE DETAIL</th>",
+//         "        <th>COMPLIANCE</th>",
+//         "      </tr>",
+//         "    </thead>",
+//         "    <tbody>",
+//         "      <tr>",
+//         "        <td data-label=\\"SPECIFICATION\\">Material</td>",
+//         "        <td data-label=\\"ENTERPRISE DETAIL\\">High-Grade Polyester (ISO 9001)</td>",
+//         "        <td data-label=\\"COMPLIANCE\\">✅ Certified</td>",
+//         "      </tr>",
+//         "    </tbody>",
+//         "  </table>",
+//         "</div>",
+//         "",
+//         "EXAMPLE 2: B2B SIZE & FIT GUIDE FOR PROCUREMENT (MUST ALSO BE RESPONSIVE):",
+//         "<div class=\\"b2b-table-responsive-wrapper\\" data-ga-section=\\"b2b-size-guide-1\\" data-b2b-table=\\"size-guide\\">",
+//         "  <table class=\\"b2b-specs-table\\">",
+//         "    <thead>",
+//         "      <tr>",
+//         "        <th>SIZE RANGE (B2B ORDER)</th>",
+//         "        <th>FIT GUIDANCE</th>",
+//         "        <th>BULK NOTES</th>",
+//         "      </tr>",
+//         "    </thead>",
+//         "    <tbody>",
+//         "      <tr>",
+//         "        <td data-label=\\"SIZE RANGE (B2B ORDER)\\">Enterprise (100-500 units)</td>",
+//         "        <td data-label=\\"FIT GUIDANCE\\">Universal Commercial Fit</td>",
+//         "        <td data-label=\\"BULK NOTES\\">Volume pricing available</td>",
+//         "      </tr>",
+//         "    </tbody>",
+//         "  </table>",
+//         "</div>",
+//         "",
+//         "██████████████████████████████████████████████████████████████████████████",
+//         "███  BOTH TABLES ABOVE USE IDENTICAL RESPONSIVE PATTERN  ███",
+//         "██████████████████████████████████████████████████████████████████████████",
+//         "",
+//         "B2B TABLE MANDATORY REQUIREMENTS:",
+//         "1. ALWAYS wrap in <div class=\\"b2b-table-responsive-wrapper\\">",
+//         "2. ALWAYS use <table class=\\"b2b-specs-table\\">",
+//         "3. ALWAYS include <thead> with B2B-appropriate headers",
+//         "4. ALWAYS add data-label attribute to EVERY <td> matching header",
+//         "5. ALWAYS use unique data-ga-section for each table",
+//         "6. ALWAYS add data-b2b-table attribute with table type",
+//         "7. NEVER use width attributes",
+//         "8. NEVER use colspan/rowspan that breaks mobile B2B view",
+//         "",
+//         "B2B MOBILE BEHAVIOR:",
+//         "- Screens < 768px: Tables transform to procurement cards",
+//         "- Each cell: data-label (bold left) + value (right)",
+//         "- Critical B2B data always visible",
+//         "- Procurement teams can scan efficiently on mobile"
+//       ]
+//     }
+//   },
+  
+//   "tone": "🏢 B2B ENTERPRISE: Authoritative, data-driven, ROI-focused, professional yet accessible, trusted advisor, industry leader",
+  
+//   ${isShort ? `"b2bConstraints": [
+//     "B2B SHORT DESCRIPTION - PROCUREMENT OPTIMIZED:",
+    
+//     "1. B2B Structure:",
+//     "   - Maximum 5 high-impact bullet points within <ul class=\\"b2b-highlights\\">",
+//     "   - Each <li> format: 💼 <strong>Business Value:</strong> ROI-focused explanation",
+//     "   - Include procurement metrics: <span class=\\"b2b-metric\\">(ROI: 200% | TCO: -35%)</span>",
+    
+//     "2. Google Ads B2B Optimization:",
+//     "   - First 125 chars: \\"🏢 Enterprise [Product] - 200% ROI for [Industry]\\"",
+//     "   - Include B2B hooks: ⚡ Bulk Pricing • 🔒 SOC2 Certified • 🌍 Global Shipping",
+//     "   - Add Google conversion tracking attributes",
+    
+//     "3. Facebook Ads B2B:",
+//     "   - Professional audience hooks",
+//     "   - LinkedIn integration ready",
+//     "   - B2B lead gen form compatibility",
+    
+//     "4. TikTok Ads B2B:",
+//     "   - Industry trend hooks: \\"How enterprises use [Product]\\"",
+//     "   - Professional hashtags: #B2B #Enterprise #Procurement",
+//     "   - Educational content format",
+    
+//     "5. B2B Enterprise Elements:",
+//     "   - ROI statement: 💰 \\"Enterprise Solution: 200% ROI within 6 months\\"",
+//     "   - Certification badges: <span class=\\"b2b-cert\\">ISO 9001 • SOC2 • GDPR</span>",
+//     "   - Integration: 🔌 \\"API Ready • SSO Compatible • ERP Integration\\"",
+    
+//     "6. Multi-Platform Tracking:",
+//     "   - Wrapper: <div class=\\"b2b-short-description\\"",
+//     "        data-google-conversion=\\"true\\"",
+//     "        data-fb-pixel=\\"ViewContent\\"", 
+//     "        data-tt-pixel=\\"ViewContent\\"",
+//     "        data-ga-category=\\"b2b-view\\">"
+//   ]` : `"b2bConstraints": [
+//     "🏢 B2B ENTERPRISE DETAILED DESCRIPTION ARCHITECTURE:",
+    
+//     "SECTION 1 - EXECUTIVE SUMMARY (C-Level Focused):",
+//     "<div class=\\"b2b-executive-summary\\"",
+//     "     data-ga-section=\\"b2b-executive\\"",
+//     "     data-google-conversion=\\"true\\">",
+//     "  <h2>Enterprise [Product]: Transform Your [Business Function]</h2>",
+//     "  <p class=\\"b2b-roi-statement\\">💰 200% Average ROI • 35% TCO Reduction • 99.9% Uptime SLA</p>",
+//     "  <p>First 125 characters optimized for Google Ads B2B hook...</p>",
+//     "</div>",
+    
+//     "SECTION 2 - TECHNICAL DEEP DIVE (CTO/Engineering):",
+//     "<div class=\\"b2b-technical-section\\" data-ga-section=\\"b2b-technical\\">",
+//     "  <h3>🔧 Enterprise Technical Specifications</h3>",
+//     "  ",
+//     "  <!-- TABLE 1: Technical Specifications - MUST BE RESPONSIVE -->",
+//     "  <div class=\\"b2b-table-responsive-wrapper\\" data-ga-section=\\"b2b-tech-specs\\">",
+//     "    <table class=\\"b2b-specs-table\\">",
+//     "      <thead>",
+//     "        <tr><th>SPECIFICATION</th><th>ENTERPRISE DETAIL</th><th>CERTIFICATION</th></tr>",
+//     "      </thead>",
+//     "      <tbody>",
+//     "        <tr>",
+//     "          <td data-label=\\"SPECIFICATION\\">Architecture</td>",
+//     "          <td data-label=\\"ENTERPRISE DETAIL\\">Microservices-based, API-first</td>",
+//     "          <td data-label=\\"CERTIFICATION\\">SOC2 Type II</td>",
+//     "        </tr>",
+//     "      </tbody>",
+//     "    </table>",
+//     "  </div>",
+//     "</div>",
+    
+//     "SECTION 3 - PROCUREMENT & COMPLIANCE (Procurement Teams):",
+//     "<div class=\\"b2b-procurement-section\\" data-ga-section=\\"b2b-procurement\\">",
+//     "  <h3>📦 Bulk Ordering & Compliance</h3>",
+//     "  ",
+//     "  <!-- TABLE 2: Bulk Pricing - MUST BE RESPONSIVE (SAME PATTERN) -->",
+//     "  <div class=\\"b2b-table-responsive-wrapper\\" data-ga-section=\\"b2b-pricing\\">",
+//     "    <table class=\\"b2b-specs-table\\">",
+//     "      <thead>",
+//     "        <tr><th>QUANTITY</th><th>UNIT PRICE</th><th>SAVINGS</th></tr>",
+//     "      </thead>",
+//     "      <tbody>",
+//     "        <tr>",
+//     "          <td data-label=\\"QUANTITY\\">100-499 units</td>",
+//     "          <td data-label=\\"UNIT PRICE\\">$99.99/unit</td>",
+//     "          <td data-label=\\"SAVINGS\\">15% volume discount</td>",
+//     "        </tr>",
+//     "      </tbody>",
+//     "    </table>",
+//     "  </div>",
+//     "  ",
+//     "  <!-- TABLE 3: Compliance Certifications - MUST BE RESPONSIVE TOO -->",
+//     "  <div class=\\"b2b-table-responsive-wrapper\\" data-ga-section=\\"b2b-compliance\\">",
+//     "    <table class=\\"b2b-specs-table\\">",
+//     "      <thead>",
+//     "        <tr><th>CERTIFICATION</th><th>STANDARD</th><th>VALID UNTIL</th></tr>",
+//     "      </thead>",
+//     "      <tbody>",
+//     "        <tr>",
+//     "          <td data-label=\\"CERTIFICATION\\">ISO 9001</td>",
+//     "          <td data-label=\\"STANDARD\\">Quality Management</td>",
+//     "          <td data-label=\\"VALID UNTIL\\">2025</td>",
+//     "        </tr>",
+//     "      </tbody>",
+//     "    </table>",
+//     "  </div>",
+//     "</div>",
+    
+//     "SECTION 4 - ROI ANALYSIS & CASE STUDIES (CFO Focus):",
+//     "<div class=\\"b2b-roi-section\\" data-ga-section=\\"b2b-roi\\">",
+//     "  <h3>💰 Financial Impact & Enterprise Case Studies</h3>",
+//     "  <div class=\\"b2b-case-study\\" data-fb-pixel=\\"Lead\\" data-tt-pixel=\\"CompletePayment\\">",
+//     "    <p><strong>Enterprise Client:</strong> Fortune 500 Manufacturing</p>",
+//     "    <p><strong>ROI Achieved:</strong> 245% within 8 months</p>",
+//     "  </div>",
+//     "</div>",
+    
+//     "SECTION 5 - FAQ (SEO Hoot Pro Optimized for B2B):",
+//     "<div class=\\"b2b-faq-section\\" data-ga-section=\\"b2b-faq\\">",
+//     "  <h3>❓ Enterprise Frequently Asked Questions</h3>",
+//     "  <div itemscope itemtype=\\"https://schema.org/FAQPage\\">",
+//     "    <div itemprop=\\"mainEntity\\" itemscope itemtype=\\"https://schema.org/Question\\">",
+//     "      <h4 itemprop=\\"name\\">What is the minimum enterprise order quantity?</h4>",
+//     "      <div itemprop=\\"acceptedAnswer\\" itemscope itemtype=\\"https://schema.org/Answer\\">",
+//     "        <div itemprop=\\"text\\">Minimum 100 units with volume discounts available.</div>",
+//     "      </div>",
+//     "    </div>",
+//     "  </div>",
+//     "</div>",
+    
+//     "MULTI-PLATFORM B2B TRACKING - EVERY SECTION MUST INCLUDE:",
+//     "- Google Ads: data-google-conversion attributes",
+//     "- Facebook Pixel: data-fb-pixel events", 
+//     "- TikTok Pixel: data-tt-pixel events",
+//     "- GA4: data-ga-category, data-ga-action",
+    
+//     "B2B TABLE VERIFICATION (MANDATORY):",
+//     "✓ Table 1 (Technical): Has data-label on ALL <td>",
+//     "✓ Table 2 (Pricing): Has data-label on ALL <td>",
+//     "✓ Table 3 (Compliance): Has data-label on ALL <td>", 
+//     "✓ ALL tables use b2b-table-responsive-wrapper",
+//     "✓ ALL tables use b2b-specs-table class",
+//     "✓ ALL tables have unique data-ga-section",
+//     "✓ NO tables left without responsive pattern",
+    
+//     "ENTERPRISE SCHEMA IMPLEMENTATION:",
+//     "<script type=\\"application/ld+json\\">",
+//     "{",
+//     "  \\"@context\\": \\"https://schema.org/\\",",
+//     "  \\"@type\\": \\"Product\\",",
+//     "  \\"name\\": \\"PRODUCT_NAME\\",",
+//     "  \\"description\\": \\"B2B_ENTERPRISE_DESCRIPTION\\",",
+//     "  \\"sku\\": \\"SKU\\",",
+//     "  \\"brand\\": { \\"@type\\": \\"Brand\\", \\"name\\": \\"BRAND\\" },",
+//     "  \\"offers\\": {",
+//     "    \\"@type\\": \\"Offer\\",",
+//     "    \\"price\\": \\"PRICE\\",",
+//     "    \\"priceCurrency\\": \\"USD\\",",
+//     "    \\"availability\\": \\"https://schema.org/InStock\\",",
+//     "    \\"businessFunction\\": \\"https://schema.org/Wholesale\\"",
+//     "  },",
+//     "  \\"aggregateRating\\": {",
+//     "    \\"@type\\": \\"AggregateRating\\",",
+//     "    \\"ratingValue\\": \\"4.9\\",",
+//     "    \\"reviewCount\\": \\"127\\",",
+//     "    \\"ratingCount\\": \\"87 enterprise reviews\\"",
+//     "  }",
+//     "}",
+//     "</script>"
+//   ]`}
+// }
+
+// DATA TO PROCESS:
+// ${JSON.stringify(chunk.map(p => ({ 
+//   id: p.id, 
+//   content: p.descreption,
+//   b2bMetadata: {
+//     segment: 'enterprise',
+//     decisionMakers: ['CFO', 'CTO', 'CPO', 'COO'],
+//     certifications: ['ISO 9001', 'SOC2', 'GDPR'],
+//     integrations: ['API', 'SSO', 'ERP'],
+//     platformTracking: {
+//       googleAds: { conversionTracking: true, dynamicRemarketing: true },
+//       facebookAds: { pixelEnabled: true, catalogEnabled: true },
+//       tiktokAds: { pixelEnabled: true, dpaEnabled: true },
+//       googleAnalytics4: { enhancedMeasurement: true, ecommerceTracking: true }
+//     }
+//   }
+// })))}
+
+// OUTPUT REQUIREMENTS:
+// - Return EXACTLY ${chunk.length} objects
+// - Each object: ${outputStructure}
+// - Include B2B enterprise tracking metadata
+// - Escape all double quotes (\\")
+// - NO markdown, NO explanations
+// - VALID JSON array only
+
+// 🏢 FINAL B2B ENTERPRISE VERIFICATION CHECKLIST:
+// - [ ] EVERY table wrapped in b2b-table-responsive-wrapper
+// - [ ] EVERY table uses b2b-specs-table class
+// - [ ] EVERY <td> has data-label attribute
+// - [ ] ALL tables (even 3+) follow SAME responsive pattern
+// - [ ] Google Ads tracking attributes present
+// - [ ] Facebook Pixel events included
+// - [ ] TikTok Pixel events included
+// - [ ] GA4 tracking attributes present
+// - [ ] B2B decision-maker segments addressed
+// - [ ] ROI metrics included
+// - [ ] Compliance certifications listed
+// - [ ] Enterprise schema implemented
+
+// Return ONLY the valid JSON array.`;
+
+//   return basePrompt;
+// }
 
     const chunkPromises = chunks.map(async (chunk, idx) => {
       console.log(`Processing chunk ${idx + 1}/${chunks.length} (${chunk.length} products) - split into 2 API calls`);
