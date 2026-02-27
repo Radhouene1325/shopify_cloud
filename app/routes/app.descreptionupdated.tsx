@@ -371,315 +371,435 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
   
     return `You are a JSON API that creates stunning, SEO-optimized product descriptions. Process ALL ${chunk.length} products and return a JSON array with ONLY ${fieldLabel}.
   
-  🎯 CORE MISSION: Create beautiful, conversion-focused product descriptions using clean HTML/CSS that works in ANY Shopify theme. No Tailwind - just semantic HTML with inline styles or style tags that will render perfectly everywhere.
+  🔒 CRITICAL CONSTRAINT: Use EXTREMELY SPECIFIC selectors with unique prefixes to prevent ANY style leakage to other theme elements. Never use generic element selectors like "div", "h1", "table" alone - always prefix with unique class.
+  
+  🎯 CORE MISSION: Create beautiful, conversion-focused product descriptions using clean HTML/CSS that works in ANY Shopify theme WITHOUT affecting other elements.
   
   PROMPT TEMPLATE FOR EACH PRODUCT:
   {
-    "role": "Senior SEO Strategist & E-commerce UX Designer specialized in high-converting Amazon-style product pages",
-    "objective": "Transform raw product data into a gorgeous, SEO-optimized product description using semantic HTML5 and clean CSS that works in all Shopify themes.",
-    "designDirection": "Warm, professional, trustworthy, and conversion-focused. Clean typography, friendly colors, and excellent visual hierarchy.",
+    "role": "Senior SEO Strategist & E-commerce UX Designer",
+    "objective": "Transform raw product data into a gorgeous, SEO-optimized product description with ISOLATED styles that won't affect the theme.",
+    "designDirection": "Warm, professional, trustworthy, and conversion-focused with isolated styling.",
     "outputFormat": {
       ${
         isShort
-          ? '"shortDescription": "SEO-Optimized bullet section with friendly, scannable design using inline styles or style tags"'
-          : '"detailedDescription": "Complete SEO-friendly HTML5 article with stunning Amazon-style specification tables and responsive layout"'
+          ? '"shortDescription": "SEO-Optimized bullet section with friendly design using ISOLATED styles"'
+          : '"detailedDescription": "Complete SEO-friendly HTML5 article with Amazon-style tables using ISOLATED styles"'
       }
     },
     "SEORequirements": [
       "One optimized H1 tag using main keyword intent",
       "Clear H2 hierarchy for search engines",
-      "Keyword-rich natural language that reads like a helpful friend",
-      "Short, scannable paragraphs with ample white space",
-      "Conversion-focused copywriting that builds trust",
-      "Mobile-optimized with touch-friendly tap targets",
-      "Semantic HTML5 structure (article, section, header, etc.)",
-      "Proper heading hierarchy for screen readers"
+      "Keyword-rich natural language",
+      "Short, scannable paragraphs",
+      "Conversion-focused copywriting",
+      "Mobile-optimized",
+      "Semantic HTML5 structure",
+      "Proper heading hierarchy"
     ],
     ${
       isShort
         ? `"constraints": [
-            "5-6 bullet points maximum - each compelling and benefit-focused.",
-            "Use UL and LI with custom bullet styling.",
-            "Start each bullet with a friendly emoji (✓, ✨, 🚀, 💡, ⭐, ✅).",
-            "Include a warm CTA at the end.",
-            "Use inline styles OR a style tag - both work in Shopify.",
-            "Keep it lightweight and fast-loading."
+            "5-6 bullet points maximum",
+            "Use UL and LI with custom bullet styling",
+            "Start each bullet with emoji (✓, ✨, 🚀, 💡, ⭐, ✅)",
+            "Include a warm CTA at the end",
+            "Use EXTREMELY SPECIFIC class names like 'pd-bullet-list'"
           ]`
         : `"constraints": [
-            "Use inline styles OR a style tag with classes - both work perfectly in Shopify.",
-            "Convert ALL technical specifications into beautiful Amazon-style tables with visual hierarchy.",
-            "Detect size-related data (dimensions, weight, fit, measurements, capacity) and create separate 'Size & Fit Guide' section.",
-            "Tables must be responsive with horizontal scroll on mobile.",
-            "Preserve ALL img tags and wrap them in responsive containers.",
-            "Use warm, friendly color palette: soft blues, warm grays, and accent greens.",
-            "Add subtle hover effects for interactivity.",
-            "Include proper spacing and visual hierarchy.",
-            "Use system fonts (Arial, Helvetica, sans-serif) for maximum compatibility."
+            "Use ONLY classes with 'pd-' prefix (stands for product-description)",
+            "NEVER use bare element selectors like 'table' or 'div'",
+            "Convert ALL technical specifications into beautiful tables",
+            "Detect size data and create separate 'Size & Fit Guide'",
+            "Tables must be responsive with horizontal scroll",
+            "Preserve ALL img tags with proper alt text",
+            "Use warm color palette: #3B82F6, #4B5563, #F9FAFB",
+            "All hover effects must use pd- prefixed classes"
           ]`
     },
-    "Color Palette": {
+    "ColorPalette": {
       "primary": "#3B82F6",
       "primaryDark": "#2563EB",
-      "secondary": "#10B981",
       "text": "#4B5563",
       "textDark": "#1F2937",
       "background": "#FFFFFF",
       "backgroundAlt": "#F9FAFB",
-      "border": "#E5E7EB",
-      "tableHeader": "#F3F4F6",
-      "tableRowEven": "#F9FAFB"
+      "border": "#E5E7EB"
     }
   }
   
-  📋 DETAILED STRUCTURE REQUIREMENTS (for detailedDescription):
+  📋 CRITICAL STYLE ISOLATION APPROACH:
   
-  1. MAIN CONTAINER:
-     <div style="max-width: 1280px; margin: 0 auto; padding: 0 1rem; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; line-height: 1.6; color: #4B5563;">
-       <!-- ALL CONTENT HERE -->
-     </div>
-  
-  2. ✨ HERO SECTION - First Impressions Matter
-     <header style="margin-bottom: 3rem; text-align: left;">
-       <h1 style="font-size: 2.5rem; font-weight: 700; color: #1F2937; margin-bottom: 1rem; line-height: 1.2;">
-         Product Title with Keywords
-       </h1>
-       <p style="font-size: 1.25rem; color: #4B5563; max-width: 800px; margin-bottom: 2rem;">
-         Engaging introduction paragraph that hooks the reader and includes primary keywords naturally.
-       </p>
-       <img src="product-image.jpg" alt="Descriptive alt text with keywords" style="width: 100%; max-width: 800px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);">
-     </header>
-  
-  3. 💫 KEY FEATURES SECTION - Benefits That Convert
-     <section style="margin-bottom: 4rem;">
-       <h2 style="font-size: 2rem; font-weight: 700; color: #1F2937; margin-bottom: 2rem; padding-bottom: 0.5rem; border-bottom: 3px solid #3B82F6; display: inline-block;">
-         Key Features & Benefits
-       </h2>
-       
-       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-         <!-- Feature Card 1 -->
-         <div style="background: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); border: 1px solid #E5E7EB; transition: all 0.3s ease;">
-           <div style="font-size: 2.5rem; margin-bottom: 1rem;">✨</div>
-           <h3 style="font-size: 1.25rem; font-weight: 600; color: #1F2937; margin-bottom: 0.75rem;">Feature Title</h3>
-           <p style="color: #4B5563;">Benefit-focused description that sells the feature.</p>
-         </div>
-         
-         <!-- More feature cards... -->
-       </div>
-     </section>
-  
-  4. 📊 TECHNICAL SPECIFICATIONS (Amazon Style - Beautiful & Clear)
-     <section style="margin-bottom: 4rem;">
-       <h2 style="font-size: 2rem; font-weight: 700; color: #1F2937; margin-bottom: 2rem; padding-bottom: 0.5rem; border-bottom: 3px solid #3B82F6; display: inline-block;">
-         Technical Specifications
-       </h2>
-       
-       <div style="overflow-x: auto; border-radius: 12px; border: 1px solid #E5E7EB; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
-         <table style="width: 100%; border-collapse: collapse; font-size: 1rem; min-width: 600px;">
-           <thead>
-             <tr style="background: #F3F4F6;">
-               <th style="padding: 1rem 1.5rem; text-align: left; font-weight: 600; color: #1F2937; border-bottom: 2px solid #E5E7EB;">Specification</th>
-               <th style="padding: 1rem 1.5rem; text-align: left; font-weight: 600; color: #1F2937; border-bottom: 2px solid #E5E7EB;">Details</th>
-             </tr>
-           </thead>
-           <tbody>
-             <tr style="background: white;">
-               <td style="padding: 1rem 1.5rem; border-bottom: 1px solid #E5E7EB; font-weight: 500; color: #1F2937;">Material</td>
-               <td style="padding: 1rem 1.5rem; border-bottom: 1px solid #E5E7EB; color: #4B5563;">Premium Cotton Blend</td>
-             </tr>
-             <tr style="background: #F9FAFB;">
-               <td style="padding: 1rem 1.5rem; border-bottom: 1px solid #E5E7EB; font-weight: 500; color: #1F2937;">Dimensions</td>
-               <td style="padding: 1rem 1.5rem; border-bottom: 1px solid #E5E7EB; color: #4B5563;">10" x 8" x 2"</td>
-             </tr>
-             <!-- More rows with alternating backgrounds -->
-           </tbody>
-         </table>
-       </div>
-     </section>
-  
-  5. 📏 SIZE & FIT GUIDE (Only if dimensions/capacity data exists)
-     <section style="margin-bottom: 4rem;">
-       <h2 style="font-size: 2rem; font-weight: 700; color: #1F2937; margin-bottom: 2rem; padding-bottom: 0.5rem; border-bottom: 3px solid #3B82F6; display: inline-block;">
-         Size & Fit Guide
-       </h2>
-       
-       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-         <!-- Measurement Card -->
-         <div style="background: #F9FAFB; border-radius: 12px; padding: 1.5rem; text-align: center;">
-           <div style="font-size: 2rem; margin-bottom: 0.5rem;">📐</div>
-           <div style="font-size: 1rem; color: #6B7280;">Width</div>
-           <div style="font-size: 1.5rem; font-weight: 700; color: #1F2937;">12 inches</div>
-         </div>
-         <!-- More measurement cards -->
-       </div>
-       
-       <!-- Amazon-style size table -->
-       <div style="overflow-x: auto; border-radius: 12px; border: 1px solid #E5E7EB;">
-         <table style="width: 100%; border-collapse: collapse;">
-           <!-- Table structure as above -->
-         </table>
-       </div>
-     </section>
-  
-  6. 🎯 FINAL CTA SECTION - Close with Confidence
-     <section style="margin-top: 5rem; text-align: center;">
-       <div style="background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); border-radius: 24px; padding: 3rem 2rem; color: white; box-shadow: 0 25px 50px -12px rgba(37, 99, 235, 0.5);">
-         <h3 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem; color: white;">Ready to Upgrade? 🚀</h3>
-         <p style="font-size: 1.25rem; margin-bottom: 2rem; opacity: 0.9; max-width: 600px; margin-left: auto; margin-right: auto;">
-           Join thousands of happy customers who've transformed their experience.
-         </p>
-         <a href="#" style="display: inline-block; background: white; color: #3B82F6; padding: 1rem 3rem; border-radius: 9999px; font-weight: 600; font-size: 1.125rem; text-decoration: none; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); transition: all 0.3s ease;">
-           Shop Now →
-         </a>
-       </div>
-     </section>
-  
-  🎨 STYLE GUIDE (Use these consistently):
-  
-  <!-- Style tag approach (PREFERRED for cleaner HTML) -->
   <style>
-  .product-description * {
-    margin: 0;
-    box-sizing: border-box;
-  }
+  /* 🛡️ ALL SELECTORS MUST START WITH 'pd-' - THIS IS NON-NEGOTIABLE */
+  /* This prevents ANY style from leaking into the theme */
   
-  .product-description {
+  .pd-container {
+    all: initial; /* RESETS ALL INHERITED STYLES */
+    display: block;
     max-width: 1280px;
     margin: 0 auto;
     padding: 0 1rem;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     line-height: 1.6;
     color: #4B5563;
   }
   
-  .product-description h1 {
+  /* All styles must be scoped with pd- prefix */
+  .pd-container .pd-title {
+    all: unset; /* Reset any inherited styles */
+    display: block;
     font-size: 2.5rem;
     font-weight: 700;
-    color: #1F2937;
-    margin-bottom: 1rem;
-    line-height: 1.2;
+    color: #1F2937 !important; /* Override theme styles */
+    margin-bottom: 1rem !important;
+    line-height: 1.2 !important;
   }
   
-  .product-description h2 {
+  .pd-container .pd-section-title {
+    all: unset;
+    display: inline-block;
     font-size: 2rem;
     font-weight: 700;
-    color: #1F2937;
-    margin-bottom: 2rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 3px solid #3B82F6;
-    display: inline-block;
+    color: #1F2937 !important;
+    margin-bottom: 2rem !important;
+    padding-bottom: 0.5rem !important;
+    border-bottom: 3px solid #3B82F6 !important;
   }
   
-  .product-description h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #1F2937;
-    margin-bottom: 0.75rem;
-  }
-  
-  .product-description .feature-grid {
+  .pd-container .pd-feature-grid {
+    all: unset;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-    margin: 2rem 0;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0 !important;
   }
   
-  .product-description .feature-card {
-    background: white;
+  .pd-container .pd-feature-card {
+    all: unset;
+    display: block;
+    background: #FFFFFF;
     border-radius: 16px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    padding: 1.5rem !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     border: 1px solid #E5E7EB;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.3s ease;
   }
   
-  .product-description .feature-card:hover {
+  .pd-container .pd-feature-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+    box-shadow: 0 20px 25px rgba(0,0,0,0.1);
   }
   
-  .product-description .table-wrapper {
+  /* 🛡️ TABLE STYLES - COMPLETELY ISOLATED */
+  .pd-container .pd-table-wrapper {
+    all: unset;
+    display: block;
     overflow-x: auto;
     border-radius: 12px;
     border: 1px solid #E5E7EB;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    margin: 1.5rem 0 !important;
   }
   
-  .product-description table {
+  .pd-container .pd-table {
+    all: unset;
+    display: table;
     width: 100%;
     border-collapse: collapse;
     min-width: 600px;
+    font-size: 1rem;
   }
   
-  .product-description th {
+  .pd-container .pd-table thead {
+    all: unset;
+    display: table-header-group;
+  }
+  
+  .pd-container .pd-table th {
+    all: unset;
+    display: table-cell;
     background: #F3F4F6;
-    padding: 1rem 1.5rem;
+    padding: 1rem 1.5rem !important;
+    font-weight: 600 !important;
+    color: #1F2937 !important;
+    border-bottom: 2px solid #E5E7EB !important;
     text-align: left;
-    font-weight: 600;
-    color: #1F2937;
-    border-bottom: 2px solid #E5E7EB;
   }
   
-  .product-description td {
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid #E5E7EB;
-    color: #4B5563;
+  .pd-container .pd-table tbody {
+    all: unset;
+    display: table-row-group;
   }
   
-  .product-description tr:last-child td {
-    border-bottom: none;
+  .pd-container .pd-table tr {
+    all: unset;
+    display: table-row;
   }
   
-  .product-description tr:nth-child(even) {
+  .pd-container .pd-table td {
+    all: unset;
+    display: table-cell;
+    padding: 1rem 1.5rem !important;
+    border-bottom: 1px solid #E5E7EB !important;
+    color: #4B5563 !important;
+  }
+  
+  .pd-container .pd-table tr:nth-child(even) td {
     background: #F9FAFB;
   }
   
-  .product-description tr:hover td {
-    background: #EFF6FF;
+  .pd-container .pd-table tr:hover td {
+    background: #EFF6FF !important;
   }
   
-  .product-description .cta-section {
-    margin-top: 5rem;
+  /* Size cards */
+  .pd-container .pd-size-grid {
+    all: unset;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0 !important;
+  }
+  
+  .pd-container .pd-size-card {
+    all: unset;
+    display: block;
+    background: #F9FAFB;
+    border-radius: 12px;
+    padding: 1.5rem !important;
+    text-align: center;
+    border: 1px solid #E5E7EB;
+  }
+  
+  .pd-container .pd-size-emoji {
+    all: unset;
+    display: block;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .pd-container .pd-size-label {
+    all: unset;
+    display: block;
+    font-size: 0.875rem;
+    color: #6B7280;
+    margin-bottom: 0.25rem;
+  }
+  
+  .pd-container .pd-size-value {
+    all: unset;
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1F2937;
+  }
+  
+  /* CTA Section */
+  .pd-container .pd-cta-section {
+    all: unset;
+    display: block;
+    margin-top: 4rem !important;
     text-align: center;
   }
   
-  .product-description .cta-box {
-    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  .pd-container .pd-cta-box {
+    all: unset;
+    display: block;
+    background: linear-gradient(135deg, #3B82F6, #2563EB);
     border-radius: 24px;
-    padding: 3rem 2rem;
+    padding: 3rem 2rem !important;
     color: white;
-    box-shadow: 0 25px 50px -12px rgba(37, 99, 235, 0.5);
   }
   
-  .product-description .cta-button {
+  .pd-container .pd-cta-title {
+    all: unset;
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white !important;
+    margin-bottom: 1rem !important;
+  }
+  
+  .pd-container .pd-cta-text {
+    all: unset;
+    display: block;
+    font-size: 1.25rem;
+    opacity: 0.9;
+    margin-bottom: 2rem !important;
+  }
+  
+  .pd-container .pd-cta-button {
+    all: unset;
     display: inline-block;
     background: white;
-    color: #3B82F6;
-    padding: 1rem 3rem;
+    color: #3B82F6 !important;
+    padding: 1rem 3rem !important;
     border-radius: 9999px;
     font-weight: 600;
     font-size: 1.125rem;
-    text-decoration: none;
-    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    cursor: pointer;
     transition: all 0.3s ease;
   }
   
-  .product-description .cta-button:hover {
+  .pd-container .pd-cta-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
+    box-shadow: 0 20px 25px rgba(0,0,0,0.2);
   }
   
+  /* Bullet points for short description */
+  .pd-container .pd-bullet-list {
+    all: unset;
+    display: block;
+    list-style: none;
+    padding: 0 !important;
+    margin: 1.5rem 0 !important;
+  }
+  
+  .pd-container .pd-bullet-item {
+    all: unset;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 1rem !important;
+  }
+  
+  .pd-container .pd-bullet-emoji {
+    all: unset;
+    display: inline-block;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+  
+  .pd-container .pd-bullet-text {
+    all: unset;
+    display: inline;
+    color: #4B5563;
+  }
+  
+  /* Images */
+  .pd-container .pd-image {
+    all: unset;
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    margin: 1.5rem 0 !important;
+    box-shadow: 0 20px 25px rgba(0,0,0,0.1);
+  }
+  
+  /* Mobile responsiveness */
   @media (max-width: 640px) {
-    .product-description h1 { font-size: 2rem; }
-    .product-description h2 { font-size: 1.5rem; }
-    .product-description .feature-grid { grid-template-columns: 1fr; }
-    .product-description .cta-box { padding: 2rem 1rem; }
-    .product-description .cta-box h3 { font-size: 1.75rem; }
+    .pd-container .pd-title {
+      font-size: 2rem !important;
+    }
+    .pd-container .pd-section-title {
+      font-size: 1.5rem !important;
+    }
+    .pd-container .pd-feature-grid {
+      grid-template-columns: 1fr !important;
+    }
+    .pd-container .pd-cta-box {
+      padding: 2rem 1rem !important;
+    }
+    .pd-container .pd-cta-title {
+      font-size: 1.75rem !important;
+    }
   }
   </style>
   
-  <!-- Then wrap content in -->
-  <div class="product-description">
-    <!-- ALL CONTENT HERE -->
+  📋 COMPLETE HTML STRUCTURE EXAMPLE:
+  
+  <!-- ✅ SAFE APPROACH - STYLES WON'T LEAK -->
+  <div class="pd-container">
+    
+    <!-- HERO SECTION -->
+    <header>
+      <h1 class="pd-title">Premium Product Name with Keywords</h1>
+      <p class="pd-text">Engaging introduction with natural keywords...</p>
+      <img class="pd-image" src="image.jpg" alt="Descriptive alt text with keywords">
+    </header>
+  
+    <!-- FEATURES SECTION -->
+    <section>
+      <h2 class="pd-section-title">Key Features & Benefits</h2>
+      
+      <div class="pd-feature-grid">
+        <!-- FEATURE CARD -->
+        <div class="pd-feature-card">
+          <span class="pd-feature-emoji">✨</span>
+          <h3 class="pd-feature-title">Premium Quality</h3>
+          <p class="pd-feature-text">Benefit-focused description...</p>
+        </div>
+        
+        <div class="pd-feature-card">
+          <span class="pd-feature-emoji">🚀</span>
+          <h3 class="pd-feature-title">Fast Shipping</h3>
+          <p class="pd-feature-text">Benefit-focused description...</p>
+        </div>
+      </div>
+    </section>
+  
+    <!-- TECHNICAL SPECIFICATIONS - AMAZON STYLE -->
+    <section>
+      <h2 class="pd-section-title">Technical Specifications</h2>
+      
+      <div class="pd-table-wrapper">
+        <table class="pd-table">
+          <thead>
+            <tr>
+              <th>Specification</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Material</td>
+              <td>Premium Cotton Blend</td>
+            </tr>
+            <tr>
+              <td>Dimensions</td>
+              <td>10" x 8" x 2"</td>
+            </tr>
+            <tr>
+              <td>Weight</td>
+              <td>1.2 lbs</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  
+    <!-- SIZE & FIT GUIDE (if data exists) -->
+    <section>
+      <h2 class="pd-section-title">Size & Fit Guide</h2>
+      
+      <div class="pd-size-grid">
+        <div class="pd-size-card">
+          <span class="pd-size-emoji">📐</span>
+          <span class="pd-size-label">Width</span>
+          <span class="pd-size-value">12 inches</span>
+        </div>
+        <div class="pd-size-card">
+          <span class="pd-size-emoji">⚖️</span>
+          <span class="pd-size-label">Weight</span>
+          <span class="pd-size-value">1.5 lbs</span>
+        </div>
+        <div class="pd-size-card">
+          <span class="pd-size-emoji">📦</span>
+          <span class="pd-size-label">Capacity</span>
+          <span class="pd-size-value">20L</span>
+        </div>
+      </div>
+    </section>
+  
+    <!-- CTA SECTION -->
+    <section class="pd-cta-section">
+      <div class="pd-cta-box">
+        <h3 class="pd-cta-title">Ready to Transform Your Experience? 🚀</h3>
+        <p class="pd-cta-text">Join thousands of satisfied customers</p>
+        <button class="pd-cta-button">Shop Now →</button>
+      </div>
+    </section>
   </div>
   
   📦 DATA TO PROCESS:
@@ -688,20 +808,18 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
   Return a JSON array with EXACTLY ${chunk.length} objects.
   Each object: ${outputStructure}
   
-  ⚠️ CRITICAL INSTRUCTIONS:
-  - Escape all quotes as (\\") for JSON compatibility.
-  - Return ONLY the JSON array - no markdown, no explanations.
-  - Use the style tag approach for cleaner, more maintainable HTML.
-  - Ensure all styles are responsive and mobile-friendly.
-  - Include alt text on all images with keywords.
-  - Use semantic HTML5 for better SEO.
-  - Keep copy warm, friendly, and benefit-focused.
-  - Tables must be beautiful AND functional - easy to read on all devices.
+  ⚠️ CRITICAL RULES FOR STYLE ISOLATION:
+  1. 🔴 NEVER use bare element selectors (h1, div, table, etc.)
+  2. 🟢 ALWAYS prefix ALL classes with 'pd-'
+  3. 🟢 Use "all: unset" or "all: initial" at start of each rule
+  4. 🟢 Use !important on critical properties to override theme
+  5. 🟢 Always wrap everything in <div class="pd-container">
+  6. 🟢 Test that styles don't affect other page elements
+  7. 🔴 NO STYLE LEAKAGE ALLOWED
   
-  Remember: This will be embedded in Shopify themes - it must work everywhere! Focus on clean, compatible CSS that renders consistently across all browsers. 🌟
+  Remember: Your styles should ONLY affect elements inside pd-container. Nothing else on the page should change! 🛡️
   `;
   }
-
 //   function buildPrompt(
 //     chunk: { id: string; descreption: string }[],
 //     outputField: 'shortDescription' | 'detailedDescription'
