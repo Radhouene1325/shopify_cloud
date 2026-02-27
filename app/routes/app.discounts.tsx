@@ -362,4 +362,3 @@ const location=useLocation()
 
 
   // app/routes/variants.tsx
-

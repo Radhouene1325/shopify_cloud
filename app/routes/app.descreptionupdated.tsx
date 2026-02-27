@@ -218,47 +218,116 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
   console.log(`Total chunks to process: ${chunks.length}`);
 
   // Build prompt for a specific output field to stay under DeepSeek's 8K output token limit
+  // function buildPrompt(
+  //   chunk: { id: string; descreption: string }[],
+  //   outputField: 'shortDescription' | 'detailedDescription'
+  // ): string {
+  //   const isShort = outputField === 'shortDescription';
+  //   const fieldLabel = isShort ? 'shortDescription (bullet points only)' : 'detailedDescription (full article only)';
+  //   const outputStructure = isShort
+  //     ? '{ "id": "original_product_id", "shortDescription": "PROFESSIONAL_HTML_STRING" }'
+  //     : '{ "id": "original_product_id", "detailedDescription": "COMPLETE_HTML5_ARTICLE" }';
+
+  //   return `You are a JSON API. Process ALL ${chunk.length} products and return a JSON array with ONLY ${fieldLabel}.
+
+  //   PROMPT TEMPLATE FOR EACH PRODUCT:
+  //   {
+  //     "role": "Senior E-commerce SEO Specialist & UX Copywriter with expertise in luxury branding and color psychology",
+  //     "objective": "Transform raw technical data into a visually stunning, high-converting Amazon listing that uses professional HTML structure and strategic color psychology to drive emotional engagement and sales.",
+  //     "outputFormat": {
+  //       ${isShort
+  //         ? '"shortDescription": "PROFESSIONAL_HTML_STRING (SEO-Optimized Bullet Points with strategic color accents)"'
+  //         : '"detailedDescription": "PROFESSIONAL_HTML_STRING (A+ Content with complete HTML5 structure, color psychology, and responsive design)"'
+  //       }
+  //     },
+  //     "stylingGuidelines": {
+  //       "tone": "Luxury, sophisticated, authoritative, yet emotionally resonant.",
+  //       "colorPalette": {
+  //         "primary": "#2C3E50", "secondary": "#8B7355", "accent": "#C4A484",
+  //         "background": "#F9F9F9", "text": "#333333", "highlight": "#E8D5C4",
+  //         "tableHeader": "#F0E9E2", "tableBorder": "#D4C4B5"
+  //       }
+  //     },
+  //     ${isShort
+  //       ? '"constraints": ["5-6 Bullets maximum.", "Start each bullet with bolded [BENEFIT].", "Use subtle emoji (●, ▶) before each bullet.", "End with CTA."]'
+  //       : '"constraints": ["Use <h1>, <h2>, <section>.", "Convert specs into styled <table>.", "Preserve ALL <img> tags. Limit to 3-4 sections to stay concise."]'
+  //     }
+  //   }
+
+  //   DATA TO PROCESS:
+  //   ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })))}
+
+  //   Return a JSON array with EXACTLY ${chunk.length} objects. Each object: ${outputStructure}
+  //   CRITICAL: All quotes in strings MUST be escaped (\\"). Return ONLY the JSON array, no markdown.`;
+  // }
   function buildPrompt(
     chunk: { id: string; descreption: string }[],
     outputField: 'shortDescription' | 'detailedDescription'
   ): string {
     const isShort = outputField === 'shortDescription';
-    const fieldLabel = isShort ? 'shortDescription (bullet points only)' : 'detailedDescription (full article only)';
+    const fieldLabel = isShort
+      ? 'shortDescription (bullet points only)'
+      : 'detailedDescription (expandable professional article)';
     const outputStructure = isShort
-      ? '{ "id": "original_product_id", "shortDescription": "PROFESSIONAL_HTML_STRING" }'
-      : '{ "id": "original_product_id", "detailedDescription": "COMPLETE_HTML5_ARTICLE" }';
-
+      ? '{ "id": "original_product_id", "shortDescription": "SAFE_HTML_STRING" }'
+      : '{ "id": "original_product_id", "detailedDescription": "SAFE_EXPANDABLE_HTML_STRING" }';
+  
     return `You are a JSON API. Process ALL ${chunk.length} products and return a JSON array with ONLY ${fieldLabel}.
-
-    PROMPT TEMPLATE FOR EACH PRODUCT:
-    {
-      "role": "Senior E-commerce SEO Specialist & UX Copywriter with expertise in luxury branding and color psychology",
-      "objective": "Transform raw technical data into a visually stunning, high-converting Amazon listing that uses professional HTML structure and strategic color psychology to drive emotional engagement and sales.",
-      "outputFormat": {
-        ${isShort
-          ? '"shortDescription": "PROFESSIONAL_HTML_STRING (SEO-Optimized Bullet Points with strategic color accents)"'
-          : '"detailedDescription": "PROFESSIONAL_HTML_STRING (A+ Content with complete HTML5 structure, color psychology, and responsive design)"'
-        }
-      },
-      "stylingGuidelines": {
-        "tone": "Luxury, sophisticated, authoritative, yet emotionally resonant.",
-        "colorPalette": {
-          "primary": "#2C3E50", "secondary": "#8B7355", "accent": "#C4A484",
-          "background": "#F9F9F9", "text": "#333333", "highlight": "#E8D5C4",
-          "tableHeader": "#F0E9E2", "tableBorder": "#D4C4B5"
-        }
-      },
-      ${isShort
-        ? '"constraints": ["5-6 Bullets maximum.", "Start each bullet with bolded [BENEFIT].", "Use subtle emoji (●, ▶) before each bullet.", "End with CTA."]'
-        : '"constraints": ["Use <h1>, <h2>, <section>.", "Convert specs into styled <table>.", "Preserve ALL <img> tags. Limit to 3-4 sections to stay concise."]'
-      }
+  
+  PROMPT TEMPLATE FOR EACH PRODUCT:
+  {
+    "role": "Senior Luxury E-commerce SEO Strategist",
+    "objective": "Create high-converting, SEO-optimized product content using semantic HTML only. Content must NOT break website layout or responsiveness.",
+    "rules": {
+      "critical": [
+        "DO NOT use inline styles except minimal text emphasis.",
+        "DO NOT use background colors.",
+        "DO NOT use fixed widths or positioning.",
+        "DO NOT override layout.",
+        "DO NOT include <html>, <body>, or full page structure.",
+        "Avoid <h1>. Start from <h2>."
+      ],
+      "responsiveSafety": [
+        "Tables must NOT contain width attributes.",
+        "Images must preserve original <img> tags exactly.",
+        "Use semantic structure only: <h2>, <h3>, <p>, <ul>, <li>, <table>.",
+        "HTML must work inside an existing product page container."
+      ]
+    },
+    "tone": "Premium, authoritative, emotionally persuasive, clean."
+    ${isShort
+      ? `,
+    "constraints": [
+      "5 bullets maximum.",
+      "Use <ul> and <li>.",
+      "Start each bullet with <strong>Benefit Title:</strong>.",
+      "No emojis.",
+      "No inline styling."
+    ]`
+      : `,
+    "constraints": [
+      "Structure content in two parts:",
+      "1) Visible summary section (concise overview).",
+      "2) Hidden extended section wrapped inside: <div class=\\"extended-content\\">...</div>",
+      "Do NOT include button.",
+      "Do NOT include JS.",
+      "Only provide expandable HTML structure.",
+      "Max 4 sections total.",
+      "Convert specifications into clean <table> without styling."
+    ]`
     }
-
-    DATA TO PROCESS:
-    ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })))}
-
-    Return a JSON array with EXACTLY ${chunk.length} objects. Each object: ${outputStructure}
-    CRITICAL: All quotes in strings MUST be escaped (\\"). Return ONLY the JSON array, no markdown.`;
+  }
+  
+  DATA TO PROCESS:
+  ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })))}
+  
+  Return a JSON array with EXACTLY ${chunk.length} objects.
+  Each object: ${outputStructure}
+  CRITICAL:
+  - Escape all quotes (\\")
+  - Return ONLY valid JSON array
+  - No markdown
+  - No explanations.`;
   }
 
     const chunkPromises = chunks.map(async (chunk, idx) => {
@@ -682,7 +751,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
   console.log('cursor her ',cursor)
   let query=    `#graphql
   query GetProducts($cursor:String) {
-    products(first: 15,after:$cursor,query:"-tag:DESC_AI") {
+    products(first: 15,after:$cursor,query:"tag:DESC_AI") {
         edges{
             node{
                 title
