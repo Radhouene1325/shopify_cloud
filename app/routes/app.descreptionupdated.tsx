@@ -350,49 +350,120 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
 
 
 
+///// and thes propmpts is very profetionelle 
+  // function buildPrompt(
+  //   chunk: { id: string; descreption: string }[],
+  //   outputField: 'shortDescription' | 'detailedDescription'
+  // ): string {
+  //   const isShort = outputField === 'shortDescription';
+  //   const fieldLabel = isShort ? 'shortDescription (bullet points only)' : 'detailedDescription (full article only)';
+  //   const outputStructure = isShort
+  //     ? '{ "id": "original_product_id", "shortDescription": "PROFESSIONAL_HTML_STRING" }'
+  //     : '{ "id": "original_product_id", "detailedDescription": "COMPLETE_HTML5_ARTICLE" }';
+
+  //   return `You are a JSON API. Process ALL ${chunk.length} products and return a JSON array with ONLY ${fieldLabel}.
+
+  //   PROMPT TEMPLATE FOR EACH PRODUCT:
+  //   {
+  //     "role": "Senior E-commerce & Ad Copy Specialist, expert in high-conversion listings for Amazon and social ads (Google/Facebook/TikTok)",
+  //     "objective": "Transform raw technical data into a visually engaging Amazon listing using professional HTML, color psychology, ad‑ready hooks, and interactive elements that boost engagement and trust.",
+  //     "outputFormat": {
+  //       ${isShort
+  //         ? '"shortDescription": "PROFESSIONAL_HTML_STRING (SEO-optimized bullet points with strategic color accents, emojis for engagement, and strong CTA)"'
+  //         : '"detailedDescription": "PROFESSIONAL_HTML_STRING (A+ Content with complete HTML5 structure, color psychology, responsive design, a 4‑column specs table, and an interactive \\"See More / See Less\\" section that reveals full details in a magazine‑style layout)"'
+  //       }
+  //     },
+  //     "stylingGuidelines": {
+  //       "tone": "Luxury, sophisticated, authoritative, yet emotionally resonant — also punchy enough for social snippets. Include positive buying signals and subtle marketing cues that build trust and urgency.",
+  //       "colorPalette": {
+  //         "primary": "#2C3E50", "secondary": "#8B7355", "accent": "#C4A484",
+  //         "background": "#F9F9F9", "text": "#333333", "highlight": "#E8D5C4",
+  //         "tableHeader": "#F0E9E2", "tableBorder": "#D4C4B5"
+  //       }
+  //     },
+  //     ${isShort
+  //       ? '"constraints": ["5-6 bullets maximum.", "Start each bullet with bolded [BENEFIT].", "Use emojis (🎁, ✅, ⭐, 🔥) before or after key benefits to increase visual appeal and engagement.", "End with a clear, urgent CTA that works for ads.", "Include subtle trust signals (e.g., \\"Premium Quality\\", \\"Satisfaction Guaranteed\\") within bullets.", "Use inline styles or unique class names to prevent theme conflicts."]'
+  //       : '"constraints": ["Use <h1>, <h2>, <section>.", "Convert specs into a styled <table> with exactly 4 columns: Feature | Specification | Benefit | Compatibility.", "Preserve ALL <img> tags. Limit to 3-4 sections to stay concise.", "Include an interactive \\"See More / See Less\\" section: initially show a shorter preview (first paragraph or key highlights). Clicking \\"See More\\" expands to the full detailed description in a professional magazine‑style layout (use CSS :checked or simple JavaScript with inline event handlers). The expanded view should include all product details, additional trust badges, and positive buying signals.", "Use emojis (🎯, 💎, 🏆, 🌟) throughout the text to emphasize features and benefits, increasing emotional connection.", "Include a closing CTA adaptable for Google/Facebook/TikTok ads, and optionally a \\"Shop Now\\" button.", "Generate inline CSS or use style tags with unique class names to avoid conflicts with existing theme styles."]'
+  //     }
+  //   }
+
+  //   DATA TO PROCESS:
+  //   ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })))}
+
+  //   Return a JSON array with EXACTLY ${chunk.length} objects. Each object: ${outputStructure}
+  //   CRITICAL: All quotes in strings MUST be escaped (\\"). Return ONLY the JSON array, no markdown.`;
+  // }
+
+
 
   function buildPrompt(
     chunk: { id: string; descreption: string }[],
     outputField: 'shortDescription' | 'detailedDescription'
   ): string {
     const isShort = outputField === 'shortDescription';
-    const fieldLabel = isShort ? 'shortDescription (bullet points only)' : 'detailedDescription (full article only)';
+    const fieldLabel = isShort
+      ? 'shortDescription (bullet points only)'
+      : 'detailedDescription (full article only)';
+  
     const outputStructure = isShort
       ? '{ "id": "original_product_id", "shortDescription": "PROFESSIONAL_HTML_STRING" }'
       : '{ "id": "original_product_id", "detailedDescription": "COMPLETE_HTML5_ARTICLE" }';
-
-    return `You are a JSON API. Process ALL ${chunk.length} products and return a JSON array with ONLY ${fieldLabel}.
-
-    PROMPT TEMPLATE FOR EACH PRODUCT:
-    {
-      "role": "Senior E-commerce & Ad Copy Specialist, expert in high-conversion listings for Amazon and social ads (Google/Facebook/TikTok)",
-      "objective": "Transform raw technical data into a visually engaging Amazon listing using professional HTML, color psychology, ad‑ready hooks, and interactive elements that boost engagement and trust.",
-      "outputFormat": {
-        ${isShort
-          ? '"shortDescription": "PROFESSIONAL_HTML_STRING (SEO-optimized bullet points with strategic color accents, emojis for engagement, and strong CTA)"'
-          : '"detailedDescription": "PROFESSIONAL_HTML_STRING (A+ Content with complete HTML5 structure, color psychology, responsive design, a 4‑column specs table, and an interactive \\"See More / See Less\\" section that reveals full details in a magazine‑style layout)"'
-        }
-      },
-      "stylingGuidelines": {
-        "tone": "Luxury, sophisticated, authoritative, yet emotionally resonant — also punchy enough for social snippets. Include positive buying signals and subtle marketing cues that build trust and urgency.",
-        "colorPalette": {
-          "primary": "#2C3E50", "secondary": "#8B7355", "accent": "#C4A484",
-          "background": "#F9F9F9", "text": "#333333", "highlight": "#E8D5C4",
-          "tableHeader": "#F0E9E2", "tableBorder": "#D4C4B5"
-        }
-      },
-      ${isShort
-        ? '"constraints": ["5-6 bullets maximum.", "Start each bullet with bolded [BENEFIT].", "Use emojis (🎁, ✅, ⭐, 🔥) before or after key benefits to increase visual appeal and engagement.", "End with a clear, urgent CTA that works for ads.", "Include subtle trust signals (e.g., \\"Premium Quality\\", \\"Satisfaction Guaranteed\\") within bullets.", "Use inline styles or unique class names to prevent theme conflicts."]'
-        : '"constraints": ["Use <h1>, <h2>, <section>.", "Convert specs into a styled <table> with exactly 4 columns: Feature | Specification | Benefit | Compatibility.", "Preserve ALL <img> tags. Limit to 3-4 sections to stay concise.", "Include an interactive \\"See More / See Less\\" section: initially show a shorter preview (first paragraph or key highlights). Clicking \\"See More\\" expands to the full detailed description in a professional magazine‑style layout (use CSS :checked or simple JavaScript with inline event handlers). The expanded view should include all product details, additional trust badges, and positive buying signals.", "Use emojis (🎯, 💎, 🏆, 🌟) throughout the text to emphasize features and benefits, increasing emotional connection.", "Include a closing CTA adaptable for Google/Facebook/TikTok ads, and optionally a \\"Shop Now\\" button.", "Generate inline CSS or use style tags with unique class names to avoid conflicts with existing theme styles."]'
-      }
+  
+    // Build the constraints array based on outputField
+    let constraints: string[];
+    if (isShort) {
+      constraints = [
+        '5-6 bullets maximum.',
+        'Start each bullet with bolded [BENEFIT].',
+        'Use emojis (🎁, ✅, ⭐, 🔥) before or after key benefits to increase visual appeal and engagement.',
+        'End with a clear, urgent CTA that works for ads.',
+        'Include subtle trust signals (e.g., "Premium Quality", "Satisfaction Guaranteed") within bullets.',
+        'If the total short description length exceeds ~100 characters (mobile view), implement a "See More / See Less" toggle: initially show only the first 2-3 bullets or a truncated preview, with a "See More" button that expands to reveal all bullets. Use inline CSS/JS (or simple :checked hack) to toggle visibility. Ensure it works responsively.',
+        'Use inline styles or unique class names to prevent theme conflicts.'
+      ];
+    } else {
+      constraints = [
+        'Use <h1>, <h2>, <section>.',
+        'Convert specs into a styled <table> with exactly 4 columns: Feature | Specification | Benefit | Compatibility.',
+        'Preserve ALL <img> tags. Limit to 3-4 sections to stay concise.',
+        'Include an interactive "See More / See Less" section: initially show a shorter preview (first paragraph or key highlights). Clicking "See More" expands to the full detailed description in a professional magazine‑style layout (use CSS :checked or simple JavaScript with inline event handlers). The expanded view should include all product details, additional trust badges, and positive buying signals.',
+        'Use emojis (🎯, 💎, 🏆, 🌟) throughout the text to emphasize features and benefits, increasing emotional connection.',
+        'Include a closing CTA adaptable for Google/Facebook/TikTok ads, and optionally a "Shop Now" button.',
+        'Generate inline CSS or use style tags with unique class names to avoid conflicts with existing theme styles.'
+      ];
     }
-
-    DATA TO PROCESS:
-    ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })))}
-
-    Return a JSON array with EXACTLY ${chunk.length} objects. Each object: ${outputStructure}
-    CRITICAL: All quotes in strings MUST be escaped (\\"). Return ONLY the JSON array, no markdown.`;
+  
+    return `You are a JSON API. Process EACH of the ${chunk.length} products INDIVIDUALLY and return a JSON array with ONLY ${fieldLabel}. Analyze each product's data separately to ensure no cross-product contamination.
+  
+      PROMPT TEMPLATE FOR EACH PRODUCT:
+      {
+        "role": "Senior E-commerce & Ad Copy Specialist, expert in high-conversion listings for Amazon and social ads (Google/Facebook/TikTok)",
+        "objective": "Transform raw technical data into a visually engaging Amazon listing using professional HTML, color psychology, ad‑ready hooks, and interactive elements that boost engagement and trust. Process each product's data independently.",
+        "outputFormat": {
+          ${
+            isShort
+              ? '"shortDescription": "PROFESSIONAL_HTML_STRING (SEO-optimized bullet points with strategic color accents, emojis for engagement, strong CTA, and a mobile‑friendly \\"See More / See Less\\" toggle if content exceeds ~100 characters.)"'
+              : '"detailedDescription": "PROFESSIONAL_HTML_STRING (A+ Content with complete HTML5 structure, color psychology, responsive design, a 4‑column specs table, and an interactive \\"See More / See Less\\" section that reveals full details in a magazine‑style layout)"'
+          }
+        },
+        "stylingGuidelines": {
+          "tone": "Luxury, sophisticated, authoritative, yet emotionally resonant — also punchy enough for social snippets. Include positive buying signals and subtle marketing cues that build trust and urgency.",
+          "colorPalette": {
+            "primary": "#2C3E50", "secondary": "#8B7355", "accent": "#C4A484",
+            "background": "#F9F9F9", "text": "#333333", "highlight": "#E8D5C4",
+            "tableHeader": "#F0E9E2", "tableBorder": "#D4C4B5"
+          }
+        },
+        "constraints": ${JSON.stringify(constraints)}
+      }
+  
+      DATA TO PROCESS (process each object independently):
+      ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })))}
+  
+      Return a JSON array with EXACTLY ${chunk.length} objects. Each object: ${outputStructure}
+      CRITICAL: All quotes in strings MUST be escaped (\\\\"). Return ONLY the JSON array, no markdown.`;
   }
+
 
 
   // function buildPrompt(
