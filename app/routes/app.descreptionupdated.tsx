@@ -218,6 +218,50 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
   console.log(`Total chunks to process: ${chunks.length}`);
 
   //Build prompt for a specific output field to stay under DeepSeek's 8K output token limit
+  // function buildPrompt(
+  //   chunk: { id: string; descreption: string }[],
+  //   outputField: 'shortDescription' | 'detailedDescription'
+  // ): string {
+  //   const isShort = outputField === 'shortDescription';
+  //   const fieldLabel = isShort ? 'shortDescription (bullet points only)' : 'detailedDescription (full article only)';
+  //   const outputStructure = isShort
+  //     ? '{ "id": "original_product_id", "shortDescription": "PROFESSIONAL_HTML_STRING" }'
+  //     : '{ "id": "original_product_id", "detailedDescription": "COMPLETE_HTML5_ARTICLE" }';
+
+  //   return `You are a JSON API. Process ALL ${chunk.length} products and return a JSON array with ONLY ${fieldLabel}.
+
+  //   PROMPT TEMPLATE FOR EACH PRODUCT:
+  //   {
+  //     "role": "Senior E-commerce SEO Specialist & UX Copywriter with expertise in luxury branding and color psychology",
+  //     "objective": "Transform raw technical data into a visually stunning, high-converting Amazon listing that uses professional HTML structure and strategic color psychology to drive emotional engagement and sales.",
+  //     "outputFormat": {
+  //       ${isShort
+  //         ? '"shortDescription": "PROFESSIONAL_HTML_STRING (SEO-Optimized Bullet Points with strategic color accents)"'
+  //         : '"detailedDescription": "PROFESSIONAL_HTML_STRING (A+ Content with complete HTML5 structure, color psychology, and responsive design)"'
+  //       }
+  //     },
+  //     "stylingGuidelines": {
+  //       "tone": "Luxury, sophisticated, authoritative, yet emotionally resonant.",
+  //       "colorPalette": {
+  //         "primary": "#2C3E50", "secondary": "#8B7355", "accent": "#C4A484",
+  //         "background": "#F9F9F9", "text": "#333333", "highlight": "#E8D5C4",
+  //         "tableHeader": "#F0E9E2", "tableBorder": "#D4C4B5"
+  //       }
+  //     },
+  //     ${isShort
+  //       ? '"constraints": ["5-6 Bullets maximum.", "Start each bullet with bolded [BENEFIT].", "Use subtle emoji (●, ▶) before each bullet.", "End with CTA."]'
+  //       : '"constraints": ["Use <h1>, <h2>, <section>.", "Convert specs into styled <table>.", "Preserve ALL <img> tags. Limit to 3-4 sections to stay concise."]'
+  //     }
+  //   }
+
+  //   DATA TO PROCESS:
+  //   ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })))}
+
+  //   Return a JSON array with EXACTLY ${chunk.length} objects. Each object: ${outputStructure}
+  //   CRITICAL: All quotes in strings MUST be escaped (\\"). Return ONLY the JSON array, no markdown.`;
+  // }
+
+
   function buildPrompt(
     chunk: { id: string; descreption: string }[],
     outputField: 'shortDescription' | 'detailedDescription'
@@ -232,16 +276,16 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
 
     PROMPT TEMPLATE FOR EACH PRODUCT:
     {
-      "role": "Senior E-commerce SEO Specialist & UX Copywriter with expertise in luxury branding and color psychology",
-      "objective": "Transform raw technical data into a visually stunning, high-converting Amazon listing that uses professional HTML structure and strategic color psychology to drive emotional engagement and sales.",
+      "role": "Senior E-commerce & Ad Copy Specialist, expert in high-conversion listings for Amazon and social ads (Google/Facebook/TikTok)",
+      "objective": "Transform raw technical data into a visually engaging Amazon listing using professional HTML, color psychology, and ad‑ready hooks for easy repurposing across platforms.",
       "outputFormat": {
         ${isShort
-          ? '"shortDescription": "PROFESSIONAL_HTML_STRING (SEO-Optimized Bullet Points with strategic color accents)"'
-          : '"detailedDescription": "PROFESSIONAL_HTML_STRING (A+ Content with complete HTML5 structure, color psychology, and responsive design)"'
+          ? '"shortDescription": "PROFESSIONAL_HTML_STRING (SEO-optimized bullet points with strategic color accents and strong CTA)"'
+          : '"detailedDescription": "PROFESSIONAL_HTML_STRING (A+ Content with complete HTML5 structure, color psychology, responsive design, and a 4‑column specs table)"'
         }
       },
       "stylingGuidelines": {
-        "tone": "Luxury, sophisticated, authoritative, yet emotionally resonant.",
+        "tone": "Luxury, sophisticated, authoritative, yet emotionally resonant — also punchy enough for social snippets.",
         "colorPalette": {
           "primary": "#2C3E50", "secondary": "#8B7355", "accent": "#C4A484",
           "background": "#F9F9F9", "text": "#333333", "highlight": "#E8D5C4",
@@ -249,8 +293,8 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
         }
       },
       ${isShort
-        ? '"constraints": ["5-6 Bullets maximum.", "Start each bullet with bolded [BENEFIT].", "Use subtle emoji (●, ▶) before each bullet.", "End with CTA."]'
-        : '"constraints": ["Use <h1>, <h2>, <section>.", "Convert specs into styled <table>.", "Preserve ALL <img> tags. Limit to 3-4 sections to stay concise."]'
+        ? '"constraints": ["5-6 bullets maximum.", "Start each bullet with bolded [BENEFIT].", "Use subtle emoji (●, ▶) before each bullet.", "End with a clear, urgent CTA that works for ads."]'
+        : '"constraints": ["Use <h1>, <h2>, <section>.", "Convert specs into a styled <table> with exactly 4 columns (Feature | Specification | Benefit | Compatibility).", "Preserve ALL <img> tags. Limit to 3-4 sections to stay concise.", "Include a closing CTA adaptable for Google/Facebook/TikTok ads."]'
       }
     }
 
@@ -260,6 +304,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
     Return a JSON array with EXACTLY ${chunk.length} objects. Each object: ${outputStructure}
     CRITICAL: All quotes in strings MUST be escaped (\\"). Return ONLY the JSON array, no markdown.`;
   }
+
 
   // function buildPrompt(
   //   chunk: { id: string; descreption: string }[],
