@@ -914,7 +914,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
   }
   
   .pd-text-small {
-    font-size: 1rem !important;    /* SMALL TEXT - STILL READABLE */
+    font-size: 3rem !important;    /* SMALL TEXT - STILL READABLE */
     color: #64748B;
   }
   
@@ -1335,21 +1335,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
     <header class="pd-header">
       <h1 class="pd-title">Men's England Style Hooded Jacket: Your Perfect Lightweight Companion for Spring & Autumn</h1>
       
-      <!-- PRICE SECTION - LARGE AND CLEAR -->
-      <div class="pd-price-section">
-        <span class="pd-current-price">$39.99</span>
-        <span class="pd-old-price">$59.99</span>
-        <span class="pd-discount-badge">-33%</span>
-      </div>
-      
-      <!-- STOCK STATUS - LARGE TEXT -->
-      <div class="pd-stock-section">
-        <div class="pd-stock-status">
-          <span class="pd-in-stock">✓ In Stock</span>
-          <span class="pd-low-stock">⚠️ Only 8 left</span>
-        </div>
-        <span class="pd-sales-counter">🔥 156 sold in last 24h</span>
-      </div>
+     
     </header>
     
     <!-- TRUST BADGES - LARGE ICONS AND TEXT -->
@@ -2181,7 +2167,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
 // Return ONLY the valid JSON array.`;
 // }
     const chunkPromises = chunks.map(async (chunk, idx) => {
-      console.log(`Processing chunk ${idx + 1}/${chunks.length} (${chunk.length} products) - split into 2 API calls`);
+      // console.log(`Processing chunk ${idx + 1}/${chunks.length} (${chunk.length} products) - split into 2 API calls`);
 
       // Call 1: shortDescription only (keeps output under token limit)
       const shortPrompt = buildPrompt(chunk as { id: string; descreption: string }[], 'shortDescription');
@@ -2225,7 +2211,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
     // Flatten results into a single array
     results.forEach(r => allResults.push(...r));
 
-    console.log(`Total products processed: ${allResults.length}/${updatedDescreptionAI.length}`);
+    // console.log(`Total products processed: ${allResults.length}/${updatedDescreptionAI.length}`);
 
     return allResults;
   }
@@ -2386,7 +2372,6 @@ for( const DESC_AI of optimizedHtml){
 
 
 
- console.log('hhhhhhhhhhhhhhhhhhhhhhhhh',optimizedHtml,responses)
 
 
     return Response.json(optimizedHtml);
