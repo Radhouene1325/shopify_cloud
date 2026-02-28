@@ -409,7 +409,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
       ? '{ "id": "original_product_id", "shortDescription": "PROFESSIONAL_HTML_STRING" }'
       : '{ "id": "original_product_id", "detailedDescription": "COMPLETE_HTML5_ARTICLE" }';
   
-    // Build the constraints array based on outputField
+    // Build constraints based on outputField with enhanced mobile responsiveness
     let constraints: string[];
     if (isShort) {
       constraints = [
@@ -418,18 +418,22 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
         'Use emojis (🎁, ✅, ⭐, 🔥) before or after key benefits to increase visual appeal and engagement.',
         'End with a clear, urgent CTA that works for ads.',
         'Include subtle trust signals (e.g., "Premium Quality", "Satisfaction Guaranteed") within bullets.',
-        'If the total short description length exceeds ~100 characters (mobile view), implement a "See More / See Less" toggle: initially show only the first 2-3 bullets or a truncated preview, with a "See More" button that expands to reveal all bullets. Use inline CSS/JS (or simple :checked hack) to toggle visibility. Ensure it works responsively.',
-        'Use inline styles or unique class names to prevent theme conflicts.'
+        'If the total short description length exceeds ~80 characters on mobile, implement a "See More / See Less" toggle: initially show only the first 2 bullets or a concise preview, with a "See More" button that expands to reveal all bullets. Use inline CSS/JS (or simple :checked hack) to toggle visibility. Ensure the button is at least 44x44px for easy tapping.',
+        'Use inline styles or unique class names to prevent theme conflicts.',
+        'Make the entire short description container fluid (width: 100%) and test that it scales perfectly on screens down to 320px wide.',
+        'Avoid fixed widths; use max-width and percentages.'
       ];
     } else {
       constraints = [
-        'Use <h1>, <h2>, <section>.',
-        'Convert specs into a styled <table> with exactly 4 columns: Feature | Specification | Benefit | Compatibility.',
+        'Use <h1>, <h2>, <section> with responsive font sizes (use vw, rem, or media queries).',
+        'Convert specs into a styled <table> with exactly 4 columns: Feature | Specification | Benefit | Compatibility. On mobile (max-width: 600px), transform the table into a stacked card layout (each row becomes a block) or use overflow-x:auto to allow horizontal scrolling, whichever provides better readability. Include instructions in the CSS to handle this.',
         'Preserve ALL <img> tags. Limit to 3-4 sections to stay concise.',
-        'Include an interactive "See More / See Less" section: initially show a shorter preview (first paragraph or key highlights). Clicking "See More" expands to the full detailed description in a professional magazine‑style layout (use CSS :checked or simple JavaScript with inline event handlers). The expanded view should include all product details, additional trust badges, and positive buying signals.',
+        'Include an interactive "See More / See Less" section: initially show a shorter preview (first paragraph or key highlights). Clicking "See More" expands to the full detailed description in a professional magazine‑style layout (use CSS :checked or simple JavaScript with inline event handlers). The expanded view should include all product details, additional trust badges, and positive buying signals. The toggle button must be easily tappable on mobile (min 44x44px).',
         'Use emojis (🎯, 💎, 🏆, 🌟) throughout the text to emphasize features and benefits, increasing emotional connection.',
         'Include a closing CTA adaptable for Google/Facebook/TikTok ads, and optionally a "Shop Now" button.',
-        'Generate inline CSS or use style tags with unique class names to avoid conflicts with existing theme styles.'
+        'Generate inline CSS or use style tags with unique class names to avoid conflicts with existing theme styles.',
+        'Ensure the entire detailed description is fully responsive: use fluid images (max-width:100%), flexible grid layouts (flexbox/grid with percentages), and media queries to adjust padding, font sizes, and stacking order on small screens. Test conceptually for 320px to 1200px.',
+        'Consider using CSS clamp() for font sizes to scale smoothly.'
       ];
     }
   
@@ -438,12 +442,12 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
       PROMPT TEMPLATE FOR EACH PRODUCT:
       {
         "role": "Senior E-commerce & Ad Copy Specialist, expert in high-conversion listings for Amazon and social ads (Google/Facebook/TikTok)",
-        "objective": "Transform raw technical data into a visually engaging Amazon listing using professional HTML, color psychology, ad‑ready hooks, and interactive elements that boost engagement and trust. Process each product's data independently.",
+        "objective": "Transform raw technical data into a visually engaging Amazon listing using professional HTML, color psychology, ad‑ready hooks, and interactive elements that boost engagement and trust. Process each product's data independently. The final HTML must be fully responsive and deliver an excellent user experience on mobile phones (down to 320px width).",
         "outputFormat": {
           ${
             isShort
-              ? '"shortDescription": "PROFESSIONAL_HTML_STRING (SEO-optimized bullet points with strategic color accents, emojis for engagement, strong CTA, and a mobile‑friendly \\"See More / See Less\\" toggle if content exceeds ~100 characters.)"'
-              : '"detailedDescription": "PROFESSIONAL_HTML_STRING (A+ Content with complete HTML5 structure, color psychology, responsive design, a 4‑column specs table, and an interactive \\"See More / See Less\\" section that reveals full details in a magazine‑style layout)"'
+              ? '"shortDescription": "PROFESSIONAL_HTML_STRING (SEO-optimized bullet points with strategic color accents, emojis for engagement, strong CTA, and a mobile‑friendly \\"See More / See Less\\" toggle that ensures readability on small screens.)"'
+              : '"detailedDescription": "PROFESSIONAL_HTML_STRING (A+ Content with complete HTML5 structure, color psychology, responsive design, a 4‑column specs table that adapts gracefully on mobile, and an interactive \\"See More / See Less\\" section that reveals full details in a magazine‑style layout.)"'
           }
         },
         "stylingGuidelines": {
@@ -454,7 +458,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
             "tableHeader": "#F0E9E2", "tableBorder": "#D4C4B5"
           }
         },
-        "constraints": ${JSON.stringify(constraints)}
+        "constraints": ${JSON.stringify(constraints, null, 2).replace(/\n/g, '\n      ')}
       }
   
       DATA TO PROCESS (process each object independently):
@@ -463,7 +467,6 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
       Return a JSON array with EXACTLY ${chunk.length} objects. Each object: ${outputStructure}
       CRITICAL: All quotes in strings MUST be escaped (\\\\"). Return ONLY the JSON array, no markdown.`;
   }
-
 
 
   // function buildPrompt(
