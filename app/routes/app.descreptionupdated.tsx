@@ -619,79 +619,206 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
 
 
 
+// function buildPrompt(
+//     chunk: { id: string; descreption: string }[],
+//     outputField: 'shortDescription' | 'detailedDescription'
+//   ): string {
+//     const isShort = outputField === 'shortDescription';
+//     const fieldLabel = isShort
+//       ? 'shortDescription (bullet points only)'
+//       : 'detailedDescription (full article only)';
+  
+//     const outputStructure = isShort
+//       ? '{ "id": "original_product_id", "shortDescription": "PROFESSIONAL_HTML_STRING" }'
+//       : '{ "id": "original_product_id", "detailedDescription": "COMPLETE_HTML5_ARTICLE" }';
+  
+//     // Build constraints based on outputField with strong emphasis on theme isolation
+//     let constraints: string[];
+//     if (isShort) {
+//       constraints = [
+//         '5-6 bullets maximum.',
+//         'Start each bullet with bolded [BENEFIT].',
+//         'Use emojis (🎁, ✅, ⭐, 🔥) before or after key benefits to increase visual appeal and engagement.',
+//         'End with a clear, urgent CTA that works for ads.',
+//         'Include subtle trust signals (e.g., "Premium Quality", "Satisfaction Guaranteed") within bullets.',
+//         'Use inline styles OR unique, highly-specific class names (e.g., "prod-short-{{id}}") to completely avoid conflicts with any existing theme CSS. If using classes, include a reset or set baseline styles for all properties that might be inherited.',
+//         'Consider wrapping the entire short description in a container with a unique ID and applying styles only to descendants of that container (e.g., #short-123 .bullet).',
+//         'Make the entire short description container fluid (width: 100%) and ensure it scales perfectly on screens down to 320px wide. Avoid fixed widths; use max-width and percentages.',
+//         'Font sizes should be legible on mobile (use rem or viewport units with a fallback).',
+//         'If the raw description content is incomplete, poorly formatted, or missing elements, enhance it professionally while staying truthful to the product data.'
+//       ];
+//     } else {
+//       constraints = [
+//         'Use <h1>, <h2>, <section> with responsive font sizes (use vw, rem, or media queries).',
+//         'Convert specs into a styled <table> with exactly 4 columns: Feature | Specification | Benefit | Compatibility. On mobile (max-width: 600px), transform the table into a stacked card layout (each row becomes a block) or use overflow-x:auto to allow horizontal scrolling, whichever provides better readability. Include instructions in the CSS to handle this.',
+//         'Preserve ALL <img> tags. Limit to 3-4 sections to stay concise.',
+//         'Include an interactive "See More / See Less" section: initially show a shorter preview (first paragraph or key highlights). Clicking "See More" expands to the full detailed description in a professional magazine‑style layout. Use CSS :checked hack or a simple inline JavaScript function to toggle visibility. The expanded view should include all product details, additional trust badges, and positive buying signals. The toggle button must be easily tappable on mobile (min 44x44px).',
+//         'Use emojis (🎯, 💎, 🏆, 🌟) throughout the text to emphasize features and benefits, increasing emotional connection.',
+//         'Include a closing CTA adaptable for Google/Facebook/TikTok ads, and optionally a "Shop Now" button.',
+//         'CRITICAL: Generate inline CSS or use style tags with extremely unique class names (e.g., "product-detailed-{{id}}") to prevent any conflict with the site\'s existing theme. For maximum isolation, use inline styles on individual elements or apply a CSS reset inside the container (e.g., "all: initial; display: block;" on the wrapper and then reapply your desired styles).',
+//         'Ensure the entire detailed description is fully responsive: use fluid images (max-width:100%), flexible grid layouts (flexbox/grid with percentages), and media queries to adjust padding, font sizes, and stacking order on small screens. Test conceptually for 320px to 1200px.',
+//         'Consider using CSS clamp() for font sizes to scale smoothly.',
+//         'If the provided description content is lacking, incomplete, or poorly structured, enhance it by adding appropriate headings, organizing information logically, and filling in missing details with plausible, professional copy that matches the product context (do not invent false specifications, but improve readability and persuasion).'
+//       ];
+//     }
+  
+//     return `You are a JSON API. Process EACH of the ${chunk.length} products INDIVIDUALLY and return a JSON array with ONLY ${fieldLabel}. Analyze each product's data separately to ensure no cross-product contamination.
+  
+//       PROMPT TEMPLATE FOR EACH PRODUCT:
+//       {
+//         "role": "Senior E-commerce & Ad Copy Specialist, expert in high-conversion listings for Amazon and social ads (Google/Facebook/TikTok)",
+//         "objective": "Transform raw technical data into a visually engaging Amazon listing using professional HTML, color psychology, ad‑ready hooks, and interactive elements that boost engagement and trust. Process each product's data independently. The final HTML must be fully responsive and deliver an excellent user experience on mobile phones (down to 320px width). Most importantly, the generated code must NOT conflict with any existing theme styles—use unique class names or inline styles to ensure complete isolation.",
+//         "outputFormat": {
+//           ${
+//             isShort
+//               ? '"shortDescription": "PROFESSIONAL_HTML_STRING (SEO-optimized bullet points with strategic color accents, emojis for engagement, strong CTA, and mobile-friendly responsive layout. Must be theme-proof.)"'
+//               : '"detailedDescription": "PROFESSIONAL_HTML_STRING (A+ Content with complete HTML5 structure, color psychology, responsive design, a 4‑column specs table that adapts gracefully on mobile, an interactive \\"See More / See Less\\" section, and complete isolation from theme styles.)"'
+//           }
+//         },
+//         "stylingGuidelines": {
+//           "tone": "Luxury, sophisticated, authoritative, yet emotionally resonant — also punchy enough for social snippets. Include positive buying signals and subtle marketing cues that build trust and urgency.",
+//           "colorPalette": {
+//             "primary": "#2C3E50", "secondary": "#8B7355", "accent": "#C4A484",
+//             "background": "#F9F9F9", "text": "#333333", "highlight": "#E8D5C4",
+//             "tableHeader": "#F0E9E2", "tableBorder": "#D4C4B5"
+//           }
+//         },
+//         "constraints": ${JSON.stringify(constraints, null, 2).replace(/\n/g, '\n      ')}
+//       }
+  
+//       DATA TO PROCESS (process each object independently):
+//       ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })))}
+  
+//       Return a JSON array with EXACTLY ${chunk.length} objects. Each object: ${outputStructure}
+//       CRITICAL: All quotes in strings MUST be escaped (\\\\"). Return ONLY the JSON array, no markdown.`;
+//   }
+
 function buildPrompt(
-    chunk: { id: string; descreption: string }[],
-    outputField: 'shortDescription' | 'detailedDescription'
-  ): string {
-    const isShort = outputField === 'shortDescription';
-    const fieldLabel = isShort
-      ? 'shortDescription (bullet points only)'
-      : 'detailedDescription (full article only)';
-  
-    const outputStructure = isShort
-      ? '{ "id": "original_product_id", "shortDescription": "PROFESSIONAL_HTML_STRING" }'
-      : '{ "id": "original_product_id", "detailedDescription": "COMPLETE_HTML5_ARTICLE" }';
-  
-    // Build constraints based on outputField with strong emphasis on theme isolation
-    let constraints: string[];
-    if (isShort) {
-      constraints = [
-        '5-6 bullets maximum.',
-        'Start each bullet with bolded [BENEFIT].',
-        'Use emojis (🎁, ✅, ⭐, 🔥) before or after key benefits to increase visual appeal and engagement.',
-        'End with a clear, urgent CTA that works for ads.',
-        'Include subtle trust signals (e.g., "Premium Quality", "Satisfaction Guaranteed") within bullets.',
-        'Use inline styles OR unique, highly-specific class names (e.g., "prod-short-{{id}}") to completely avoid conflicts with any existing theme CSS. If using classes, include a reset or set baseline styles for all properties that might be inherited.',
-        'Consider wrapping the entire short description in a container with a unique ID and applying styles only to descendants of that container (e.g., #short-123 .bullet).',
-        'Make the entire short description container fluid (width: 100%) and ensure it scales perfectly on screens down to 320px wide. Avoid fixed widths; use max-width and percentages.',
-        'Font sizes should be legible on mobile (use rem or viewport units with a fallback).',
-        'If the raw description content is incomplete, poorly formatted, or missing elements, enhance it professionally while staying truthful to the product data.'
-      ];
-    } else {
-      constraints = [
-        'Use <h1>, <h2>, <section> with responsive font sizes (use vw, rem, or media queries).',
-        'Convert specs into a styled <table> with exactly 4 columns: Feature | Specification | Benefit | Compatibility. On mobile (max-width: 600px), transform the table into a stacked card layout (each row becomes a block) or use overflow-x:auto to allow horizontal scrolling, whichever provides better readability. Include instructions in the CSS to handle this.',
-        'Preserve ALL <img> tags. Limit to 3-4 sections to stay concise.',
-        'Include an interactive "See More / See Less" section: initially show a shorter preview (first paragraph or key highlights). Clicking "See More" expands to the full detailed description in a professional magazine‑style layout. Use CSS :checked hack or a simple inline JavaScript function to toggle visibility. The expanded view should include all product details, additional trust badges, and positive buying signals. The toggle button must be easily tappable on mobile (min 44x44px).',
-        'Use emojis (🎯, 💎, 🏆, 🌟) throughout the text to emphasize features and benefits, increasing emotional connection.',
-        'Include a closing CTA adaptable for Google/Facebook/TikTok ads, and optionally a "Shop Now" button.',
-        'CRITICAL: Generate inline CSS or use style tags with extremely unique class names (e.g., "product-detailed-{{id}}") to prevent any conflict with the site\'s existing theme. For maximum isolation, use inline styles on individual elements or apply a CSS reset inside the container (e.g., "all: initial; display: block;" on the wrapper and then reapply your desired styles).',
-        'Ensure the entire detailed description is fully responsive: use fluid images (max-width:100%), flexible grid layouts (flexbox/grid with percentages), and media queries to adjust padding, font sizes, and stacking order on small screens. Test conceptually for 320px to 1200px.',
-        'Consider using CSS clamp() for font sizes to scale smoothly.',
-        'If the provided description content is lacking, incomplete, or poorly structured, enhance it by adding appropriate headings, organizing information logically, and filling in missing details with plausible, professional copy that matches the product context (do not invent false specifications, but improve readability and persuasion).'
-      ];
-    }
-  
-    return `You are a JSON API. Process EACH of the ${chunk.length} products INDIVIDUALLY and return a JSON array with ONLY ${fieldLabel}. Analyze each product's data separately to ensure no cross-product contamination.
-  
-      PROMPT TEMPLATE FOR EACH PRODUCT:
-      {
-        "role": "Senior E-commerce & Ad Copy Specialist, expert in high-conversion listings for Amazon and social ads (Google/Facebook/TikTok)",
-        "objective": "Transform raw technical data into a visually engaging Amazon listing using professional HTML, color psychology, ad‑ready hooks, and interactive elements that boost engagement and trust. Process each product's data independently. The final HTML must be fully responsive and deliver an excellent user experience on mobile phones (down to 320px width). Most importantly, the generated code must NOT conflict with any existing theme styles—use unique class names or inline styles to ensure complete isolation.",
-        "outputFormat": {
-          ${
-            isShort
-              ? '"shortDescription": "PROFESSIONAL_HTML_STRING (SEO-optimized bullet points with strategic color accents, emojis for engagement, strong CTA, and mobile-friendly responsive layout. Must be theme-proof.)"'
-              : '"detailedDescription": "PROFESSIONAL_HTML_STRING (A+ Content with complete HTML5 structure, color psychology, responsive design, a 4‑column specs table that adapts gracefully on mobile, an interactive \\"See More / See Less\\" section, and complete isolation from theme styles.)"'
-          }
-        },
-        "stylingGuidelines": {
-          "tone": "Luxury, sophisticated, authoritative, yet emotionally resonant — also punchy enough for social snippets. Include positive buying signals and subtle marketing cues that build trust and urgency.",
-          "colorPalette": {
-            "primary": "#2C3E50", "secondary": "#8B7355", "accent": "#C4A484",
-            "background": "#F9F9F9", "text": "#333333", "highlight": "#E8D5C4",
-            "tableHeader": "#F0E9E2", "tableBorder": "#D4C4B5"
-          }
-        },
-        "constraints": ${JSON.stringify(constraints, null, 2).replace(/\n/g, '\n      ')}
-      }
-  
-      DATA TO PROCESS (process each object independently):
-      ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })))}
-  
-      Return a JSON array with EXACTLY ${chunk.length} objects. Each object: ${outputStructure}
-      CRITICAL: All quotes in strings MUST be escaped (\\\\"). Return ONLY the JSON array, no markdown.`;
+  chunk: { id: string; descreption: string }[],
+  outputField: 'shortDescription' | 'detailedDescription'
+): string {
+
+  const isShort = outputField === 'shortDescription';
+
+  const fieldLabel = isShort
+    ? 'shortDescription (bullet points only)'
+    : 'detailedDescription (full article only)';
+
+  const outputStructure = isShort
+    ? '{ "id": "original_product_id", "shortDescription": "PROFESSIONAL_HTML_STRING" }'
+    : '{ "id": "original_product_id", "detailedDescription": "COMPLETE_HTML5_ARTICLE" }';
+
+  const typographyRules = [
+    'CRITICAL TYPOGRAPHY RULES:',
+    '- Base font-size MUST be explicitly set to minimum 16px inside the main wrapper.',
+    '- NEVER use font-size below 16px for body text.',
+    '- H1 minimum 28px. H2 minimum 22px. H3 minimum 18px.',
+    '- Use clamp() safely (example: clamp(16px, 1vw + 0.5rem, 18px)).',
+    '- DO NOT use pure vw units for font sizes.',
+    '- Line-height minimum 1.6 for readability.',
+    '- Explicitly define font-family: Arial, Helvetica, sans-serif;',
+    '- Explicitly define color: #333333;',
+    '- Add -webkit-text-size-adjust:100%; text-size-adjust:100%;',
+    '- Ensure WCAG readable contrast (dark text on light background).'
+  ];
+
+  const isolationRules = [
+    'CRITICAL THEME ISOLATION:',
+    '- Wrap everything inside a uniquely generated container ID (example: #product-{{id}}).',
+    '- Inside wrapper explicitly set:',
+    '  font-family: Arial, Helvetica, sans-serif;',
+    '  font-size: 16px;',
+    '  line-height: 1.6;',
+    '  color: #333333;',
+    '  background: #F9F9F9;',
+    '  -webkit-text-size-adjust: 100%;',
+    '  text-size-adjust: 100%;',
+    '- Use extremely unique class names (example: prod-detailed-{{id}}-block).',
+    '- Avoid global selectors.',
+    '- Avoid resetting with all: initial unless reapplying typography manually.',
+    '- If needed, use #product-{{id}} * { font-size: inherit; } to prevent theme override.'
+  ];
+
+  let constraints: string[];
+
+  if (isShort) {
+    constraints = [
+      '5-6 bullets maximum.',
+      'Start each bullet with bolded [BENEFIT].',
+      'Use emojis (🎁, ✅, ⭐, 🔥) strategically.',
+      'End with a strong urgency CTA.',
+      'Include subtle trust signals (Premium Quality, Satisfaction Guaranteed).',
+      'Container must be 100% width and fluid.',
+      'Use max-width and padding for balance.',
+      ...typographyRules,
+      ...isolationRules,
+      'If description is incomplete, enhance professionally without inventing false specs.'
+    ];
+  } else {
+    constraints = [
+      'Use proper HTML5 structure: <h1>, <h2>, <section>.',
+      'Limit to 3-4 major sections.',
+      'Convert specs into a styled 4-column table (Feature | Specification | Benefit | Compatibility).',
+      'On mobile (max-width: 600px) transform table into stacked layout OR use overflow-x:auto.',
+      'Preserve ALL <img> tags.',
+      'Include interactive "See More / See Less" toggle using CSS :checked hack or minimal JS.',
+      'Toggle button must be minimum 44x44px.',
+      'Use emojis (🎯, 💎, 🏆, 🌟) strategically.',
+      'Include closing CTA + optional styled "Shop Now" button.',
+      'Use clamp() for scalable headings.',
+      'Images must be fluid (max-width:100%).',
+      'Use flexbox/grid with percentages.',
+      'Ensure layout works from 320px to 1200px.',
+      ...typographyRules,
+      ...isolationRules,
+      'Enhance weak descriptions professionally without fabricating specifications.'
+    ];
   }
+
+  return `You are a JSON API. Process EACH of the ${chunk.length} products INDIVIDUALLY and return a JSON array with ONLY ${fieldLabel}. No cross-product contamination.
+
+{
+  "role": "Senior E-commerce Conversion Specialist (Amazon A+ + Shopify CRO Expert)",
+  "objective": "Transform raw product data into a high-conversion, visually structured HTML listing. The HTML must be fully responsive, highly readable, mobile-first, and completely isolated from Shopify theme styles. Typography must be clearly visible on desktop and mobile with enforced minimum sizes.",
+  "outputFormat": {
+    ${
+      isShort
+        ? '"shortDescription": "PROFESSIONAL_HTML_STRING (Readable, bold, mobile-optimized, conversion-focused, theme-isolated)"'
+        : '"detailedDescription": "COMPLETE_HTML5_ARTICLE (A+ structure, responsive, interactive, fully readable, theme-isolated)"'
+    }
+  },
+  "stylingGuidelines": {
+    "tone": "Luxury, authoritative, emotionally persuasive, high-trust.",
+    "colorPalette": {
+      "primary": "#2C3E50",
+      "secondary": "#8B7355",
+      "accent": "#C4A484",
+      "background": "#F9F9F9",
+      "text": "#333333",
+      "highlight": "#E8D5C4",
+      "tableHeader": "#F0E9E2",
+      "tableBorder": "#D4C4B5"
+    }
+  },
+  "constraints": ${JSON.stringify(constraints, null, 2).replace(/\n/g, '\n  ')}
+}
+
+DATA TO PROCESS:
+${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })))}
+
+Return EXACTLY ${chunk.length} objects.
+Each object must match:
+${outputStructure}
+
+CRITICAL:
+- Escape ALL quotes inside HTML strings using \\\\"
+- Return ONLY the JSON array.
+- No markdown.
+- No explanations.
+`;
+}
+
+
     const chunkPromises = chunks.map(async (chunk, idx) => {
       // console.log(`Processing chunk ${idx + 1}/${chunks.length} (${chunk.length} products) - split into 2 API calls`);
 
