@@ -1376,8 +1376,8 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
             ancestorIds
             childrenIds
             fullName
-            isLeaf:true
-            isRoot:true
+            isLeaf
+            isRoot
             level
             name
             parentId
