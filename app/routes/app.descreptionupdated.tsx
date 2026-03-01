@@ -700,491 +700,296 @@ function buildPrompt(
 ): string {
   const isShort = outputField === 'shortDescription';
   
-  // Core configuration
   const config = {
     role: "Senior E-commerce Conversion Architect & Technical SEO Specialist",
     mission: isShort 
       ? "Create premium micro-copy that converts mobile scrollers into clickers"
-      : "Build immersive product narratives that reduce bounce and increase time-on-page",
-    targetPlatforms: ["Shopify", "Facebook Ads", "TikTok Shop", "Google Shopping", "Google Search"],
-    psychology: isShort ? "Pattern interrupt → Curiosity → Benefit" : "Problem → Agitation → Solution → Proof → Action"
+      : "Build immersive product narratives that reduce bounce and increase time-on-page"
   };
 
-  // Typography system (enforced)
-  const typography = {
-    base: "16px",
-    min: "16px",
-    max: isShort ? "17px" : "clamp(16px, 1vw + 0.5rem, 20px)",
-    lineHeight: isShort ? "1.55" : "1.65",
-    family: "Arial, Helvetica, sans-serif",
-    color: "#1a1a1a",
-    weight: {
-      body: "400",
-      strong: "600",
-      heading: "700"
+  // Professional design system
+  const design = {
+    colors: {
+      text: "#1a1a1a",
+      textSecondary: "#4a4a4a",
+      background: "#ffffff",
+      surface: "#f8f9fa",
+      primary: "#0066cc",
+      primaryHover: "#0052a3",
+      border: "#e5e7eb",
+      accent: "#059669"
+    },
+    typography: {
+      family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+      base: "16px",
+      lineHeight: "1.6",
+      weight: {
+        normal: "400",
+        medium: "500",
+        semibold: "600",
+        bold: "700"
+      }
+    },
+    spacing: {
+      xs: "4px",
+      sm: "8px",
+      md: "16px",
+      lg: "24px",
+      xl: "32px"
+    },
+    borderRadius: {
+      sm: "6px",
+      md: "8px",
+      lg: "12px"
     }
   };
 
-  // Container isolation strategy
   const isolation = {
-    wrapper: `pd-${Math.random().toString(36).substring(2, 8)}`,
-    strategy: "Shadow DOM simulation via extreme specificity",
-    reset: "all: initial; font-family: inherit; box-sizing: border-box;"
+    wrapper: `pd-${Math.random().toString(36).substring(2, 10)}`
   };
 
-  // Output templates
-  const templates = {
-    short: {
-      structure: "3-5 premium bullet points",
-      maxChars: 280,
-      hierarchy: "Benefit-first → Feature → Emotional closer",
-      mobileBehavior: "Instant scanability, no scrolling required",
-      cta: "Micro-commitment (Learn more, See details, Explore)"
-    },
-    detailed: {
-      structure: "Hook → Problem/Solution → Specs → Social Proof → CTA",
-      sections: ["Above-fold hook", "Benefit stack", "Technical specs", "Usage guide", "Trust signals"],
-      interaction: "Progressive disclosure with 'See More/Less'",
-      adOptimization: "First 250 words = ad copy testing ground"
-    }
-  };
-
-  // TRACKING & ANALYTICS CONFIGURATION
-  const tracking = {
-    googleAnalytics4: {
-      events: {
-        description_expand: "description_expand",
-        description_collapse: "description_collapse",
-        scroll_depth: "scroll_depth_50",
-        cta_click: "cta_click",
-        time_on_content: "user_engagement"
-      },
-      parameters: {
-        content_type: "product_description",
-        item_id: "{{product_id}}",
-        item_name: "{{product_title}}",
-        content_category: "{{product_category}}",
-        engagement_time_msec: "auto"
-      }
-    },
-    facebookPixel: {
-      events: {
-        viewContent: "ViewContent",
-        contentInteraction: "ContentInteraction"
-      },
-      parameters: {
-        content_ids: ["{{product_id}}"],
-        content_type: "product_group",
-        content_name: "{{product_title}}",
-        content_category: "{{product_category}}",
-        value: "{{product_price}}",
-        currency: "{{shop_currency}}"
-      },
-      microdata: "Open Graph tags for automatic product matching"
-    },
-    tiktokPixel: {
-      events: {
-        viewContent: "ViewContent",
-        clickButton: "ClickButton",
-        browse: "Browse"
-      },
-      parameters: {
-        content_id: "{{product_id}}",
-        content_type: "product",
-        content_name: "{{product_title}}",
-        content_category: "{{product_category}}",
-        value: "{{product_price}}",
-        currency: "{{shop_currency}}"
-      }
-    }
-  };
-
-  // SEO & STRUCTURED DATA
-  const seo = {
-    schemaOrg: {
-      type: "Product",
-      required: ["name", "description", "image", "offers", "sku"],
-      richResults: "Eligible for Google Shopping, rich snippets, product carousels"
-    },
-    metaOptimization: {
-      title: "60 chars max, primary keyword front-loaded",
-      description: "155 chars max, CTA included, emotional trigger",
-      keywords: "LSI keywords in first 100 words, natural density 1-2%"
-    },
-    technical: {
-      canonical: "Self-referencing canonical tag",
-      robots: "index, follow, max-snippet:-1, max-image-preview:large",
-      hreflang: "x-default and language variants if applicable",
-      breadcrumbs: "BreadcrumbList schema for navigation"
-    }
-  };
-
-  // Platform-specific optimization rules
-  const platformRules = {
-    facebook: {
-      creative: "First 125 chars must contain emotional trigger + product category",
-      headline: "Max 40 chars, benefit-focused",
-      description: "Max 125 chars, curiosity-driven",
-      callToAction: "Learn More, Shop Now, Get Offer",
-      tracking: "fbq('track', 'ViewContent') on impression, fbq('track', 'Lead') on CTA"
-    },
-    tiktok: {
-      creative: "Visual-first description, short sentences, trend-aware language",
-      hook: "First 3 seconds text overlay: Problem or bold statement",
-      caption: "Max 100 chars, hashtag-optimized (#TikTokMadeMeBuyIt)",
-      tracking: "ttq.track('ViewContent') on load, ttq.track('ClickButton') on CTA",
-      sound: "Trending audio compatibility note"
-    },
-    google: {
-      search: "Keyword-rich H1, semantic variations in H2s, first 120 words keyword-dense",
-      shopping: "Google Merchant Center feed optimization, GTIN included",
-      analytics: "Enhanced ecommerce events, engagement_time optimization",
-      coreWebVitals: "LCP <2.5s, FID <100ms, CLS <0.1"
-    }
-  };
-
-  // Constraints based on type
-  const getConstraints = () => {
-    const base = [
-      `TYPOGRAPHY_ENFORCED: base=${typography.base}, min=${typography.min}, lineHeight=${typography.lineHeight}`,
-      `ISOLATION: containerID=#${isolation.wrapper}, namespace=all-classes, reset=${isolation.reset}`,
-      `ACCESSIBILITY: WCAG AA contrast, focus states, aria-labels on interactive elements`,
-      `PERFORMANCE: No external fonts, system stack only, inline critical CSS`
-    ];
-
-    if (isShort) {
-      return [
-        ...base,
-        `FORMAT: 3-5 bullets, max ${templates.short.maxChars} chars total`,
-        `STYLE: Premium minimalism, generous whitespace, mobile-first (320px+)`,
-        `TONE: Confident but understated, no exclamation marks, no ALL CAPS`,
-        `STRUCTURE: Bold benefit (3-4 words) + colon + explanation (8-12 words)`,
-        `VISUAL: 16px base, 1.55 line-height, #1a1a1a text, subtle separators`,
-        `CTA: Single text link or button, 44px touch target, "Discover" or "Explore" language`,
-        `NO: Emojis in short version, price mentions, urgency tactics, competitor references`,
-        `SEO: Include primary keyword naturally in first bullet`,
-        `ADS: Write for Facebook ad preview (125 char visibility)`,
-        `ANALYTICS: Track CTA clicks with data-ga4="short_desc_cta_click"`
-      ];
-    } else {
-      return [
-        ...base,
-        `STRUCTURE: ${templates.detailed.structure}`,
-        `SECTIONS: ${templates.detailed.sections.join(" → ")}`,
-        `HOOK: First 2 sentences must stop scroll (pattern interrupt or curiosity gap)`,
-        `SEO: Primary keyword in H1, semantic variations in H2s, first 120 words keyword-dense`,
-        `TABLES: Specs as responsive grid (desktop: 4-col, mobile: 2-col or accordion)`,
-        `INTERACTION: "See More" reveals content >500px height, smooth 300ms transition`,
-        `TRACKING: Full GA4 + Facebook + TikTok event implementation`,
-        `MEDIA: All images max-width:100%, height:auto, lazy loading attribute`,
-        `EMBEDS: Preserve existing iframes/video, wrap in responsive container`,
-        `EMOJIS: Strategic use (max 3 per section): 🎯 (precision), 💎 (premium), ✅ (proof)`,
-        `CLOSE: Strong CTA with urgency (not hype), trust badge mention, related product teaser`,
-        `SCHEMA: JSON-LD Product schema included in script tag`,
-        `OPEN GRAPH: og:title, og:description, og:image meta ready`
-      ];
-    }
-  };
-
-  // HTML structure templates with FULL TRACKING IMPLEMENTATION
+  // Professional HTML templates with WORKING buttons
   const htmlTemplates = isShort ? `
-SHORT DESCRIPTION HTML TEMPLATE:
-<div id="${isolation.wrapper}" class="pd-root" 
-     style="font-family:${typography.family};font-size:${typography.base};line-height:${typography.lineHeight};color:${typography.color};-webkit-text-size-adjust:100%;text-size-adjust:100%;padding:16px;max-width:100%;box-sizing:border-box;"
-     data-track-view="short_description"
-     data-product-id="{{product_id}}">
+<!-- PROFESSIONAL SHORT DESCRIPTION -->
+<div id="${isolation.wrapper}" class="pd-root" style="font-family:${design.typography.family};font-size:${design.typography.base};line-height:${design.typography.lineHeight};color:${design.colors.text};max-width:100%;margin:0;padding:${design.spacing.md};box-sizing:border-box;background:${design.colors.background};-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">
   
-  <!-- SEO: Hidden structured data for rich snippets -->
-  <script type="application/ld+json" style="display:none;">
-  {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    "description": "{{short_description_text}}",
-    "sku": "{{product_id}}"
-  }
-  </script>
+  <style>
+    #${isolation.wrapper} * { box-sizing:border-box;margin:0;padding:0; }
+    #${isolation.wrapper} .pd-list { list-style:none;display:flex;flex-direction:column;gap:${design.spacing.md};margin:0 0 ${design.spacing.lg} 0; }
+    #${isolation.wrapper} .pd-item { display:flex;align-items:flex-start;gap:12px;padding:${design.spacing.sm} 0;border-bottom:1px solid ${design.colors.border}; }
+    #${isolation.wrapper} .pd-item:last-child { border-bottom:none; }
+    #${isolation.wrapper} .pd-bullet { flex-shrink:0;width:20px;height:20px;background:${design.colors.accent};color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:${design.typography.weight.bold};margin-top:2px; }
+    #${isolation.wrapper} .pd-content { flex:1; }
+    #${isolation.wrapper} .pd-label { font-weight:${design.typography.weight.semibold};color:${design.colors.text};display:block;margin-bottom:2px; }
+    #${isolation.wrapper} .pd-desc { color:${design.colors.textSecondary};font-size:15px;line-height:1.5; }
+    #${isolation.wrapper} .pd-cta { display:inline-flex;align-items:center;gap:8px;color:${design.colors.primary};text-decoration:none;font-weight:${design.typography.weight.medium};font-size:15px;padding:12px 0;transition:color 0.2s;cursor:pointer;border:none;background:none; }
+    #${isolation.wrapper} .pd-cta:hover { color:${design.colors.primaryHover}; }
+    #${isolation.wrapper} .pd-arrow { transition:transform 0.2s; }
+    #${isolation.wrapper} .pd-cta:hover .pd-arrow { transform:translateX(4px); }
+  </style>
 
-  <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;">
-    <li style="display:flex;align-items:baseline;gap:8px;">
-      <strong style="font-weight:${typography.weight.strong};color:#000;min-width:fit-content;">Benefit:</strong>
-      <span>Specific outcome with feature detail</span>
+  <ul class="pd-list">
+    <li class="pd-item">
+      <span class="pd-bullet">✓</span>
+      <div class="pd-content">
+        <span class="pd-label">Premium Quality Materials</span>
+        <span class="pd-desc">Crafted with aerospace-grade aluminum for lasting durability</span>
+      </div>
     </li>
-    <!-- Repeat 2-4 more -->
+    <li class="pd-item">
+      <span class="pd-bullet">✓</span>
+      <div class="pd-content">
+        <span class="pd-label">Ergonomic Design</span>
+        <span class="pd-desc">Engineered for all-day comfort and reduced fatigue</span>
+      </div>
+    </li>
+    <li class="pd-item">
+      <span class="pd-bullet">✓</span>
+      <div class="pd-content">
+        <span class="pd-label">30-Day Guarantee</span>
+        <span class="pd-desc">Love it or get a full refund, no questions asked</span>
+      </div>
+    </li>
   </ul>
-  
-  <!-- TRACKED CTA -->
-  <a href="#details" 
-     style="display:inline-block;margin-top:16px;font-size:16px;color:#0066cc;text-decoration:none;font-weight:500;padding:8px 0;"
-     data-ga4-event="cta_click"
-     data-ga4-params='{"content_type":"short_description","item_id":"{{product_id}}"}'
-     data-fb-event="Lead"
-     data-fb-params='{"content_name":"Short Description CTA","content_category":"{{product_category}}"}'
-     data-tt-event="ClickButton"
-     data-tt-params='{"content_type":"product","content_id":"{{product_id}}"}'>
-    Discover details →
-  </a>
+
+  <button class="pd-cta" onclick="document.getElementById('details-{{product_id}}').scrollIntoView({behavior:'smooth'})" data-ga4-event="short_desc_cta" data-fb-event="Lead" data-tt-event="ClickButton">
+    View Full Details <span class="pd-arrow">→</span>
+  </button>
 </div>` : `
-DETAILED DESCRIPTION HTML TEMPLATE:
-<article id="${isolation.wrapper}" class="pd-root" 
-         style="font-family:${typography.family};font-size:${typography.base};line-height:${typography.lineHeight};color:${typography.color};-webkit-text-size-adjust:100%;text-size-adjust:100%;max-width:800px;margin:0 auto;padding:16px;box-sizing:border-box;"
-         data-track-view="detailed_description"
-         data-product-id="{{product_id}}"
-         itemscope itemtype="https://schema.org/Product">
-  
-  <!-- JSON-LD STRUCTURED DATA FOR SEO -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    "name": "{{product_title}}",
-    "image": "{{product_image}}",
-    "description": "{{product_description}}",
-    "sku": "{{product_id}}",
-    "brand": {
-      "@type": "Brand",
-      "name": "{{brand_name}}"
-    },
-    "offers": {
-      "@type": "Offer",
-      "url": "{{product_url}}",
-      "priceCurrency": "{{currency}}",
-      "price": "{{price}}",
-      "availability": "https://schema.org/InStock",
-      "itemCondition": "https://schema.org/NewCondition"
-    },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "{{rating}}",
-      "reviewCount": "{{review_count}}"
+<!-- PROFESSIONAL DETAILED DESCRIPTION -->
+<div id="${isolation.wrapper}" class="pd-root" style="font-family:${design.typography.family};font-size:${design.typography.base};line-height:${design.typography.lineHeight};color:${design.colors.text};max-width:720px;margin:0 auto;padding:${design.spacing.md};box-sizing:border-box;background:${design.colors.background};-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">
+
+  <style>
+    #${isolation.wrapper} * { box-sizing:border-box;margin:0;padding:0; }
+    #${isolation.wrapper} .pd-header { margin-bottom:${design.spacing.xl}; }
+    #${isolation.wrapper} .pd-title { font-size:clamp(28px, 5vw, 36px);font-weight:${design.typography.weight.bold};line-height:1.2;color:${design.colors.text};margin-bottom:${design.spacing.md};letter-spacing:-0.02em; }
+    #${isolation.wrapper} .pd-lead { font-size:18px;line-height:1.6;color:${design.colors.textSecondary};font-weight:${design.typography.weight.normal}; }
+    #${isolation.wrapper} .pd-section { margin-bottom:${design.spacing.xl}; }
+    #${isolation.wrapper} .pd-section-title { font-size:20px;font-weight:${design.typography.weight.semibold};margin-bottom:${design.spacing.md};color:${design.colors.text};display:flex;align-items:center;gap:8px; }
+    #${isolation.wrapper} .pd-icon { font-size:24px; }
+    #${isolation.wrapper} .pd-grid { display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:${design.spacing.md}; }
+    #${isolation.wrapper} .pd-card { background:${design.colors.surface};padding:${design.spacing.md};border-radius:${design.borderRadius.md};border:1px solid ${design.colors.border}; }
+    #${isolation.wrapper} .pd-card-title { font-weight:${design.typography.weight.semibold};margin-bottom:4px;color:${design.colors.text}; }
+    #${isolation.wrapper} .pd-card-text { font-size:14px;color:${design.colors.textSecondary};line-height:1.5; }
+    #${isolation.wrapper} .pd-expandable { max-height:400px;overflow:hidden;position:relative;transition:max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    #${isolation.wrapper} .pd-expandable.expanded { max-height:none; }
+    #${isolation.wrapper} .pd-fade { position:absolute;bottom:0;left:0;right:0;height:100px;background:linear-gradient(to bottom, transparent, ${design.colors.background});pointer-events:none;transition:opacity 0.3s; }
+    #${isolation.wrapper} .pd-expandable.expanded .pd-fade { opacity:0; }
+    #${isolation.wrapper} .pd-toggle { width:100%;padding:14px 24px;background:${design.colors.text};color:white;border:none;border-radius:${design.borderRadius.md};font-size:15px;font-weight:${design.typography.weight.semibold};cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:${design.spacing.md};transition:all 0.2s; }
+    #${isolation.wrapper} .pd-toggle:hover { background:#000;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.15); }
+    #${isolation.wrapper} .pd-toggle:active { transform:translateY(0); }
+    #${isolation.wrapper} .pd-toggle-icon { transition:transform 0.3s; }
+    #${isolation.wrapper} .pd-toggle[aria-expanded="true"] .pd-toggle-icon { transform:rotate(180deg); }
+    #${isolation.wrapper} .pd-specs { width:100%;border-collapse:collapse;margin-top:${design.spacing.md}; }
+    #${isolation.wrapper} .pd-specs td { padding:12px 0;border-bottom:1px solid ${design.colors.border};font-size:15px; }
+    #${isolation.wrapper} .pd-specs td:first-child { color:${design.colors.textSecondary};width:40%; }
+    #${isolation.wrapper} .pd-specs td:last-child { font-weight:${design.typography.weight.medium};color:${design.colors.text}; }
+    #${isolation.wrapper} .pd-specs tr:last-child td { border-bottom:none; }
+    #${isolation.wrapper} .pd-footer { margin-top:${design.spacing.xl};padding-top:${design.spacing.lg};border-top:2px solid ${design.colors.border};text-align:center; }
+    #${isolation.wrapper} .pd-price { font-size:32px;font-weight:${design.typography.weight.bold};color:${design.colors.text};margin-bottom:8px; }
+    #${isolation.wrapper} .pd-price-note { font-size:14px;color:${design.colors.textSecondary};margin-bottom:${design.spacing.lg}; }
+    #${isolation.wrapper} .pd-btn-primary { display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;max-width:320px;padding:16px 32px;background:${design.colors.primary};color:white;border:none;border-radius:${design.borderRadius.md};font-size:16px;font-weight:${design.typography.weight.semibold};cursor:pointer;text-decoration:none;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,102,204,0.25); }
+    #${isolation.wrapper} .pd-btn-primary:hover { background:${design.colors.primaryHover};transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,102,204,0.35); }
+    #${isolation.wrapper} .pd-btn-primary:active { transform:translateY(0); }
+    #${isolation.wrapper} .pd-trust { display:flex;align-items:center;justify-content:center;gap:24px;margin-top:${design.spacing.md};flex-wrap:wrap; }
+    #${isolation.wrapper} .pd-trust-item { display:flex;align-items:center;gap:6px;font-size:13px;color:${design.colors.textSecondary}; }
+    #${isolation.wrapper} .pd-check { color:${design.colors.accent};font-weight:${design.typography.weight.bold}; }
+    
+    @media (max-width: 640px) {
+      #${isolation.wrapper} .pd-grid { grid-template-columns:1fr; }
+      #${isolation.wrapper} .pd-title { font-size:24px; }
+      #${isolation.wrapper} .pd-lead { font-size:16px; }
     }
-  }
-  </script>
+  </style>
 
-  <!-- OPEN GRAPH FOR FACEBOOK/TIKTOK SHARING -->
-  <meta property="og:title" content="{{product_title}} | {{brand_name}}">
-  <meta property="og:description" content="{{product_description_200_chars}}">
-  <meta property="og:image" content="{{product_image}}">
-  <meta property="og:type" content="product">
-  <meta property="product:price:amount" content="{{price}}">
-  <meta property="product:price:currency" content="{{currency}}">
-
-  <!-- HOOK SECTION -->
-  <header style="margin-bottom:24px;">
-    <h1 itemprop="name" style="font-size:clamp(24px, 5vw, 32px);font-weight:${typography.weight.heading};line-height:1.2;margin:0 0 16px 0;color:#000;">
-      [Pattern-Interrupt Headline with Primary Keyword]
-    </h1>
-    <p style="font-size:18px;margin:0;color:#444;line-height:1.6;" itemprop="description">
-      [Curiosity gap or problem statement - optimized for Google featured snippet]
-    </p>
+  <header class="pd-header">
+    <h1 class="pd-title">[Compelling Headline with Primary Keyword]</h1>
+    <p class="pd-lead">[Engaging hook that addresses customer pain point and promises transformation. Keep under 150 characters for mobile.]</p>
   </header>
 
-  <!-- BENEFIT STACK -->
-  <section style="margin-bottom:24px;padding:16px;background:#f8f9fa;border-radius:8px;">
-    <h2 style="font-size:20px;margin:0 0 12px 0;">Why This Changes Everything</h2>
-    <div style="display:grid;gap:12px;">
-      <!-- 3 benefit cards with micro-conversions -->
-      <div class="benefit-card" 
-           data-ga4-event="benefit_view"
-           data-ga4-params='{"benefit_index":"1","item_id":"{{product_id}}"}'>
-        🎯 [Benefit 1 with keyword]
+  <section class="pd-section">
+    <h2 class="pd-section-title"><span class="pd-icon">✨</span> Key Benefits</h2>
+    <div class="pd-grid">
+      <div class="pd-card">
+        <div class="pd-card-title">Benefit One</div>
+        <div class="pd-card-text">Specific outcome with emotional resonance</div>
+      </div>
+      <div class="pd-card">
+        <div class="pd-card-title">Benefit Two</div>
+        <div class="pd-card-text">Feature translated to real-life advantage</div>
+      </div>
+      <div class="pd-card">
+        <div class="pd-card-title">Benefit Three</div>
+        <div class="pd-card-text">Social proof or unique differentiator</div>
       </div>
     </div>
   </section>
 
-  <!-- COLLAPSIBLE CONTENT WITH TRACKING -->
-  <div class="pd-expandable" id="pd-expand-{{product_id}}" 
-       style="max-height:500px;overflow:hidden;position:relative;transition:max-height 0.3s ease;"
-       data-ga4-event="description_view"
-       data-ga4-params='{"content_type":"detailed_description","visibility":"partial"}'>
+  <div class="pd-expandable" id="pd-expand-${isolation.wrapper}">
     
-    <section style="margin-bottom:24px;">
-      <h2 style="font-size:20px;margin:0 0 12px 0;">Technical Excellence</h2>
-      <div itemprop="material" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:12px;font-size:15px;">
-        <!-- Spec grid -->
-      </div>
+    <section class="pd-section">
+      <h2 class="pd-section-title"><span class="pd-icon">📋</span> Specifications</h2>
+      <table class="pd-specs">
+        <tr><td>Material</td><td>Premium aerospace aluminum</td></tr>
+        <tr><td>Dimensions</td><td>120mm x 80mm x 20mm</td></tr>
+        <tr><td>Weight</td><td>180g (ultra-lightweight)</td></tr>
+        <tr><td>Compatibility</td><td>Universal fit, all devices</td></tr>
+        <tr><td>Warranty</td><td>2 years full coverage</td></tr>
+      </table>
     </section>
 
-    <section style="margin-bottom:24px;">
-      <h2 style="font-size:20px;margin:0 0 12px 0;">Perfect For</h2>
-      <ul style="margin:0;padding-left:20px;">
-        <!-- Use cases with LSI keywords -->
+    <section class="pd-section">
+      <h2 class="pd-section-title"><span class="pd-icon">🎯</span> Perfect For</h2>
+      <ul style="margin-left:20px;color:${design.colors.textSecondary};">
+        <li style="margin-bottom:8px;">[Specific use case with keyword]</li>
+        <li style="margin-bottom:8px;">[Another use case]</li>
+        <li>[Final use case addressing objection]</li>
       </ul>
     </section>
 
-    <!-- GRADIENT FADE -->
-    <div class="pd-fade" style="position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(transparent, #fff);pointer-events:none;"></div>
+    <div class="pd-fade"></div>
   </div>
 
-  <!-- INTERACTIVE TOGGLE WITH FULL TRACKING -->
-  <button onclick="expandDescription('{{product_id}}')" 
-          id="btn-expand-{{product_id}}"
-          style="width:100%;padding:14px;background:#000;color:#fff;border:none;font-size:16px;font-weight:600;cursor:pointer;margin-top:8px;border-radius:6px;"
-          data-ga4-event="description_expand"
-          data-ga4-params='{"item_id":"{{product_id}}","content_type":"detailed_description","interaction_type":"see_more"}'
-          data-fb-event="ContentInteraction"
-          data-fb-params='{"content_name":"Description Expand","content_category":"{{product_category}}","value":0.5}'
-          data-tt-event="Browse"
-          data-tt-params='{"content_type":"product","content_id":"{{product_id}}","value":0.5}'>
-    See Complete Details ↓
-  </button>
-  
-  <button onclick="collapseDescription('{{product_id}}')" 
-          id="btn-collapse-{{product_id}}"
-          style="display:none;width:100%;padding:14px;background:#f0f0f0;color:#000;border:none;font-size:16px;font-weight:600;cursor:pointer;margin-top:8px;border-radius:6px;"
-          data-ga4-event="description_collapse"
-          data-ga4-params='{"item_id":"{{product_id}}"}'>
-    Show Less ↑
+  <button class="pd-toggle" id="pd-btn-${isolation.wrapper}" onclick="toggleDescription('${isolation.wrapper}')" aria-expanded="false" data-ga4-event="description_expand" data-fb-event="ContentInteraction" data-tt-event="Browse">
+    <span>Show Complete Details</span>
+    <svg class="pd-toggle-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" style="stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><path d="M4 6l4 4 4-4"/></svg>
   </button>
 
-  <!-- TRACKING SCRIPT (Inline for performance) -->
-  <script>
-    function expandDescription(pid) {
-      document.getElementById('pd-expand-' + pid).style.maxHeight = 'none';
-      document.getElementById('btn-expand-' + pid).style.display = 'none';
-      document.getElementById('btn-collapse-' + pid).style.display = 'block';
-      
-      // GA4
-      if (typeof gtag !== 'undefined') {
-        gtag('event', 'description_expand', {
-          content_type: 'detailed_description',
-          item_id: pid,
-          engagement_time_msec: 1000
-        });
-      }
-      
-      // Facebook
-      if (typeof fbq !== 'undefined') {
-        fbq('track', 'ContentInteraction', {
-          content_ids: [pid],
-          content_type: 'product_group',
-          content_name: 'Description Expanded'
-        });
-      }
-      
-      // TikTok
-      if (typeof ttq !== 'undefined') {
-        ttq.track('Browse', {
-          content_id: pid,
-          content_type: 'product'
-        });
-      }
-    }
-    
-    function collapseDescription(pid) {
-      document.getElementById('pd-expand-' + pid).style.maxHeight = '500px';
-      document.getElementById('btn-expand-' + pid).style.display = 'block';
-      document.getElementById('btn-collapse-' + pid).style.display = 'none';
-    }
-  </script>
-
-  <!-- CTA WITH CONVERSION TRACKING -->
-  <footer style="margin-top:32px;padding-top:24px;border-top:2px solid #eee;text-align:center;">
-    <p style="font-size:18px;font-weight:600;margin:0 0 16px 0;">Ready to [desired outcome with keyword]?</p>
-    <button onclick="handlePurchaseClick('{{product_id}}')"
-            style="background:#0066cc;color:#fff;padding:16px 32px;border:none;font-size:18px;font-weight:600;border-radius:8px;cursor:pointer;width:100%;max-width:300px;"
-            data-ga4-event="purchase_intent"
-            data-ga4-params='{"item_id":"{{product_id}}","value":"{{price}}","currency":"{{currency}}"}'
-            data-fb-event="InitiateCheckout"
-            data-fb-params='{"content_ids":["{{product_id}}"],"content_type":"product","value":{{price}},"currency":"{{currency}}"}'
-            data-tt-event="ClickButton"
-            data-tt-params='{"content_id":"{{product_id}}","content_type":"product","value":{{price}}}">
-      Shop Now — Fast Shipping
+  <footer class="pd-footer">
+    <div class="pd-price">$XX.XX</div>
+    <div class="pd-price-note">Free shipping • 30-day returns</div>
+    <button class="pd-btn-primary" onclick="handleAddToCart('{{product_id}}')" data-ga4-event="add_to_cart" data-fb-event="InitiateCheckout" data-tt-event="ClickButton">
+      Add to Cart <span>→</span>
     </button>
-    <p style="font-size:14px;color:#666;margin-top:12px;">✓ 30-day guarantee • ✓ Premium support</p>
+    <div class="pd-trust">
+      <span class="pd-trust-item"><span class="pd-check">✓</span> Secure Checkout</span>
+      <span class="pd-trust-item"><span class="pd-check">✓</span> 24/7 Support</span>
+      <span class="pd-trust-item"><span class="pd-check">✓</span> 30K+ Happy Customers</span>
+    </div>
   </footer>
 
-</article>`;
+  <script>
+    (function(){
+      function toggleDescription(id) {
+        const wrapper = document.getElementById('pd-' + id);
+        const expandable = document.getElementById('pd-expand-pd-' + id);
+        const btn = document.getElementById('pd-btn-pd-' + id);
+        const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+        
+        if (isExpanded) {
+          expandable.classList.remove('expanded');
+          btn.setAttribute('aria-expanded', 'false');
+          btn.querySelector('span').textContent = 'Show Complete Details';
+          // Tracking
+          if (typeof gtag !== 'undefined') gtag('event', 'description_collapse', { item_id: id });
+        } else {
+          expandable.classList.add('expanded');
+          btn.setAttribute('aria-expanded', 'true');
+          btn.querySelector('span').textContent = 'Show Less';
+          // Tracking
+          if (typeof gtag !== 'undefined') gtag('event', 'description_expand', { item_id: id, content_type: 'detailed_description' });
+          if (typeof fbq !== 'undefined') fbq('track', 'ContentInteraction', { content_ids: [id], content_type: 'product' });
+          if (typeof ttq !== 'undefined') ttq.track('Browse', { content_id: id, content_type: 'product' });
+        }
+      }
+      window.toggleDescription = toggleDescription;
+      
+      window.handleAddToCart = function(id) {
+        if (typeof gtag !== 'undefined') gtag('event', 'add_to_cart', { item_id: id });
+        if (typeof fbq !== 'undefined') fbq('track', 'InitiateCheckout', { content_ids: [id], content_type: 'product' });
+        if (typeof ttq !== 'undefined') ttq.track('ClickButton', { content_id: id, content_type: 'product' });
+        // Add actual cart logic here
+        alert('Added to cart! (Integrate with your cart system)');
+      };
+    })();
+  </script>
+</div>`;
 
-  // Build final prompt with FULL INTEGRATION
-  return `You are ${config.role}. Your mission: ${config.mission}
+  return `You are ${config.role}. ${config.mission}
 
-TARGET PLATFORMS: ${config.targetPlatforms.join(", ")}
-CONVERSION PSYCHOLOGY: ${config.psychology}
+=== DESIGN SYSTEM ===
+Colors: ${JSON.stringify(design.colors)}
+Typography: ${design.typography.family}, base ${design.typography.base}
+Style: Clean, modern, premium e-commerce aesthetic with proper spacing and visual hierarchy
 
-=== TRACKING & ANALYTICS INTEGRATION ===
+=== PROFESSIONAL REQUIREMENTS ===
+- Use the provided HTML template EXACTLY, only replace content between brackets []
+- Maintain all CSS classes and structure
+- Ensure buttons have hover states and active states
+- Use smooth transitions (0.2s-0.4s ease)
+- Mobile-first responsive design (break at 640px)
+- Proper visual hierarchy with adequate whitespace
+- Professional color palette (no bright/neon colors)
+- Subtle shadows and borders for depth
+- Icons should be emoji or simple SVG
 
-GOOGLE ANALYTICS 4 (GA4):
-Events: ${Object.entries(tracking.googleAnalytics4.events).map(([k,v]) => `${k}="${v}"`).join(', ')}
-Parameters: ${JSON.stringify(tracking.googleAnalytics4.parameters)}
-Implementation: data-ga4-event attributes + inline gtag() calls
+=== BUTTON FUNCTIONALITY ===
+- "Show Complete Details" must expand content smoothly
+- "Show Less" must collapse content
+- Button text must change dynamically
+- Arrow icon must rotate 180° when expanded
+- Smooth max-height transition (not instant)
+- All tracking events fire on interaction
 
-FACEBOOK PIXEL:
-Events: ${Object.entries(tracking.facebookPixel.events).map(([k,v]) => `${k}="${v}"`).join(', ')}
-Parameters: ${JSON.stringify(tracking.facebookPixel.parameters)}
-Implementation: data-fb-event attributes + inline fbq() calls
-Feature: ${tracking.facebookPixel.microdata}
+=== TRACKING (Auto-implemented in template) ===
+- GA4: description_expand, description_collapse, add_to_cart
+- Facebook: ContentInteraction, InitiateCheckout
+- TikTok: Browse, ClickButton
 
-TIKTOK PIXEL:
-Events: ${Object.entries(tracking.tiktokPixel.events).map(([k,v]) => `${k}="${v}"`).join(', ')}
-Parameters: ${JSON.stringify(tracking.tiktokPixel.parameters)}
-Implementation: data-tt-event attributes + inline ttq.track() calls
+=== INPUT ===
+${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.description })))}
 
-=== SEO & STRUCTURED DATA ===
+=== OUTPUT ===
+Return ONLY this JSON structure (no markdown):
+[{"id":"product_id","${outputField}":"ESCAPED_HTML_STRING"}]
 
-SCHEMA.ORG:
-Type: ${seo.schemaOrg.type}
-Required: ${seo.schemaOrg.required.join(', ')}
-Result: ${seo.schemaOrg.richResults}
-
-META OPTIMIZATION:
-Title: ${seo.metaOptimization.title}
-Description: ${seo.metaOptimization.description}
-Keywords: ${seo.metaOptimization.keywords}
-
-TECHNICAL SEO:
-Canonical: ${seo.technical.canonical}
-Robots: ${seo.technical.robots}
-Hreflang: ${seo.technical.hreflang}
-Breadcrumbs: ${seo.technical.breadcrumbs}
-
-=== PLATFORM-SPECIFIC RULES ===
-
-FACEBOOK ADS:
-${Object.entries(platformRules.facebook).map(([k,v]) => `- ${k}: ${v}`).join('\n')}
-
-TIKTOK ADS:
-${Object.entries(platformRules.tiktok).map(([k,v]) => `- ${k}: ${v}`).join('\n')}
-
-GOOGLE (SEARCH + SHOPPING + ANALYTICS):
-${Object.entries(platformRules.google).map(([k,v]) => `- ${k}: ${v}`).join('\n')}
-
-=== HTML TEMPLATE ===
-${htmlTemplates}
-
-=== STRICT CONSTRAINTS ===
-${getConstraints().map(c => `• ${c}`).join('\n')}
-
-=== INPUT DATA ===
-${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.description })), null, 2)}
-
-=== OUTPUT FORMAT (JSON array only) ===
-[
-  {
-    "id": "exact_product_id_from_input",
-    "${outputField}": "HTML_STRING_ESCAPED",
-    "seo_meta": {
-      "title": "60 chars max",
-      "description": "155 chars max",
-      "keywords": ["keyword1", "keyword2"]
-    },
-    "tracking_ready": true,
-    "schema_included": true
-  }
-]
-
-=== CRITICAL RULES ===
-1. Escape all double quotes in HTML with \\\\"
-2. Remove all line breaks in HTML output (single line string)
-3. No markdown formatting in response
-4. No explanations, comments, or text outside JSON array
-5. Each product processed in isolation - no cross-referencing
-6. HTML must be production-ready, no template placeholders
-7. Verify all CSS values meet minimum 16px requirement
-8. MUST include complete JSON-LD script tag in detailed description
-9. MUST include data-ga4, data-fb, data-tt attributes on all interactive elements
-10. MUST optimize first 125 chars for Facebook ad preview
-11. MUST include primary keyword in H1 for Google SEO
-12. Test mental model: "Will this convert a TikTok scroller in 3 seconds AND rank on Google?"
+CRITICAL:
+1. Escape all quotes in HTML with \\\\"
+2. Output HTML as single line (no \\n)
+3. Replace [bracket placeholders] with actual content
+4. Keep all CSS and JavaScript exactly as provided
+5. Ensure toggleDescription function works with unique IDs
+6. Professional tone: confident, clear, benefit-focused
 
 Generate now.`;
 }
