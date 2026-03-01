@@ -834,122 +834,102 @@ function buildPrompt(
   const isShort = outputField === 'shortDescription';
 
   const fieldLabel = isShort
-    ? 'shortDescription (high-conversion compact bullets)'
-    : 'detailedDescription (performance-optimized structured article)';
+    ? 'shortDescription (professional compact bullets)'
+    : 'detailedDescription (refined professional article)';
 
   const outputStructure = isShort
-    ? '{ "id": "original_product_id", "shortDescription": "PERFORMANCE_HTML_STRING" }'
-    : '{ "id": "original_product_id", "detailedDescription": "CONVERSION_OPTIMIZED_HTML5_ARTICLE" }';
+    ? '{ "id": "original_product_id", "shortDescription": "PROFESSIONAL_HTML_STRING" }'
+    : '{ "id": "original_product_id", "detailedDescription": "COMPLETE_HTML5_ARTICLE" }';
 
   const typographyRules = [
-    'CRITICAL TYPOGRAPHY:',
-    '- Base font-size EXACTLY 16px.',
-    '- Body text range 16–17px max.',
-    '- H1 26–30px.',
-    '- H2 20–22px.',
-    '- H3 max 18px.',
-    '- Line-height 1.55–1.65.',
-    '- Use system font stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;',
-    '- Color #333333 on light background.',
-    '- -webkit-text-size-adjust:100%; text-size-adjust:100%;',
-    '- Maintain professional vertical rhythm (16–22px spacing).'
+    'CRITICAL TYPOGRAPHY RULES:',
+    '- Base font-size MUST be exactly 16px inside wrapper.',
+    '- Body text range: 16px–17px maximum.',
+    '- H1 range: 26px–30px (never oversized).',
+    '- H2 range: 20px–22px.',
+    '- H3 maximum 18px.',
+    '- Use clamp() safely with hard minimum: clamp(16px, 1vw + 0.4rem, 17px).',
+    '- Line-height between 1.55 and 1.65.',
+    '- Use professional system font stack: font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;',
+    '- Text color #333333 on light background.',
+    '- Add -webkit-text-size-adjust:100%; text-size-adjust:100%;',
+    '- Avoid oversized headings or excessive bold usage.',
+    '- Maintain clean vertical rhythm (16–22px section spacing).'
   ];
 
   const isolationRules = [
-    'THEME ISOLATION:',
-    '- Wrap everything inside unique container ID (#product-{{id}}).',
-    '- Define all styles inside wrapper.',
+    'CRITICAL THEME ISOLATION:',
+    '- Wrap everything in unique container ID (example: #product-{{id}}).',
+    '- Explicitly set base styles inside wrapper.',
     '- Avoid global selectors.',
-    '- Avoid fixed widths.',
-    '- Ensure layout not overridden by Shopify theme.'
+    '- Avoid !important unless strictly required.',
+    '- Ensure max-width is controlled (example: max-width: 100%;).'
   ];
 
   const responsiveRules = [
-    'RESPONSIVE STRUCTURE:',
-    '- width:100% fluid layout.',
-    '- Desktop max-width 980px–1100px centered.',
-    '- Mobile padding 16px.',
-    '- Tablet padding 24px.',
-    '- Desktop padding 32px.',
-    '- Images max-width:100%; height:auto;',
-    '- Tables stack below 600px.',
-    '- Use breakpoints at 600px and 992px.',
-    '- Must look clean on iPhone, Android, tablet, laptop, desktop.'
+    'RESPONSIVE BEHAVIOR:',
+    '- Layout must be fully fluid (width:100%).',
+    '- Use max-width with centered container for desktop (e.g., 960px–1100px).',
+    '- Use padding 16px on mobile, 24px on tablet, 32px on desktop.',
+    '- Ensure text never requires zoom on 320px devices.',
+    '- Use media queries for 600px and 992px breakpoints.',
+    '- Images must use max-width:100%; height:auto;',
+    '- Tables must stack vertically below 600px.',
+    '- Avoid fixed pixel widths.',
+    '- Ensure balanced spacing on tablets.',
+    '- Design must look clean on iPhone, Android, iPad, laptop, and desktop.'
   ];
 
-  const paidTrafficRules = [
-    'META + TIKTOK PSYCHOLOGY:',
-    '- First 2–3 lines must create curiosity or emotional tension.',
-    '- Hook must be scroll-stopping but professional.',
-    '- Benefit stacking early (3 fast emotional wins).',
-    '- Use short 1–2 sentence paragraphs for scanning.',
-    '- Insert micro-CTA after first section.',
-    '- Add subtle urgency cue (without hype).',
-    '- Use pattern interrupts (subhead, divider, highlight box).'
-  ];
-
-  const ga4OptimizationRules = [
-    'GA4 ENGAGEMENT OPTIMIZATION:',
-    '- Encourage scroll depth naturally.',
-    '- Add mid-page interaction trigger.',
-    '- Insert subtle anchor CTA block.',
-    '- Structure sections to increase time-on-page.',
-    '- Include expandable "See More / See Less" block.',
-    '- Ensure content hierarchy improves readability score.'
-  ];
-
-  const trustAndConversionRules = [
-    'CONVERSION STRUCTURE:',
-    '- Include objection-handling mini section.',
-    '- Add trust reinforcement (quality, materials, durability).',
-    '- Avoid exaggerated claims.',
-    '- Close with calm but confident CTA.',
-    '- Tone: premium but persuasive.'
+  const adOptimizationRules = [
+    'PROFESSIONAL CONVERSION STRUCTURE:',
+    '- Start with a clean benefit-focused introduction (Amazon-style trust tone).',
+    '- Avoid hype language.',
+    '- Use clear structured sections.',
+    '- Include trust-building language (quality, durability, satisfaction).',
+    '- Include calm professional CTA at end (e.g., "Discover the Difference").'
   ];
 
   const seoRules = [
-    'SEO OPTIMIZATION:',
-    '- Primary keyword in H1.',
-    '- Keyword relevance in first 120 words.',
+    'SEO STRUCTURE:',
+    '- Include primary keyword in H1 naturally.',
     '- Use semantic headings.',
-    '- Maintain clean HTML5 structure.'
+    '- Keep paragraphs 2–4 lines for readability.',
+    '- Maintain clean HTML hierarchy.'
   ];
 
   let constraints: string[];
 
   if (isShort) {
     constraints = [
-      'Maximum 5 bullets.',
-      'First bullet MUST act as paid-traffic hook.',
-      'Each bullet starts with bold benefit phrase.',
-      'Use maximum ONE emoji per bullet.',
-      'Spacing 10–14px.',
-      'CTA must drive action (e.g., "Discover Why", "Shop Now").',
-      'Design must feel refined but conversion-focused.',
+      'Maximum 5 concise bullets.',
+      'Tone must feel premium, refined, trustworthy.',
+      'Start each bullet with short bold benefit phrase.',
+      'Use at most ONE subtle emoji per bullet.',
+      'Body font-size MUST be exactly 16px.',
+      'Do NOT exceed 17px.',
+      'Line-height 1.5–1.6.',
+      'Keep spacing 10–14px between bullets.',
+      'Padding 12–16px.',
+      'CTA must be calm and professional.',
       ...typographyRules,
       ...isolationRules,
-      ...responsiveRules,
-      ...paidTrafficRules
+      ...responsiveRules
     ];
   } else {
     constraints = [
-      'Use HTML5 semantic structure.',
-      'Limit to 4 structured sections.',
-      'Section 1: Hook + emotional framing.',
-      'Section 2: Benefits expansion.',
-      'Section 3: Specifications table (4-column).',
-      'Section 4: Objection handling + trust reinforcement.',
-      'Include mid-content micro CTA.',
-      'Include expandable block.',
-      'Table must stack on mobile.',
+      'Use clean HTML5 structure (<h1>, <h2>, <section>).',
+      'Limit to 3–4 main structured sections.',
+      'Convert specifications into refined 4-column table.',
+      'On mobile, table must stack as vertical blocks.',
+      'Include subtle "See More / See Less" toggle (minimal animation).',
       'Toggle button minimum 44px height.',
-      'Closing CTA section clearly separated.',
+      'Avoid oversized visual elements.',
+      'Use limited emojis only where appropriate.',
+      'Closing CTA must feel premium and calm.',
       ...typographyRules,
       ...isolationRules,
       ...responsiveRules,
-      ...paidTrafficRules,
-      ...ga4OptimizationRules,
-      ...trustAndConversionRules,
+      ...adOptimizationRules,
       ...seoRules
     ];
   }
@@ -957,13 +937,13 @@ function buildPrompt(
   return `You are a JSON API. Process EACH of the ${chunk.length} products independently and return ONLY ${fieldLabel}. No cross-product mixing.
 
 {
-  "role": "Senior Performance E-commerce Architect (Meta + TikTok + GA4 Specialist)",
-  "objective": "Generate high-conversion, scroll-optimized, mobile-first HTML designed specifically for paid traffic. The content must increase engagement, scroll depth, and conversion while maintaining premium trust and professional tone.",
+  "role": "Senior E-commerce Content Architect",
+  "objective": "Generate refined, professional, Amazon-style HTML optimized for trust, clarity, and perfect readability across phone, tablet, laptop, and desktop. The result must feel premium, structured, and reliable.",
   "outputFormat": {
     ${
       isShort
-        ? '"shortDescription": "Paid-traffic optimized bullet layout with strong hook and clean mobile readability"'
-        : '"detailedDescription": "Conversion-optimized HTML5 article engineered for engagement, scroll depth, and trust-building across all devices"'
+        ? '"shortDescription": "Compact elegant HTML bullet layout"'
+        : '"detailedDescription": "Structured professional HTML article fully responsive and trust-focused"'
     }
   },
   "constraints": ${JSON.stringify(constraints, null, 2).replace(/\n/g, '\n  ')}
