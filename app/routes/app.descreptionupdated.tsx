@@ -702,7 +702,7 @@ function buildPrompt(
   const isShort = outputField === 'shortDescription';
 
   const fieldLabel = isShort
-    ? 'shortDescription (ad-optimized bullet hooks)'
+    ? 'shortDescription (professional compact bullets)'
     : 'detailedDescription (performance-optimized full article)';
 
   const outputStructure = isShort
@@ -729,7 +729,7 @@ function buildPrompt(
     '- Explicitly define typography and base styles inside wrapper.',
     '- Use extremely unique class names.',
     '- Avoid global selectors.',
-    '- Prevent Shopify theme overrides.',
+    '- Prevent Shopify theme overrides.'
   ];
 
   const adOptimizationRules = [
@@ -739,10 +739,10 @@ function buildPrompt(
     '- Prioritize emotional benefits before technical specs.',
     '- Use short 1–2 sentence paragraphs for mobile scanning.',
     '- Include benefit stacking early (3 quick emotional wins).',
-    '- Include urgency cues (limited stock, trending, bestseller when logical).',
-    '- Insert mid-page micro-CTA to improve scroll engagement.',
+    '- Include urgency cues only if natural (avoid hype tone).',
+    '- Insert subtle mid-page micro-CTA.',
     '- Above-the-fold section must stay under 250 words.',
-    '- Optimize structure to improve GA4 engagement (scroll depth + time on page).'
+    '- Optimize structure to improve GA4 engagement.'
   ];
 
   const seoRules = [
@@ -758,16 +758,22 @@ function buildPrompt(
 
   if (isShort) {
     constraints = [
-      '5-6 bullets maximum.',
-      'First bullet must act as an ad hook.',
-      'Start bullets with bolded benefit phrase.',
-      'Use emojis (🔥, 🎯, ⭐, ✅) strategically.',
-      'Prioritize emotional wins over specs.',
-      'End with strong urgency CTA (Shop Now, Limited Stock).',
-      'Container must be 100% fluid width.',
+      'Maximum 5 concise bullets.',
+      'Tone must feel premium, refined, and trustworthy — NOT aggressive.',
+      'Start each bullet with short bold benefit phrase.',
+      'Use at most ONE subtle emoji per bullet (optional).',
+      'Body font-size MUST be exactly 16px.',
+      'Do NOT exceed 17px font-size anywhere in short description.',
+      'Line-height between 1.5 and 1.6.',
+      'No large headings.',
+      'Keep spacing clean: 10–14px vertical rhythm.',
+      'Container width:100%; padding 12px–16px.',
+      'Design must look elegant on 320px mobile without zoom.',
+      'CTA must be professional (example: "Discover More", "Shop the Collection").',
+      'Avoid hype expressions like "BEST EVER", "INSANE OFFER".',
+      'Neutral color contrast (#333 text on light background).',
       ...typographyRules,
-      ...isolationRules,
-      ...adOptimizationRules
+      ...isolationRules
     ];
   } else {
     constraints = [
@@ -792,13 +798,13 @@ function buildPrompt(
   return `You are a JSON API. Process EACH of the ${chunk.length} products independently and return ONLY ${fieldLabel}. No cross-product mixing.
 
 {
-  "role": "Senior Performance E-commerce Strategist (Meta + TikTok + Google Ads Specialist)",
-  "objective": "Generate high-conversion, mobile-first HTML optimized for paid traffic and engagement metrics. Content must be readable, emotionally persuasive, SEO-structured, and fully isolated from Shopify theme styles.",
+  "role": "Senior Performance E-commerce Strategist",
+  "objective": "Generate high-conversion, mobile-first HTML optimized for readability, elegance, and paid traffic engagement. Content must feel professional, refined, and fully isolated from Shopify theme styles.",
   "outputFormat": {
     ${
       isShort
-        ? '"shortDescription": "Ad-optimized, mobile-scannable, high-CTR HTML string"'
-        : '"detailedDescription": "Performance-optimized HTML5 article with strong hooks, responsive design, interactive sections, and ad-driven structure"'
+        ? '"shortDescription": "Professional, compact, elegant HTML bullet layout optimized for mobile clarity"'
+        : '"detailedDescription": "Performance-optimized HTML5 article with structured hooks and responsive layout"'
     }
   },
   "constraints": ${JSON.stringify(constraints, null, 2).replace(/\n/g, '\n  ')}
