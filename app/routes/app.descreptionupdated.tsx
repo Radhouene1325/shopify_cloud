@@ -1397,7 +1397,8 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
   console.log('res is her ',res.data)
   const productsdescreption={
     variants: res?.data.products.edges.map((e: any) => e.node),
-        pageInfo: res?.data.products.pageInfo
+        pageInfo: res?.data.products.pageInfo,
+        category: res?.data.products.nodes.map((e: any) => e.category)
   }
   return new Response(JSON.stringify(productsdescreption), {
     status: 200,
