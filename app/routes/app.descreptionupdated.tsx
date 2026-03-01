@@ -1148,7 +1148,9 @@ for( const DESC_AI of optimizedHtml){
 
 
 
-    return Response.json(optimizedHtml);
+    return Response.json(optimizedHtml,  {headers: {
+      "Cache-Control": "public, max-age=60, s-maxage=300"
+    }});
   } catch (error) {
     console.error(error);
     return Response.json({ error: "Failed to generate content" }, { status: 500 });
