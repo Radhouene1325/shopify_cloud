@@ -1371,6 +1371,18 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                 tags
             }
         }
+        nodes{
+          category{
+            ancestorIds
+            childrenIds
+            fullName
+            isLeaf:true
+            isRoot:true
+            level
+            name
+            parentId
+          }
+        }
       
       pageInfo{
         endCursor
