@@ -619,380 +619,81 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
 
 
 
-// function buildPrompt(
-//     chunk: { id: string; descreption: string }[],
-//     outputField: 'shortDescription' | 'detailedDescription'
-//   ): string {
-//     const isShort = outputField === 'shortDescription';
-//     const fieldLabel = isShort
-//       ? 'shortDescription (bullet points only)'
-//       : 'detailedDescription (full article only)';
-  
-//     const outputStructure = isShort
-//       ? '{ "id": "original_product_id", "shortDescription": "PROFESSIONAL_HTML_STRING" }'
-//       : '{ "id": "original_product_id", "detailedDescription": "COMPLETE_HTML5_ARTICLE" }';
-  
-//     // Build constraints based on outputField with strong emphasis on theme isolation
-//     let constraints: string[];
-//     if (isShort) {
-//       constraints = [
-//         '5-6 bullets maximum.',
-//         'Start each bullet with bolded [BENEFIT].',
-//         'Use emojis (🎁, ✅, ⭐, 🔥) before or after key benefits to increase visual appeal and engagement.',
-//         'End with a clear, urgent CTA that works for ads.',
-//         'Include subtle trust signals (e.g., "Premium Quality", "Satisfaction Guaranteed") within bullets.',
-//         'Use inline styles OR unique, highly-specific class names (e.g., "prod-short-{{id}}") to completely avoid conflicts with any existing theme CSS. If using classes, include a reset or set baseline styles for all properties that might be inherited.',
-//         'Consider wrapping the entire short description in a container with a unique ID and applying styles only to descendants of that container (e.g., #short-123 .bullet).',
-//         'Make the entire short description container fluid (width: 100%) and ensure it scales perfectly on screens down to 320px wide. Avoid fixed widths; use max-width and percentages.',
-//         'Font sizes should be legible on mobile (use rem or viewport units with a fallback).',
-//         'If the raw description content is incomplete, poorly formatted, or missing elements, enhance it professionally while staying truthful to the product data.'
-//       ];
-//     } else {
-//       constraints = [
-//         'Use <h1>, <h2>, <section> with responsive font sizes (use vw, rem, or media queries).',
-//         'Convert specs into a styled <table> with exactly 4 columns: Feature | Specification | Benefit | Compatibility. On mobile (max-width: 600px), transform the table into a stacked card layout (each row becomes a block) or use overflow-x:auto to allow horizontal scrolling, whichever provides better readability. Include instructions in the CSS to handle this.',
-//         'Preserve ALL <img> tags. Limit to 3-4 sections to stay concise.',
-//         'Include an interactive "See More / See Less" section: initially show a shorter preview (first paragraph or key highlights). Clicking "See More" expands to the full detailed description in a professional magazine‑style layout. Use CSS :checked hack or a simple inline JavaScript function to toggle visibility. The expanded view should include all product details, additional trust badges, and positive buying signals. The toggle button must be easily tappable on mobile (min 44x44px).',
-//         'Use emojis (🎯, 💎, 🏆, 🌟) throughout the text to emphasize features and benefits, increasing emotional connection.',
-//         'Include a closing CTA adaptable for Google/Facebook/TikTok ads, and optionally a "Shop Now" button.',
-//         'CRITICAL: Generate inline CSS or use style tags with extremely unique class names (e.g., "product-detailed-{{id}}") to prevent any conflict with the site\'s existing theme. For maximum isolation, use inline styles on individual elements or apply a CSS reset inside the container (e.g., "all: initial; display: block;" on the wrapper and then reapply your desired styles).',
-//         'Ensure the entire detailed description is fully responsive: use fluid images (max-width:100%), flexible grid layouts (flexbox/grid with percentages), and media queries to adjust padding, font sizes, and stacking order on small screens. Test conceptually for 320px to 1200px.',
-//         'Consider using CSS clamp() for font sizes to scale smoothly.',
-//         'If the provided description content is lacking, incomplete, or poorly structured, enhance it by adding appropriate headings, organizing information logically, and filling in missing details with plausible, professional copy that matches the product context (do not invent false specifications, but improve readability and persuasion).'
-//       ];
-//     }
-  
-//     return `You are a JSON API. Process EACH of the ${chunk.length} products INDIVIDUALLY and return a JSON array with ONLY ${fieldLabel}. Analyze each product's data separately to ensure no cross-product contamination.
-  
-//       PROMPT TEMPLATE FOR EACH PRODUCT:
-//       {
-//         "role": "Senior E-commerce & Ad Copy Specialist, expert in high-conversion listings for Amazon and social ads (Google/Facebook/TikTok)",
-//         "objective": "Transform raw technical data into a visually engaging Amazon listing using professional HTML, color psychology, ad‑ready hooks, and interactive elements that boost engagement and trust. Process each product's data independently. The final HTML must be fully responsive and deliver an excellent user experience on mobile phones (down to 320px width). Most importantly, the generated code must NOT conflict with any existing theme styles—use unique class names or inline styles to ensure complete isolation.",
-//         "outputFormat": {
-//           ${
-//             isShort
-//               ? '"shortDescription": "PROFESSIONAL_HTML_STRING (SEO-optimized bullet points with strategic color accents, emojis for engagement, strong CTA, and mobile-friendly responsive layout. Must be theme-proof.)"'
-//               : '"detailedDescription": "PROFESSIONAL_HTML_STRING (A+ Content with complete HTML5 structure, color psychology, responsive design, a 4‑column specs table that adapts gracefully on mobile, an interactive \\"See More / See Less\\" section, and complete isolation from theme styles.)"'
-//           }
-//         },
-//         "stylingGuidelines": {
-//           "tone": "Luxury, sophisticated, authoritative, yet emotionally resonant — also punchy enough for social snippets. Include positive buying signals and subtle marketing cues that build trust and urgency.",
-//           "colorPalette": {
-//             "primary": "#2C3E50", "secondary": "#8B7355", "accent": "#C4A484",
-//             "background": "#F9F9F9", "text": "#333333", "highlight": "#E8D5C4",
-//             "tableHeader": "#F0E9E2", "tableBorder": "#D4C4B5"
-//           }
-//         },
-//         "constraints": ${JSON.stringify(constraints, null, 2).replace(/\n/g, '\n      ')}
-//       }
-  
-//       DATA TO PROCESS (process each object independently):
-//       ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })))}
-  
-//       Return a JSON array with EXACTLY ${chunk.length} objects. Each object: ${outputStructure}
-//       CRITICAL: All quotes in strings MUST be escaped (\\\\"). Return ONLY the JSON array, no markdown.`;
-//   }
-
-
 function buildPrompt(
-  chunk: { id: string; description: string }[],
-  outputField: 'shortDescription' | 'detailedDescription'
-): string {
-  const isShort = outputField === 'shortDescription';
+    chunk: { id: string; descreption: string }[],
+    outputField: 'shortDescription' | 'detailedDescription'
+  ): string {
+    const isShort = outputField === 'shortDescription';
+    const fieldLabel = isShort
+      ? 'shortDescription (bullet points only)'
+      : 'detailedDescription (full article only)';
   
-  const config = {
-    role: "Senior E-commerce Conversion Architect & Technical SEO Specialist",
-    mission: isShort 
-      ? "Create premium micro-copy that converts mobile scrollers into clickers"
-      : "Build immersive product narratives that reduce bounce and increase time-on-page"
-  };
-
-  // Professional design system
-  const design = {
-    colors: {
-      text: "#1a1a1a",
-      textSecondary: "#4a4a4a",
-      background: "#ffffff",
-      surface: "#f8f9fa",
-      primary: "#0066cc",
-      primaryHover: "#0052a3",
-      border: "#e5e7eb",
-      accent: "#059669"
-    },
-    typography: {
-      family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-      base: "16px",
-      lineHeight: "1.6",
-      weight: {
-        normal: "400",
-        medium: "500",
-        semibold: "600",
-        bold: "700"
-      }
-    },
-    spacing: {
-      xs: "4px",
-      sm: "8px",
-      md: "16px",
-      lg: "24px",
-      xl: "32px"
-    },
-    borderRadius: {
-      sm: "6px",
-      md: "8px",
-      lg: "12px"
-    }
-  };
-
-  const isolation = {
-    wrapper: `pd-${Math.random().toString(36).substring(2, 10)}`
-  };
-
-  // Professional HTML templates with WORKING buttons
-  const htmlTemplates = isShort ? `
-<!-- PROFESSIONAL SHORT DESCRIPTION -->
-<div id="${isolation.wrapper}" class="pd-root" style="font-family:${design.typography.family};font-size:${design.typography.base};line-height:${design.typography.lineHeight};color:${design.colors.text};max-width:100%;margin:0;padding:${design.spacing.md};box-sizing:border-box;background:${design.colors.background};-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">
+    const outputStructure = isShort
+      ? '{ "id": "original_product_id", "shortDescription": "PROFESSIONAL_HTML_STRING" }'
+      : '{ "id": "original_product_id", "detailedDescription": "COMPLETE_HTML5_ARTICLE" }';
   
-  <style>
-    #${isolation.wrapper} * { box-sizing:border-box;margin:0;padding:0; }
-    #${isolation.wrapper} .pd-list { list-style:none;display:flex;flex-direction:column;gap:${design.spacing.md};margin:0 0 ${design.spacing.lg} 0; }
-    #${isolation.wrapper} .pd-item { display:flex;align-items:flex-start;gap:12px;padding:${design.spacing.sm} 0;border-bottom:1px solid ${design.colors.border}; }
-    #${isolation.wrapper} .pd-item:last-child { border-bottom:none; }
-    #${isolation.wrapper} .pd-bullet { flex-shrink:0;width:20px;height:20px;background:${design.colors.accent};color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:${design.typography.weight.bold};margin-top:2px; }
-    #${isolation.wrapper} .pd-content { flex:1; }
-    #${isolation.wrapper} .pd-label { font-weight:${design.typography.weight.semibold};color:${design.colors.text};display:block;margin-bottom:2px; }
-    #${isolation.wrapper} .pd-desc { color:${design.colors.textSecondary};font-size:15px;line-height:1.5; }
-    #${isolation.wrapper} .pd-cta { display:inline-flex;align-items:center;gap:8px;color:${design.colors.primary};text-decoration:none;font-weight:${design.typography.weight.medium};font-size:15px;padding:12px 0;transition:color 0.2s;cursor:pointer;border:none;background:none; }
-    #${isolation.wrapper} .pd-cta:hover { color:${design.colors.primaryHover}; }
-    #${isolation.wrapper} .pd-arrow { transition:transform 0.2s; }
-    #${isolation.wrapper} .pd-cta:hover .pd-arrow { transform:translateX(4px); }
-  </style>
-
-  <ul class="pd-list">
-    <li class="pd-item">
-      <span class="pd-bullet">✓</span>
-      <div class="pd-content">
-        <span class="pd-label">Premium Quality Materials</span>
-        <span class="pd-desc">Crafted with aerospace-grade aluminum for lasting durability</span>
-      </div>
-    </li>
-    <li class="pd-item">
-      <span class="pd-bullet">✓</span>
-      <div class="pd-content">
-        <span class="pd-label">Ergonomic Design</span>
-        <span class="pd-desc">Engineered for all-day comfort and reduced fatigue</span>
-      </div>
-    </li>
-    <li class="pd-item">
-      <span class="pd-bullet">✓</span>
-      <div class="pd-content">
-        <span class="pd-label">30-Day Guarantee</span>
-        <span class="pd-desc">Love it or get a full refund, no questions asked</span>
-      </div>
-    </li>
-  </ul>
-
-  <button class="pd-cta" onclick="document.getElementById('details-{{product_id}}').scrollIntoView({behavior:'smooth'})" data-ga4-event="short_desc_cta" data-fb-event="Lead" data-tt-event="ClickButton">
-    View Full Details <span class="pd-arrow">→</span>
-  </button>
-</div>` : `
-<!-- PROFESSIONAL DETAILED DESCRIPTION -->
-<div id="${isolation.wrapper}" class="pd-root" style="font-family:${design.typography.family};font-size:${design.typography.base};line-height:${design.typography.lineHeight};color:${design.colors.text};max-width:720px;margin:0 auto;padding:${design.spacing.md};box-sizing:border-box;background:${design.colors.background};-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">
-
-  <style>
-    #${isolation.wrapper} * { box-sizing:border-box;margin:0;padding:0; }
-    #${isolation.wrapper} .pd-header { margin-bottom:${design.spacing.xl}; }
-    #${isolation.wrapper} .pd-title { font-size:clamp(28px, 5vw, 36px);font-weight:${design.typography.weight.bold};line-height:1.2;color:${design.colors.text};margin-bottom:${design.spacing.md};letter-spacing:-0.02em; }
-    #${isolation.wrapper} .pd-lead { font-size:18px;line-height:1.6;color:${design.colors.textSecondary};font-weight:${design.typography.weight.normal}; }
-    #${isolation.wrapper} .pd-section { margin-bottom:${design.spacing.xl}; }
-    #${isolation.wrapper} .pd-section-title { font-size:20px;font-weight:${design.typography.weight.semibold};margin-bottom:${design.spacing.md};color:${design.colors.text};display:flex;align-items:center;gap:8px; }
-    #${isolation.wrapper} .pd-icon { font-size:24px; }
-    #${isolation.wrapper} .pd-grid { display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:${design.spacing.md}; }
-    #${isolation.wrapper} .pd-card { background:${design.colors.surface};padding:${design.spacing.md};border-radius:${design.borderRadius.md};border:1px solid ${design.colors.border}; }
-    #${isolation.wrapper} .pd-card-title { font-weight:${design.typography.weight.semibold};margin-bottom:4px;color:${design.colors.text}; }
-    #${isolation.wrapper} .pd-card-text { font-size:14px;color:${design.colors.textSecondary};line-height:1.5; }
-    #${isolation.wrapper} .pd-expandable { max-height:400px;overflow:hidden;position:relative;transition:max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-    #${isolation.wrapper} .pd-expandable.expanded { max-height:none; }
-    #${isolation.wrapper} .pd-fade { position:absolute;bottom:0;left:0;right:0;height:100px;background:linear-gradient(to bottom, transparent, ${design.colors.background});pointer-events:none;transition:opacity 0.3s; }
-    #${isolation.wrapper} .pd-expandable.expanded .pd-fade { opacity:0; }
-    #${isolation.wrapper} .pd-toggle { width:100%;padding:14px 24px;background:${design.colors.text};color:white;border:none;border-radius:${design.borderRadius.md};font-size:15px;font-weight:${design.typography.weight.semibold};cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:${design.spacing.md};transition:all 0.2s; }
-    #${isolation.wrapper} .pd-toggle:hover { background:#000;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.15); }
-    #${isolation.wrapper} .pd-toggle:active { transform:translateY(0); }
-    #${isolation.wrapper} .pd-toggle-icon { transition:transform 0.3s; }
-    #${isolation.wrapper} .pd-toggle[aria-expanded="true"] .pd-toggle-icon { transform:rotate(180deg); }
-    #${isolation.wrapper} .pd-specs { width:100%;border-collapse:collapse;margin-top:${design.spacing.md}; }
-    #${isolation.wrapper} .pd-specs td { padding:12px 0;border-bottom:1px solid ${design.colors.border};font-size:15px; }
-    #${isolation.wrapper} .pd-specs td:first-child { color:${design.colors.textSecondary};width:40%; }
-    #${isolation.wrapper} .pd-specs td:last-child { font-weight:${design.typography.weight.medium};color:${design.colors.text}; }
-    #${isolation.wrapper} .pd-specs tr:last-child td { border-bottom:none; }
-    #${isolation.wrapper} .pd-footer { margin-top:${design.spacing.xl};padding-top:${design.spacing.lg};border-top:2px solid ${design.colors.border};text-align:center; }
-    #${isolation.wrapper} .pd-price { font-size:32px;font-weight:${design.typography.weight.bold};color:${design.colors.text};margin-bottom:8px; }
-    #${isolation.wrapper} .pd-price-note { font-size:14px;color:${design.colors.textSecondary};margin-bottom:${design.spacing.lg}; }
-    #${isolation.wrapper} .pd-btn-primary { display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;max-width:320px;padding:16px 32px;background:${design.colors.primary};color:white;border:none;border-radius:${design.borderRadius.md};font-size:16px;font-weight:${design.typography.weight.semibold};cursor:pointer;text-decoration:none;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,102,204,0.25); }
-    #${isolation.wrapper} .pd-btn-primary:hover { background:${design.colors.primaryHover};transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,102,204,0.35); }
-    #${isolation.wrapper} .pd-btn-primary:active { transform:translateY(0); }
-    #${isolation.wrapper} .pd-trust { display:flex;align-items:center;justify-content:center;gap:24px;margin-top:${design.spacing.md};flex-wrap:wrap; }
-    #${isolation.wrapper} .pd-trust-item { display:flex;align-items:center;gap:6px;font-size:13px;color:${design.colors.textSecondary}; }
-    #${isolation.wrapper} .pd-check { color:${design.colors.accent};font-weight:${design.typography.weight.bold}; }
-    
-    @media (max-width: 640px) {
-      #${isolation.wrapper} .pd-grid { grid-template-columns:1fr; }
-      #${isolation.wrapper} .pd-title { font-size:24px; }
-      #${isolation.wrapper} .pd-lead { font-size:16px; }
+    // Build constraints based on outputField with strong emphasis on theme isolation
+    let constraints: string[];
+    if (isShort) {
+      constraints = [
+        '5-6 bullets maximum.',
+        'Start each bullet with bolded [BENEFIT].',
+        'Use emojis (🎁, ✅, ⭐, 🔥) before or after key benefits to increase visual appeal and engagement.',
+        'End with a clear, urgent CTA that works for ads.',
+        'Include subtle trust signals (e.g., "Premium Quality", "Satisfaction Guaranteed") within bullets.',
+        'Use inline styles OR unique, highly-specific class names (e.g., "prod-short-{{id}}") to completely avoid conflicts with any existing theme CSS. If using classes, include a reset or set baseline styles for all properties that might be inherited.',
+        'Consider wrapping the entire short description in a container with a unique ID and applying styles only to descendants of that container (e.g., #short-123 .bullet).',
+        'Make the entire short description container fluid (width: 100%) and ensure it scales perfectly on screens down to 320px wide. Avoid fixed widths; use max-width and percentages.',
+        'Font sizes should be legible on mobile (use rem or viewport units with a fallback).',
+        'If the raw description content is incomplete, poorly formatted, or missing elements, enhance it professionally while staying truthful to the product data.'
+      ];
+    } else {
+      constraints = [
+        'Use <h1>, <h2>, <section> with responsive font sizes (use vw, rem, or media queries).',
+        'Convert specs into a styled <table> with exactly 4 columns: Feature | Specification | Benefit | Compatibility. On mobile (max-width: 600px), transform the table into a stacked card layout (each row becomes a block) or use overflow-x:auto to allow horizontal scrolling, whichever provides better readability. Include instructions in the CSS to handle this.',
+        'Preserve ALL <img> tags. Limit to 3-4 sections to stay concise.',
+        'Include an interactive "See More / See Less" section: initially show a shorter preview (first paragraph or key highlights). Clicking "See More" expands to the full detailed description in a professional magazine‑style layout. Use CSS :checked hack or a simple inline JavaScript function to toggle visibility. The expanded view should include all product details, additional trust badges, and positive buying signals. The toggle button must be easily tappable on mobile (min 44x44px).',
+        'Use emojis (🎯, 💎, 🏆, 🌟) throughout the text to emphasize features and benefits, increasing emotional connection.',
+        'Include a closing CTA adaptable for Google/Facebook/TikTok ads, and optionally a "Shop Now" button.',
+        'CRITICAL: Generate inline CSS or use style tags with extremely unique class names (e.g., "product-detailed-{{id}}") to prevent any conflict with the site\'s existing theme. For maximum isolation, use inline styles on individual elements or apply a CSS reset inside the container (e.g., "all: initial; display: block;" on the wrapper and then reapply your desired styles).',
+        'Ensure the entire detailed description is fully responsive: use fluid images (max-width:100%), flexible grid layouts (flexbox/grid with percentages), and media queries to adjust padding, font sizes, and stacking order on small screens. Test conceptually for 320px to 1200px.',
+        'Consider using CSS clamp() for font sizes to scale smoothly.',
+        'If the provided description content is lacking, incomplete, or poorly structured, enhance it by adding appropriate headings, organizing information logically, and filling in missing details with plausible, professional copy that matches the product context (do not invent false specifications, but improve readability and persuasion).'
+      ];
     }
-  </style>
-
-  <header class="pd-header">
-    <h1 class="pd-title">[Compelling Headline with Primary Keyword]</h1>
-    <p class="pd-lead">[Engaging hook that addresses customer pain point and promises transformation. Keep under 150 characters for mobile.]</p>
-  </header>
-
-  <section class="pd-section">
-    <h2 class="pd-section-title"><span class="pd-icon">✨</span> Key Benefits</h2>
-    <div class="pd-grid">
-      <div class="pd-card">
-        <div class="pd-card-title">Benefit One</div>
-        <div class="pd-card-text">Specific outcome with emotional resonance</div>
-      </div>
-      <div class="pd-card">
-        <div class="pd-card-title">Benefit Two</div>
-        <div class="pd-card-text">Feature translated to real-life advantage</div>
-      </div>
-      <div class="pd-card">
-        <div class="pd-card-title">Benefit Three</div>
-        <div class="pd-card-text">Social proof or unique differentiator</div>
-      </div>
-    </div>
-  </section>
-
-  <div class="pd-expandable" id="pd-expand-${isolation.wrapper}">
-    
-    <section class="pd-section">
-      <h2 class="pd-section-title"><span class="pd-icon">📋</span> Specifications</h2>
-      <table class="pd-specs">
-        <tr><td>Material</td><td>Premium aerospace aluminum</td></tr>
-        <tr><td>Dimensions</td><td>120mm x 80mm x 20mm</td></tr>
-        <tr><td>Weight</td><td>180g (ultra-lightweight)</td></tr>
-        <tr><td>Compatibility</td><td>Universal fit, all devices</td></tr>
-        <tr><td>Warranty</td><td>2 years full coverage</td></tr>
-      </table>
-    </section>
-
-    <section class="pd-section">
-      <h2 class="pd-section-title"><span class="pd-icon">🎯</span> Perfect For</h2>
-      <ul style="margin-left:20px;color:${design.colors.textSecondary};">
-        <li style="margin-bottom:8px;">[Specific use case with keyword]</li>
-        <li style="margin-bottom:8px;">[Another use case]</li>
-        <li>[Final use case addressing objection]</li>
-      </ul>
-    </section>
-
-    <div class="pd-fade"></div>
-  </div>
-
-  <button class="pd-toggle" id="pd-btn-${isolation.wrapper}" onclick="toggleDescription('${isolation.wrapper}')" aria-expanded="false" data-ga4-event="description_expand" data-fb-event="ContentInteraction" data-tt-event="Browse">
-    <span>Show Complete Details</span>
-    <svg class="pd-toggle-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" style="stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><path d="M4 6l4 4 4-4"/></svg>
-  </button>
-
-  <footer class="pd-footer">
-    <div class="pd-price">$XX.XX</div>
-    <div class="pd-price-note">Free shipping • 30-day returns</div>
-    <button class="pd-btn-primary" onclick="handleAddToCart('{{product_id}}')" data-ga4-event="add_to_cart" data-fb-event="InitiateCheckout" data-tt-event="ClickButton">
-      Add to Cart <span>→</span>
-    </button>
-    <div class="pd-trust">
-      <span class="pd-trust-item"><span class="pd-check">✓</span> Secure Checkout</span>
-      <span class="pd-trust-item"><span class="pd-check">✓</span> 24/7 Support</span>
-      <span class="pd-trust-item"><span class="pd-check">✓</span> 30K+ Happy Customers</span>
-    </div>
-  </footer>
-
-  <script>
-    (function(){
-      function toggleDescription(id) {
-        const wrapper = document.getElementById('pd-' + id);
-        const expandable = document.getElementById('pd-expand-pd-' + id);
-        const btn = document.getElementById('pd-btn-pd-' + id);
-        const isExpanded = btn.getAttribute('aria-expanded') === 'true';
-        
-        if (isExpanded) {
-          expandable.classList.remove('expanded');
-          btn.setAttribute('aria-expanded', 'false');
-          btn.querySelector('span').textContent = 'Show Complete Details';
-          // Tracking
-          if (typeof gtag !== 'undefined') gtag('event', 'description_collapse', { item_id: id });
-        } else {
-          expandable.classList.add('expanded');
-          btn.setAttribute('aria-expanded', 'true');
-          btn.querySelector('span').textContent = 'Show Less';
-          // Tracking
-          if (typeof gtag !== 'undefined') gtag('event', 'description_expand', { item_id: id, content_type: 'detailed_description' });
-          if (typeof fbq !== 'undefined') fbq('track', 'ContentInteraction', { content_ids: [id], content_type: 'product' });
-          if (typeof ttq !== 'undefined') ttq.track('Browse', { content_id: id, content_type: 'product' });
-        }
+  
+    return `You are a JSON API. Process EACH of the ${chunk.length} products INDIVIDUALLY and return a JSON array with ONLY ${fieldLabel}. Analyze each product's data separately to ensure no cross-product contamination.
+  
+      PROMPT TEMPLATE FOR EACH PRODUCT:
+      {
+        "role": "Senior E-commerce & Ad Copy Specialist, expert in high-conversion listings for Amazon and social ads (Google/Facebook/TikTok)",
+        "objective": "Transform raw technical data into a visually engaging Amazon listing using professional HTML, color psychology, ad‑ready hooks, and interactive elements that boost engagement and trust. Process each product's data independently. The final HTML must be fully responsive and deliver an excellent user experience on mobile phones (down to 320px width). Most importantly, the generated code must NOT conflict with any existing theme styles—use unique class names or inline styles to ensure complete isolation.",
+        "outputFormat": {
+          ${
+            isShort
+              ? '"shortDescription": "PROFESSIONAL_HTML_STRING (SEO-optimized bullet points with strategic color accents, emojis for engagement, strong CTA, and mobile-friendly responsive layout. Must be theme-proof.)"'
+              : '"detailedDescription": "PROFESSIONAL_HTML_STRING (A+ Content with complete HTML5 structure, color psychology, responsive design, a 4‑column specs table that adapts gracefully on mobile, an interactive \\"See More / See Less\\" section, and complete isolation from theme styles.)"'
+          }
+        },
+        "stylingGuidelines": {
+          "tone": "Luxury, sophisticated, authoritative, yet emotionally resonant — also punchy enough for social snippets. Include positive buying signals and subtle marketing cues that build trust and urgency.",
+          "colorPalette": {
+            "primary": "#2C3E50", "secondary": "#8B7355", "accent": "#C4A484",
+            "background": "#F9F9F9", "text": "#333333", "highlight": "#E8D5C4",
+            "tableHeader": "#F0E9E2", "tableBorder": "#D4C4B5"
+          }
+        },
+        "constraints": ${JSON.stringify(constraints, null, 2).replace(/\n/g, '\n      ')}
       }
-      window.toggleDescription = toggleDescription;
-      
-      window.handleAddToCart = function(id) {
-        if (typeof gtag !== 'undefined') gtag('event', 'add_to_cart', { item_id: id });
-        if (typeof fbq !== 'undefined') fbq('track', 'InitiateCheckout', { content_ids: [id], content_type: 'product' });
-        if (typeof ttq !== 'undefined') ttq.track('ClickButton', { content_id: id, content_type: 'product' });
-        // Add actual cart logic here
-        alert('Added to cart! (Integrate with your cart system)');
-      };
-    })();
-  </script>
-</div>`;
+  
+      DATA TO PROCESS (process each object independently):
+      ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })))}
+  
+      Return a JSON array with EXACTLY ${chunk.length} objects. Each object: ${outputStructure}
+      CRITICAL: All quotes in strings MUST be escaped (\\\\"). Return ONLY the JSON array, no markdown.`;
+  }
 
-  return `You are ${config.role}. ${config.mission}
 
-=== DESIGN SYSTEM ===
-Colors: ${JSON.stringify(design.colors)}
-Typography: ${design.typography.family}, base ${design.typography.base}
-Style: Clean, modern, premium e-commerce aesthetic with proper spacing and visual hierarchy
-
-=== PROFESSIONAL REQUIREMENTS ===
-- Use the provided HTML template EXACTLY, only replace content between brackets []
-- Maintain all CSS classes and structure
-- Ensure buttons have hover states and active states
-- Use smooth transitions (0.2s-0.4s ease)
-- Mobile-first responsive design (break at 640px)
-- Proper visual hierarchy with adequate whitespace
-- Professional color palette (no bright/neon colors)
-- Subtle shadows and borders for depth
-- Icons should be emoji or simple SVG
-
-=== BUTTON FUNCTIONALITY ===
-- "Show Complete Details" must expand content smoothly
-- "Show Less" must collapse content
-- Button text must change dynamically
-- Arrow icon must rotate 180° when expanded
-- Smooth max-height transition (not instant)
-- All tracking events fire on interaction
-
-=== TRACKING (Auto-implemented in template) ===
-- GA4: description_expand, description_collapse, add_to_cart
-- Facebook: ContentInteraction, InitiateCheckout
-- TikTok: Browse, ClickButton
-
-=== INPUT ===
-${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.description })))}
-
-=== OUTPUT ===
-Return ONLY this JSON structure (no markdown):
-[{"id":"product_id","${outputField}":"ESCAPED_HTML_STRING"}]
-
-CRITICAL:
-1. Escape all quotes in HTML with \\\\"
-2. Output HTML as single line (no \\n)
-3. Replace [bracket placeholders] with actual content
-4. Keep all CSS and JavaScript exactly as provided
-5. Ensure toggleDescription function works with unique IDs
-6. Professional tone: confident, clear, benefit-focused
-
-Generate now.`;
-}
 
 // Usage example:
 // buildOptimizedPrompt([{id: "123", description: "Product text..."}], 'detailedDescription')
