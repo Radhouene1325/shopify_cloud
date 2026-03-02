@@ -1232,6 +1232,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                 id
                 descriptionHtml
                 tags
+                handle
             }
         }
         nodes{
