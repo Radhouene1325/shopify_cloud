@@ -1233,7 +1233,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                 descriptionHtml
                 tags
                 handle
-                variants(first: 100) {
+                variants(first: 10) {
                   edges {
                     node {
                       id
@@ -1241,25 +1241,8 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                       
                       inventoryItem{
                         countryCodeOfOrigin
-                        # inventoryLevel(locationId: $locationId){
-                          
-                          
-                        #   location{
-                        #     id
-                        #     name
-                        #     address{
-                        #     address1
-                        #     address2
-                        #     city
-                        #     country
-                        #     countryCode
-                        #     formatted
-                        #     province
-                        #   }
-                        #   }
-                         
-                        # }
-                        inventoryLevels(first: 100) {
+                   
+                        inventoryLevels(first: 10) {
                           edges {
                             node {
                               location{
