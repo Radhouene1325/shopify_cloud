@@ -1273,7 +1273,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                                   countryCode
                                   formatted
                                   province
-                                  postalCode
+                                  
                                   zip
                                 }
                               }
