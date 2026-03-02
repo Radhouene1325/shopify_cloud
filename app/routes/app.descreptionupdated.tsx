@@ -1270,14 +1270,13 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                         }
 
                         sku
-                        barcode
-                        requiresShipping
-                        trackInventory
-                        inventoryQuantities{
-                          location{
-                            id
-                          }
+                        trackedEditable{
+                          locked
+                          reason
                         }
+                        
+                        tracked
+                        
                       }
                     }
                   }
