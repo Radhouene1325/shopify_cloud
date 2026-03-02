@@ -1241,6 +1241,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                       inventoryItem{
                         countryCodeOfOrigin
                         inventoryLevel{
+                          locationId
                           quantity
                           location{
                             id
