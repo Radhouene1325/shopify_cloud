@@ -1241,23 +1241,44 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                       
                       inventoryItem{
                         countryCodeOfOrigin
-                        inventoryLevel(locationId: $locationId){
+                        # inventoryLevel(locationId: $locationId){
                           
                           
-                          location{
-                            id
-                            name
-                            address{
-                            address1
-                            address2
-                            city
-                            country
-                            countryCode
-                            formatted
-                            province
-                          }
-                          }
+                        #   location{
+                        #     id
+                        #     name
+                        #     address{
+                        #     address1
+                        #     address2
+                        #     city
+                        #     country
+                        #     countryCode
+                        #     formatted
+                        #     province
+                        #   }
+                        #   }
                          
+                        # }
+                        inventoryLevels(first: 100) {
+                          edges {
+                            node {
+                              location{
+                                id
+                                activatable
+                                address{
+                                  address1
+                                  address2
+                                  city
+                                  country
+                                  countryCode
+                                  formatted
+                                  province
+                                  postalCode
+                                  zip
+                                }
+                              }
+                            }
+                          }
                         }
 
                         countryHarmonizedSystemCodes(first: 100) {
