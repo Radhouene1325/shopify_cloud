@@ -202,7 +202,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
   // Process products in batches to avoid token limit truncation
   // DeepSeek-chat has max 8192 output tokens; shortDescription + detailedDescription together can exceed this.
   // Split into two API calls per chunk: one for shortDescription, one for detailedDescription.
-  const BATCH_SIZE = 1;
+  const BATCH_SIZE = 20;
   const allResults: any[] = [];
 
   function chunkArray<T>(array: T[], size: number): T[][] {
