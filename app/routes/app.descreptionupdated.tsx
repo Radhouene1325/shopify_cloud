@@ -1246,8 +1246,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                           location{
                             id
                             name
-                          }
-                          address{
+                            address{
                             address1
                             address2
                             city
@@ -1255,6 +1254,8 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                             province
                             postalCode
                           }
+                          }
+                         
                         }
 
                         countryHarmonizedSystemCodes(first: 100) {
