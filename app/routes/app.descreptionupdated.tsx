@@ -1252,8 +1252,9 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                             address2
                             city
                             country
+                            countryCode
+                            formatted
                             province
-                            postalCode
                           }
                           }
                          
