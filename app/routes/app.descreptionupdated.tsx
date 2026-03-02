@@ -363,6 +363,237 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
 // buildOptimizedPrompt([{id: "123", description: "Product text..."}], 'detailedDescription')
 
 
+// function buildPrompt(
+//   chunk: { id: string; descreption: string }[],
+//   outputField: 'shortDescription' | 'detailedDescription'
+// ): string {
+//   const isShort = outputField === 'shortDescription';
+//   const fieldLabel = isShort
+//     ? 'shortDescription (concise bullet points)'
+//     : 'detailedDescription (comprehensive product content)';
+
+//   const outputStructure = isShort
+//     ? '{ "id": "original_product_id", "shortDescription": "RESPONSIVE_HTML_STRING" }'
+//     : '{ "id": "original_product_id", "detailedDescription": "RESPONSIVE_HTML_STRING" }';
+
+//   let constraints: string[];
+//   if (isShort) {
+//     constraints = [
+//       'Wrap content in: <div style="max-width:100%;overflow-wrap:break-word;">',
+//       'Use 4-5 bullet points in: <ul style="padding-left:1.2em;margin:0.5em 0;line-height:1.6;">',
+//       'Format bullets: <li style="margin-bottom:0.5em;"><strong>Benefit Name:</strong> Brief explanation</li>',
+//       'Use 1-2 emojis maximum (⭐ or ✅ for top benefits)',
+//       'Focus on BENEFITS not features (comfort, style, durability, versatility)',
+//       'Include trust signals naturally ("Premium quality", "All-day comfort")',
+//       'End with CTA: <p style="margin-top:1em;font-style:italic;">Free shipping on orders over €50!</p>',
+//       'Close wrapper: </div>',
+//       'Keep total under 150 words',
+//       'Use ONLY inline styles for spacing/layout (no font-size, no colors)',
+//       'Let Shopify theme handle typography and colors',
+//       'Preserve brand voice: professional, trustworthy, benefit-driven'
+//     ];
+//   } else {
+//     constraints = [
+//       'Wrap ALL content in: <div style="max-width:100%;overflow-wrap:break-word;word-wrap:break-word;">',
+//       'Start with: <h2 style="margin:1em 0 0.5em;line-height:1.3;">Product Overview</h2>',
+//       'Paragraphs: <p style="margin:0.8em 0;line-height:1.6;">content</p>',
+//       'Section headings: <h3 style="margin:1.2em 0 0.5em;line-height:1.3;">Section Name</h3>',
+//       'Lists: <ul style="padding-left:1.2em;margin:0.8em 0;line-height:1.6;">',
+//       'List items: <li style="margin-bottom:0.5em;">content</li>',
+//       'Include sections: "Key Features", "Benefits", "Specifications"',
+//       'Key Features: 5-6 bullet points',
+//       'Benefits: 2-3 short paragraphs',
+//       'Specifications table (RESPONSIVE):',
+//       '  <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1em 0;">',
+//       '    <table style="width:100%;min-width:280px;border-collapse:collapse;border:1px solid #ddd;">',
+//       '      <tr style="border-bottom:1px solid #ddd;">',
+//       '        <td style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;width:40%;vertical-align:top;">Feature:</td>',
+//       '        <td style="padding:0.6em 0.8em;width:60%;vertical-align:top;">Value</td>',
+//       '      </tr>',
+//       '    </table>',
+//       '  </div>',
+//       'PRESERVE ALL <img> tags and wrap: <div style="max-width:100%;margin:1em 0;"><img src="..." style="max-width:100%;height:auto;display:block;" alt="..."></div>',
+//       'Use 2-3 emojis maximum (💎, 🏆, ⭐)',
+//       'End with: <p style="margin-top:1.5em;font-style:italic;">CTA text</p>',
+//       'Close wrapper: </div>',
+      
+//       'Use ONLY inline styles for spacing/layout/responsiveness',
+//       'Let theme handle font-size, font-family, and colors',
+//       'Perfect display from 320px to 1920px screens'
+//     ];
+//   }
+
+//   return `You are a JSON API specialized in creating professional, PERFECTLY RESPONSIVE Shopify product descriptions.
+
+// ROLE: Senior E-commerce Copywriter + Responsive Design Expert
+// - Expert in Amazon A+ Content, Shopify optimization, conversion copywriting
+// - Specialist in mobile-first responsive design (320px to 1920px)
+// - Focus on benefits-driven, scannable, accessible content
+
+// OBJECTIVE: Transform raw product data into clean, semantic, RESPONSIVE HTML that:
+// - Works perfectly on ALL devices (mobile, tablet, desktop)
+// - Uses minimal inline styles (spacing/layout only)
+// - Lets Shopify theme control typography and colors
+// - Drives conversions through benefit-focused copy
+// - Preserves all existing images with responsive wrappers
+// - Follows e-commerce best practices
+
+// OUTPUT FORMAT:
+// {
+//   ${isShort 
+//     ? '"shortDescription": "RESPONSIVE_HTML (wrapped, spaced, mobile-optimized)"'
+//     : '"detailedDescription": "RESPONSIVE_HTML (structured, fluid images, scrollable tables)"'
+//   }
+// }
+
+// TONE & STYLE:
+// - Professional and trustworthy
+// - Benefit-driven (not feature-heavy)
+// - Sophisticated yet accessible
+// - Emotionally resonant for premium products
+// - Concise and scannable on small screens
+
+// BRAND-SPECIFIC GUIDELINES:
+// - Birkenstock: "legendary comfort", "anatomical footbed", "premium craftsmanship"
+// - Skechers: "Memory Foam", "all-day comfort", "lightweight design"
+// - Joma: "performance technology" (VTS, Phylon, ReactiveBall), "athletic excellence"
+// - Adidas/Nike: "iconic style", "heritage", "innovation"
+// - Vans: "classic design", "skateboard culture", "versatile style"
+// - UGG: "luxury comfort", "premium materials", "timeless design"
+// - Barefoot (Mustang, Victoria): "natural movement", "barefoot feel", "foot health"
+// - XTI: "vegan certified", "sustainable fashion"
+// - Natural World: "eco-friendly", "sustainable materials", "organic cotton"
+
+// TRUST SIGNALS (include naturally):
+// - "Premium quality"
+// - "Free shipping" (Italian market)
+// - "Satisfaction guaranteed"
+// - "Authentic [brand]"
+// - "Durable construction"
+// - "All-day comfort"
+
+// CONSTRAINTS:
+// ${JSON.stringify(constraints, null, 2).replace(/\n/g, '\n')}
+
+// RESPONSIVE INLINE STYLES (allowed for layout/spacing only):
+// ✅ max-width, width, min-width
+// ✅ margin, padding (use em units for scalability)
+// ✅ line-height (1.6 for body, 1.3 for headings)
+// ✅ overflow-x, overflow-wrap, word-wrap
+// ✅ border, border-collapse (tables only)
+// ✅ display, vertical-align
+// ✅ -webkit-overflow-scrolling:touch (smooth mobile scroll)
+
+// FORBIDDEN STYLES:
+// ❌ font-size, font-family, color, background-color
+// ❌ position:absolute/fixed
+// ❌ Custom classes or IDs
+// ❌ External CSS or <style> tags
+// ❌ JavaScript or onclick
+
+// ALLOWED HTML TAGS:
+// ✅ <div> (ONLY for responsive wrappers)
+// ✅ <h2>, <h3>, <p>, <ul>, <li>, <table>, <tr>, <td>, <strong>, <em>, <img>
+
+// EXAMPLE SHORT DESCRIPTION (RESPONSIVE):
+// <div style="max-width:100%;overflow-wrap:break-word;">
+// <ul style="padding-left:1.2em;margin:0.5em 0;line-height:1.6;">
+// <li style="margin-bottom:0.5em;"><strong>Legendary Comfort:</strong> Birkenstock's signature molded footbed provides superior arch support</li>
+// <li style="margin-bottom:0.5em;"><strong>Modern Style:</strong> Sleek white-gold colorway pairs perfectly with any casual outfit</li>
+// <li style="margin-bottom:0.5em;"><strong>All-Day Wearability:</strong> Platform sole adds height while maintaining stability</li>
+// <li style="margin-bottom:0.5em;"><strong>Premium Quality:</strong> Durable construction built to last season after season</li>
+// </ul>
+// <p style="margin-top:1em;font-style:italic;">Free shipping on orders over €50. Shop authentic Birkenstock sneakers today!</p>
+// </div>
+
+// EXAMPLE DETAILED DESCRIPTION (RESPONSIVE):
+// <div style="max-width:100%;overflow-wrap:break-word;word-wrap:break-word;">
+
+// <h2 style="margin:1em 0 0.5em;line-height:1.3;">Product Overview</h2>
+// <p style="margin:0.8em 0;line-height:1.6;">Experience the perfect fusion of Birkenstock's legendary comfort and contemporary sneaker style. The Bend Low features the brand's iconic anatomical footbed in a modern, versatile silhouette that transitions seamlessly from casual outings to outdoor adventures.</p>
+
+// <h3 style="margin:1.2em 0 0.5em;line-height:1.3;">Key Features</h3>
+// <ul style="padding-left:1.2em;margin:0.8em 0;line-height:1.6;">
+// <li style="margin-bottom:0.5em;">Signature Birkenstock molded insole for superior arch support</li>
+// <li style="margin-bottom:0.5em;">Elegant white-gold finish for versatile styling</li>
+// <li style="margin-bottom:0.5em;">Platform sole for added height and cushioning</li>
+// <li style="margin-bottom:0.5em;">Premium construction for lasting durability</li>
+// <li style="margin-bottom:0.5em;">Breathable materials keep feet fresh all day</li>
+// </ul>
+
+// <h3 style="margin:1.2em 0 0.5em;line-height:1.3;">Benefits</h3>
+// <p style="margin:0.8em 0;line-height:1.6;">The anatomical footbed conforms to your foot's natural shape, providing customized support that reduces fatigue during extended wear. Whether you're exploring the city or running daily errands, these sneakers deliver the comfort Birkenstock is famous for.</p>
+
+// <h3 style="margin:1.2em 0 0.5em;line-height:1.3;">Specifications</h3>
+// <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1em 0;">
+// <table style="width:100%;min-width:280px;border-collapse:collapse;border:1px solid #ddd;">
+// <tr style="border-bottom:1px solid #ddd;">
+// <td style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;width:40%;vertical-align:top;">Brand:</td>
+// <td style="padding:0.6em 0.8em;width:60%;vertical-align:top;">Birkenstock</td>
+// </tr>
+// <tr style="border-bottom:1px solid #ddd;">
+// <td style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;width:40%;vertical-align:top;">Model:</td>
+// <td style="padding:0.6em 0.8em;width:60%;vertical-align:top;">Bend Low</td>
+// </tr>
+// <tr style="border-bottom:1px solid #ddd;">
+// <td style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;width:40%;vertical-align:top;">Color:</td>
+// <td style="padding:0.6em 0.8em;width:60%;vertical-align:top;">White-Gold</td>
+// </tr>
+// <tr style="border-bottom:1px solid #ddd;">
+// <td style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;width:40%;vertical-align:top;">Sole Type:</td>
+// <td style="padding:0.6em 0.8em;width:60%;vertical-align:top;">Platform</td>
+// </tr>
+// <tr style="border-bottom:1px solid #ddd;">
+// <td style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;width:40%;vertical-align:top;">Closure:</td>
+// <td style="padding:0.6em 0.8em;width:60%;vertical-align:top;">Lace-up</td>
+// </tr>
+// <tr>
+// <td style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;width:40%;vertical-align:top;">Season:</td>
+// <td style="padding:0.6em 0.8em;width:60%;vertical-align:top;">Spring/Autumn</td>
+// </tr>
+// </table>
+// </div>
+
+
+// </div>
+
+// CRITICAL IMAGE HANDLING:
+// When you find images in original content like:
+// <img src="https://example.com/image.jpg" alt="Product">
+
+// Transform to responsive format:
+// <div style="max-width:100%;margin:1em 0;">
+// <img src="https://example.com/image.jpg" style="max-width:100%;height:auto;display:block;" alt="Product">
+// </div>
+
+// DATA TO PROCESS (analyze each independently):
+// ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })), null, 2)}
+
+// PROCESSING INSTRUCTIONS:
+// 1. Analyze each product's raw content separately
+// 2. Extract: brand, features, specifications, ALL images
+// 3. Transform into benefit-focused, scannable copy
+// 4. Wrap everything in responsive container div
+// 5. Add proper spacing with inline styles (em units)
+// 6. Make tables scrollable on mobile with wrapper div
+// 7. Wrap ALL images in responsive divs with fluid styles
+// 8. Preserve ALL <img> tags exactly as they appear
+// 9. Convert specifications to clean, responsive table
+// 10. Add trust signals and compelling CTA
+// 11. Ensure perfect display: 320px, 768px, 1024px, 1920px
+
+// Return JSON array with EXACTLY ${chunk.length} objects.
+// Format: ${outputStructure}
+
+// CRITICAL: 
+// - Escape all quotes in HTML: \\"
+// - Return ONLY the JSON array
+// - NO markdown code blocks
+// - NO explanatory text
+// - Just pure JSON
+// - Perfect responsive on ALL devices`;
+// }
+
 function buildPrompt(
   chunk: { id: string; descreption: string }[],
   outputField: 'shortDescription' | 'detailedDescription'
@@ -412,11 +643,15 @@ function buildPrompt(
       '      </tr>',
       '    </table>',
       '  </div>',
+
+      // NEW: Size chart section
+      'If size information is present in the description (e.g., EU sizes, US sizes, foot length, or any size-related data), create a separate "Size Chart" section with a responsive table. Use the same table styling as the specifications table (same wrapper, border, cell padding). The table should have appropriate columns based on the data: for shoes, typical columns are "EU", "US", "UK", "Foot Length (cm)". For clothing, columns might be "Size", "Chest (cm)", "Waist (cm)", etc. If the data is incomplete, infer a standard size chart for the product category and include a note that sizes are approximate. The table must be fully responsive and scrollable on mobile.',
+
       'PRESERVE ALL <img> tags and wrap: <div style="max-width:100%;margin:1em 0;"><img src="..." style="max-width:100%;height:auto;display:block;" alt="..."></div>',
       'Use 2-3 emojis maximum (💎, 🏆, ⭐)',
       'End with: <p style="margin-top:1.5em;font-style:italic;">CTA text</p>',
       'Close wrapper: </div>',
-      'Total: 300-400 words max',
+
       'Use ONLY inline styles for spacing/layout/responsiveness',
       'Let theme handle font-size, font-family, and colors',
       'Perfect display from 320px to 1920px screens'
@@ -437,12 +672,13 @@ OBJECTIVE: Transform raw product data into clean, semantic, RESPONSIVE HTML that
 - Drives conversions through benefit-focused copy
 - Preserves all existing images with responsive wrappers
 - Follows e-commerce best practices
+- Extracts size information and presents it in a clean, responsive size chart table when available
 
 OUTPUT FORMAT:
 {
   ${isShort 
     ? '"shortDescription": "RESPONSIVE_HTML (wrapped, spaced, mobile-optimized)"'
-    : '"detailedDescription": "RESPONSIVE_HTML (structured, fluid images, scrollable tables)"'
+    : '"detailedDescription": "RESPONSIVE_HTML (structured, fluid images, scrollable tables, size chart when applicable)"'
   }
 }
 
@@ -506,23 +742,43 @@ EXAMPLE SHORT DESCRIPTION (RESPONSIVE):
 <p style="margin-top:1em;font-style:italic;">Free shipping on orders over €50. Shop authentic Birkenstock sneakers today!</p>
 </div>
 
-EXAMPLE DETAILED DESCRIPTION (RESPONSIVE):
+EXAMPLE DETAILED DESCRIPTION WITH SIZE CHART (RESPONSIVE):
 <div style="max-width:100%;overflow-wrap:break-word;word-wrap:break-word;">
 
 <h2 style="margin:1em 0 0.5em;line-height:1.3;">Product Overview</h2>
-<p style="margin:0.8em 0;line-height:1.6;">Experience the perfect fusion of Birkenstock's legendary comfort and contemporary sneaker style. The Bend Low features the brand's iconic anatomical footbed in a modern, versatile silhouette that transitions seamlessly from casual outings to outdoor adventures.</p>
+<p style="margin:0.8em 0;line-height:1.6;">Experience the perfect fusion of Birkenstock's legendary comfort and contemporary sneaker style...</p>
 
 <h3 style="margin:1.2em 0 0.5em;line-height:1.3;">Key Features</h3>
 <ul style="padding-left:1.2em;margin:0.8em 0;line-height:1.6;">
 <li style="margin-bottom:0.5em;">Signature Birkenstock molded insole for superior arch support</li>
 <li style="margin-bottom:0.5em;">Elegant white-gold finish for versatile styling</li>
-<li style="margin-bottom:0.5em;">Platform sole for added height and cushioning</li>
-<li style="margin-bottom:0.5em;">Premium construction for lasting durability</li>
-<li style="margin-bottom:0.5em;">Breathable materials keep feet fresh all day</li>
+...
 </ul>
 
-<h3 style="margin:1.2em 0 0.5em;line-height:1.3;">Benefits</h3>
-<p style="margin:0.8em 0;line-height:1.6;">The anatomical footbed conforms to your foot's natural shape, providing customized support that reduces fatigue during extended wear. Whether you're exploring the city or running daily errands, these sneakers deliver the comfort Birkenstock is famous for.</p>
+<h3 style="margin:1.2em 0 0.5em;line-height:1.3;">Size Chart (EU sizes)</h3>
+<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1em 0;">
+<table style="width:100%;min-width:280px;border-collapse:collapse;border:1px solid #ddd;">
+<tr style="border-bottom:1px solid #ddd;background-color:#f2f2f2;">
+<th style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;text-align:left;">EU</th>
+<th style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;text-align:left;">US</th>
+<th style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;text-align:left;">UK</th>
+<th style="padding:0.6em 0.8em;font-weight:bold;text-align:left;">Foot Length (cm)</th>
+</tr>
+<tr style="border-bottom:1px solid #ddd;">
+<td style="padding:0.6em 0.8em;border-right:1px solid #ddd;">36</td>
+<td style="padding:0.6em 0.8em;border-right:1px solid #ddd;">5.5</td>
+<td style="padding:0.6em 0.8em;border-right:1px solid #ddd;">3.5</td>
+<td style="padding:0.6em 0.8em;">23.0</td>
+</tr>
+<tr style="border-bottom:1px solid #ddd;">
+<td style="padding:0.6em 0.8em;border-right:1px solid #ddd;">37</td>
+<td style="padding:0.6em 0.8em;border-right:1px solid #ddd;">6.5</td>
+<td style="padding:0.6em 0.8em;border-right:1px solid #ddd;">4.5</td>
+<td style="padding:0.6em 0.8em;">23.8</td>
+</tr>
+...
+</table>
+</div>
 
 <h3 style="margin:1.2em 0 0.5em;line-height:1.3;">Specifications</h3>
 <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1em 0;">
@@ -531,31 +787,11 @@ EXAMPLE DETAILED DESCRIPTION (RESPONSIVE):
 <td style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;width:40%;vertical-align:top;">Brand:</td>
 <td style="padding:0.6em 0.8em;width:60%;vertical-align:top;">Birkenstock</td>
 </tr>
-<tr style="border-bottom:1px solid #ddd;">
-<td style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;width:40%;vertical-align:top;">Model:</td>
-<td style="padding:0.6em 0.8em;width:60%;vertical-align:top;">Bend Low</td>
-</tr>
-<tr style="border-bottom:1px solid #ddd;">
-<td style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;width:40%;vertical-align:top;">Color:</td>
-<td style="padding:0.6em 0.8em;width:60%;vertical-align:top;">White-Gold</td>
-</tr>
-<tr style="border-bottom:1px solid #ddd;">
-<td style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;width:40%;vertical-align:top;">Sole Type:</td>
-<td style="padding:0.6em 0.8em;width:60%;vertical-align:top;">Platform</td>
-</tr>
-<tr style="border-bottom:1px solid #ddd;">
-<td style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;width:40%;vertical-align:top;">Closure:</td>
-<td style="padding:0.6em 0.8em;width:60%;vertical-align:top;">Lace-up</td>
-</tr>
-<tr>
-<td style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;width:40%;vertical-align:top;">Season:</td>
-<td style="padding:0.6em 0.8em;width:60%;vertical-align:top;">Spring/Autumn</td>
-</tr>
+...
 </table>
 </div>
 
-<p style="margin-top:1.5em;font-style:italic;">Step into legendary comfort. Order your Birkenstock Bend Low sneakers today with free shipping on orders over €50!</p>
-
+<p style="margin-top:1.5em;font-style:italic;">Free shipping on orders over €50. Shop now!</p>
 </div>
 
 CRITICAL IMAGE HANDLING:
@@ -572,16 +808,17 @@ ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })), null, 2
 
 PROCESSING INSTRUCTIONS:
 1. Analyze each product's raw content separately
-2. Extract: brand, features, specifications, ALL images
+2. Extract: brand, features, specifications, ALL images, and ANY size information
 3. Transform into benefit-focused, scannable copy
 4. Wrap everything in responsive container div
 5. Add proper spacing with inline styles (em units)
-6. Make tables scrollable on mobile with wrapper div
-7. Wrap ALL images in responsive divs with fluid styles
-8. Preserve ALL <img> tags exactly as they appear
-9. Convert specifications to clean, responsive table
-10. Add trust signals and compelling CTA
-11. Ensure perfect display: 320px, 768px, 1024px, 1920px
+6. If size data exists, create a dedicated "Size Chart" section with a responsive table using the same styling as specifications table. Choose appropriate columns based on the product type and data available.
+7. Make tables scrollable on mobile with wrapper div
+8. Wrap ALL images in responsive divs with fluid styles
+9. Preserve ALL <img> tags exactly as they appear
+10. Convert specifications to clean, responsive table
+11. Add trust signals and compelling CTA
+12. Ensure perfect display: 320px, 768px, 1024px, 1920px
 
 Return JSON array with EXACTLY ${chunk.length} objects.
 Format: ${outputStructure}
@@ -594,8 +831,6 @@ CRITICAL:
 - Just pure JSON
 - Perfect responsive on ALL devices`;
 }
-
-
 
     const chunkPromises = chunks.map(async (chunk, idx) => {
       // console.log(`Processing chunk ${idx + 1}/${chunks.length} (${chunk.length} products) - split into 2 API calls`);
