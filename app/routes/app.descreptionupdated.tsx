@@ -416,7 +416,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
 //       'Use 2-3 emojis maximum (💎, 🏆, ⭐)',
 //       'End with: <p style="margin-top:1.5em;font-style:italic;">CTA text</p>',
 //       'Close wrapper: </div>',
-      
+//       // 'Total: 300-400 words max',
 //       'Use ONLY inline styles for spacing/layout/responsiveness',
 //       'Let theme handle font-size, font-family, and colors',
 //       'Perfect display from 320px to 1920px screens'
@@ -600,8 +600,8 @@ function buildPrompt(
 ): string {
   const isShort = outputField === 'shortDescription';
   const fieldLabel = isShort
-    ? 'shortDescription (concise bullet points)'
-    : 'detailedDescription (comprehensive product content)';
+    ? 'shortDescription (solo punti elenco + CTA)'
+    : 'detailedDescription (contenuto completo)';
 
   const outputStructure = isShort
     ? '{ "id": "original_product_id", "shortDescription": "RESPONSIVE_HTML_STRING" }'
@@ -610,51 +610,32 @@ function buildPrompt(
   let constraints: string[];
   if (isShort) {
     constraints = [
-      'Wrap content in: <div style="max-width:100%;overflow-wrap:break-word;">',
-      'Use 4-5 bullet points in: <ul style="padding-left:1.2em;margin:0.5em 0;line-height:1.6;">',
-      'Format bullets: <li style="margin-bottom:0.5em;"><strong>Benefit Name:</strong> Brief explanation</li>',
-      'Use 1-2 emojis maximum (⭐ or ✅ for top benefits)',
-      'Focus on BENEFITS not features (comfort, style, durability, versatility)',
-      'Include trust signals naturally ("Premium quality", "All-day comfort")',
-      'End with CTA: <p style="margin-top:1em;font-style:italic;">Free shipping on orders over €50!</p>',
-      'Close wrapper: </div>',
-      'Keep total under 150 words',
-      'Use ONLY inline styles for spacing/layout (no font-size, no colors)',
-      'Let Shopify theme handle typography and colors',
-      'Preserve brand voice: professional, trustworthy, benefit-driven'
+      'STRICT: La shortDescription deve contenere SOLO:',
+      '  - Un contenitore principale <div> con stili responsivi',
+      '  - Una lista non ordinata <ul> con 4-5 bullet points',
+      '  - Ogni bullet: <li><strong>Beneficio:</strong> spiegazione breve</li>',
+      '  - Un paragrafo finale <p> con call-to-action (es. spedizione gratuita)',
+      '  - NIENTE ALTRO: niente titoli <h2>, <h3>, tabelle, immagini, sezioni aggiuntive',
+      '  - Non usare emoji (o al massimo 1-2, ma non obbligatorie)',
+      'Lunghezza massima: 150 parole.',
+      'Stili consentiti: solo per spaziatura e layout (margin, padding, line-height, max-width).',
+      'Il tema Shopify gestisce font, colori e dimensioni.',
+      'Tutto il contenuto deve essere responsivo (320px in su).'
     ];
   } else {
     constraints = [
-      'Wrap ALL content in: <div style="max-width:100%;overflow-wrap:break-word;word-wrap:break-word;">',
-      'Start with: <h2 style="margin:1em 0 0.5em;line-height:1.3;">Product Overview</h2>',
-      'Paragraphs: <p style="margin:0.8em 0;line-height:1.6;">content</p>',
-      'Section headings: <h3 style="margin:1.2em 0 0.5em;line-height:1.3;">Section Name</h3>',
-      'Lists: <ul style="padding-left:1.2em;margin:0.8em 0;line-height:1.6;">',
-      'List items: <li style="margin-bottom:0.5em;">content</li>',
-      'Include sections: "Key Features", "Benefits", "Specifications"',
-      'Key Features: 5-6 bullet points',
-      'Benefits: 2-3 short paragraphs',
-      'Specifications table (RESPONSIVE):',
-      '  <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1em 0;">',
-      '    <table style="width:100%;min-width:280px;border-collapse:collapse;border:1px solid #ddd;">',
-      '      <tr style="border-bottom:1px solid #ddd;">',
-      '        <td style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;width:40%;vertical-align:top;">Feature:</td>',
-      '        <td style="padding:0.6em 0.8em;width:60%;vertical-align:top;">Value</td>',
-      '      </tr>',
-      '    </table>',
-      '  </div>',
-
-      // NEW: Size chart section
-      'If size information is present in the description (e.g., EU sizes, US sizes, foot length, or any size-related data), create a separate "Size Chart" section with a responsive table. Use the same table styling as the specifications table (same wrapper, border, cell padding). The table should have appropriate columns based on the data: for shoes, typical columns are "EU", "US", "UK", "Foot Length (cm)". For clothing, columns might be "Size", "Chest (cm)", "Waist (cm)", etc. If the data is incomplete, infer a standard size chart for the product category and include a note that sizes are approximate. The table must be fully responsive and scrollable on mobile.',
-
-      'PRESERVE ALL <img> tags and wrap: <div style="max-width:100%;margin:1em 0;"><img src="..." style="max-width:100%;height:auto;display:block;" alt="..."></div>',
-      'Use 2-3 emojis maximum (💎, 🏆, ⭐)',
-      'End with: <p style="margin-top:1.5em;font-style:italic;">CTA text</p>',
-      'Close wrapper: </div>',
-
-      'Use ONLY inline styles for spacing/layout/responsiveness',
-      'Let theme handle font-size, font-family, and colors',
-      'Perfect display from 320px to 1920px screens'
+      'La detailedDescription DEVE includere TUTTI questi elementi (se presenti nei dati o ricavabili):',
+      '  1. <h2>Product Overview</h2> con 1-2 paragrafi introduttivi.',
+      '  2. <h3>Key Features</h3> con lista <ul> di 5-6 caratteristiche.',
+      '  3. <h3>Benefits</h3> con 2-3 paragrafi che spiegano i vantaggi.',
+      '  4. <h3>Specifications</h3> con tabella responsiva a due colonne (Feature | Value).',
+      '  5. Se sono presenti informazioni sulle taglie (misure, conversioni EU/US, lunghezza piede), creare una sezione <h3>Size Chart</h3> con tabella a 4 colonne (EU | US | UK | Foot Length cm) o colonne appropriate.',
+      '  6. Tutte le immagini originali (<img>) devono essere preservate e avvolte in <div style="max-width:100%;margin:1em 0;"><img style="max-width:100%;height:auto;display:block;" ...></div>',
+      '  7. Un paragrafo finale <p> con CTA (es. "Free shipping on orders over €50!").',
+      'La tabella delle specifiche e quella delle taglie devono essere avvolte in un contenitore con overflow-x:auto per lo scorrimento orizzontale su mobile.',
+      'Usare SOLO stili inline per layout/responsività (margin, padding, line-height, max-width, overflow, border).',
+      'Non usare colori, font-size, font-family (lasciarli al tema).',
+      'Il risultato deve essere perfettamente visibile da 320px a 1920px.'
     ];
   }
 
@@ -672,13 +653,13 @@ OBJECTIVE: Transform raw product data into clean, semantic, RESPONSIVE HTML that
 - Drives conversions through benefit-focused copy
 - Preserves all existing images with responsive wrappers
 - Follows e-commerce best practices
-- Extracts size information and presents it in a clean, responsive size chart table when available
+- **Distingue nettamente short e detailed description**: la short è solo bullet points + CTA; la detailed include tutte le sezioni (sommario, caratteristiche, benefici, specifiche, tabella taglie se disponibile, immagini, CTA).**
 
 OUTPUT FORMAT:
 {
   ${isShort 
-    ? '"shortDescription": "RESPONSIVE_HTML (wrapped, spaced, mobile-optimized)"'
-    : '"detailedDescription": "RESPONSIVE_HTML (structured, fluid images, scrollable tables, size chart when applicable)"'
+    ? '"shortDescription": "RESPONSIVE_HTML (solo bullet points e CTA)"'
+    : '"detailedDescription": "RESPONSIVE_HTML (struttura completa: overview, features, benefits, specs, size chart, immagini, CTA)"'
   }
 }
 
@@ -731,7 +712,7 @@ ALLOWED HTML TAGS:
 ✅ <div> (ONLY for responsive wrappers)
 ✅ <h2>, <h3>, <p>, <ul>, <li>, <table>, <tr>, <td>, <strong>, <em>, <img>
 
-EXAMPLE SHORT DESCRIPTION (RESPONSIVE):
+ESEMPIO shortDescription (CORRETTO, solo bullet + CTA):
 <div style="max-width:100%;overflow-wrap:break-word;">
 <ul style="padding-left:1.2em;margin:0.5em 0;line-height:1.6;">
 <li style="margin-bottom:0.5em;"><strong>Legendary Comfort:</strong> Birkenstock's signature molded footbed provides superior arch support</li>
@@ -742,7 +723,7 @@ EXAMPLE SHORT DESCRIPTION (RESPONSIVE):
 <p style="margin-top:1em;font-style:italic;">Free shipping on orders over €50. Shop authentic Birkenstock sneakers today!</p>
 </div>
 
-EXAMPLE DETAILED DESCRIPTION WITH SIZE CHART (RESPONSIVE):
+ESEMPIO detailedDescription (CON TABELLA TAGLIE):
 <div style="max-width:100%;overflow-wrap:break-word;word-wrap:break-word;">
 
 <h2 style="margin:1em 0 0.5em;line-height:1.3;">Product Overview</h2>
@@ -752,10 +733,9 @@ EXAMPLE DETAILED DESCRIPTION WITH SIZE CHART (RESPONSIVE):
 <ul style="padding-left:1.2em;margin:0.8em 0;line-height:1.6;">
 <li style="margin-bottom:0.5em;">Signature Birkenstock molded insole for superior arch support</li>
 <li style="margin-bottom:0.5em;">Elegant white-gold finish for versatile styling</li>
-...
 </ul>
 
-<h3 style="margin:1.2em 0 0.5em;line-height:1.3;">Size Chart (EU sizes)</h3>
+<h3 style="margin:1.2em 0 0.5em;line-height:1.3;">Size Chart</h3>
 <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1em 0;">
 <table style="width:100%;min-width:280px;border-collapse:collapse;border:1px solid #ddd;">
 <tr style="border-bottom:1px solid #ddd;background-color:#f2f2f2;">
@@ -770,13 +750,6 @@ EXAMPLE DETAILED DESCRIPTION WITH SIZE CHART (RESPONSIVE):
 <td style="padding:0.6em 0.8em;border-right:1px solid #ddd;">3.5</td>
 <td style="padding:0.6em 0.8em;">23.0</td>
 </tr>
-<tr style="border-bottom:1px solid #ddd;">
-<td style="padding:0.6em 0.8em;border-right:1px solid #ddd;">37</td>
-<td style="padding:0.6em 0.8em;border-right:1px solid #ddd;">6.5</td>
-<td style="padding:0.6em 0.8em;border-right:1px solid #ddd;">4.5</td>
-<td style="padding:0.6em 0.8em;">23.8</td>
-</tr>
-...
 </table>
 </div>
 
@@ -787,7 +760,6 @@ EXAMPLE DETAILED DESCRIPTION WITH SIZE CHART (RESPONSIVE):
 <td style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;width:40%;vertical-align:top;">Brand:</td>
 <td style="padding:0.6em 0.8em;width:60%;vertical-align:top;">Birkenstock</td>
 </tr>
-...
 </table>
 </div>
 
@@ -807,18 +779,17 @@ DATA TO PROCESS (analyze each independently):
 ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })), null, 2)}
 
 PROCESSING INSTRUCTIONS:
-1. Analyze each product's raw content separately
-2. Extract: brand, features, specifications, ALL images, and ANY size information
-3. Transform into benefit-focused, scannable copy
-4. Wrap everything in responsive container div
-5. Add proper spacing with inline styles (em units)
-6. If size data exists, create a dedicated "Size Chart" section with a responsive table using the same styling as specifications table. Choose appropriate columns based on the product type and data available.
-7. Make tables scrollable on mobile with wrapper div
-8. Wrap ALL images in responsive divs with fluid styles
-9. Preserve ALL <img> tags exactly as they appear
-10. Convert specifications to clean, responsive table
-11. Add trust signals and compelling CTA
-12. Ensure perfect display: 320px, 768px, 1024px, 1920px
+1. Analizza ogni prodotto separatamente.
+2. Estrai: brand, caratteristiche, specifiche, immagini, informazioni sulle taglie.
+3. **Per shortDescription**: genera SOLO bullet points e CTA, nient'altro.
+4. **Per detailedDescription**: includi TUTTE le sezioni: overview, key features, benefits, specifications, size chart (se disponibile), immagini, CTA.
+5. Avvolgi tutto in un contenitore <div> responsivo.
+6. Usa esclusivamente stili inline per spaziatura e layout.
+7. Rendi le tabelle scrollabili orizzontalmente su mobile con wrapper \`overflow-x:auto\`\`.
+8. Avvolgi ogni immagine in un <div> responsivo.
+9. Preserva tutte le immagini originali.
+10. Aggiungi segnali di fiducia e una CTA convincente.
+11. Assicura la perfetta visualizzazione su dispositivi da 320px a 1920px.
 
 Return JSON array with EXACTLY ${chunk.length} objects.
 Format: ${outputStructure}
