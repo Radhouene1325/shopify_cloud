@@ -936,7 +936,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
 
 
 
-// thes is very exelent
+
 // function buildPrompt(
 //   chunk: { id: string; descreption: string }[],
 //   outputField: 'shortDescription' | 'detailedDescription'
@@ -1104,7 +1104,6 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
 // Usage example:
 // buildOptimizedPrompt([{id: "123", description: "Product text..."}], 'detailedDescription')
 
-
 function buildPrompt(
   chunk: { id: string; descreption: string }[],
   outputField: 'shortDescription' | 'detailedDescription'
@@ -1121,26 +1120,31 @@ function buildPrompt(
   let constraints: string[];
   if (isShort) {
     constraints = [
-      'Wrap entire content in: <div class="product-short-desc" style="max-width:100%;overflow-wrap:break-word;">',
-      'Use 4-5 bullet points in <ul style="padding-left:1.2em;margin:0.5em 0;line-height:1.6;">',
-      'Format bullets: <li style="margin-bottom:0.5em;"><strong>Benefit:</strong> Explanation</li>',
-      'Use 1-2 emojis maximum for key benefits',
-      'Add CTA: <p style="margin-top:1em;font-style:italic;">Free shipping on orders over €50!</p>',
+      'Wrap content in: <div style="max-width:100%;overflow-wrap:break-word;">',
+      'Use 4-5 bullet points in: <ul style="padding-left:1.2em;margin:0.5em 0;line-height:1.6;">',
+      'Format bullets: <li style="margin-bottom:0.5em;"><strong>Benefit Name:</strong> Brief explanation</li>',
+      'Use 1-2 emojis maximum (⭐ or ✅ for top benefits)',
+      'Focus on BENEFITS not features (comfort, style, durability, versatility)',
+      'Include trust signals naturally ("Premium quality", "All-day comfort")',
+      'End with CTA: <p style="margin-top:1em;font-style:italic;">Free shipping on orders over €50!</p>',
+      'Close wrapper: </div>',
       'Keep total under 150 words',
-      'Use inline styles ONLY for spacing and responsiveness',
-      'Text sizing: Let theme handle (no font-size declarations)',
-      'Ensure line-height: 1.6 for readability',
-      'All text must wrap properly on narrow screens (320px+)'
+      'Use ONLY inline styles for spacing/layout (no font-size, no colors)',
+      'Let Shopify theme handle typography and colors',
+      'Preserve brand voice: professional, trustworthy, benefit-driven'
     ];
   } else {
     constraints = [
-      'Wrap ALL content in: <div class="product-detailed-desc" style="max-width:100%;overflow-wrap:break-word;word-wrap:break-word;">',
-      'Structure: <h2> → intro <p> → <h3> sections → specs <table> → CTA',
-      'Headings: <h2 style="margin:1em 0 0.5em;line-height:1.3;">Product Overview</h2>',
+      'Wrap ALL content in: <div style="max-width:100%;overflow-wrap:break-word;word-wrap:break-word;">',
+      'Start with: <h2 style="margin:1em 0 0.5em;line-height:1.3;">Product Overview</h2>',
       'Paragraphs: <p style="margin:0.8em 0;line-height:1.6;">content</p>',
+      'Section headings: <h3 style="margin:1.2em 0 0.5em;line-height:1.3;">Section Name</h3>',
       'Lists: <ul style="padding-left:1.2em;margin:0.8em 0;line-height:1.6;">',
       'List items: <li style="margin-bottom:0.5em;">content</li>',
-      'CRITICAL - Responsive Table with mobile-first approach:',
+      'Include sections: "Key Features", "Benefits", "Specifications"',
+      'Key Features: 5-6 bullet points',
+      'Benefits: 2-3 short paragraphs',
+      'Specifications table (RESPONSIVE):',
       '  <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1em 0;">',
       '    <table style="width:100%;min-width:280px;border-collapse:collapse;border:1px solid #ddd;">',
       '      <tr style="border-bottom:1px solid #ddd;">',
@@ -1149,100 +1153,105 @@ function buildPrompt(
       '      </tr>',
       '    </table>',
       '  </div>',
-      'Table must be 2-column only (Feature | Value)',
-      'Table wrapper allows horizontal scroll on mobile if needed',
-      'PRESERVE ALL <img> tags and wrap each: <div style="max-width:100%;margin:1em 0;"><img src="..." style="max-width:100%;height:auto;display:block;" alt="..."></div>',
-      'Use 2-3 emojis maximum',
+      'PRESERVE ALL <img> tags and wrap: <div style="max-width:100%;margin:1em 0;"><img src="..." style="max-width:100%;height:auto;display:block;" alt="..."></div>',
+      'Use 2-3 emojis maximum (💎, 🏆, ⭐)',
       'End with: <p style="margin-top:1.5em;font-style:italic;">CTA text</p>',
+      'Close wrapper: </div>',
       'Total: 300-400 words max',
-      'NO custom classes, NO external CSS files',
-      'Use ONLY inline styles for layout/spacing',
-      'Let theme handle colors and font-sizes',
-      'Ensure perfect display from 320px to 1920px screens'
+      'Use ONLY inline styles for spacing/layout/responsiveness',
+      'Let theme handle font-size, font-family, and colors',
+      'Perfect display from 320px to 1920px screens'
     ];
   }
 
-  return `You are a JSON API specialized in creating PERFECTLY RESPONSIVE Shopify product descriptions.
+  return `You are a JSON API specialized in creating professional, PERFECTLY RESPONSIVE Shopify product descriptions.
 
-ROLE: Senior E-commerce Copywriter + Front-End Developer
-- Expert in mobile-first responsive design
-- Specialist in cross-device compatibility (320px to 1920px)
-- Focus on accessible, semantic HTML with minimal inline styles
+ROLE: Senior E-commerce Copywriter + Responsive Design Expert
+- Expert in Amazon A+ Content, Shopify optimization, conversion copywriting
+- Specialist in mobile-first responsive design (320px to 1920px)
+- Focus on benefits-driven, scannable, accessible content
 
-OBJECTIVE: Create descriptions that display PERFECTLY on:
-- 📱 Mobile (320px - 767px): Single column, touch-friendly, readable
-- 📱 Tablet (768px - 1024px): Optimized spacing, easy scanning
-- 🖥️ Desktop (1025px+): Professional layout, maximum readability
-
-RESPONSIVE DESIGN PRINCIPLES:
-✅ Fluid layouts (max-width:100%, no fixed widths)
-✅ Proper text wrapping (overflow-wrap, word-wrap)
-✅ Touch-friendly spacing (adequate padding/margins)
-✅ Scrollable tables on mobile (overflow-x:auto)
-✅ Responsive images (max-width:100%, height:auto)
-✅ Readable line-height (1.6 for body, 1.3 for headings)
-✅ Let theme control font-sizes and colors
-✅ Minimal inline styles (only for layout/spacing)
+OBJECTIVE: Transform raw product data into clean, semantic, RESPONSIVE HTML that:
+- Works perfectly on ALL devices (mobile, tablet, desktop)
+- Uses minimal inline styles (spacing/layout only)
+- Lets Shopify theme control typography and colors
+- Drives conversions through benefit-focused copy
+- Preserves all existing images with responsive wrappers
+- Follows e-commerce best practices
 
 OUTPUT FORMAT:
 {
   ${isShort 
     ? '"shortDescription": "RESPONSIVE_HTML (wrapped, spaced, mobile-optimized)"'
-    : '"detailedDescription": "RESPONSIVE_HTML (structured, scrollable tables, fluid images)"'
+    : '"detailedDescription": "RESPONSIVE_HTML (structured, fluid images, scrollable tables)"'
   }
 }
 
 TONE & STYLE:
-- Professional, benefit-driven, trustworthy
-- Scannable on small screens
+- Professional and trustworthy
+- Benefit-driven (not feature-heavy)
+- Sophisticated yet accessible
 - Emotionally resonant for premium products
+- Concise and scannable on small screens
 
 BRAND-SPECIFIC GUIDELINES:
 - Birkenstock: "legendary comfort", "anatomical footbed", "premium craftsmanship"
-- Skechers: "Memory Foam", "all-day comfort", "lightweight"
-- Joma: "performance technology" (VTS, Phylon), "athletic excellence"
+- Skechers: "Memory Foam", "all-day comfort", "lightweight design"
+- Joma: "performance technology" (VTS, Phylon, ReactiveBall), "athletic excellence"
 - Adidas/Nike: "iconic style", "heritage", "innovation"
-- Vans: "classic design", "versatile style"
-- UGG: "luxury comfort", "premium materials"
-- Barefoot (Mustang, Victoria): "natural movement", "barefoot feel"
-- XTI: "vegan certified", "sustainable"
-- Natural World: "eco-friendly", "organic materials"
+- Vans: "classic design", "skateboard culture", "versatile style"
+- UGG: "luxury comfort", "premium materials", "timeless design"
+- Barefoot (Mustang, Victoria): "natural movement", "barefoot feel", "foot health"
+- XTI: "vegan certified", "sustainable fashion"
+- Natural World: "eco-friendly", "sustainable materials", "organic cotton"
+
+TRUST SIGNALS (include naturally):
+- "Premium quality"
+- "Free shipping" (Italian market)
+- "Satisfaction guaranteed"
+- "Authentic [brand]"
+- "Durable construction"
+- "All-day comfort"
 
 CONSTRAINTS:
 ${JSON.stringify(constraints, null, 2).replace(/\n/g, '\n')}
 
-ALLOWED INLINE STYLES (spacing/layout only):
+RESPONSIVE INLINE STYLES (allowed for layout/spacing only):
 ✅ max-width, width, min-width
-✅ margin, padding
-✅ line-height
+✅ margin, padding (use em units for scalability)
+✅ line-height (1.6 for body, 1.3 for headings)
 ✅ overflow-x, overflow-wrap, word-wrap
-✅ border, border-collapse (tables)
+✅ border, border-collapse (tables only)
 ✅ display, vertical-align
-✅ -webkit-overflow-scrolling (for smooth mobile scroll)
+✅ -webkit-overflow-scrolling:touch (smooth mobile scroll)
 
-FORBIDDEN:
+FORBIDDEN STYLES:
 ❌ font-size, font-family, color, background-color
 ❌ position:absolute/fixed
 ❌ Custom classes or IDs
 ❌ External CSS or <style> tags
-❌ JavaScript
+❌ JavaScript or onclick
+
+ALLOWED HTML TAGS:
+✅ <div> (ONLY for responsive wrappers)
+✅ <h2>, <h3>, <p>, <ul>, <li>, <table>, <tr>, <td>, <strong>, <em>, <img>
 
 EXAMPLE SHORT DESCRIPTION (RESPONSIVE):
-<div class="product-short-desc" style="max-width:100%;overflow-wrap:break-word;">
+<div style="max-width:100%;overflow-wrap:break-word;">
 <ul style="padding-left:1.2em;margin:0.5em 0;line-height:1.6;">
-<li style="margin-bottom:0.5em;"><strong>Legendary Comfort:</strong> Birkenstock's signature molded footbed provides superior arch support for all-day wear</li>
+<li style="margin-bottom:0.5em;"><strong>Legendary Comfort:</strong> Birkenstock's signature molded footbed provides superior arch support</li>
 <li style="margin-bottom:0.5em;"><strong>Modern Style:</strong> Sleek white-gold colorway pairs perfectly with any casual outfit</li>
-<li style="margin-bottom:0.5em;"><strong>Platform Design:</strong> Added height and cushioning without sacrificing stability</li>
+<li style="margin-bottom:0.5em;"><strong>All-Day Wearability:</strong> Platform sole adds height while maintaining stability</li>
 <li style="margin-bottom:0.5em;"><strong>Premium Quality:</strong> Durable construction built to last season after season</li>
 </ul>
-<p style="margin-top:1em;font-style:italic;">Free shipping on orders over €50. Shop authentic Birkenstock today!</p>
+<p style="margin-top:1em;font-style:italic;">Free shipping on orders over €50. Shop authentic Birkenstock sneakers today!</p>
 </div>
 
 EXAMPLE DETAILED DESCRIPTION (RESPONSIVE):
-<div class="product-detailed-desc" style="max-width:100%;overflow-wrap:break-word;word-wrap:break-word;">
+<div style="max-width:100%;overflow-wrap:break-word;word-wrap:break-word;">
 
 <h2 style="margin:1em 0 0.5em;line-height:1.3;">Product Overview</h2>
-<p style="margin:0.8em 0;line-height:1.6;">Experience the perfect fusion of Birkenstock's legendary comfort and contemporary sneaker style. The Bend Low features the brand's iconic anatomical footbed in a modern, versatile silhouette.</p>
+<p style="margin:0.8em 0;line-height:1.6;">Experience the perfect fusion of Birkenstock's legendary comfort and contemporary sneaker style. The Bend Low features the brand's iconic anatomical footbed in a modern, versatile silhouette that transitions seamlessly from casual outings to outdoor adventures.</p>
 
 <h3 style="margin:1.2em 0 0.5em;line-height:1.3;">Key Features</h3>
 <ul style="padding-left:1.2em;margin:0.8em 0;line-height:1.6;">
@@ -1254,7 +1263,7 @@ EXAMPLE DETAILED DESCRIPTION (RESPONSIVE):
 </ul>
 
 <h3 style="margin:1.2em 0 0.5em;line-height:1.3;">Benefits</h3>
-<p style="margin:0.8em 0;line-height:1.6;">The anatomical footbed conforms to your foot's natural shape, providing customized support that reduces fatigue. Perfect for city exploration or daily errands.</p>
+<p style="margin:0.8em 0;line-height:1.6;">The anatomical footbed conforms to your foot's natural shape, providing customized support that reduces fatigue during extended wear. Whether you're exploring the city or running daily errands, these sneakers deliver the comfort Birkenstock is famous for.</p>
 
 <h3 style="margin:1.2em 0 0.5em;line-height:1.3;">Specifications</h3>
 <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1em 0;">
@@ -1291,36 +1300,43 @@ EXAMPLE DETAILED DESCRIPTION (RESPONSIVE):
 </div>
 
 CRITICAL IMAGE HANDLING:
-If original description contains images like:
-<img src="https://example.com/image.jpg" alt="Product detail">
+When you find images in original content like:
+<img src="https://example.com/image.jpg" alt="Product">
 
 Transform to responsive format:
 <div style="max-width:100%;margin:1em 0;">
-<img src="https://example.com/image.jpg" style="max-width:100%;height:auto;display:block;" alt="Product detail">
+<img src="https://example.com/image.jpg" style="max-width:100%;height:auto;display:block;" alt="Product">
 </div>
 
 DATA TO PROCESS (analyze each independently):
 ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })), null, 2)}
 
-PROCESSING STEPS:
-1. Extract brand, features, specs, and ALL images
-2. Create benefit-focused, scannable copy
-3. Wrap everything in responsive container div
-4. Add proper spacing with inline styles
-5. Make tables scrollable on mobile
-6. Ensure images are fluid (max-width:100%)
-7. Preserve ALL <img> tags with responsive wrapper
-8. Test conceptually for 320px, 768px, 1024px, 1920px
+PROCESSING INSTRUCTIONS:
+1. Analyze each product's raw content separately
+2. Extract: brand, features, specifications, ALL images
+3. Transform into benefit-focused, scannable copy
+4. Wrap everything in responsive container div
+5. Add proper spacing with inline styles (em units)
+6. Make tables scrollable on mobile with wrapper div
+7. Wrap ALL images in responsive divs with fluid styles
+8. Preserve ALL <img> tags exactly as they appear
+9. Convert specifications to clean, responsive table
+10. Add trust signals and compelling CTA
+11. Ensure perfect display: 320px, 768px, 1024px, 1920px
 
 Return JSON array with EXACTLY ${chunk.length} objects.
 Format: ${outputStructure}
 
 CRITICAL: 
-- Escape quotes: \\"
-- Return ONLY JSON array
-- NO markdown blocks
+- Escape all quotes in HTML: \\"
+- Return ONLY the JSON array
+- NO markdown code blocks
+- NO explanatory text
+- Just pure JSON
 - Perfect responsive on ALL devices`;
 }
+
+
 
 
     const chunkPromises = chunks.map(async (chunk, idx) => {
