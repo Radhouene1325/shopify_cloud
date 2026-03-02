@@ -1233,6 +1233,51 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                 descriptionHtml
                 tags
                 handle
+                variants(first: 100) {
+                  edges {
+                    node {
+                      id
+                      title
+                      inventoryItem{
+                        countryCodeOfOrigin
+                        inventoryLevel{
+                          quantity
+                          location{
+                            id
+                            name
+                          }
+                          address{
+                            address1
+                            address2
+                            city
+                            country
+                            province
+                            postalCode
+                          }
+                        }
+
+                        countryHarmonizedSystemCodes(first: 100) {
+                          edges {
+                            node {
+                              countryCode
+                              harmonizedSystemCode
+                            }
+                          }
+                        }
+
+                        sku
+                        barcode
+                        requiresShipping
+                        trackInventory
+                        inventoryQuantities{
+                          location{
+                            id
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
             }
         }
         nodes{
