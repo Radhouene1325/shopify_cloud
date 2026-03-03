@@ -1249,7 +1249,9 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                   id
                   linkedMetafieldValue
                   name
-                  swatch
+                  swatch{
+                    color
+                  }
                   color
                   
                 }
