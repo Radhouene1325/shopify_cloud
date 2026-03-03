@@ -941,7 +941,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
   try {
     try{
       console.log('thes from gimini')
-      const optimizedHtml_gimini =      await generateSeoHtmlgimini(API_KEY_GEMINI_GEMINI as string,updatedDescreptionAI,)
+      const optimizedHtml_gimini = await generateSeoHtmlgimini(API_KEY_GEMINI_GEMINI as string,updatedDescreptionAI,)
       const seo= await generateSeoMetadata(updatedDescreptionAI,API_KEY_GEMINI_GEMINI as string)
       seotitle_descreption_handel=seo
       optimizedHtml=optimizedHtml_gimini
