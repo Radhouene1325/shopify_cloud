@@ -1316,7 +1316,24 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                     node {
                       id
                       title
-                      
+                      selectedOptions{
+                        name
+                        value
+                        optionValue{
+                          id
+                          name
+                          hasVariants
+                          linkedMetafieldValue
+                          swatch{
+                            color
+                            image{
+                              id 
+                              alt
+                              url
+                            }
+                          }
+                        }
+                      }
                       inventoryItem{
                         countryCodeOfOrigin
                    
