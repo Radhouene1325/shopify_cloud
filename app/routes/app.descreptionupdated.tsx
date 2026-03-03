@@ -1251,9 +1251,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                   name
                   swatch
                   color
-                  image{
-                    
-                  }
+                  
                 }
               }
                 title
