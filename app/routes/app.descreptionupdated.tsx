@@ -1247,11 +1247,11 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                           id
                           altText
                           thumbhash
-                          url{
-                            transform{
-                              scale
-                            }
-                          }
+                          # url{
+                          #   transform{
+                          #     scale
+                          #   }
+                          # }
 
                         }
                       }
