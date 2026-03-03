@@ -1329,7 +1329,10 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                             image{
                               id 
                               alt
-                              url
+                              image{
+                                id
+                                url
+                              }
                             }
                           }
                         }
