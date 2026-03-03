@@ -1142,7 +1142,7 @@ export default function Descriptionupdated(){
                 {/* <td>{v.product.title}</td>
                 <td>{v.product.id}</td> */}
                 <td>
-                  <img src={v.featuredMedia?.image?.url ?? ''} alt={v.featuredMedia?.image?.altText ?? ''} width={v.featuredMedia?.image?.width ?? 0} height={v.featuredMedia?.image?.height ?? 0} />
+                  <img src={v.featuredMedia?.image?.url ?? ''} alt={v.featuredMedia?.image?.altText ?? ''} width={20} height={20} />
                 </td>
                  <td>{v.title}</td>
                 <td>{v.id}</td>
