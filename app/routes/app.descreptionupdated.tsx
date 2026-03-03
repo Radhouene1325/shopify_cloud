@@ -1240,21 +1240,30 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                 media(first: 10) {
                   edges{
                     node{
-                      alt
-                      id
-                      preview{
-                        image{
-                          id
-                          altText
-                          thumbhash
-                          # url{
-                          #   transform{
-                          #     scale
-                          #   }
-                          # }
+                      ... on MediaImage {
+                id
+                image {
+                  url
+                  altText
+                  width
+                  height
+                }
+              }
+                      # alt
+                      # id
+                      # preview{
+                      #   image{
+                      #     id
+                      #     altText
+                      #     thumbhash
+                      #     # url{
+                      #     #   transform{
+                      #     #     scale
+                      #     #   }
+                      #     # }
 
-                        }
-                      }
+                      #   }
+                      # }
                     }
                   }
                 }
