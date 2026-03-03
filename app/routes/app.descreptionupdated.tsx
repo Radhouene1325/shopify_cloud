@@ -1124,11 +1124,11 @@ export default function Descriptionupdated(){
                         setSelected(prev => [
                           ...prev,
                           {
-                            ...v, // spread all properties of v to satisfy SelectedVariant type
-                            id: v.id,
-                            descreption: v.descriptionHtml,
-                            tags:v.tags,
-                            handel:v.handle
+                            // ...v, // spread all properties of v to satisfy SelectedVariant type
+                            id: v?.id,
+                            descreption: v?.descriptionHtml,
+                            tags:v?.tags,
+                            handel:v?.handle
                           }
                         ]);
                       } else {
