@@ -1100,8 +1100,8 @@ export default function Descriptionupdated(){
           <thead>
             <tr>
               <th>Select</th>
-              {/* <th>Product Title</th>
-              <th>Product ID</th> */}
+              
+            <th>Product image</th> 
               <th>title</th>
               <th>product ID</th>
               <th>descreption</th>
@@ -1141,6 +1141,9 @@ export default function Descriptionupdated(){
                 </td>
                 {/* <td>{v.product.title}</td>
                 <td>{v.product.id}</td> */}
+                <td>
+                  <img src={v.featuredMedia?.image?.url ?? ''} alt={v.featuredMedia?.image?.altText ?? ''} width={v.featuredMedia?.image?.width ?? 0} height={v.featuredMedia?.image?.height ?? 0} />
+                </td>
                  <td>{v.title}</td>
                 <td>{v.id}</td>
                 <td>{v.descriptionHtml}</td>
