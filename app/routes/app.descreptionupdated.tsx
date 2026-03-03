@@ -1237,6 +1237,17 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                 descriptionHtml
                 tags
                 handle
+                featuredMedia {
+          ... on MediaImage {
+            id
+            image {
+              url
+              altText
+              width
+              height
+            }
+          }
+        }
                 media(first: 10) {
                   edges{
                     node{
