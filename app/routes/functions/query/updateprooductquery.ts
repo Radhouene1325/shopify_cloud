@@ -7,7 +7,7 @@ mutation UpdateProductDescription($product: ProductUpdateInput!) {
       title
       descriptionHtml
       tags
-      handel
+      handle
       seo{
       title
       description
