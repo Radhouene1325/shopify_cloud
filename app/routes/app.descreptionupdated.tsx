@@ -1067,7 +1067,8 @@ export default function Descriptionupdated(){
         .map((v: any) => ({
           id: v.id,
           descreption: v.descriptionHtml,
-          tags:v.tags
+          tags:v.tags,
+          handel:v.handle
         }));
   
       setSelected(autoSelected);
@@ -1105,6 +1106,7 @@ export default function Descriptionupdated(){
               <th>product ID</th>
               <th>descreption</th>
               <th>tags</th>
+              <th>handel</th>
               {/* <th>Inventory</th>
               <th>Policy</th> */}
             </tr>
@@ -1125,7 +1127,8 @@ export default function Descriptionupdated(){
                             ...v, // spread all properties of v to satisfy SelectedVariant type
                             id: v.id,
                             descreption: v.descriptionHtml,
-                            tags:v.tags
+                            tags:v.tags,
+                            handel:v.handle
                           }
                         ]);
                       } else {
@@ -1148,6 +1151,7 @@ export default function Descriptionupdated(){
                  
                 )}
                 </td>
+                <td>{v.handle}</td>
                 {/* <td>{v.inventoryQuantity}</td>
                 <td>{v.inventoryPolicy}</td> */}
               </tr>
@@ -1233,6 +1237,27 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                 descriptionHtml
                 tags
                 handle
+                media(first: 10) {
+                  edges{
+                    node{
+                      alt
+                      id
+                      preview{
+                        image{
+                          id
+                          altText
+                          thumbhash
+                          url{
+                            transform{
+                              scale
+                            }
+                          }
+
+                        }
+                      }
+                    }
+                  }
+                }
                 variants(first: 10) {
                   edges {
                     node {
