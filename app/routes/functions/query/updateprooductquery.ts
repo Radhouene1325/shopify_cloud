@@ -7,6 +7,11 @@ mutation UpdateProductDescription($product: ProductUpdateInput!) {
       title
       descriptionHtml
       tags
+      handel
+      seo{
+      title
+      description
+      }
       metafields(first: 5) {
         nodes {
           namespace

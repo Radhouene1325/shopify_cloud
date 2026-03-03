@@ -15,6 +15,7 @@ import JSON5 from "json5";
 import  { generateSeoHtmlGemini } from "./functions/parser";
 import { productsupdated } from "./functions/query/updateprooductquery";
 import { parserData } from "@/parser/parser_data";
+import { generateSeoMetadata } from "./functions/propmtsSEO/buildSEOPrompt";
   interface DeepSeekResponse {
     choices?: Array<{
       message?: {
@@ -29,7 +30,7 @@ import { parserData } from "@/parser/parser_data";
     tags:string[]
   }
 
-  async function sendPrompt(prompt: string, API_KEY_GEMINI: string) {
+  export async function sendPrompt(prompt: string, API_KEY_GEMINI: string) {
     try {
       const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
         method: 'POST',
@@ -851,7 +852,7 @@ CRITICAL:
     // console.log(`Total products processed: ${allResults.length}/${updatedDescreptionAI.length}`);
 
     return allResults;
-  }
+}
 
   //     try {
   //       const batchResponse = await sendPrompt(batchPrompt, API_KEY_GEMINI);
@@ -936,20 +937,24 @@ export async function action({context ,request }: ActionFunctionArgs) {
     );
   }
   let optimizedHtml
+  let seotitle_descreption_handel
   try {
     try{
       console.log('thes from gimini')
       const optimizedHtml_gimini =      await generateSeoHtmlgimini(API_KEY_GEMINI_GEMINI as string,updatedDescreptionAI,)
+      const seo= await generateSeoMetadata(updatedDescreptionAI,API_KEY_GEMINI_GEMINI as string)
+      seotitle_descreption_handel=seo
       optimizedHtml=optimizedHtml_gimini
     }
     catch{
       console.log('thes from deepseek')
       const optimizedHtml_deep_seek =  await generateSeoHtml(updatedDescreptionAI,API_KEY_DEEP_SEEK);
-      //  await generateSeoHtmlgimini(API_KEY_GEMINI_TESTED as string,updatedDescreptionAI,)
+      const seo= await generateSeoMetadata(updatedDescreptionAI,API_KEY_DEEP_SEEK as string)
+      seotitle_descreption_handel=seo
       optimizedHtml=optimizedHtml_deep_seek
     }
  
-    // console.log('new descreption is her and optimise ',optimizedHtml)
+     console.log('SEO_OPTIMISE_TITLE_DECPRETION_HANDEL ',seotitle_descreption_handel)
 
 let responses
 
@@ -1068,7 +1073,8 @@ export default function Descriptionupdated(){
           id: v.id,
           descreption: v.descriptionHtml,
           tags:v.tags,
-          handel:v.handle
+          handel:v.handle,
+          vendor:v.vendor
         }));
   
       setSelected(autoSelected);
@@ -1128,7 +1134,8 @@ export default function Descriptionupdated(){
                             id: v?.id,
                             descreption: v?.descriptionHtml,
                             tags:v?.tags,
-                            handel:v?.handle
+                            handel:v?.handle,
+                            vendor:v.vendor
                           }
                         ]);
                       } else {
@@ -1144,6 +1151,7 @@ export default function Descriptionupdated(){
                 <td>
                   <img src={v.featuredMedia?.image?.url ?? ''} alt={v.featuredMedia?.image?.altText ?? ''} width={200} height={200} />
                 </td>
+                <td>{v.vendor} </td>
                  <td>{v.title}</td>
                 <td>{v.id}</td>
                 <td>{v.descriptionHtml}</td>
