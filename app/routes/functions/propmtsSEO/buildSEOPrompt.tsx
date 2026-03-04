@@ -596,10 +596,10 @@ export async function getTaxonomyIdForCategory(
       let bestMatch = results[0];
       
       for (const edge of results) {
-        const node = edge.node.productTaxonomyNode;
+        const node = edge.name;
         
         // Prefer exact name match
-        if (node.name.toLowerCase() === category.toLowerCase()) {
+        if (node.toLowerCase() === category.toLowerCase()) {
           bestMatch = edge;
           break;
         }
@@ -610,7 +610,7 @@ export async function getTaxonomyIdForCategory(
         }
       }
   
-      const taxonomy = bestMatch.node.productTaxonomyNode;
+      const taxonomy = bestMatch;
       console.log(`✅ Found: ${taxonomy.fullName}`);
       console.log(`   ID: ${taxonomy.id}`);
       
@@ -629,45 +629,8 @@ async function searchTaxonomyCategory(
     searchTerm: string,
     maxResults: number = 250 // Maximum results to fetch
   ) {
-    // const SEARCH_QUERY = `#graphql
-    //   query SearchTaxonomy($query: String!) {
-    //     ProductCategory(query: $query) {
-    //         TaxonomyCategory{
-    //             ancestorIds
-    //             attributes(first:250){
-    //                 edges{
-    //                     cursor
-    //                     node{
-    //                         TaxonomyAttribute{id}
-    //                         TaxonomyChoiceListAttribute{id,name,values(first:250){edges{
-    //                             cursor
-    //                             node{
-    //                                 id
-    //                                 name
-    //                             }
-    //                         }}}
-    //                         TaxonomyMeasurementAttribute{
-    //                             id
-    //                             name
-    //                             options{key value}
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //             childrenIds
-    //             fullName
-    //             id
-    //             isArchived
-    //             isLeaf
-    //             isRoot
-    //             level
-    //             name
-    //             parentId
 
-    //         }
-    //     }
-    //   }
-    // `;
+   
    const SEARCH_QUERY=`#graphql
     query SearchTaxonomy($search: String!) {
         taxonomy {

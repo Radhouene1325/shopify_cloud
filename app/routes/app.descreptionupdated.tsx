@@ -988,7 +988,7 @@ console.log('her is the value of tamoxy',CATEGORY_TAMMOXY_ID)
               id: OLD_DESC.id,
               descriptionHtml: DESC_AI.detailedDescription,
               tags: mergedTags,
-              category:SEO?.categoryId,
+              category:CATEGORY_TAMMOXY_ID,
               handle:SEO.handle,
               productType:SEO.productType,
               seo:{
