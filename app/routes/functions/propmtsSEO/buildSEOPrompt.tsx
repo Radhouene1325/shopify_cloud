@@ -632,12 +632,38 @@ async function searchTaxonomyCategory(
     const SEARCH_QUERY = `#graphql
       query SearchTaxonomy($query: String!) {
         ProductCategory(query: $query) {
-            productTaxonomyNode{
+            TaxonomyCategory{
+                ancestorIds
+                attributes(first:250){
+                    edges{
+                        cursor
+                        node{
+                            TaxonomyAttribute{id}
+                            TaxonomyChoiceListAttribute{id,name,values(first:250){edges{
+                                cursor
+                                node{
+                                    id
+                                    name
+                                }
+                            }}}
+                            TaxonomyMeasurementAttribute{
+                                id
+                                name
+                                options{key value}
+                            }
+                        }
+                    }
+                }
+                childrenIds
                 fullName
                 id
+                isArchived
                 isLeaf
                 isRoot
+                level
                 name
+                parentId
+                
             }
         }
       }
