@@ -976,11 +976,11 @@ for( const DESC_AI of optimizedHtml){
         // console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
         // console.log('is true is very nice ')
         // Merge tags: preserve existing + add DESC_AI (productUpdate overwrites, so we must include all)
-      const CATEGORY_TAMMOXY_ID=await getTaxonomyIdForCategory(admin,SEO.categoryName)
+      const CATEGORY_TAMMOXY_ID=await getTaxonomyIdForCategory(admin,SEO.category)
 console.log('her is the value of tamoxy',CATEGORY_TAMMOXY_ID)
         const mergedTags = [...new Set([
           ...(OLD_DESC.tags || []),
-          ...(SEO.categoryName|| []),
+          ...(SEO.category|| []),
           "DESC_AI"])];
         const response = await admin.graphql(productsupdated, {
           variables: {

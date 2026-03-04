@@ -4,7 +4,7 @@ import { sendPrompt } from "@/routes/app.descreptionupdated";
 export async function generateSeoMetadata(
     products: { id: string; title: string; description: string; handle?: string; vendor?: string,image?:string,productType?:string }[],
     apiKey: string
-  ): Promise<{ id: string; seoTitle: string; seoDescription: string; handle: string,image:string,productType?:string,categoryName:string,categoryId:string }[]> {
+  ): Promise<{ id: string; seoTitle: string; seoDescription: string; handle: string,image:string,productType?:string,category:string,categoryId:string }[]> {
     const CHUNK_SIZE = 20;
     const chunks = [];
     
@@ -12,13 +12,13 @@ export async function generateSeoMetadata(
       chunks.push(products.slice(i, i + CHUNK_SIZE));
     }
   
-    const allResults: { id: string; seoTitle: string; seoDescription: string; handle: string,image:string,productType:string,categoryId:string,categoryName:string }[] = [];
+    const allResults: { id: string; seoTitle: string; seoDescription: string; handle: string,image:string,productType:string,categoryId:string,category:string }[] = [];
   
     const chunkPromises = chunks.map(async (chunk, idx) => {
       const seoPrompt = buildSEOPrompt(chunk);
   
       try {
-        const seoResults = await sendPrompt(seoPrompt, apiKey) as { id: string; seoTitle: string; seoDescription: string; handle: string,image:string,productType:string,categoryName:string,categoryId:string }[];
+        const seoResults = await sendPrompt(seoPrompt, apiKey) as { id: string; seoTitle: string; seoDescription: string; handle: string,image:string,productType:string,category:string,categoryId:string }[];
         
         if (!Array.isArray(seoResults)) {
           throw new Error(`Chunk ${idx + 1} returned invalid SEO format`);
@@ -578,17 +578,17 @@ function buildSEOPrompt(
   // Complete taxonomy search with pagination and error handling
 export async function getTaxonomyIdForCategory(
     admin: any,
-    categoryName: string
+    category: string
   ): Promise<string | null> {
     
     try {
-      console.log(`🔍 Searching for category: "${categoryName}"`);
+      console.log(`🔍 Searching for category: "${category}"`);
       
       // Search with pagination
-      const results = await searchTaxonomyCategory(admin, categoryName, 250);
+      const results = await searchTaxonomyCategory(admin, category, 250);
       
       if (results.length === 0) {
-        console.warn(`⚠️ No taxonomy found for: "${categoryName}"`);
+        console.warn(`⚠️ No taxonomy found for: "${category}"`);
         return null;
       }
   
@@ -599,7 +599,7 @@ export async function getTaxonomyIdForCategory(
         const node = edge.node.productTaxonomyNode;
         
         // Prefer exact name match
-        if (node.name.toLowerCase() === categoryName.toLowerCase()) {
+        if (node.name.toLowerCase() === category.toLowerCase()) {
           bestMatch = edge;
           break;
         }
@@ -617,7 +617,7 @@ export async function getTaxonomyIdForCategory(
       return taxonomy.id;
   
     } catch (error) {
-      console.error(`❌ Error finding taxonomy for "${categoryName}":`, error);
+      console.error(`❌ Error finding taxonomy for "${category}":`, error);
       return null;
     }
   }
