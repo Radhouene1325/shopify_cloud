@@ -969,7 +969,7 @@ for( const DESC_AI of optimizedHtml){
       const OLD_DESC=oldDescreptionsMap.get(DESC_AI.id)
       console.log(OLD_DESC.id)
       if (!OLD_DESC)continue;
-      
+
     if(DESC_AI.id===OLD_DESC.id){
         // console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
         // console.log('is true is very nice ')
@@ -1081,7 +1081,8 @@ export default function Descriptionupdated(){
           tags:v.tags,
           handel:v.handle,
           vendor:v.vendor,
-          image:v?.featuredMedia?.image?.url??''
+          image:v?.featuredMedia?.image?.url??'',
+          productType:v.productType
         }));
   
       setSelected(autoSelected);
@@ -1143,7 +1144,8 @@ export default function Descriptionupdated(){
                             tags:v?.tags,
                             handel:v?.handle,
                             vendor:v.vendor,
-                            image:v?.featuredMedia?.image?.url??''
+                            image:v?.featuredMedia?.image?.url??'',
+                            productType:v.productType
                           }
                         ]);
                       } else {
@@ -1251,6 +1253,8 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
     products(first: 15,after:$cursor) {
         edges{
             node{
+              productType
+
               options(first: 10) {
                 id
                 name
