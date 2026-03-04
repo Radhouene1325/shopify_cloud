@@ -671,7 +671,7 @@ async function searchTaxonomyCategory(
    const SEARCH_QUERY=`#graphql
     query SearchTaxonomy($search: String!) {
         taxonomy {
-          categories(first: 250, search: $search) {
+          categories(first: 10, search: $search) {
             edges {
               cursor
               node {
@@ -680,14 +680,14 @@ async function searchTaxonomyCategory(
                 fullName
                 ancestorIds
                 childrenIds
-                attributes(first: 250) {
+                attributes(first: 10) {
                   edges {
                     cursor
                     node {
                       ... on TaxonomyChoiceListAttribute {
                         id
                         name
-                        values(first: 250) {
+                        values(first: 10) {
                           edges {
                             cursor
                             node {
