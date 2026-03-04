@@ -978,9 +978,85 @@ for( const DESC_AI of optimizedHtml){
         // Merge tags: preserve existing + add DESC_AI (productUpdate overwrites, so we must include all)
       const CATEGORY_TAMMOXY_ID=await getTaxonomyIdForCategory(admin,SEO.category)
 console.log('her is the value of tamoxy',CATEGORY_TAMMOXY_ID)
+const productSchema = {
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": SEO.seoTitle || OLD_DESC.title,
+  "description": SEO.seoDescription || DESC_AI.shortDescription,
+  "image": OLD_DESC.image,
+  "sku": OLD_DESC.sku || OLD_DESC.id,
+  "brand": {
+    "@type": "Brand",
+    "name": OLD_DESC.vendor || "PlatiNum"
+  },
+  "offers": {
+    "@type": "Offer",
+    "url": `https://platinumshop.it/products/${SEO.handle}`,
+    "priceCurrency": "EUR",
+    "price": OLD_DESC.price || "0",
+    // "availability": OLD_DESC.available 
+    //   ? "https://schema.org/InStock" 
+    //   : "https://schema.org/OutOfStock",
+    "itemCondition": "https://schema.org/NewCondition",
+    "seller": {
+      "@type": "Organization",
+      "name": "PlatiNum"
+    }
+  },
+  "category": SEO.category,
+  "productID": OLD_DESC.id
+};
+// Create metafield definition
+async function createSchemaMetafieldDefinition(admin: any) {
+  const CREATE_METAFIELD_DEF = `#graphql
+    mutation CreateMetafieldDefinition($definition: MetafieldDefinitionInput!) {
+      metafieldDefinitionCreate(definition: $definition) {
+        createdDefinition {
+          id
+          name
+          namespace
+          key
+        }
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+  `;
+
+  const response = await admin.graphql(CREATE_METAFIELD_DEF, {
+    variables: {
+      definition: {
+        name: "Schema.org Product Data",
+        namespace: "seo",
+        key: "schema_org",
+        description: "Structured data for Google rich results (Product schema)",
+        type: "json",
+        ownerType: "PRODUCT"
+      }
+    }
+  });
+
+  const result = await response.json();
+  
+  if (result.data?.metafieldDefinitionCreate?.userErrors?.length > 0) {
+    console.error('❌ Error creating metafield:', result.data.metafieldDefinitionCreate.userErrors);
+  } else {
+    console.log('✅ Metafield definition created:', result.data.metafieldDefinitionCreate.createdDefinition);
+  }
+
+  return result;
+}
+
+// Run once:
+await createSchemaMetafieldDefinition(admin);
+
+
+
         const mergedTags = [...new Set([
           ...(OLD_DESC.tags || []),
-          ...(SEO.category|| []),
+          (SEO.category|| []),
           "DESC_AI"])];
         const response = await admin.graphql(productsupdated, {
           variables: {
@@ -1013,6 +1089,12 @@ console.log('her is the value of tamoxy',CATEGORY_TAMMOXY_ID)
                   key: "seo_descreption",
                   type: "json",
                   value: JSON.stringify(SEO.seoDescription)
+                },
+                {
+                  namespace: "seo",
+                  key: "schema_org",
+                  type: "json",
+                  value: JSON.stringify(productSchema)
                 }
               ]
             }
