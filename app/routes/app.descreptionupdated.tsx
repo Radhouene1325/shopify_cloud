@@ -980,7 +980,7 @@ for( const DESC_AI of optimizedHtml){
 
         const mergedTags = [...new Set([
           ...(OLD_DESC.tags || []),
-          ...(SEO.category|| []),
+          ...(SEO.categoryName|| []),
           "DESC_AI"])];
         const response = await admin.graphql(productsupdated, {
           variables: {
@@ -988,11 +988,11 @@ for( const DESC_AI of optimizedHtml){
               id: OLD_DESC.id,
               descriptionHtml: DESC_AI.detailedDescription,
               tags: mergedTags,
-              category:SEO?.category,
+              category:SEO?.categoryId,
               handle:SEO.handle,
               productType:SEO.productType,
               seo:{
-                descreption:SEO.seoDescription,
+                description:SEO.seoDescription,
                 title:SEO.seoTitle
               },
               metafields: [
