@@ -981,10 +981,11 @@ console.log('her is the value of tamoxy',CATEGORY_TAMMOXY_ID)
 const productSchema = {
   "@context": "https://schema.org/",
   "@type": "Product",
-  "name": SEO.seoTitle || OLD_DESC.title,
-  "description": SEO.seoDescription || DESC_AI.shortDescription,
-  "image": OLD_DESC.image,
-  "sku": OLD_DESC.sku || OLD_DESC.id,
+  "name": SEO.seoTitle || OLD_DESC.title, // ✅ REQUIRED
+  "description": SEO.seoDescription || OLD_DESC.title,
+  "image":OLD_DESC.image,
+  "sku": OLD_DESC.sku || OLD_DESC.id?.split('/').pop() || '',
+  "mpn": OLD_DESC.barcode || OLD_DESC.id?.split('/').pop() || '',
   "brand": {
     "@type": "Brand",
     "name": OLD_DESC.vendor || "PlatiNum"
@@ -993,19 +994,26 @@ const productSchema = {
     "@type": "Offer",
     "url": `https://platinumshop.it/products/${SEO.handle}`,
     "priceCurrency": "EUR",
-    "price": OLD_DESC.price || "0",
+    "price": OLD_DESC.price ? parseFloat(OLD_DESC.price.toString()).toFixed(2) : "0.00",
     // "availability": OLD_DESC.available 
     //   ? "https://schema.org/InStock" 
     //   : "https://schema.org/OutOfStock",
+    "priceValidUntil": new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     "itemCondition": "https://schema.org/NewCondition",
     "seller": {
       "@type": "Organization",
       "name": "PlatiNum"
     }
-  },
-  "category": SEO.category,
-  "productID": OLD_DESC.id
+  }
 };
+
+// ✅ Validation
+console.log('📊 Schema validation:');
+console.log('   Name:', productSchema.name ? '✓' : '✗ MISSING');
+console.log('   Description:', productSchema.description ? '✓' : '✗ MISSING');
+console.log('   Images:', productSchema.image.length, 'found');
+console.log('   Price:', productSchema.offers.price);
+
 
 
 
