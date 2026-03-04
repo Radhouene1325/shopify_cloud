@@ -680,10 +680,10 @@ async function searchTaxonomyCategory(
         console.log(`✅ Fetched ${categories.edges.length} categories (hasNextPage: ${hasNextPage})`);
   
         // Prevent infinite loops
-        if (allResults.length >= maxResults) {
-          console.log(`⚠️ Reached max results limit: ${maxResults}`);
-          break;
-        }
+        // if (allResults.length >= maxResults) {
+        //   console.log(`⚠️ Reached max results limit: ${maxResults}`);
+        //   break;
+        // }
       
   
       console.log(`\n📊 Total categories found: ${allResults.length}`);
