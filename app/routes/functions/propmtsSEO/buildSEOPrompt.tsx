@@ -741,18 +741,18 @@ async function searchTaxonomyCategory(
           throw new Error('Failed to fetch taxonomy');
         }
   console.log('data for the tamoxy is her finded her secces',data)
-        const categories = data.data?.taxonomy.categories;
+        const categories = data.data?.taxonomy.categories?.edges.map((edge:any)=>edge.node);
         
        console.log('categories verified',categories)
   
         // Add results to array
-        allResults.push(categories);
+        allResults.push(...categories);
   
         // Check if there are more pages
-        hasNextPage = categories.pageInfo.hasNextPage;
-        cursor = categories.pageInfo.endCursor;
+        // hasNextPage = categories.pageInfo.hasNextPage;
+        // cursor = categories.pageInfo.endCursor;
   
-        console.log(`✅ Fetched ${categories.edges.length} categories (hasNextPage: ${hasNextPage})`);
+        // console.log(`✅ Fetched ${categories.edges.length} categories (hasNextPage: ${hasNextPage})`);
   
         // Prevent infinite loops
         // if (allResults.length >= maxResults) {
