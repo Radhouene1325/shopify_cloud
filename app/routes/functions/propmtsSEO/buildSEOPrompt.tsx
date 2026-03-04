@@ -743,10 +743,10 @@ async function searchTaxonomyCategory(
   console.log('data for the tamoxy is her finded her secces',data)
         const categories = data.data?.taxonomy.categories;
         
-       
+       console.log('categories verified',categories)
   
         // Add results to array
-        allResults.push(...categories);
+        allResults.push(categories);
   
         // Check if there are more pages
         hasNextPage = categories.pageInfo.hasNextPage;
