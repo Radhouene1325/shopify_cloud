@@ -958,13 +958,19 @@ export async function action({context ,request }: ActionFunctionArgs) {
 
 let responses
 
+const oldDescreptionsMap=new Map(updatedDescreptionAI.map(item=>[item.id,item]))
+
 for( const DESC_AI of optimizedHtml){
     if (!DESC_AI.id|| !DESC_AI.detailedDescription || !DESC_AI.shortDescription) {
         console.error("AI returned empty fields", optimizedHtml);
         return Response.json({ error: "Empty content from AI" }, { status: 500 });
       }
-  for (const OLD_DESC of updatedDescreptionAI ){
-      if(DESC_AI.id===OLD_DESC.id){
+  // for (const OLD_DESC of updatedDescreptionAI ){
+      const OLD_DESC=oldDescreptionsMap.get(DESC_AI.id)
+      console.log(OLD_DESC.id)
+      if (!OLD_DESC)continue;
+      
+    if(DESC_AI.id===OLD_DESC.id){
         // console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
         // console.log('is true is very nice ')
         // Merge tags: preserve existing + add DESC_AI (productUpdate overwrites, so we must include all)
@@ -1007,7 +1013,7 @@ for( const DESC_AI of optimizedHtml){
 
    
 
-  }
+   
 
 }
 
