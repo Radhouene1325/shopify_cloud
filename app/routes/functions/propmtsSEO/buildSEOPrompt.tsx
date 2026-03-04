@@ -668,9 +668,7 @@ async function searchTaxonomyCategory(
   
         const categories = data.data?.productCategories;
         
-        if (!categories) {
-          break;
-        }
+       
   
         // Add results to array
         allResults.push(...categories.edges);
