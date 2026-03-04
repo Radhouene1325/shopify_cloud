@@ -1059,8 +1059,8 @@ export default function Descriptionupdated(){
     // Handle pagination result
     useEffect(() => {
       if (fetcher.data) {
-        setRows(fetcher.data.variants);
-        setPageInfo(fetcher.data.pageInfo);
+        setRows(fetcher?.data?.variants);
+        setPageInfo(fetcher?.data?.pageInfo);
       }
     }, [fetcher.data]);
   
@@ -1071,10 +1071,11 @@ export default function Descriptionupdated(){
         // .filter((v: any) => v.inventoryPolicy === "CONTINUE")
         .map((v: any) => ({
           id: v.id,
-          descreption: v.descriptionHtml,
+          descreption:v.descriptionHtml,
           tags:v.tags,
           handel:v.handle,
-          vendor:v.vendor
+          vendor:v.vendor,
+          image:v?.featuredMedia?.image?.url??''
         }));
   
       setSelected(autoSelected);
@@ -1135,7 +1136,8 @@ export default function Descriptionupdated(){
                             descreption: v?.descriptionHtml,
                             tags:v?.tags,
                             handel:v?.handle,
-                            vendor:v.vendor
+                            vendor:v.vendor,
+                            image:v?.featuredMedia?.image?.url??''
                           }
                         ]);
                       } else {
