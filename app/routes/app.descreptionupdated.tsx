@@ -969,18 +969,32 @@ for( const DESC_AI of optimizedHtml){
       const OLD_DESC=oldDescreptionsMap.get(DESC_AI.id)
       console.log(OLD_DESC.id)
       if (!OLD_DESC)continue;
+      if (!seotitle_descreption_handel)return
+      for (const SEO of seotitle_descreption_handel){
 
-    if(DESC_AI.id===OLD_DESC.id){
+         if(DESC_AI.id===OLD_DESC.id && SEO.id===OLD_DESC.id){
         // console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
         // console.log('is true is very nice ')
         // Merge tags: preserve existing + add DESC_AI (productUpdate overwrites, so we must include all)
-        const mergedTags = [...new Set([...(OLD_DESC.tags || []), "DESC_AI"])];
+      
+
+        const mergedTags = [...new Set([
+          ...(OLD_DESC.tags || []),
+          ...(SEO.category|| []),
+          "DESC_AI"])];
         const response = await admin.graphql(productsupdated, {
           variables: {
             product: {
               id: OLD_DESC.id,
               descriptionHtml: DESC_AI.detailedDescription,
               tags: mergedTags,
+              category:SEO?.category,
+              handle:SEO.handle,
+              productType:SEO.productType,
+              seo:{
+                descreption:SEO.seoDescription,
+                title:SEO.seoTitle
+              },
               metafields: [
                 {
                   namespace: "custom",
@@ -990,15 +1004,15 @@ for( const DESC_AI of optimizedHtml){
                 },
                 {
                   namespace: "custom",
-                  key: "sizeInfo",
-                  type: "json",
-                  value: JSON.stringify(DESC_AI.sizeInfo ?? [])
+                  key: "seo_title",
+                  type: "text",
+                  value: JSON.stringify(SEO.seoTitle ?? '')
                 },
                 {
                   namespace: "custom",
-                  key: "metaDescreption",
-                  type: "json",
-                  value: JSON.stringify(DESC_AI.sizeInfo ?? [])
+                  key: "seo_descreption",
+                  type: "text",
+                  value: JSON.stringify(SEO.seoDescription ?? '')
                 }
               ]
             }
@@ -1008,8 +1022,11 @@ for( const DESC_AI of optimizedHtml){
           
   
           responses=response
+      
+      
+       
         }
-    
+      }
 
    
 
