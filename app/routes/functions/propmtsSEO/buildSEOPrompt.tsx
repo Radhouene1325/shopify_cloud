@@ -629,46 +629,95 @@ async function searchTaxonomyCategory(
     searchTerm: string,
     maxResults: number = 250 // Maximum results to fetch
   ) {
-    const SEARCH_QUERY = `#graphql
-      query SearchTaxonomy($query: String!) {
-        ProductCategory(query: $query) {
-            TaxonomyCategory{
-                ancestorIds
-                attributes(first:250){
-                    edges{
-                        cursor
-                        node{
-                            TaxonomyAttribute{id}
-                            TaxonomyChoiceListAttribute{id,name,values(first:250){edges{
-                                cursor
-                                node{
-                                    id
-                                    name
-                                }
-                            }}}
-                            TaxonomyMeasurementAttribute{
-                                id
-                                name
-                                options{key value}
-                            }
-                        }
-                    }
-                }
-                childrenIds
-                fullName
+    // const SEARCH_QUERY = `#graphql
+    //   query SearchTaxonomy($query: String!) {
+    //     ProductCategory(query: $query) {
+    //         TaxonomyCategory{
+    //             ancestorIds
+    //             attributes(first:250){
+    //                 edges{
+    //                     cursor
+    //                     node{
+    //                         TaxonomyAttribute{id}
+    //                         TaxonomyChoiceListAttribute{id,name,values(first:250){edges{
+    //                             cursor
+    //                             node{
+    //                                 id
+    //                                 name
+    //                             }
+    //                         }}}
+    //                         TaxonomyMeasurementAttribute{
+    //                             id
+    //                             name
+    //                             options{key value}
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //             childrenIds
+    //             fullName
+    //             id
+    //             isArchived
+    //             isLeaf
+    //             isRoot
+    //             level
+    //             name
+    //             parentId
+
+    //         }
+    //     }
+    //   }
+    // `;
+   const SEARCH_QUERY=`#graphql
+    query SearchTaxonomy($search: String!) {
+        taxonomy {
+          categories(first: 250, search: $search) {
+            edges {
+              cursor
+              node {
                 id
-                isArchived
-                isLeaf
-                isRoot
-                level
                 name
-                parentId
-                
+                fullName
+                ancestorIds
+                childrenIds
+                attributes(first: 250) {
+                  edges {
+                    cursor
+                    node {
+                      ... on TaxonomyChoiceListAttribute {
+                        id
+                        name
+                        values(first: 250) {
+                          edges {
+                            cursor
+                            node {
+                              id
+                              name
+                            }
+                          }
+                        }
+                      }
+                      ... on TaxonomyMeasurementAttribute {
+                        id
+                        name
+                        options {
+                          key
+                          value
+                        }
+                      }
+                      ... on TaxonomyAttribute {
+                        id
+                      }
+                    }
+                  }
+                }
+              }
             }
+          }
         }
       }
-    `;
-  
+   `
+    
     let allResults: any[] = [];
     let hasNextPage = true;
     let cursor: string | null = null;
@@ -679,7 +728,7 @@ async function searchTaxonomyCategory(
         
         const response = await admin.graphql  (SEARCH_QUERY, {
           variables: { 
-            query: searchTerm,
+            search: searchTerm,
             // first: batchSize,
             // after: cursor
           }
