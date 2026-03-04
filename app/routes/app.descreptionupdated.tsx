@@ -1005,14 +1005,14 @@ console.log('her is the value of tamoxy',CATEGORY_TAMMOXY_ID)
                 {
                   namespace: "custom",
                   key: "seo_title",
-                  type: "text",
-                  value: JSON.stringify(SEO.seoTitle ?? '')
+                  type: "json",
+                  value: JSON.stringify(SEO.seoTitle)
                 },
                 {
                   namespace: "custom",
                   key: "seo_descreption",
-                  type: "text",
-                  value: JSON.stringify(SEO.seoDescription ?? '')
+                  type: "json",
+                  value: JSON.stringify(SEO.seoDescription)
                 }
               ]
             }
