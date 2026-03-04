@@ -630,24 +630,15 @@ async function searchTaxonomyCategory(
     maxResults: number = 250 // Maximum results to fetch
   ) {
     const SEARCH_QUERY = `#graphql
-      query SearchTaxonomy($query: String!, $first: Int!, $after: String) {
-        productCategories(first: $first, query: $query, after: $after) {
-          edges {
-            cursor
-            node {
-              productTaxonomyNode {
-                id
-                name
+      query SearchTaxonomy($query: String!) {
+        ProductCategory(query: $query) {
+            productTaxonomyNode{
                 fullName
+                id
                 isLeaf
                 isRoot
-              }
+                name
             }
-          }
-          pageInfo {
-            hasNextPage
-            endCursor
-          }
         }
       }
     `;
