@@ -1006,51 +1006,6 @@ const productSchema = {
   "category": SEO.category,
   "productID": OLD_DESC.id
 };
-// Create metafield definition
-async function createSchemaMetafieldDefinition(admin: any) {
-  const CREATE_METAFIELD_DEF = `#graphql
-    mutation CreateMetafieldDefinition($definition: MetafieldDefinitionInput!) {
-      metafieldDefinitionCreate(definition: $definition) {
-        createdDefinition {
-          id
-          name
-          namespace
-          key
-        }
-        userErrors {
-          field
-          message
-        }
-      }
-    }
-  `;
-
-  const response = await admin.graphql(CREATE_METAFIELD_DEF, {
-    variables: {
-      definition: {
-        name: "Schema.org Product Data",
-        namespace: "seo",
-        key: "schema_org",
-        description: "Structured data for Google rich results (Product schema)",
-        type: "json",
-        ownerType: "PRODUCT"
-      }
-    }
-  });
-
-  const result = await response.json();
-  
-  if (result.data?.metafieldDefinitionCreate?.userErrors?.length > 0) {
-    console.error('❌ Error creating metafield:', result.data.metafieldDefinitionCreate.userErrors);
-  } else {
-    console.log('✅ Metafield definition created:', result.data.metafieldDefinitionCreate.createdDefinition);
-  }
-
-  return result;
-}
-
-// Run once:
-await createSchemaMetafieldDefinition(admin);
 
 
 
