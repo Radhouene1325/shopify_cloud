@@ -740,7 +740,7 @@ async function searchTaxonomyCategory(
           console.error('GraphQL errors:', data.errors);
           throw new Error('Failed to fetch taxonomy');
         }
-  
+  console.log('data for the tamoxy is her finded her secces',data)
         const categories = data.data?.productCategories;
         
        
