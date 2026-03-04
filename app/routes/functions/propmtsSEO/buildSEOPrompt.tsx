@@ -649,14 +649,13 @@ async function searchTaxonomyCategory(
     const batchSize = 50;
   
     try {
-      while (hasNextPage && allResults.length < maxResults) {
         console.log(`Fetching batch... (current total: ${allResults.length})`);
         
         const response = await admin.graphql  (SEARCH_QUERY, {
           variables: { 
             query: searchTerm,
-            first: batchSize,
-            after: cursor
+            // first: batchSize,
+            // after: cursor
           }
         });
         
@@ -687,7 +686,7 @@ async function searchTaxonomyCategory(
           console.log(`⚠️ Reached max results limit: ${maxResults}`);
           break;
         }
-      }
+      
   
       console.log(`\n📊 Total categories found: ${allResults.length}`);
       return allResults;
