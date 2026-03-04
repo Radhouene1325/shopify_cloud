@@ -741,12 +741,12 @@ async function searchTaxonomyCategory(
           throw new Error('Failed to fetch taxonomy');
         }
   console.log('data for the tamoxy is her finded her secces',data)
-        const categories = data.data?.productCategories;
+        const categories = data.data?.taxonomy.categories;
         
        
   
         // Add results to array
-        allResults.push(...categories.edges);
+        allResults.push(...categories);
   
         // Check if there are more pages
         hasNextPage = categories.pageInfo.hasNextPage;
