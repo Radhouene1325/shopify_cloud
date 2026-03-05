@@ -616,7 +616,7 @@ export async function getTaxonomyIdForCategory(
       
     //   return taxonomy.id;
   
-    const result = await searchTaxonomyAdvanced(admin, "Casual Jackets", {
+    const result = await searchTaxonomyAdvanced(admin, category, {
         maxResults: 100,
         fetchAttributes: true,
         attributeTypes: ['choice', 'measurement'], // Only these types
