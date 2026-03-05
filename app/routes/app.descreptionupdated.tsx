@@ -803,15 +803,13 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
 // - Just pure JSON
 // - Perfect responsive on ALL devices`;
 // }
+
+
 function buildPrompt(
   chunk: { id: string; descreption: string }[],
   outputField: 'shortDescription' | 'detailedDescription'
 ): string {
   const isShort = outputField === 'shortDescription';
-  const fieldLabel = isShort
-    ? 'shortDescription (solo punti elenco + CTA)'
-    : 'detailedDescription (contenuto completo con microdata Schema.org)';
-
   const outputStructure = isShort
     ? '{ "id": "original_product_id", "shortDescription": "RESPONSIVE_HTML_STRING" }'
     : '{ "id": "original_product_id", "detailedDescription": "RESPONSIVE_HTML_STRING_WITH_MICRODATA" }';
@@ -842,10 +840,10 @@ function buildPrompt(
       '  6. Tutte le immagini originali (<img>) devono essere preservate e avvolte in <div style="max-width:100%;margin:1em 0;"><img style="max-width:100%;height:auto;display:block;" ...></div>',
       '  7. Un paragrafo finale <p> con CTA (es. "Free shipping on orders over €50!").',
       '',
-      '  ✅ MICRODATA SCHEMA.ORG (obbligatorio, da inserire all’inizio):',
+      '  ✅ MICRODATA SCHEMA.ORG (OBBLIGATORIO – deve superare il Google Rich Results Test):',
       '    - Tutto il contenuto visibile deve essere racchiuso in un <div> con:',
       '        <div itemscope itemtype="https://schema.org/Product" style="max-width:100%;overflow-wrap:break-word;">',
-      '    - Subito dopo l’apertura del div, aggiungere i seguenti meta tag (invisibili):',
+      '    - Subito dopo l’apertura del div, aggiungere i seguenti meta tag (invisibili) – **sono MANDATORI**:',
       '        <meta itemprop="name" content="{{PRODUCT_NAME}}">',
       '        <meta itemprop="description" content="{{SEO_DESCRIPTION}}">   <!-- breve descrizione SEO, 150-160 caratteri -->',
       '        <link itemprop="image" href="{{MAIN_IMAGE_URL}}">',
@@ -855,17 +853,23 @@ function buildPrompt(
       '        <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">',
       '          <meta itemprop="url" content="{{PRODUCT_URL}}">      <!-- se non disponibile, omettere o usare "#" -->',
       '          <meta itemprop="priceCurrency" content="EUR">',
-      '          <meta itemprop="price" content="{{PRICE}}">          <!-- es. "89.95" -->',
+      '          <meta itemprop="price" content="{{PRICE}}">          <!-- es. "89.95" – se il prezzo non è trovato, usare "0.00" -->',
       '          <link itemprop="availability" href="https://schema.org/InStock">',
       '        </div>',
       '    - I placeholder ({{...}}) vanno sostituiti con valori estratti dal contenuto della descrizione originale:',
-      '        * PRODUCT_NAME: nome del prodotto (es. "Birkenstock Arizona White-Gold")',
+      '        * PRODUCT_NAME: nome del prodotto (es. "Birkenstock Arizona White-Gold") – **questo campo è obbligatorio**',
       '        * SEO_DESCRIPTION: una frase breve e accattivante che riassume il prodotto (può essere presa dal primo paragrafo o generata)',
       '        * MAIN_IMAGE_URL: URL della prima immagine trovata nella descrizione (se nessuna, omettere il tag <link>)',
       '        * BRAND_NAME: marca del prodotto (es. "Birkenstock", "Skechers", "XTI") – se non chiara, usare "PlatiNum"',
       '        * PRODUCT_URL: se non presente, omettere il meta (o usare "#")',
-      '        * PRICE: prezzo del prodotto (es. "79.95") – se non trovato, usare "0.00"',
+      '        * PRICE: prezzo del prodotto (es. "79.95") – **se non trovato, usare "0.00"** per evitare errori',
       '    - Dopo i meta tag, inizia il contenuto visibile descritto nei punti 1-7.',
+      '',
+      '  ✅ REQUISITI GOOGLE RICH RESULTS:',
+      '    - Il campo `name` è obbligatorio.',
+      '    - Il campo `offers` (prezzo, valuta, disponibilità) è obbligatorio (se non hai recensioni o valutazioni).',
+      '    - Se hai recensioni, puoi usare `review` o `aggregateRating` al posto di `offers`, ma per semplicità includi sempre `offers`.',
+      '    - Assicurati che il prezzo sia un numero con punto (es. "89.95") e la valuta sia "EUR".',
       '',
       '  (Opzionale) Le caratteristiche possono essere marcate anche con itemprop="additionalProperty":',
       '    <article itemprop="additionalProperty" itemscope itemtype="https://schema.org/PropertyValue">',
@@ -887,7 +891,7 @@ ROLE: Senior E-commerce Copywriter + Responsive Design Expert + Schema.org Speci
 - Expert in Amazon A+ Content, Shopify optimization, conversion copywriting
 - Specialist in mobile-first responsive design (320px to 1920px)
 - Focus on benefits-driven, scannable, accessible content
-- Expert in structured data for rich snippets and Google Rich Results
+- Expert in structured data for rich snippets and **Google Rich Results Test compliance**
 
 OBJECTIVE: Transform raw product data into clean, semantic, RESPONSIVE HTML that:
 - Works perfectly on ALL devices (mobile, tablet, desktop)
@@ -896,14 +900,15 @@ OBJECTIVE: Transform raw product data into clean, semantic, RESPONSIVE HTML that
 - Drives conversions through benefit-focused copy
 - Preserves all existing images with responsive wrappers
 - Follows e-commerce best practices
-- **Includes complete Schema.org microdata (Product, Brand, Offer) for better SEO and rich results**
+- **Includes complete Schema.org microdata with ALL required fields (name, offers, brand, image, description) to pass Google Rich Results Test**
 - **Distingue nettamente short e detailed description**: la short è solo bullet points + CTA; la detailed include tutte le sezioni (sommario, caratteristiche, benefici, specifiche, tabella taglie se disponibile, immagini, CTA) **e i microdata all’inizio**.
 
 OUTPUT FORMAT:
 {
-  ${isShort 
-    ? '"shortDescription": "RESPONSIVE_HTML (solo bullet points e CTA)"'
-    : '"detailedDescription": "RESPONSIVE_HTML (struttura completa con microdata all’inizio)"'
+  ${
+    isShort
+      ? '"shortDescription": "RESPONSIVE_HTML (solo bullet points e CTA)"'
+      : '"detailedDescription": "RESPONSIVE_HTML (struttura completa con microdata all’inizio)"'
   }
 }
 
@@ -971,7 +976,7 @@ ESEMPIO shortDescription (CORRETTO, solo bullet + CTA):
 ESEMPIO detailedDescription (CON MICRODATA E TABELLA TAGLIE):
 <div itemscope itemtype="https://schema.org/Product" style="max-width:100%;overflow-wrap:break-word;word-wrap:break-word;">
 
-<!-- MICRODATA INVISIBILI -->
+<!-- MICRODATA INVISIBILI (MANDATORI per Google Rich Results) -->
 <meta itemprop="name" content="Birkenstock Arizona White-Gold">
 <meta itemprop="description" content="Legendary comfort meets modern style in these Birkenstock Arizona sandals with a elegant white-gold finish.">
 <link itemprop="image" href="https://example.com/images/birkenstock-arizona-whitegold-1.jpg">
@@ -1043,9 +1048,12 @@ PROCESSING INSTRUCTIONS:
 2. Estrai: brand, caratteristiche, specifiche, immagini, informazioni sulle taglie, **nome prodotto, prezzo, URL immagine principale**.
 3. **Per shortDescription**: genera SOLO bullet points e CTA, nient'altro.
 4. **Per detailedDescription**: 
-   - Costruisci il wrapper principale con \`itemscope\` e i meta tag per i microdata (come da esempio).
+   - Costruisci il wrapper principale con \`itemscope\` e i meta tag per i microdata (come da esempio). **I meta tag per name e offers sono obbligatori**.
    - Includi TUTTE le sezioni: overview, key features, benefits, specifications, size chart (se disponibile), immagini, CTA.
-   - I valori per i microdata (nome, descrizione SEO, immagine, brand, prezzo, valuta, disponibilità) devono essere dedotti dal contenuto della descrizione originale. Se mancano, usa valori di default sensati (es. brand "PlatiNum", prezzo "0.00").
+   - I valori per i microdata (nome, descrizione SEO, immagine, brand, prezzo, valuta, disponibilità) devono essere dedotti dal contenuto della descrizione originale. Se mancano, usa valori di default sensati:
+        * brand → "PlatiNum"
+        * price → "0.00"
+        * name → (cerca di estrarlo dal contesto, altrimenti usa "Prodotto")
 5. Avvolgi tutto in un contenitore <div> responsivo con \`itemscope\`.
 6. Usa esclusivamente stili inline per spaziatura e layout.
 7. Rendi le tabelle scrollabili orizzontalmente su mobile con wrapper \`overflow-x:auto\`.
@@ -1064,8 +1072,12 @@ CRITICAL:
 - NO explanatory text
 - Just pure JSON
 - Perfect responsive on ALL devices
-- **Per detailedDescription, la presenza dei microdata è obbligatoria e deve superare il Google Rich Results Test**`;
+- **Per detailedDescription, la presenza dei microdata è obbligatoria e deve superare il Google Rich Results Test – includi SEMPRE name e offers**`;
 }
+
+
+
+
     const chunkPromises = chunks.map(async (chunk, idx) => {
       // console.log(`Processing chunk ${idx + 1}/${chunks.length} (${chunk.length} products) - split into 2 API calls`);
 
