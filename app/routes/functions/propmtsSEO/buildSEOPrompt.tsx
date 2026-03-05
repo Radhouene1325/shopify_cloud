@@ -585,37 +585,60 @@ export async function getTaxonomyIdForCategory(
       console.log(`🔍 Searching for category: "${category}"`);
       
       // Search with pagination
-      const results = await searchTaxonomyCategory(admin, category, 500);
-      console.log('her rsult of the tamoxy is her ',results)
-      if (results.length === 0) {
-        console.warn(`⚠️ No taxonomy found for: "${category}"`);
-        return null;
-      }
+    //   const results = await searchTaxonomyCategory(admin, category, 500);
+    //   console.log('her rsult of the tamoxy is her ',results)
+    //   if (results.length === 0) {
+    //     console.warn(`⚠️ No taxonomy found for: "${category}"`);
+    //     return null;
+    //   }
   
-      // Find best match
-      let bestMatch = results[0];
+    //   // Find best match
+    //   let bestMatch = results[0];
       
-      for (const edge of results) {
-        const node = edge.name;
+    //   for (const edge of results) {
+    //     const node = edge.name;
         
-        // Prefer exact name match
-        if (node.toLowerCase() === category.toLowerCase()) {
-          bestMatch = edge;
-          break;
-        }
+    //     // Prefer exact name match
+    //     if (node.toLowerCase() === category.toLowerCase()) {
+    //       bestMatch = edge;
+    //       break;
+    //     }
         
-        // Prefer leaf categories (actual product categories)
-        if (node.isLeaf && !bestMatch.node.productTaxonomyNode.isLeaf) {
-          bestMatch = edge;
-        }
-      }
+    //     // Prefer leaf categories (actual product categories)
+    //     if (node.isLeaf && !bestMatch.node.productTaxonomyNode.isLeaf) {
+    //       bestMatch = edge;
+    //     }
+    //   }
   
-      const taxonomy = bestMatch;
-      console.log(`✅ Found: ${taxonomy.fullName}`);
-      console.log(`   ID: ${taxonomy.id}`);
+    //   const taxonomy = bestMatch;
+    //   console.log(`✅ Found: ${taxonomy.fullName}`);
+    //   console.log(`   ID: ${taxonomy.id}`);
       
-      return taxonomy.id;
+    //   return taxonomy.id;
   
+    const result = await searchTaxonomyAdvanced(admin, "Casual Jackets", {
+        maxResults: 100,
+        fetchAttributes: true,
+        attributeTypes: ['choice', 'measurement'], // Only these types
+        valuesFirst: 500, // Get up to 500 values per attribute
+        concurrency: 10 // Higher concurrency for faster fetching
+      });
+      console.log('result is tested and her is oky ',result)
+      // Access results
+      result.categories.forEach(cat => {
+        console.log(`\n📁 ${cat.fullName} (${cat.attributes.length} attributes)`);
+        
+        cat.attributes.forEach(attr => {
+          if (attr.type === 'choice' && attr.values) {
+            console.log(`  🔹 ${attr.name}: ${attr.values.length} values`);
+            // Show sample values
+            attr.values.slice(0, 5).forEach(v => {
+              console.log(`     • ${v.name}${v.synonyms ? ` (${v.synonyms.join(', ')})` : ''}`);
+            });
+          }
+        });
+      });
+
     } catch (error) {
       console.error(`❌ Error finding taxonomy for "${category}":`, error);
       return null;
@@ -962,325 +985,1283 @@ export async function getTaxonomyIdForCategory(
 
 
 
-type GraphQLAdmin = {
-    graphql: (query: string, options?: any) => Promise<Response>;
-  };
+// type GraphQLAdmin = {
+//     graphql: (query: string, options?: any) => Promise<Response>;
+//   };
   
-  type TaxonomyCategory = {
+//   type TaxonomyCategory = {
+//     id: string;
+//     name: string;
+//     fullName: string;
+//     ancestorIds: string[];
+//     childrenIds: string[];
+//     isLeaf: boolean;
+//     attributes?: any[];
+//   };
+  
+//   /* -----------------------------
+//      LRU CACHE
+//   ----------------------------- */
+  
+//   class LRUCache<K, V> {
+//     private cache = new Map<K, V>();
+  
+//     constructor(private limit = 500) {}
+  
+//     get(key: K): V | undefined {
+//       if (!this.cache.has(key)) return undefined;
+  
+//       const value = this.cache.get(key)!;
+  
+//       this.cache.delete(key);
+//       this.cache.set(key, value);
+  
+//       return value;
+//     }
+  
+//     set(key: K, value: V) {
+//       if (this.cache.has(key)) this.cache.delete(key);
+  
+//       this.cache.set(key, value);
+  
+//       if (this.cache.size > this.limit) {
+//         const first = this.cache.keys().next().value;
+//         this.cache.delete(first);
+//       }
+//     }
+//   }
+  
+//   /* -----------------------------
+//      PROMISE POOL
+//   ----------------------------- */
+  
+//   async function promisePool<T, R>(
+//     items: T[],
+//     worker: (item: T) => Promise<R>,
+//     concurrency = 5
+//   ): Promise<R[]> {
+//     const results: R[] = [];
+//     const executing: Promise<any>[] = [];
+  
+//     for (const item of items) {
+//       const p = worker(item).then((res) => results.push(res));
+  
+//       executing.push(p);
+  
+//       if (executing.length >= concurrency) {
+//         await Promise.race(executing);
+//         executing.splice(
+//           executing.findIndex((e) => e === p),
+//           1
+//         );
+//       }
+//     }
+  
+//     await Promise.all(executing);
+  
+//     return results;
+//   }
+  
+//   /* -----------------------------
+//      GRAPHQL CLIENT
+//   ----------------------------- */
+  
+//   async function graphqlRequest(
+//     admin: GraphQLAdmin,
+//     query: string,
+//     variables: any,
+//     retries = 5
+//   ): Promise<any> {
+//     try {
+//       const response = await admin.graphql(query, { variables });
+//       const json = await response.json();
+  
+//       if (json.errors) {
+//         throw new Error(JSON.stringify(json.errors));
+//       }
+  
+//       const throttle = json?.extensions?.cost?.throttleStatus;
+  
+//       if (throttle?.currentlyAvailable < 50) {
+//         await new Promise((r) => setTimeout(r, 500));
+//       }
+  
+//       return json;
+//     } catch (error) {
+//       if (retries <= 0) throw error;
+  
+//       const delay = 500 * (6 - retries);
+//       await new Promise((r) => setTimeout(r, delay));
+  
+//       return graphqlRequest(admin, query, variables, retries - 1);
+//     }
+//   }
+  
+//   /* -----------------------------
+//      CACHES
+//   ----------------------------- */
+  
+//   const attributeCache = new LRUCache<string, any[]>(500);
+//   const valuesCache = new LRUCache<string, any[]>(1000);
+  
+//   /* -----------------------------
+//      FETCH ATTRIBUTE VALUES
+//   ----------------------------- */
+  
+//   async function fetchValues(
+//     admin: GraphQLAdmin,
+//     attributeId: string,
+//     valuesFirst = 50
+//   ) {
+//     const cached = valuesCache.get(attributeId);
+//     if (cached) return cached;
+  
+//     const QUERY = `#graphql
+//     query ($id: ID!, $first: Int!, $after: String) {
+//       node(id: $id) {
+//         ... on TaxonomyChoiceListAttribute {
+//           values(first: $first, after: $after) {
+//             pageInfo { hasNextPage endCursor }
+//             edges { node { id name } }
+//           }
+//         }
+//       }
+//     }`;
+  
+//     let values: any[] = [];
+//     let cursor: string | null = null;
+//     let hasNextPage = true;
+  
+//     while (hasNextPage) {
+//       const json = await graphqlRequest(admin, QUERY, {
+//         id: attributeId,
+//         first: valuesFirst,
+//         after: cursor
+//       });
+  
+//       const conn = json?.data?.node?.values;
+//       if (!conn) break;
+  
+//       values.push(...conn.edges.map((e: any) => e.node));
+  
+//       hasNextPage = conn.pageInfo.hasNextPage;
+//       cursor = conn.pageInfo.endCursor;
+//     }
+  
+//     valuesCache.set(attributeId, values);
+  
+//     return values;
+//   }
+  
+//   /* -----------------------------
+//      FETCH ATTRIBUTES
+//   ----------------------------- */
+  
+//   async function fetchAttributes(
+//     admin: GraphQLAdmin,
+//     categoryId: string,
+//     attributesFirst = 20,
+//     valuesFirst = 50
+//   ) {
+//     const cached = attributeCache.get(categoryId);
+//     if (cached) return cached;
+  
+//     const QUERY = `#graphql
+//     query ($id: ID!, $first: Int!, $after: String) {
+//       node(id: $id) {
+//         ... on TaxonomyCategory {
+//           attributes(first: $first, after: $after) {
+//             pageInfo { hasNextPage endCursor }
+//             edges {
+//               node {
+//                 __typename
+//                 ... on TaxonomyChoiceListAttribute {
+//                   id
+//                   name
+//                 }
+//                 ... on TaxonomyMeasurementAttribute {
+//                   id
+//                   name
+//                   options { key value }
+//                 }
+//               }
+//             }
+//           }
+//         }
+//       }
+//     }`;
+  
+//     let attributes: any[] = [];
+//     let cursor: string | null = null;
+//     let hasNextPage = true;
+  
+//     while (hasNextPage) {
+//       const json = await graphqlRequest(admin, QUERY, {
+//         id: categoryId,
+//         first: attributesFirst,
+//         after: cursor
+//       });
+  
+//       const conn = json?.data?.node?.attributes;
+//       if (!conn) break;
+  
+//       const batch = conn.edges.map((e: any) => e.node);
+  
+//       const choiceAttrs = batch.filter(
+//         (a: any) => a.__typename === "TaxonomyChoiceListAttribute"
+//       );
+  
+//       await promisePool(
+//         choiceAttrs,
+//         async (attr: any) => {
+//           attr.values = await fetchValues(
+//             admin,
+//             attr.id,
+//             valuesFirst
+//           );
+//         },
+//         6
+//       );
+  
+//       attributes.push(...batch);
+  
+//       hasNextPage = conn.pageInfo.hasNextPage;
+//       cursor = conn.pageInfo.endCursor;
+//     }
+  
+//     attributeCache.set(categoryId, attributes);
+  
+//     return attributes;
+//   }
+  
+//   /* -----------------------------
+//      MAIN SEARCH FUNCTION
+//   ----------------------------- */
+  
+//   export async function searchTaxonomyCategory(
+//     admin: GraphQLAdmin,
+//     searchTerm: string,
+//     maxResults = 250,
+//     pageSize = 50,
+//     attributesFirst = 20,
+//     valuesFirst = 50
+//   ): Promise<TaxonomyCategory[]> {
+  
+//     const QUERY = `#graphql
+//     query ($search: String!, $first: Int!, $after: String) {
+//       taxonomy {
+//         categories(first: $first, search: $search, after: $after) {
+//           pageInfo { hasNextPage endCursor }
+//           edges {
+//             node {
+//               id
+//               name
+//               fullName
+//               ancestorIds
+//               childrenIds
+//               isLeaf
+//             }
+//           }
+//         }
+//       }
+//     }`;
+  
+//     let cursor: string | null = null;
+//     let hasNextPage = true;
+  
+//     const results: TaxonomyCategory[] = [];
+  
+//     while (hasNextPage && results.length < maxResults) {
+  
+//       const json = await graphqlRequest(admin, QUERY, {
+//         search: searchTerm,
+//         first: pageSize,
+//         after: cursor
+//       });
+  
+//       const conn = json?.data?.taxonomy?.categories;
+//       if (!conn) break;
+  
+//       const categories: TaxonomyCategory[] =
+//         conn.edges.map((e: any) => e.node);
+  
+//       const enriched = await promisePool(
+//         categories,
+//         async (category) => {
+//           category.attributes = await fetchAttributes(
+//             admin,
+//             category.id,
+//             attributesFirst,
+//             valuesFirst
+//           );
+//           return category;
+//         },
+//         5
+//       );
+  
+//       results.push(...enriched);
+  
+//       hasNextPage = conn.pageInfo.hasNextPage;
+//       cursor = conn.pageInfo.endCursor;
+//     }
+  
+//     return results.slice(0, maxResults);
+//   }
+
+
+
+
+
+// ============================================================================
+// TYPES & INTERFACES
+// ============================================================================
+
+interface GraphQLAdmin {
+    graphql: (query: string, options?: { variables?: Record<string, any> }) => Promise<Response>;
+  }
+  
+  interface TaxonomyValue {
+    id: string;
+    name: string;
+    [key: string]: any;
+  }
+  
+  interface TaxonomyAttribute {
+    id: string;
+    name: string;
+    handle?: string;
+    type: 'choice' | 'measurement' | 'text' | 'number' | 'unknown';
+    values?: TaxonomyValue[];
+    options?: Array<{ key: string; value: string }>;
+    description?: string;
+    required?: boolean;
+  }
+  
+  interface TaxonomyCategory {
     id: string;
     name: string;
     fullName: string;
+    handle?: string;
+    description?: string;
     ancestorIds: string[];
     childrenIds: string[];
     isLeaf: boolean;
-    attributes?: any[];
-  };
+    level: number;
+    parentId?: string;
+    attributes: TaxonomyAttribute[];
+    path: string[];
+    metadata?: Record<string, any>;
+  }
   
-  /* -----------------------------
-     LRU CACHE
-  ----------------------------- */
+  interface SearchOptions {
+    maxResults?: number;
+    pageSize?: number;
+    fetchAttributes?: boolean;
+    attributesFirst?: number;
+    valuesFirst?: number;
+    includeMetadata?: boolean;
+    attributeTypes?: ('choice' | 'measurement' | 'text' | 'number')[];
+    concurrency?: number;
+    timeout?: number;
+  }
   
-  class LRUCache<K, V> {
-    private cache = new Map<K, V>();
+  interface SearchResult {
+    success: boolean;
+    categories: TaxonomyCategory[];
+    totalFound: number;
+    searchTerm: string;
+    executionTimeMs: number;
+    stats: RequestStats;
+    errors: SearchError[];
+    hasMore: boolean;
+  }
   
-    constructor(private limit = 500) {}
+  interface RequestStats {
+    totalRequests: number;
+    cachedHits: number;
+    failedRequests: number;
+    retryCount: number;
+    averageResponseTime: number;
+  }
+  
+  interface SearchError {
+    categoryId?: string;
+    attributeId?: string;
+    operation: string;
+    message: string;
+    timestamp: Date;
+  }
+  
+  // ============================================================================
+  // CONFIGURATION
+  // ============================================================================
+  
+  const CONFIG = {
+    DEFAULTS: {
+      MAX_RESULTS: 250,
+      PAGE_SIZE: 50,
+      ATTRIBUTES_FIRST: 100,
+      VALUES_FIRST: 250,
+      CONCURRENCY: 5,
+      TIMEOUT: 30000,
+      RETRIES: 3,
+      BASE_DELAY: 300
+    },
+    CACHE: {
+      MAX_SIZE: 1000,
+      TTL_MS: 1000 * 60 * 60 * 2, // 2 hours
+      CHECK_PERIOD: 1000 * 60 * 10 // 10 minutes
+    },
+    RATE_LIMIT: {
+      MIN_AVAILABLE_POINTS: 100,
+      COOLDOWN_MS: 500,
+      MAX_COOLDOWN_MS: 5000
+    }
+  } as const;
+  
+  // ============================================================================
+  // ERRORS
+  // ============================================================================
+  
+  class TaxonomyError extends Error {
+    constructor(
+      message: string,
+      public code: string,
+      public context?: Record<string, any>
+    ) {
+      super(message);
+      this.name = 'TaxonomyError';
+    }
+  }
+  
+  class GraphQLError extends TaxonomyError {
+    constructor(
+      message: string,
+      public errors: any[],
+      context?: Record<string, any>
+    ) {
+      super(message, 'GRAPHQL_ERROR', context);
+      this.name = 'GraphQLError';
+    }
+  }
+  
+  class RateLimitError extends TaxonomyError {
+    constructor(message: string, public retryAfter: number) {
+      super(message, 'RATE_LIMIT');
+      this.name = 'RateLimitError';
+    }
+  }
+  
+  // ============================================================================
+  // CACHE IMPLEMENTATION
+  // ============================================================================
+  
+  class TTLCache<K, V> {
+    private cache = new Map<K, { value: V; expires: number }>();
+    private accessOrder: K[] = [];
+    
+    constructor(
+      private maxSize = CONFIG.CACHE.MAX_SIZE,
+      private defaultTTL = CONFIG.CACHE.TTL_MS
+    ) {
+      // Periodic cleanup
+      setInterval(() => this.cleanup(), CONFIG.CACHE.CHECK_PERIOD);
+    }
   
     get(key: K): V | undefined {
-      if (!this.cache.has(key)) return undefined;
+      const entry = this.cache.get(key);
+      if (!entry) return undefined;
   
-      const value = this.cache.get(key)!;
+      if (Date.now() > entry.expires) {
+        this.delete(key);
+        return undefined;
+      }
   
+      // Update access order
+      this.updateAccess(key);
+      return entry.value;
+    }
+  
+    set(key: K, value: V, ttl?: number): void {
+      if (this.cache.has(key)) {
+        this.delete(key);
+      }
+  
+      const expires = Date.now() + (ttl ?? this.defaultTTL);
+      this.cache.set(key, { value, expires });
+      this.accessOrder.push(key);
+  
+      if (this.cache.size > this.maxSize) {
+        this.evictLRU();
+      }
+    }
+  
+    has(key: K): boolean {
+      return this.get(key) !== undefined;
+    }
+  
+    delete(key: K): boolean {
       this.cache.delete(key);
-      this.cache.set(key, value);
-  
-      return value;
+      const index = this.accessOrder.indexOf(key);
+      if (index > -1) this.accessOrder.splice(index, 1);
+      return true;
     }
   
-    set(key: K, value: V) {
-      if (this.cache.has(key)) this.cache.delete(key);
-  
-      this.cache.set(key, value);
-  
-      if (this.cache.size > this.limit) {
-        const first = this.cache.keys().next().value;
-        this.cache.delete(first);
-      }
+    clear(): void {
+      this.cache.clear();
+      this.accessOrder = [];
     }
-  }
   
-  /* -----------------------------
-     PROMISE POOL
-  ----------------------------- */
+    size(): number {
+      return this.cache.size;
+    }
   
-  async function promisePool<T, R>(
-    items: T[],
-    worker: (item: T) => Promise<R>,
-    concurrency = 5
-  ): Promise<R[]> {
-    const results: R[] = [];
-    const executing: Promise<any>[] = [];
-  
-    for (const item of items) {
-      const p = worker(item).then((res) => results.push(res));
-  
-      executing.push(p);
-  
-      if (executing.length >= concurrency) {
-        await Promise.race(executing);
-        executing.splice(
-          executing.findIndex((e) => e === p),
-          1
-        );
+    private updateAccess(key: K): void {
+      const index = this.accessOrder.indexOf(key);
+      if (index > -1) {
+        this.accessOrder.splice(index, 1);
+        this.accessOrder.push(key);
       }
     }
   
-    await Promise.all(executing);
-  
-    return results;
-  }
-  
-  /* -----------------------------
-     GRAPHQL CLIENT
-  ----------------------------- */
-  
-  async function graphqlRequest(
-    admin: GraphQLAdmin,
-    query: string,
-    variables: any,
-    retries = 5
-  ): Promise<any> {
-    try {
-      const response = await admin.graphql(query, { variables });
-      const json = await response.json();
-  
-      if (json.errors) {
-        throw new Error(JSON.stringify(json.errors));
-      }
-  
-      const throttle = json?.extensions?.cost?.throttleStatus;
-  
-      if (throttle?.currentlyAvailable < 50) {
-        await new Promise((r) => setTimeout(r, 500));
-      }
-  
-      return json;
-    } catch (error) {
-      if (retries <= 0) throw error;
-  
-      const delay = 500 * (6 - retries);
-      await new Promise((r) => setTimeout(r, delay));
-  
-      return graphqlRequest(admin, query, variables, retries - 1);
+    private evictLRU(): void {
+      const lru = this.accessOrder.shift();
+      if (lru) this.cache.delete(lru);
     }
-  }
   
-  /* -----------------------------
-     CACHES
-  ----------------------------- */
-  
-  const attributeCache = new LRUCache<string, any[]>(500);
-  const valuesCache = new LRUCache<string, any[]>(1000);
-  
-  /* -----------------------------
-     FETCH ATTRIBUTE VALUES
-  ----------------------------- */
-  
-  async function fetchValues(
-    admin: GraphQLAdmin,
-    attributeId: string,
-    valuesFirst = 50
-  ) {
-    const cached = valuesCache.get(attributeId);
-    if (cached) return cached;
-  
-    const QUERY = `#graphql
-    query ($id: ID!, $first: Int!, $after: String) {
-      node(id: $id) {
-        ... on TaxonomyChoiceListAttribute {
-          values(first: $first, after: $after) {
-            pageInfo { hasNextPage endCursor }
-            edges { node { id name } }
-          }
+    private cleanup(): void {
+      const now = Date.now();
+      for (const [key, entry] of this.cache.entries()) {
+        if (now > entry.expires) {
+          this.delete(key);
         }
       }
-    }`;
-  
-    let values: any[] = [];
-    let cursor: string | null = null;
-    let hasNextPage = true;
-  
-    while (hasNextPage) {
-      const json = await graphqlRequest(admin, QUERY, {
-        id: attributeId,
-        first: valuesFirst,
-        after: cursor
-      });
-  
-      const conn = json?.data?.node?.values;
-      if (!conn) break;
-  
-      values.push(...conn.edges.map((e: any) => e.node));
-  
-      hasNextPage = conn.pageInfo.hasNextPage;
-      cursor = conn.pageInfo.endCursor;
     }
-  
-    valuesCache.set(attributeId, values);
-  
-    return values;
   }
   
-  /* -----------------------------
-     FETCH ATTRIBUTES
-  ----------------------------- */
+  // ============================================================================
+  // GRAPHQL CLIENT
+  // ============================================================================
   
-  async function fetchAttributes(
-    admin: GraphQLAdmin,
-    categoryId: string,
-    attributesFirst = 20,
-    valuesFirst = 50
-  ) {
-    const cached = attributeCache.get(categoryId);
-    if (cached) return cached;
+  class GraphQLExecutor {
+    private requestCount = 0;
+    private cachedCount = 0;
+    private failedCount = 0;
+    private retryCount = 0;
+    private totalResponseTime = 0;
   
-    const QUERY = `#graphql
-    query ($id: ID!, $first: Int!, $after: String) {
-      node(id: $id) {
-        ... on TaxonomyCategory {
-          attributes(first: $first, after: $after) {
-            pageInfo { hasNextPage endCursor }
-            edges {
-              node {
-                __typename
-                ... on TaxonomyChoiceListAttribute {
-                  id
-                  name
+    constructor(
+      private admin: GraphQLAdmin,
+      private config = CONFIG.DEFAULTS
+    ) {}
+  
+    async execute<T = any>(
+      query: string,
+      variables: Record<string, any>,
+      operationName?: string
+    ): Promise<T> {
+      const startTime = Date.now();
+      this.requestCount++;
+  
+      try {
+        const result = await this.executeWithRetry(query, variables, operationName);
+        this.totalResponseTime += Date.now() - startTime;
+        return result;
+      } catch (error) {
+        this.failedCount++;
+        throw error;
+      }
+    }
+  
+    private async executeWithRetry(
+      query: string,
+      variables: Record<string, any>,
+      operationName?: string,
+      retries = this.config.RETRIES
+    ): Promise<any> {
+      try {
+        const response = await this.admin.graphql(query, { variables });
+        const json = await response.json();
+  
+        if (json.errors?.length) {
+          throw new GraphQLError(
+            `GraphQL operation failed: ${operationName}`,
+            json.errors,
+            { variables, operationName }
+          );
+        }
+  
+        // Rate limit handling
+        await this.handleRateLimit(json.extensions?.cost);
+  
+        return json.data;
+      } catch (error) {
+        if (retries <= 0) throw error;
+  
+        this.retryCount++;
+        const delay = this.calculateBackoff(this.config.RETRIES - retries);
+        await this.sleep(delay);
+  
+        return this.executeWithRetry(query, variables, operationName, retries - 1);
+      }
+    }
+  
+    private async handleRateLimit(cost?: any): Promise<void> {
+      if (!cost?.throttleStatus) return;
+  
+      const available = cost.throttleStatus.currentlyAvailable;
+      
+      if (available < CONFIG.RATE_LIMIT.MIN_AVAILABLE_POINTS) {
+        const waitTime = Math.min(
+          CONFIG.RATE_LIMIT.MAX_COOLDOWN_MS,
+          CONFIG.RATE_LIMIT.COOLDOWN_MS * (1 + (CONFIG.RATE_LIMIT.MIN_AVAILABLE_POINTS - available) / 10)
+        );
+        
+        await this.sleep(waitTime);
+      }
+    }
+  
+    private calculateBackoff(attempt: number): number {
+      return this.config.BASE_DELAY * Math.pow(2, attempt) + Math.random() * 100;
+    }
+  
+    private sleep(ms: number): Promise<void> {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+  
+    getStats(): RequestStats {
+      const avg = this.requestCount > 0 ? this.totalResponseTime / this.requestCount : 0;
+      return {
+        totalRequests: this.requestCount,
+        cachedHits: this.cachedCount,
+        failedRequests: this.failedCount,
+        retryCount: this.retryCount,
+        averageResponseTime: Math.round(avg)
+      };
+    }
+  
+    incrementCacheHit(): void {
+      this.cachedCount++;
+    }
+  }
+  
+  // ============================================================================
+  // CONCURRENCY CONTROLLER
+  // ============================================================================
+  
+  class ConcurrencyPool {
+    private queue: Array<() => Promise<void>> = [];
+    private active = 0;
+  
+    constructor(private limit: number) {}
+  
+    async execute<T>(task: () => Promise<T>): Promise<T> {
+      if (this.active >= this.limit) {
+        await new Promise<void>(resolve => {
+          this.queue.push(resolve);
+        });
+      }
+  
+      this.active++;
+      
+      try {
+        return await task();
+      } finally {
+        this.active--;
+        const next = this.queue.shift();
+        if (next) next();
+      }
+    }
+  
+    async map<T, R>(
+      items: T[],
+      mapper: (item: T, index: number) => Promise<R>,
+      onProgress?: (completed: number, total: number) => void
+    ): Promise<R[]> {
+      const results = new Array<R>(items.length);
+      let completed = 0;
+  
+      const tasks = items.map((item, index) => 
+        this.execute(async () => {
+          try {
+            results[index] = await mapper(item, index);
+          } catch (error) {
+            console.error(`Task ${index} failed:`, error);
+            throw error;
+          } finally {
+            completed++;
+            onProgress?.(completed, items.length);
+          }
+        })
+      );
+  
+      await Promise.all(tasks);
+      return results;
+    }
+  }
+  
+  // ============================================================================
+  // TAXONOMY REPOSITORY
+  // ============================================================================
+  
+  class TaxonomyRepository {
+    private client: GraphQLExecutor;
+    private categoryCache: TTLCache<string, TaxonomyCategory>;
+    private attributesCache: TTLCache<string, TaxonomyAttribute[]>;
+    private valuesCache: TTLCache<string, TaxonomyValue[]>;
+    private pool: ConcurrencyPool;
+  
+    constructor(admin: GraphQLAdmin, concurrency = CONFIG.DEFAULTS.CONCURRENCY) {
+      this.client = new GraphQLExecutor(admin);
+      this.categoryCache = new TTLCache();
+      this.attributesCache = new TTLCache();
+      this.valuesCache = new TTLCache();
+      this.pool = new ConcurrencyPool(concurrency);
+    }
+  
+    // ==========================================================================
+    // VALUE EXTRACTION - CORE METHOD
+    // ==========================================================================
+  
+    async getAttributeValues(
+      attributeId: string,
+      first = CONFIG.DEFAULTS.VALUES_FIRST
+    ): Promise<TaxonomyValue[]> {
+      // Check cache
+      const cached = this.valuesCache.get(attributeId);
+      if (cached) {
+        this.client.incrementCacheHit();
+        return cached;
+      }
+  
+      const query = `#graphql
+        query GetAttributeValues($id: ID!, $first: Int!, $after: String) {
+          node(id: $id) {
+            ... on TaxonomyChoiceListAttribute {
+              id
+              name
+              values(first: $first, after: $after) {
+                pageInfo {
+                  hasNextPage
+                  endCursor
                 }
-                ... on TaxonomyMeasurementAttribute {
-                  id
-                  name
-                  options { key value }
+                edges {
+                  node {
+                    id
+                    name
+                    ... on TaxonomyChoiceListAttributeValue {
+                      synonyms
+                    }
+                  }
                 }
               }
             }
           }
         }
+      `;
+  
+      const values: TaxonomyValue[] = [];
+      let cursor: string | null = null;
+      let hasNextPage = true;
+      let pageCount = 0;
+      const maxPages = 20;
+  
+      while (hasNextPage && pageCount < maxPages) {
+        pageCount++;
+        
+        const data = await this.client.execute(
+          query,
+          { id: attributeId, first, after: cursor },
+          `GetAttributeValues-${attributeId}-page${pageCount}`
+        );
+  
+        const node = data?.node;
+        if (!node?.values) {
+          console.warn(`No values found for attribute ${attributeId}`);
+          break;
+        }
+  
+        const pageValues = node.values.edges.map((e: any) => ({
+          id: e.node.id,
+          name: e.node.name,
+          ...(e.node.synonyms && { synonyms: e.node.synonyms })
+        }));
+  
+        values.push(...pageValues);
+  
+        hasNextPage = node.values.pageInfo.hasNextPage;
+        cursor = node.values.pageInfo.endCursor;
       }
-    }`;
   
-    let attributes: any[] = [];
-    let cursor: string | null = null;
-    let hasNextPage = true;
-  
-    while (hasNextPage) {
-      const json = await graphqlRequest(admin, QUERY, {
-        id: categoryId,
-        first: attributesFirst,
-        after: cursor
-      });
-  
-      const conn = json?.data?.node?.attributes;
-      if (!conn) break;
-  
-      const batch = conn.edges.map((e: any) => e.node);
-  
-      const choiceAttrs = batch.filter(
-        (a: any) => a.__typename === "TaxonomyChoiceListAttribute"
-      );
-  
-      await promisePool(
-        choiceAttrs,
-        async (attr: any) => {
-          attr.values = await fetchValues(
-            admin,
-            attr.id,
-            valuesFirst
-          );
-        },
-        6
-      );
-  
-      attributes.push(...batch);
-  
-      hasNextPage = conn.pageInfo.hasNextPage;
-      cursor = conn.pageInfo.endCursor;
+      // Cache results
+      this.valuesCache.set(attributeId, values);
+      
+      return values;
     }
   
-    attributeCache.set(categoryId, attributes);
+    // ==========================================================================
+    // ATTRIBUTE FETCHING
+    // ==========================================================================
   
-    return attributes;
-  }
+    async getCategoryAttributes(
+      categoryId: string,
+      options: {
+        first?: number;
+        valuesFirst?: number;
+        types?: ('choice' | 'measurement' | 'text' | 'number')[];
+      } = {}
+    ): Promise<TaxonomyAttribute[]> {
+      const { first = 100, valuesFirst = 250, types } = options;
   
-  /* -----------------------------
-     MAIN SEARCH FUNCTION
-  ----------------------------- */
+      // Check cache
+      const cached = this.attributesCache.get(categoryId);
+      if (cached) {
+        this.client.incrementCacheHit();
+        return cached;
+      }
   
-  export async function searchTaxonomyCategory(
-    admin: GraphQLAdmin,
-    searchTerm: string,
-    maxResults = 250,
-    pageSize = 50,
-    attributesFirst = 20,
-    valuesFirst = 50
-  ): Promise<TaxonomyCategory[]> {
+      const query = `#graphql
+        query GetCategoryAttributes($id: ID!, $first: Int!, $after: String) {
+          node(id: $id) {
+            ... on TaxonomyCategory {
+              id
+              attributes(first: $first, after: $after) {
+                pageInfo {
+                  hasNextPage
+                  endCursor
+                }
+                edges {
+                  node {
+                    __typename
+                    ... on TaxonomyChoiceListAttribute {
+                      id
+                      name
+                      handle
+                      description
+                      required
+                    }
+                    ... on TaxonomyMeasurementAttribute {
+                      id
+                      name
+                      handle
+                      description
+                      required
+                      options {
+                        key
+                        value
+                      }
+                    }
+                    ... on TaxonomyTextAttribute {
+                      id
+                      name
+                      handle
+                      description
+                      required
+                    }
+                    ... on TaxonomyNumberAttribute {
+                      id
+                      name
+                      handle
+                      description
+                      required
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      `;
   
-    const QUERY = `#graphql
-    query ($search: String!, $first: Int!, $after: String) {
-      taxonomy {
-        categories(first: $first, search: $search, after: $after) {
-          pageInfo { hasNextPage endCursor }
-          edges {
-            node {
+      const attributes: TaxonomyAttribute[] = [];
+      let cursor: string | null = null;
+      let hasNextPage = true;
+  
+      while (hasNextPage) {
+        const data = await this.client.execute(
+          query,
+          { id: categoryId, first, after: cursor },
+          `GetCategoryAttributes-${categoryId}`
+        );
+  
+        const node = data?.node;
+        if (!node?.attributes) break;
+  
+        const batch = node.attributes.edges.map((e: any) => {
+          const node = e.node;
+          const typeMap: Record<string, TaxonomyAttribute['type']> = {
+            'TaxonomyChoiceListAttribute': 'choice',
+            'TaxonomyMeasurementAttribute': 'measurement',
+            'TaxonomyTextAttribute': 'text',
+            'TaxonomyNumberAttribute': 'number'
+          };
+  
+          return {
+            id: node.id,
+            name: node.name,
+            handle: node.handle,
+            description: node.description,
+            required: node.required,
+            type: typeMap[node.__typename] || 'unknown',
+            ...(node.options && { options: node.options })
+          } as TaxonomyAttribute;
+        });
+  
+        // Filter by types if specified
+        const filteredBatch = types 
+          ? batch.filter(a => types.includes(a.type))
+          : batch;
+  
+        // Fetch values for choice attributes concurrently
+        const choiceAttrs = filteredBatch.filter(a => a.type === 'choice');
+        
+        if (choiceAttrs.length > 0) {
+          await Promise.all(
+            choiceAttrs.map(async (attr) => {
+              try {
+                attr.values = await this.getAttributeValues(attr.id, valuesFirst);
+              } catch (error) {
+                console.error(`Failed to fetch values for ${attr.name}:`, error);
+                attr.values = [];
+              }
+            })
+          );
+        }
+  
+        attributes.push(...filteredBatch);
+  
+        hasNextPage = node.attributes.pageInfo.hasNextPage;
+        cursor = node.attributes.pageInfo.endCursor;
+      }
+  
+      // Cache results
+      this.attributesCache.set(categoryId, attributes);
+  
+      return attributes;
+    }
+  
+    // ==========================================================================
+    // CATEGORY FETCHING
+    // ==========================================================================
+  
+    async getCategoryById(
+      categoryId: string,
+      includeAttributes = true
+    ): Promise<TaxonomyCategory | null> {
+      const cached = this.categoryCache.get(categoryId);
+      if (cached) {
+        this.client.incrementCacheHit();
+        return cached;
+      }
+  
+      const query = `#graphql
+        query GetCategory($id: ID!) {
+          node(id: $id) {
+            ... on TaxonomyCategory {
               id
               name
               fullName
+              handle
+              description
               ancestorIds
               childrenIds
               isLeaf
             }
           }
         }
+      `;
+  
+      try {
+        const data = await this.client.execute(query, { id: categoryId }, `GetCategory-${categoryId}`);
+        const node = data?.node;
+        
+        if (!node) return null;
+  
+        const category = this.buildCategory(node, []);
+  
+        if (includeAttributes) {
+          category.attributes = await this.getCategoryAttributes(categoryId);
+        }
+  
+        this.categoryCache.set(categoryId, category);
+        return category;
+      } catch (error) {
+        console.error(`Failed to fetch category ${categoryId}:`, error);
+        return null;
       }
-    }`;
-  
-    let cursor: string | null = null;
-    let hasNextPage = true;
-  
-    const results: TaxonomyCategory[] = [];
-  
-    while (hasNextPage && results.length < maxResults) {
-  
-      const json = await graphqlRequest(admin, QUERY, {
-        search: searchTerm,
-        first: pageSize,
-        after: cursor
-      });
-  
-      const conn = json?.data?.taxonomy?.categories;
-      if (!conn) break;
-  
-      const categories: TaxonomyCategory[] =
-        conn.edges.map((e: any) => e.node);
-  
-      const enriched = await promisePool(
-        categories,
-        async (category) => {
-          category.attributes = await fetchAttributes(
-            admin,
-            category.id,
-            attributesFirst,
-            valuesFirst
-          );
-          return category;
-        },
-        5
-      );
-  
-      results.push(...enriched);
-  
-      hasNextPage = conn.pageInfo.hasNextPage;
-      cursor = conn.pageInfo.endCursor;
     }
   
-    return results.slice(0, maxResults);
+    // ==========================================================================
+    // SEARCH - MAIN METHOD
+    // ==========================================================================
+  
+    async search(
+      searchTerm: string,
+      options: SearchOptions = {}
+    ): Promise<SearchResult> {
+      const startTime = Date.now();
+      const errors: SearchError[] = [];
+  
+      const config = {
+        maxResults: options.maxResults ?? CONFIG.DEFAULTS.MAX_RESULTS,
+        pageSize: options.pageSize ?? CONFIG.DEFAULTS.PAGE_SIZE,
+        fetchAttributes: options.fetchAttributes ?? true,
+        attributesFirst: options.attributesFirst ?? CONFIG.DEFAULTS.ATTRIBUTES_FIRST,
+        valuesFirst: options.valuesFirst ?? CONFIG.DEFAULTS.VALUES_FIRST,
+        includeMetadata: options.includeMetadata ?? false,
+        attributeTypes: options.attributeTypes,
+        concurrency: options.concurrency ?? CONFIG.DEFAULTS.CONCURRENCY
+      };
+  
+      console.log(`🔍 [Taxonomy Search] Starting search for: "${searchTerm}"`);
+      console.log(`   Configuration:`, {
+        maxResults: config.maxResults,
+        fetchAttributes: config.fetchAttributes,
+        concurrency: config.concurrency
+      });
+  
+      const query = `#graphql
+        query SearchTaxonomyCategories($search: String!, $first: Int!, $after: String) {
+          taxonomy {
+            categories(first: $first, search: $search, after: $after) {
+              pageInfo {
+                hasNextPage
+                endCursor
+              }
+              edges {
+                node {
+                  id
+                  name
+                  fullName
+                  handle
+                  description
+                  ancestorIds
+                  childrenIds
+                  isLeaf
+                }
+              }
+            }
+          }
+        }
+      `;
+  
+      const categories: TaxonomyCategory[] = [];
+      let cursor: string | null = null;
+      let hasNextPage = true;
+      let pageCount = 0;
+  
+      // Fetch all categories first
+      while (hasNextPage && categories.length < config.maxResults) {
+        pageCount++;
+        const remaining = config.maxResults - categories.length;
+        const fetchSize = Math.min(config.pageSize, remaining);
+  
+        try {
+          const data = await this.client.execute(
+            query,
+            { search: searchTerm, first: fetchSize, after: cursor },
+            `SearchTaxonomy-${searchTerm}-page${pageCount}`
+          );
+  
+          const conn = data?.taxonomy?.categories;
+          if (!conn) break;
+  
+          const batch = conn.edges.map((e: any) => this.buildCategory(e.node, []));
+  
+          categories.push(...batch);
+  
+          hasNextPage = conn.pageInfo.hasNextPage;
+          cursor = conn.pageInfo.endCursor;
+  
+          console.log(`   📄 Page ${pageCount}: Fetched ${batch.length} categories (Total: ${categories.length})`);
+  
+        } catch (error) {
+          errors.push({
+            operation: 'search',
+            message: error instanceof Error ? error.message : 'Unknown error',
+            timestamp: new Date()
+          });
+          break;
+        }
+      }
+  
+      // Enrich with attributes if requested
+      if (config.fetchAttributes && categories.length > 0) {
+        console.log(`   📦 Enriching ${categories.length} categories with attributes...`);
+        
+        const enriched = await this.pool.map(
+          categories,
+          async (category, index) => {
+            try {
+              const attrs = await this.getCategoryAttributes(category.id, {
+                first: config.attributesFirst,
+                valuesFirst: config.valuesFirst,
+                types: config.attributeTypes
+              });
+              
+              category.attributes = attrs;
+              
+              if ((index + 1) % 10 === 0 || index === categories.length - 1) {
+                console.log(`      ✅ Enriched ${index + 1}/${categories.length} categories`);
+              }
+              
+              return category;
+            } catch (error) {
+              errors.push({
+                categoryId: category.id,
+                operation: 'enrichAttributes',
+                message: error instanceof Error ? error.message : 'Unknown error',
+                timestamp: new Date()
+              });
+              return category;
+            }
+          },
+          (completed, total) => {
+            if (completed % 5 === 0) {
+              console.log(`      🔄 Progress: ${completed}/${total}`);
+            }
+          }
+        );
+      }
+  
+      const executionTime = Date.now() - startTime;
+      const stats = this.client.getStats();
+  
+      console.log(`✅ [Taxonomy Search] Completed in ${executionTime}ms`);
+      console.log(`   Found: ${categories.length} categories | Errors: ${errors.length}`);
+      console.log(`   Stats: ${stats.totalRequests} requests, ${stats.cachedHits} cached`);
+  
+      return {
+        success: errors.length === 0,
+        categories: categories.slice(0, config.maxResults),
+        totalFound: categories.length,
+        searchTerm,
+        executionTimeMs: executionTime,
+        stats,
+        errors,
+        hasMore: hasNextPage
+      };
+    }
+  
+    // ==========================================================================
+    // UTILITY METHODS
+    // ==========================================================================
+  
+    private buildCategory(node: any, attributes: TaxonomyAttribute[]): TaxonomyCategory {
+      return {
+        id: node.id,
+        name: node.name,
+        fullName: node.fullName,
+        handle: node.handle,
+        description: node.description,
+        ancestorIds: node.ancestorIds || [],
+        childrenIds: node.childrenIds || [],
+        isLeaf: node.isLeaf,
+        level: node.ancestorIds?.length || 0,
+        parentId: node.ancestorIds?.[node.ancestorIds.length - 1],
+        attributes,
+        path: node.fullName?.split(' > ') || [node.name]
+      };
+    }
+  
+    clearCaches(): void {
+      this.categoryCache.clear();
+      this.attributesCache.clear();
+      this.valuesCache.clear();
+      console.log('🧹 All caches cleared');
+    }
+  
+    getCacheStats(): object {
+      return {
+        categories: this.categoryCache.size(),
+        attributes: this.attributesCache.size(),
+        values: this.valuesCache.size()
+      };
+    }
   }
+  
+  // ============================================================================
+  // EXPORT FUNCTIONS
+  // ============================================================================
+  
+  let repository: TaxonomyRepository | null = null;
+  
+  function getRepository(admin: GraphQLAdmin): TaxonomyRepository {
+    if (!repository) {
+      repository = new TaxonomyRepository(admin);
+    }
+    return repository;
+  }
+  
+  /**
+   * Main search function - Professional taxonomy category search with full attribute values
+   */
+  export async function searchTaxonomyCategory(
+    admin: GraphQLAdmin,
+    searchTerm: string,
+    maxResults?: number,
+    pageSize?: number,
+    attributesFirst?: number,
+    valuesFirst?: number
+  ): Promise<SearchResult> {
+    const repo = getRepository(admin);
+    
+    return repo.search(searchTerm, {
+      maxResults,
+      pageSize,
+      attributesFirst,
+      valuesFirst,
+      fetchAttributes: true
+    });
+  }
+  
+  /**
+   * Advanced search with full options control
+   */
+  export async function searchTaxonomyAdvanced(
+    admin: GraphQLAdmin,
+    searchTerm: string,
+    options: SearchOptions = {}
+  ): Promise<SearchResult> {
+    const repo = getRepository(admin);
+    return repo.search(searchTerm, options);
+  }
+  
+  /**
+   * Get single category by ID with all attributes and values
+   */
+  export async function getTaxonomyCategory(
+    admin: GraphQLAdmin,
+    categoryId: string
+  ): Promise<TaxonomyCategory | null> {
+    const repo = getRepository(admin);
+    return repo.getCategoryById(categoryId, true);
+  }
+  
+  /**
+   * Get attribute values only (useful for specific attribute inspection)
+   */
+  export async function getAttributeValues(
+    admin: GraphQLAdmin,
+    attributeId: string
+  ): Promise<TaxonomyValue[]> {
+    const repo = getRepository(admin);
+    return repo.getAttributeValues(attributeId);
+  }
+  
+  /**
+   * Clear all caches
+   */
+  export function clearTaxonomyCaches(): void {
+    repository?.clearCaches();
+  }
+  
+  // Type exports
+  export type {
+    TaxonomyCategory,
+    TaxonomyAttribute,
+    TaxonomyValue,
+    SearchResult,
+    SearchOptions,
+    GraphQLAdmin
+  };
