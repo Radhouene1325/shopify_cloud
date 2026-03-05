@@ -643,14 +643,14 @@ async function searchTaxonomyCategory(
                 fullName
                 ancestorIds
                 childrenIds
-                attributes(first: 100) {
+                attributes(first: 50) {
                   edges {
                     cursor
                     node {
                       ... on TaxonomyChoiceListAttribute {
                         id
                         name
-                        values(first: 100) {
+                        values(first: 50) {
                           edges {
                             cursor
                             node {
