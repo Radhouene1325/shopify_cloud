@@ -587,7 +587,7 @@ export async function getTaxonomyIdForCategory(
       // Search with pagination
       const results = await searchTaxonomyCategory(admin, category, 500);
       console.log('her rsult of the tamoxy is her ',results)
-      if (results.length === 0) {
+      if (results.categories.length === 0) {
         console.warn(`⚠️ No taxonomy found for: "${category}"`);
         return null;
       }
