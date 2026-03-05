@@ -161,11 +161,11 @@ import { generateSeoMetadata, getTaxonomyIdForCategory } from "./functions/propm
       parsed=res
       // Ensure it's an array
       if (Array.isArray(parsed)) {
-        console.log(`Successfully parsed ${parsed.length} items`);
+        // console.log(`Successfully parsed ${parsed.length} items`);
         return parsed;
       } else if (parsed && typeof parsed === 'object') {
         // If it's an object, wrap it in an array
-        console.log('Wrapped single object in array');
+        // console.log('Wrapped single object in array');
         return [parsed];
       } else {
         throw new Error('Parsed result is not a valid object or array');
@@ -216,7 +216,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
 
   const chunks = chunkArray(updatedDescreptionAI, BATCH_SIZE);
 
-  console.log(`Total chunks to process: ${chunks.length}`);
+  // console.log(`Total chunks to process: ${chunks.length}`);
 
   //Build prompt for a specific output field to stay under DeepSeek's 8K output token limit
   // function buildPrompt(
@@ -1187,10 +1187,10 @@ export async function action({context ,request }: ActionFunctionArgs) {
 //  return Response.json({ data:x,status: "success", message: "Product queued for generation!" });
 
     const API_KEY_DEEP_SEEK=context.cloudflare?.env?.DEEP_SEEK_API_KEY
-    console.log('api key is her ',API_KEY_DEEP_SEEK)
+    // console.log('api key is her ',API_KEY_DEEP_SEEK)
 
     const API_KEY_GEMINI_GEMINI=context.cloudflare?.env?.GEMINI_API_KEY
-    console.log('api key is her ',API_KEY_GEMINI_GEMINI)
+    // console.log('api key is her ',API_KEY_GEMINI_GEMINI)
     // console.log('hello UPDATE_PRODUCT',UPDATE_PRODUCT?.loc?.source.body)
 
 
@@ -1228,7 +1228,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
       optimizedHtml=optimizedHtml_deep_seek
     }
  
-     console.log('SEO_OPTIMISE_TITLE_DECPRETION_HANDEL ',seotitle_descreption_handel)
+    //  console.log('SEO_OPTIMISE_TITLE_DECPRETION_HANDEL ',seotitle_descreption_handel)
 
 let responses
 
@@ -1282,11 +1282,11 @@ const productSchema = {
 };
 
 // ✅ Validation
-console.log('📊 Schema validation:');
-console.log('   Name:', productSchema.name ? '✓' : '✗ MISSING');
-console.log('   Description:', productSchema.description ? '✓' : '✗ MISSING');
-console.log('   Images:', productSchema.image.length, 'found');
-console.log('   Price:', productSchema.offers.price);
+// console.log('📊 Schema validation:');
+// console.log('   Name:', productSchema.name ? '✓' : '✗ MISSING');
+// console.log('   Description:', productSchema.description ? '✓' : '✗ MISSING');
+// console.log('   Images:', productSchema.image.length, 'found');
+// console.log('   Price:', productSchema.offers.price);
 
 
 
@@ -1766,7 +1766,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
   `
   const response = await admin.graphql(query,{variables:{cursor}});
   const res = await response.json();
-  console.log('res is her ',res.data)
+  // console.log('res is her ',res.data)
   const productsdescreption={
     variants: res?.data.products.edges.map((e: any) => e.node),
         pageInfo: res?.data.products.pageInfo,

@@ -624,121 +624,115 @@ export async function getTaxonomyIdForCategory(
   
 
 // Search taxonomy with automatic pagination
-async function searchTaxonomyCategory(
-    admin: any, 
-    searchTerm: string,
-    maxResults: number = 250 // Maximum results to fetch
-  ) {
+// async function searchTaxonomyCategory(
+//     admin: any, 
+//     searchTerm: string,
+//     maxResults: number = 250 // Maximum results to fetch
+//   ) {
 
    
-   const SEARCH_QUERY=`#graphql
-    query SearchTaxonomy($search: String!) {
-        taxonomy {
-          categories(first: 200, search: $search) {
-            edges {
-              cursor
-              node {
-                id
-                name
-                fullName
-                ancestorIds
-                childrenIds
-                attributes(first: 50) {
-                  edges {
-                    cursor
-                    node {
-                      ... on TaxonomyChoiceListAttribute {
-                        id
-                        name
-                        values(first: 50) {
-                          edges {
-                            cursor
-                            node {
-                              id
-                              name
-                            }
-                          }
-                        }
-                      }
-                      ... on TaxonomyMeasurementAttribute {
-                        id
-                        name
-                        options {
-                          key
-                          value
-                        }
-                      }
-                      ... on TaxonomyAttribute {
-                        id
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-   `
+//    const SEARCH_QUERY=`#graphql
+//     query SearchTaxonomy($search: String!) {
+//         taxonomy {
+//           categories(first: 200, search: $search) {
+//             edges {
+//               cursor
+//               node {
+//                 id
+//                 name
+//                 fullName
+//                 ancestorIds
+//                 childrenIds
+//                 attributes(first: 50) {
+//                   edges {
+//                     cursor
+//                     node {
+//                       ... on TaxonomyChoiceListAttribute {
+//                         id
+//                         name
+//                         values(first: 50) {
+//                           edges {
+//                             cursor
+//                             node {
+//                               id
+//                               name
+//                             }
+//                           }
+//                         }
+//                       }
+//                       ... on TaxonomyMeasurementAttribute {
+//                         id
+//                         name
+//                         options {
+//                           key
+//                           value
+//                         }
+//                       }
+//                       ... on TaxonomyAttribute {
+//                         id
+//                       }
+//                     }
+//                   }
+//                 }
+//               }
+//             }
+//           }
+//         }
+//       }
+//    `
     
-    let allResults: any[] = [];
-    let hasNextPage = true;
-    let cursor: string | null = null;
-    const batchSize = 50;
+//     let allResults: any[] = [];
+//     let hasNextPage = true;
+//     let cursor: string | null = null;
+//     const batchSize = 50;
   
-    try {
-        console.log(`Fetching batch... (current total: ${allResults.length})`);
+//     try {
+//         console.log(`Fetching batch... (current total: ${allResults.length})`);
         
-        const response = await admin.graphql  (SEARCH_QUERY, {
-          variables: { 
-            search: searchTerm,
-            // first: batchSize,
-            // after: cursor
-          }
-        });
+//         const response = await admin.graphql  (SEARCH_QUERY, {
+//           variables: { 
+//             search: searchTerm,
+//             // first: batchSize,
+//             // after: cursor
+//           }
+//         });
         
-        const data:SearchTaxonomyResponse = await response.json();
+//         const data:SearchTaxonomyResponse = await response.json();
         
-        if (data.errors) {
-          console.error('GraphQL errors:', data.errors);
-          throw new Error('Failed to fetch taxonomy');
-        }
-        const categories = data.data?.taxonomy.categories?.edges.map((edge:any)=>edge.node);
+//         if (data.errors) {
+//           console.error('GraphQL errors:', data.errors);
+//           throw new Error('Failed to fetch taxonomy');
+//         }
+//         const categories = data.data?.taxonomy.categories?.edges.map((edge:any)=>edge.node);
         
-       console.log('categories verified',categories)
+//        console.log('categories verified',categories)
   
-        // Add results to array
-        allResults.push(...categories);
+//         // Add results to array
+//         allResults.push(...categories);
   
-        // Check if there are more pages
-        // hasNextPage = categories.pageInfo.hasNextPage;
-        // cursor = categories.pageInfo.endCursor;
+//         // Check if there are more pages
+//         // hasNextPage = categories.pageInfo.hasNextPage;
+//         // cursor = categories.pageInfo.endCursor;
   
-        // console.log(`✅ Fetched ${categories.edges.length} categories (hasNextPage: ${hasNextPage})`);
+//         // console.log(`✅ Fetched ${categories.edges.length} categories (hasNextPage: ${hasNextPage})`);
   
-        // Prevent infinite loops
-        // if (allResults.length >= maxResults) {
-        //   console.log(`⚠️ Reached max results limit: ${maxResults}`);
-        //   break;
-        // }
+//         // Prevent infinite loops
+//         // if (allResults.length >= maxResults) {
+//         //   console.log(`⚠️ Reached max results limit: ${maxResults}`);
+//         //   break;
+//         // }
       
   
-      console.log(`\n📊 Total categories found: ${allResults.length}`);
-      return allResults;
+//       console.log(`\n📊 Total categories found: ${allResults.length}`);
+//       return allResults;
   
-    } catch (error) {
-      console.error('Error searching taxonomy:', error);
-      throw error;
-    }
-  }
+//     } catch (error) {
+//       console.error('Error searching taxonomy:', error);
+//       throw error;
+//     }
+//   }
   
-  // Usage:
-//   const runningShoes = await searchTaxonomyCategory(admin, "running shoes", 250);
-//   console.log('Found categories:', runningShoes.length);
-//   runningShoes.forEach(edge => {
-//     const node = edge.node.productTaxonomyNode;
-//     console.log(`- ${node.fullName} (${node.id})`);
-//   });
+
   
 
 
@@ -769,3 +763,194 @@ interface TaxonomyNode {
     };
     errors?: any;
   }
+
+
+
+async function searchTaxonomyCategory(
+    admin: any,
+    searchTerm: string,
+    maxResults: number = 250,          // massimo totale da restituire
+    pageSize: number = 50,             // categorie per pagina (first)
+    attributesFirst: number = 20,      // attributi per categoria
+    valuesFirst: number = 50           // valori per attributo
+  ): Promise<TaxonomyCategoryResult[]> {
+    const SEARCH_QUERY = `#graphql
+      query SearchTaxonomyWithAttributes(
+        $search: String!,
+        $first: Int!,
+        $after: String,
+        $attributesFirst: Int!,
+        $valuesFirst: Int!
+      ) {
+        taxonomy {
+          categories(first: $first, search: $search, after: $after) {
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
+            edges {
+              cursor
+              node {
+                id
+                name
+                fullName
+                ancestorIds
+                childrenIds
+                isLeaf
+                attributes(first: $attributesFirst) {
+                  edges {
+                    cursor
+                    node {
+                      ... on TaxonomyChoiceListAttribute {
+                        id
+                        name
+                        values(first: $valuesFirst) {
+                          edges {
+                            cursor
+                            node {
+                              id
+                              name
+                            }
+                          }
+                        }
+                      }
+                      ... on TaxonomyMeasurementAttribute {
+                        id
+                        name
+                        options {
+                          key
+                          value
+                        }
+                      }
+                      ... on TaxonomyAttribute {
+                        id
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+  
+    const allResults: TaxonomyCategoryResult[] = [];
+    let hasNextPage = true;
+    let cursor: string | null = null;
+  
+    // sicurezza: non chiedere mai più di 100 per pagina
+    const safePageSize = Math.min(pageSize, 100);
+  
+    try {
+      while (hasNextPage && allResults.length < maxResults) {
+        console.log(
+          `Fetching batch... (current total: ${allResults.length}, cursor: ${cursor})`
+        );
+  
+        const response = await admin.graphql(SEARCH_QUERY, {
+          variables: {
+            search: searchTerm,
+            first: safePageSize,
+            after: cursor,
+            attributesFirst,
+            valuesFirst,
+          },
+        });
+  
+        const data:SearchTaxonomyResponse = await response.json();
+  
+        // errori top-level GraphQL
+        if (data.errors) {
+          console.error('GraphQL errors while fetching taxonomy:', data.errors);
+          throw new Error('Failed to fetch taxonomy');
+        }
+  
+        const connection =
+          data?.data?.taxonomy?.categories ?? null;
+  
+        if (!connection) {
+          console.warn('No taxonomy.categories connection in response');
+          break;
+        }
+  
+        const pageInfo = connection.pageInfo;
+        const edges = Array.isArray(connection.edges)
+          ? connection.edges
+          : [];
+  
+        const categories: TaxonomyCategoryResult[] = edges
+          .filter((edge: any) => edge?.node)
+          .map((edge: any) => edge.node);
+  
+        console.log(
+          `✅ Fetched ${categories.length} categories in this batch (hasNextPage: ${pageInfo?.hasNextPage})`
+        );
+  
+        allResults.push(...categories);
+  
+        // aggiorna paginazione
+        hasNextPage = Boolean(pageInfo?.hasNextPage);
+        cursor = pageInfo?.endCursor ?? null;
+  
+        // rispetta maxResults
+        if (allResults.length >= maxResults) {
+          console.log(
+            `⚠️ Reached max results limit: ${maxResults}, stopping pagination.`
+          );
+          break;
+        }
+  
+        // se non ci sono più pagine, si esce dal while
+      }
+  
+      console.log(`\n📊 Total categories found: ${allResults.length}`);
+      return allResults;
+    } catch (error) {
+      console.error('Error searching taxonomy:', error);
+      throw error;
+    }
+  }
+
+  type TaxonomyAttributeChoiceValue = {
+    id: string;
+    name: string;
+  };
+  
+  type TaxonomyChoiceListAttribute = {
+    __typename: 'TaxonomyChoiceListAttribute';
+    id: string;
+    name: string;
+    values: {
+      edges: { cursor: string; node: TaxonomyAttributeChoiceValue }[];
+    };
+  };
+  
+  type TaxonomyMeasurementAttribute = {
+    __typename: 'TaxonomyMeasurementAttribute';
+    id: string;
+    name: string;
+    options: { key: string; value: string }[];
+  };
+  
+  type TaxonomyAttributeBase = {
+    __typename: 'TaxonomyAttribute';
+    id: string;
+  };
+  
+  type TaxonomyCategoryAttributeNode =
+    | TaxonomyChoiceListAttribute
+    | TaxonomyMeasurementAttribute
+    | TaxonomyAttributeBase;
+  
+  type TaxonomyCategoryResult = {
+    id: string;
+    name: string;
+    fullName: string;
+    ancestorIds: string[];
+    childrenIds: string[];
+    isLeaf: boolean;
+    attributes: {
+      edges: { cursor: string; node: TaxonomyCategoryAttributeNode }[];
+    };
+  };
