@@ -585,7 +585,7 @@ export async function getTaxonomyIdForCategory(
       console.log(`🔍 Searching for category: "${category}"`);
       
       // Search with pagination
-      const results = await searchTaxonomyCategory(admin, category, 250);
+      const results = await searchTaxonomyCategory(admin, category, 500);
       console.log('her rsult of the tamoxy is her ',results)
       if (results.length === 0) {
         console.warn(`⚠️ No taxonomy found for: "${category}"`);
@@ -736,221 +736,551 @@ export async function getTaxonomyIdForCategory(
   
 
 
-interface TaxonomyNode {
-    id: string;
-    name: string;
-    fullName: string;
-    isLeaf: boolean;
-    isRoot: boolean;
-  }
+// interface TaxonomyNode {
+//     id: string;
+//     name: string;
+//     fullName: string;
+//     isLeaf: boolean;
+//     isRoot: boolean;
+//   }
   
-  interface ProductCategoryEdge {
-    cursor: string;
-    node: {
-      productTaxonomyNode: TaxonomyNode;
-    };
-  }
+//   interface ProductCategoryEdge {
+//     cursor: string;
+//     node: {
+//       productTaxonomyNode: TaxonomyNode;
+//     };
+//   }
   
-  interface SearchTaxonomyResponse {
-    data: {
-      productCategories: {
-        edges: ProductCategoryEdge[];
-        pageInfo: {
-          hasNextPage: boolean;
-          endCursor: string | null;
-        };
-      };
-    };
-    errors?: any;
-  }
+//   interface SearchTaxonomyResponse {
+//     data: {
+//       productCategories: {
+//         edges: ProductCategoryEdge[];
+//         pageInfo: {
+//           hasNextPage: boolean;
+//           endCursor: string | null;
+//         };
+//       };
+//     };
+//     errors?: any;
+//   }
 
 
 
-async function searchTaxonomyCategory(
-    admin: any,
-    searchTerm: string,
-    maxResults: number = 250,          // massimo totale da restituire
-    pageSize: number = 50,             // categorie per pagina (first)
-    attributesFirst: number = 20,      // attributi per categoria
-    valuesFirst: number = 50           // valori per attributo
-  ): Promise<TaxonomyCategoryResult[]> {
-    const SEARCH_QUERY = `#graphql
-      query SearchTaxonomyWithAttributes(
-        $search: String!,
-        $first: Int!,
-        $after: String,
-        $attributesFirst: Int!,
-        $valuesFirst: Int!
-      ) {
-        taxonomy {
-          categories(first: $first, search: $search, after: $after) {
-            pageInfo {
-              hasNextPage
-              endCursor
-            }
-            edges {
-              cursor
-              node {
-                id
-                name
-                fullName
-                ancestorIds
-                childrenIds
-                isLeaf
-                attributes(first: $attributesFirst) {
-                  edges {
-                    cursor
-                    node {
-                      ... on TaxonomyChoiceListAttribute {
-                        id
-                        name
-                        values(first: $valuesFirst) {
-                          edges {
-                            cursor
-                            node {
-                              id
-                              name
-                            }
-                          }
-                        }
-                      }
-                      ... on TaxonomyMeasurementAttribute {
-                        id
-                        name
-                        options {
-                          key
-                          value
-                        }
-                      }
-                      ... on TaxonomyAttribute {
-                        id
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    `;
+// async function searchTaxonomyCategory(
+//     admin: any,
+//     searchTerm: string,
+//     maxResults: number = 250,          // massimo totale da restituire
+//     pageSize: number = 50,             // categorie per pagina (first)
+//     attributesFirst: number = 20,      // attributi per categoria
+//     valuesFirst: number = 50           // valori per attributo
+//   ): Promise<TaxonomyCategoryResult[]> {
+//     const SEARCH_QUERY = `#graphql
+//       query SearchTaxonomyWithAttributes(
+//         $search: String!,
+//         $first: Int!,
+//         $after: String,
+//         $attributesFirst: Int!,
+//         $valuesFirst: Int!
+//       ) {
+//         taxonomy {
+//           categories(first: $first, search: $search, after: $after) {
+//             pageInfo {
+//               hasNextPage
+//               endCursor
+//             }
+//             edges {
+//               cursor
+//               node {
+//                 id
+//                 name
+//                 fullName
+//                 ancestorIds
+//                 childrenIds
+//                 isLeaf
+//                 attributes(first: $attributesFirst) {
+//                   edges {
+//                     cursor
+//                     node {
+//                       ... on TaxonomyChoiceListAttribute {
+//                         id
+//                         name
+//                         values(first: $valuesFirst) {
+//                           edges {
+//                             cursor
+//                             node {
+//                               id
+//                               name
+//                             }
+//                           }
+//                         }
+//                       }
+//                       ... on TaxonomyMeasurementAttribute {
+//                         id
+//                         name
+//                         options {
+//                           key
+//                           value
+//                         }
+//                       }
+//                       ... on TaxonomyAttribute {
+//                         id
+//                       }
+//                     }
+//                   }
+//                 }
+//               }
+//             }
+//           }
+//         }
+//       }
+//     `;
   
-    const allResults: TaxonomyCategoryResult[] = [];
-    let hasNextPage = true;
-    let cursor: string | null = null;
+//     const allResults: TaxonomyCategoryResult[] = [];
+//     let hasNextPage = true;
+//     let cursor: string | null = null;
   
-    // sicurezza: non chiedere mai più di 100 per pagina
-    const safePageSize = Math.min(pageSize, 100);
+//     // sicurezza: non chiedere mai più di 100 per pagina
+//     const safePageSize = Math.min(pageSize, 100);
   
-    try {
-      while (hasNextPage && allResults.length < maxResults) {
-        console.log(
-          `Fetching batch... (current total: ${allResults.length}, cursor: ${cursor})`
-        );
+//     try {
+//       while (hasNextPage && allResults.length < maxResults) {
+//         console.log(
+//           `Fetching batch... (current total: ${allResults.length}, cursor: ${cursor})`
+//         );
   
-        const response = await admin.graphql(SEARCH_QUERY, {
-          variables: {
-            search: searchTerm,
-            first: safePageSize,
-            after: cursor,
-            attributesFirst,
-            valuesFirst,
-          },
-        });
+//         const response = await admin.graphql(SEARCH_QUERY, {
+//           variables: {
+//             search: searchTerm,
+//             first: safePageSize,
+//             after: cursor,
+//             attributesFirst,
+//             valuesFirst,
+//           },
+//         });
   
-        const data:SearchTaxonomyResponse = await response.json();
+//         const data:SearchTaxonomyResponse = await response.json();
   
-        // errori top-level GraphQL
-        if (data.errors) {
-          console.error('GraphQL errors while fetching taxonomy:', data.errors);
-          throw new Error('Failed to fetch taxonomy');
-        }
+//         // errori top-level GraphQL
+//         if (data.errors) {
+//           console.error('GraphQL errors while fetching taxonomy:', data.errors);
+//           throw new Error('Failed to fetch taxonomy');
+//         }
   
-        const connection =
-          data?.data?.taxonomy?.categories ?? null;
+//         const connection =
+//           data?.data?.taxonomy?.categories ?? null;
   
-        if (!connection) {
-          console.warn('No taxonomy.categories connection in response');
-          break;
-        }
+//         if (!connection) {
+//           console.warn('No taxonomy.categories connection in response');
+//           break;
+//         }
   
-        const pageInfo = connection.pageInfo;
-        const edges = Array.isArray(connection.edges)
-          ? connection.edges
-          : [];
+//         const pageInfo = connection.pageInfo;
+//         const edges = Array.isArray(connection.edges)
+//           ? connection.edges
+//           : [];
   
-        const categories: TaxonomyCategoryResult[] = edges
-          .filter((edge: any) => edge?.node)
-          .map((edge: any) => edge.node);
+//         const categories: TaxonomyCategoryResult[] = edges
+//           .filter((edge: any) => edge?.node)
+//           .map((edge: any) => edge.node);
   
-        console.log(
-          `✅ Fetched ${categories.length} categories in this batch (hasNextPage: ${pageInfo?.hasNextPage})`
-        );
+//         console.log(
+//           `✅ Fetched ${categories.length} categories in this batch (hasNextPage: ${pageInfo?.hasNextPage})`
+//         );
   
-        allResults.push(...categories);
+//         allResults.push(...categories);
   
-        // aggiorna paginazione
-        hasNextPage = Boolean(pageInfo?.hasNextPage);
-        cursor = pageInfo?.endCursor ?? null;
+//         // aggiorna paginazione
+//         hasNextPage = Boolean(pageInfo?.hasNextPage);
+//         cursor = pageInfo?.endCursor ?? null;
   
-        // rispetta maxResults
-        if (allResults.length >= maxResults) {
-          console.log(
-            `⚠️ Reached max results limit: ${maxResults}, stopping pagination.`
-          );
-          break;
-        }
+//         // rispetta maxResults
+//         if (allResults.length >= maxResults) {
+//           console.log(
+//             `⚠️ Reached max results limit: ${maxResults}, stopping pagination.`
+//           );
+//           break;
+//         }
   
-        // se non ci sono più pagine, si esce dal while
-      }
+//         // se non ci sono più pagine, si esce dal while
+//       }
   
-      console.log(`\n📊 Total categories found: ${allResults.length}`);
-      return allResults;
-    } catch (error) {
-      console.error('Error searching taxonomy:', error);
-      throw error;
-    }
-  }
+//       console.log(`\n📊 Total categories found: ${allResults.length}`);
+//       return allResults;
+//     } catch (error) {
+//       console.error('Error searching taxonomy:', error);
+//       throw error;
+//     }
+//   }
 
-  type TaxonomyAttributeChoiceValue = {
-    id: string;
-    name: string;
+//   type TaxonomyAttributeChoiceValue = {
+//     id: string;
+//     name: string;
+//   };
+  
+//   type TaxonomyChoiceListAttribute = {
+//     __typename: 'TaxonomyChoiceListAttribute';
+//     id: string;
+//     name: string;
+//     values: {
+//       edges: { cursor: string; node: TaxonomyAttributeChoiceValue }[];
+//     };
+//   };
+  
+//   type TaxonomyMeasurementAttribute = {
+//     __typename: 'TaxonomyMeasurementAttribute';
+//     id: string;
+//     name: string;
+//     options: { key: string; value: string }[];
+//   };
+  
+//   type TaxonomyAttributeBase = {
+//     __typename: 'TaxonomyAttribute';
+//     id: string;
+//   };
+  
+//   type TaxonomyCategoryAttributeNode =
+//     | TaxonomyChoiceListAttribute
+//     | TaxonomyMeasurementAttribute
+//     | TaxonomyAttributeBase;
+  
+//   type TaxonomyCategoryResult = {
+//     id: string;
+//     name: string;
+//     fullName: string;
+//     ancestorIds: string[];
+//     childrenIds: string[];
+//     isLeaf: boolean;
+//     attributes: {
+//       edges: { cursor: string; node: TaxonomyCategoryAttributeNode }[];
+//     };
+//   };
+
+
+
+
+
+
+
+
+type GraphQLAdmin = {
+    graphql: (query: string, options?: any) => Promise<Response>;
   };
   
-  type TaxonomyChoiceListAttribute = {
-    __typename: 'TaxonomyChoiceListAttribute';
-    id: string;
-    name: string;
-    values: {
-      edges: { cursor: string; node: TaxonomyAttributeChoiceValue }[];
-    };
-  };
-  
-  type TaxonomyMeasurementAttribute = {
-    __typename: 'TaxonomyMeasurementAttribute';
-    id: string;
-    name: string;
-    options: { key: string; value: string }[];
-  };
-  
-  type TaxonomyAttributeBase = {
-    __typename: 'TaxonomyAttribute';
-    id: string;
-  };
-  
-  type TaxonomyCategoryAttributeNode =
-    | TaxonomyChoiceListAttribute
-    | TaxonomyMeasurementAttribute
-    | TaxonomyAttributeBase;
-  
-  type TaxonomyCategoryResult = {
+  type TaxonomyCategory = {
     id: string;
     name: string;
     fullName: string;
     ancestorIds: string[];
     childrenIds: string[];
     isLeaf: boolean;
-    attributes: {
-      edges: { cursor: string; node: TaxonomyCategoryAttributeNode }[];
-    };
+    attributes?: any[];
   };
+  
+  /* -----------------------------
+     LRU CACHE
+  ----------------------------- */
+  
+  class LRUCache<K, V> {
+    private cache = new Map<K, V>();
+  
+    constructor(private limit = 500) {}
+  
+    get(key: K): V | undefined {
+      if (!this.cache.has(key)) return undefined;
+  
+      const value = this.cache.get(key)!;
+  
+      this.cache.delete(key);
+      this.cache.set(key, value);
+  
+      return value;
+    }
+  
+    set(key: K, value: V) {
+      if (this.cache.has(key)) this.cache.delete(key);
+  
+      this.cache.set(key, value);
+  
+      if (this.cache.size > this.limit) {
+        const first = this.cache.keys().next().value;
+        this.cache.delete(first);
+      }
+    }
+  }
+  
+  /* -----------------------------
+     PROMISE POOL
+  ----------------------------- */
+  
+  async function promisePool<T, R>(
+    items: T[],
+    worker: (item: T) => Promise<R>,
+    concurrency = 5
+  ): Promise<R[]> {
+    const results: R[] = [];
+    const executing: Promise<any>[] = [];
+  
+    for (const item of items) {
+      const p = worker(item).then((res) => results.push(res));
+  
+      executing.push(p);
+  
+      if (executing.length >= concurrency) {
+        await Promise.race(executing);
+        executing.splice(
+          executing.findIndex((e) => e === p),
+          1
+        );
+      }
+    }
+  
+    await Promise.all(executing);
+  
+    return results;
+  }
+  
+  /* -----------------------------
+     GRAPHQL CLIENT
+  ----------------------------- */
+  
+  async function graphqlRequest(
+    admin: GraphQLAdmin,
+    query: string,
+    variables: any,
+    retries = 5
+  ): Promise<any> {
+    try {
+      const response = await admin.graphql(query, { variables });
+      const json = await response.json();
+  
+      if (json.errors) {
+        throw new Error(JSON.stringify(json.errors));
+      }
+  
+      const throttle = json?.extensions?.cost?.throttleStatus;
+  
+      if (throttle?.currentlyAvailable < 50) {
+        await new Promise((r) => setTimeout(r, 500));
+      }
+  
+      return json;
+    } catch (error) {
+      if (retries <= 0) throw error;
+  
+      const delay = 500 * (6 - retries);
+      await new Promise((r) => setTimeout(r, delay));
+  
+      return graphqlRequest(admin, query, variables, retries - 1);
+    }
+  }
+  
+  /* -----------------------------
+     CACHES
+  ----------------------------- */
+  
+  const attributeCache = new LRUCache<string, any[]>(500);
+  const valuesCache = new LRUCache<string, any[]>(1000);
+  
+  /* -----------------------------
+     FETCH ATTRIBUTE VALUES
+  ----------------------------- */
+  
+  async function fetchValues(
+    admin: GraphQLAdmin,
+    attributeId: string,
+    valuesFirst = 50
+  ) {
+    const cached = valuesCache.get(attributeId);
+    if (cached) return cached;
+  
+    const QUERY = `#graphql
+    query ($id: ID!, $first: Int!, $after: String) {
+      node(id: $id) {
+        ... on TaxonomyChoiceListAttribute {
+          values(first: $first, after: $after) {
+            pageInfo { hasNextPage endCursor }
+            edges { node { id name } }
+          }
+        }
+      }
+    }`;
+  
+    let values: any[] = [];
+    let cursor: string | null = null;
+    let hasNextPage = true;
+  
+    while (hasNextPage) {
+      const json = await graphqlRequest(admin, QUERY, {
+        id: attributeId,
+        first: valuesFirst,
+        after: cursor
+      });
+  
+      const conn = json?.data?.node?.values;
+      if (!conn) break;
+  
+      values.push(...conn.edges.map((e: any) => e.node));
+  
+      hasNextPage = conn.pageInfo.hasNextPage;
+      cursor = conn.pageInfo.endCursor;
+    }
+  
+    valuesCache.set(attributeId, values);
+  
+    return values;
+  }
+  
+  /* -----------------------------
+     FETCH ATTRIBUTES
+  ----------------------------- */
+  
+  async function fetchAttributes(
+    admin: GraphQLAdmin,
+    categoryId: string,
+    attributesFirst = 20,
+    valuesFirst = 50
+  ) {
+    const cached = attributeCache.get(categoryId);
+    if (cached) return cached;
+  
+    const QUERY = `#graphql
+    query ($id: ID!, $first: Int!, $after: String) {
+      node(id: $id) {
+        ... on TaxonomyCategory {
+          attributes(first: $first, after: $after) {
+            pageInfo { hasNextPage endCursor }
+            edges {
+              node {
+                __typename
+                ... on TaxonomyChoiceListAttribute {
+                  id
+                  name
+                }
+                ... on TaxonomyMeasurementAttribute {
+                  id
+                  name
+                  options { key value }
+                }
+              }
+            }
+          }
+        }
+      }
+    }`;
+  
+    let attributes: any[] = [];
+    let cursor: string | null = null;
+    let hasNextPage = true;
+  
+    while (hasNextPage) {
+      const json = await graphqlRequest(admin, QUERY, {
+        id: categoryId,
+        first: attributesFirst,
+        after: cursor
+      });
+  
+      const conn = json?.data?.node?.attributes;
+      if (!conn) break;
+  
+      const batch = conn.edges.map((e: any) => e.node);
+  
+      const choiceAttrs = batch.filter(
+        (a: any) => a.__typename === "TaxonomyChoiceListAttribute"
+      );
+  
+      await promisePool(
+        choiceAttrs,
+        async (attr: any) => {
+          attr.values = await fetchValues(
+            admin,
+            attr.id,
+            valuesFirst
+          );
+        },
+        6
+      );
+  
+      attributes.push(...batch);
+  
+      hasNextPage = conn.pageInfo.hasNextPage;
+      cursor = conn.pageInfo.endCursor;
+    }
+  
+    attributeCache.set(categoryId, attributes);
+  
+    return attributes;
+  }
+  
+  /* -----------------------------
+     MAIN SEARCH FUNCTION
+  ----------------------------- */
+  
+  export async function searchTaxonomyCategory(
+    admin: GraphQLAdmin,
+    searchTerm: string,
+    maxResults = 250,
+    pageSize = 50,
+    attributesFirst = 20,
+    valuesFirst = 50
+  ): Promise<TaxonomyCategory[]> {
+  
+    const QUERY = `#graphql
+    query ($search: String!, $first: Int!, $after: String) {
+      taxonomy {
+        categories(first: $first, search: $search, after: $after) {
+          pageInfo { hasNextPage endCursor }
+          edges {
+            node {
+              id
+              name
+              fullName
+              ancestorIds
+              childrenIds
+              isLeaf
+            }
+          }
+        }
+      }
+    }`;
+  
+    let cursor: string | null = null;
+    let hasNextPage = true;
+  
+    const results: TaxonomyCategory[] = [];
+  
+    while (hasNextPage && results.length < maxResults) {
+  
+      const json = await graphqlRequest(admin, QUERY, {
+        search: searchTerm,
+        first: pageSize,
+        after: cursor
+      });
+  
+      const conn = json?.data?.taxonomy?.categories;
+      if (!conn) break;
+  
+      const categories: TaxonomyCategory[] =
+        conn.edges.map((e: any) => e.node);
+  
+      const enriched = await promisePool(
+        categories,
+        async (category) => {
+          category.attributes = await fetchAttributes(
+            admin,
+            category.id,
+            attributesFirst,
+            valuesFirst
+          );
+          return category;
+        },
+        5
+      );
+  
+      results.push(...enriched);
+  
+      hasNextPage = conn.pageInfo.hasNextPage;
+      cursor = conn.pageInfo.endCursor;
+    }
+  
+    return results.slice(0, maxResults);
+  }
