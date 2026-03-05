@@ -593,9 +593,9 @@ export async function getTaxonomyIdForCategory(
       }
   
       // Find best match
-      let bestMatch = results[0];
+      let bestMatch = results.categories[0];
       
-      for (const edge of results) {
+      for (const edge of results.categories) {
         const node = edge.name;
         
         // Prefer exact name match
