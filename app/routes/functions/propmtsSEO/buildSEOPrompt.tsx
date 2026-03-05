@@ -634,7 +634,7 @@ async function searchTaxonomyCategory(
    const SEARCH_QUERY=`#graphql
     query SearchTaxonomy($search: String!) {
         taxonomy {
-          categories(first: 100, search: $search) {
+          categories(first: 200, search: $search) {
             edges {
               cursor
               node {
@@ -643,14 +643,14 @@ async function searchTaxonomyCategory(
                 fullName
                 ancestorIds
                 childrenIds
-                attributes(first: 50) {
+                attributes(first: 100) {
                   edges {
                     cursor
                     node {
                       ... on TaxonomyChoiceListAttribute {
                         id
                         name
-                        values(first: 50) {
+                        values(first: 100) {
                           edges {
                             cursor
                             node {
@@ -703,7 +703,6 @@ async function searchTaxonomyCategory(
           console.error('GraphQL errors:', data.errors);
           throw new Error('Failed to fetch taxonomy');
         }
-  console.log('data for the tamoxy is her finded her secces',data)
         const categories = data.data?.taxonomy.categories?.edges.map((edge:any)=>edge.node);
         
        console.log('categories verified',categories)
