@@ -631,197 +631,107 @@ async function searchTaxonomyCategory(
   ) {
 
    
-    const SEARCH_QUERY = `#graphql
-    query SearchTaxonomy($search: String!, $first: Int!, $after: String) {
-      taxonomy {
-        categories(first: $first, search: $search, after: $after) {
-          edges {
-            cursor
-            node {
-              id
-              name
-              fullName
-              ancestorIds
-              childrenIds
-              attributes(first: 10) {
-                edges {
-                  node {
-                    ... on TaxonomyChoiceListAttribute {
-                      id
-                      name
-                      values(first: 10) {
-                        edges {
-                          node {
-                            id
-                            name
+   const SEARCH_QUERY=`#graphql
+    query SearchTaxonomy($search: String!) {
+        taxonomy {
+          categories(first: 10, search: $search) {
+            edges {
+              cursor
+              node {
+                id
+                name
+                fullName
+                ancestorIds
+                childrenIds
+                attributes(first: 10) {
+                  edges {
+                    cursor
+                    node {
+                      ... on TaxonomyChoiceListAttribute {
+                        id
+                        name
+                        values(first: 10) {
+                          edges {
+                            cursor
+                            node {
+                              id
+                              name
+                            }
                           }
                         }
                       }
-                    }
-                    ... on TaxonomyMeasurementAttribute {
-                      id
-                      name
-                      options {
-                        key
-                        value
+                      ... on TaxonomyMeasurementAttribute {
+                        id
+                        name
+                        options {
+                          key
+                          value
+                        }
                       }
-                    }
-                    ... on TaxonomyAttribute {
-                      id
+                      ... on TaxonomyAttribute {
+                        id
+                      }
                     }
                   }
                 }
               }
             }
           }
-          pageInfo {
-            hasNextPage
-            endCursor
-          }
         }
       }
-    }
-    `;
+   `
     
     let allResults: any[] = [];
     let hasNextPage = true;
     let cursor: string | null = null;
     const batchSize = 50;
-
   
-//     try {
-//         console.log(`Fetching batch... (current total: ${allResults.length})`);
+    try {
+        console.log(`Fetching batch... (current total: ${allResults.length})`);
         
-//         const response = await admin.graphql  (SEARCH_QUERY, {
-//           variables: { 
-//             search: searchTerm,
-//             // first: batchSize,
-//             // after: cursor
-//           }
-//         });
+        const response = await admin.graphql  (SEARCH_QUERY, {
+          variables: { 
+            search: searchTerm,
+            // first: batchSize,
+            // after: cursor
+          }
+        });
         
-//         const data:SearchTaxonomyResponse = await response.json();
+        const data:SearchTaxonomyResponse = await response.json();
         
-//         if (data.errors) {
-//           console.error('GraphQL errors:', data.errors);
-//           throw new Error('Failed to fetch taxonomy');
-//         }
-//   console.log('data for the tamoxy is her finded her secces',data)
-//         const categories = data.data?.taxonomy.categories?.edges.map((edge:any)=>edge.node);
+        if (data.errors) {
+          console.error('GraphQL errors:', data.errors);
+          throw new Error('Failed to fetch taxonomy');
+        }
+  console.log('data for the tamoxy is her finded her secces',data)
+        const categories = data.data?.taxonomy.categories?.edges.map((edge:any)=>edge.node);
         
-//        console.log('categories verified',categories)
+       console.log('categories verified',categories)
   
-//         // Add results to array
-//         allResults.push(...categories);
+        // Add results to array
+        allResults.push(...categories);
   
-//         // Check if there are more pages
-//         // hasNextPage = categories.pageInfo.hasNextPage;
-//         // cursor = categories.pageInfo.endCursor;
+        // Check if there are more pages
+        // hasNextPage = categories.pageInfo.hasNextPage;
+        // cursor = categories.pageInfo.endCursor;
   
-//         // console.log(`✅ Fetched ${categories.edges.length} categories (hasNextPage: ${hasNextPage})`);
+        // console.log(`✅ Fetched ${categories.edges.length} categories (hasNextPage: ${hasNextPage})`);
   
-//         // Prevent infinite loops
-//         // if (allResults.length >= maxResults) {
-//         //   console.log(`⚠️ Reached max results limit: ${maxResults}`);
-//         //   break;
-//         // }
+        // Prevent infinite loops
+        // if (allResults.length >= maxResults) {
+        //   console.log(`⚠️ Reached max results limit: ${maxResults}`);
+        //   break;
+        // }
       
   
-//       console.log(`\n📊 Total categories found: ${allResults.length}`);
-//       return allResults;
+      console.log(`\n📊 Total categories found: ${allResults.length}`);
+      return allResults;
   
-//     } catch (error) {
-//       console.error('Error searching taxonomy:', error);
-//       throw error;
-//     }
-const visitedCursors = new Set<string | null>();
-let iteration = 0;
-const MAX_ITERATIONS = 50;
-
-try {
-    while (hasNextPage) {
-      iteration++;
-
-      if (iteration > MAX_ITERATIONS) {
-        console.warn("⚠️ Pagination stopped: max iterations reached");
-        break;
-      }
-
-      if (visitedCursors.has(cursor)) {
-        console.warn("⚠️ Pagination stopped: cursor repeated");
-        break;
-      }
-
-      visitedCursors.add(cursor);
-
-      console.log(
-        `📡 Fetching page ${iteration} | cursor=${cursor ?? "START"} | collected=${allResults.length}`
-      );
-
-      const response = await admin.graphql(SEARCH_QUERY, {
-        variables: {
-          search: searchTerm,
-          first: batchSize,
-          after: cursor,
-        },
-      });
-
-      const json: SearchTaxonomyResponse = await response.json();
-
-      if (json.errors) {
-        throw new Error(JSON.stringify(json.errors));
-      }
-
-      const connection = json?.data?.taxonomy?.categories;
-
-      if (!connection) {
-        console.warn("⚠️ No connection returned");
-        break;
-      }
-
-      const edges = connection.edges ?? [];
-
-      if (edges.length === 0) {
-        console.warn("⚠️ Empty page received — stopping");
-        break;
-      }
-
-      const nodes = edges.map((e: any) => e.node);
-
-      allResults.push(...nodes);
-
-      if (allResults.length >= maxResults) {
-        console.log("✅ Max results reached");
-        break;
-      }
-
-      hasNextPage = connection.pageInfo?.hasNextPage ?? false;
-      const nextCursor = connection.pageInfo?.endCursor ?? null;
-
-      if (!nextCursor) {
-        console.warn("⚠️ endCursor missing — stopping pagination");
-        break;
-      }
-
-      cursor = nextCursor;
-
-      console.log(
-        `✔ Page ${iteration} fetched | ${nodes.length} items | total=${allResults.length} | nextCursor=${cursor}`
-      );
+    } catch (error) {
+      console.error('Error searching taxonomy:', error);
+      throw error;
     }
-
-    const finalResults = allResults.slice(0, maxResults);
-
-    console.log(`🎯 Final taxonomy results: ${finalResults.length}`);
-
-    return finalResults;
-  } catch (error) {
-    console.error("❌ Taxonomy search failed:", error);
-    throw error;
   }
-
-}
-
   
   // Usage:
 //   const runningShoes = await searchTaxonomyCategory(admin, "running shoes", 250);
