@@ -755,7 +755,7 @@ try {
       visitedCursors.add(cursor);
 
       console.log(
-        `📡 Fetching page ${iteration} | cursor=${cursor ?? "START"} | collected=${results.length}`
+        `📡 Fetching page ${iteration} | cursor=${cursor ?? "START"} | collected=${allResults.length}`
       );
 
       const response = await admin.graphql(SEARCH_QUERY, {
