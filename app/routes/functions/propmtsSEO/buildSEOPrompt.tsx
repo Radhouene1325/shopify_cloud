@@ -687,6 +687,7 @@ async function searchTaxonomyCategory(
     let hasNextPage = true;
     let cursor: string | null = null;
     const batchSize = 50;
+
   
 //     try {
 //         console.log(`Fetching batch... (current total: ${allResults.length})`);
@@ -733,9 +734,29 @@ async function searchTaxonomyCategory(
 //       console.error('Error searching taxonomy:', error);
 //       throw error;
 //     }
+const visitedCursors = new Set<string | null>();
+let iteration = 0;
+const MAX_ITERATIONS = 50;
+
 try {
-    while (hasNextPage && allResults.length < maxResults) {
-      console.log(`Fetching batch... (current total: ${allResults.length})`);
+    while (hasNextPage) {
+      iteration++;
+
+      if (iteration > MAX_ITERATIONS) {
+        console.warn("⚠️ Pagination stopped: max iterations reached");
+        break;
+      }
+
+      if (visitedCursors.has(cursor)) {
+        console.warn("⚠️ Pagination stopped: cursor repeated");
+        break;
+      }
+
+      visitedCursors.add(cursor);
+
+      console.log(
+        `📡 Fetching page ${iteration} | cursor=${cursor ?? "START"} | collected=${results.length}`
+      );
 
       const response = await admin.graphql(SEARCH_QUERY, {
         variables: {
@@ -745,37 +766,59 @@ try {
         },
       });
 
-      const data:SearchTaxonomyResponse = await response.json();
+      const json: SearchTaxonomyResponse = await response.json();
 
-      if (data.errors) {
-        console.error("GraphQL errors:", data.errors);
-        throw new Error("Failed to fetch taxonomy");
+      if (json.errors) {
+        throw new Error(JSON.stringify(json.errors));
       }
 
-      const categoriesConnection = data.data?.taxonomy?.categories;
+      const connection = json?.data?.taxonomy?.categories;
 
-      if (!categoriesConnection) break;
+      if (!connection) {
+        console.warn("⚠️ No connection returned");
+        break;
+      }
 
-      const nodes = categoriesConnection.edges.map((edge: any) => edge.node);
+      const edges = connection.edges ?? [];
+
+      if (edges.length === 0) {
+        console.warn("⚠️ Empty page received — stopping");
+        break;
+      }
+
+      const nodes = edges.map((e: any) => e.node);
 
       allResults.push(...nodes);
 
-      hasNextPage = categoriesConnection.pageInfo.hasNextPage;
-      cursor = categoriesConnection.pageInfo.endCursor;
+      if (allResults.length >= maxResults) {
+        console.log("✅ Max results reached");
+        break;
+      }
+
+      hasNextPage = connection.pageInfo?.hasNextPage ?? false;
+      const nextCursor = connection.pageInfo?.endCursor ?? null;
+
+      if (!nextCursor) {
+        console.warn("⚠️ endCursor missing — stopping pagination");
+        break;
+      }
+
+      cursor = nextCursor;
 
       console.log(
-        `✅ Fetched ${nodes.length} categories (hasNextPage: ${hasNextPage})`
+        `✔ Page ${iteration} fetched | ${nodes.length} items | total=${allResults.length} | nextCursor=${cursor}`
       );
-
-      if (!hasNextPage) break;
     }
 
-    console.log(`📊 Total categories found: ${allResults.length}`);
-    return allResults.slice(0, maxResults);
+    const finalResults = allResults.slice(0, maxResults);
+
+    console.log(`🎯 Final taxonomy results: ${finalResults.length}`);
+
+    return finalResults;
   } catch (error) {
-    console.error("Error searching taxonomy:", error);
+    console.error("❌ Taxonomy search failed:", error);
     throw error;
-  }  
+  }
 
 }
 
