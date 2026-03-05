@@ -1306,7 +1306,6 @@ interface GraphQLAdmin {
   interface TaxonomyAttribute {
     id: string;
     name: string;
-    handle?: string;
     taxonomyId: string;
     type: 'choice' | 'measurement' | 'unknown';
     values?: TaxonomyValue[];
@@ -1317,10 +1316,11 @@ interface GraphQLAdmin {
     id: string;
     name: string;
     fullName: string;
-    handle?: string;
     ancestorIds: string[];
     childrenIds: string[];
     isLeaf: boolean;
+    isRoot?: boolean;
+    isArchived?: boolean;
     level: number;
     parentId?: string;
     taxonomyId: string;
@@ -1335,7 +1335,6 @@ interface GraphQLAdmin {
     valuesFirst?: number;
     attributeTypes?: ('choice' | 'measurement')[];
     concurrency?: number;
-    exactMatch?: boolean; // New option for exact matching
   }
   
   interface SearchResult {
@@ -1348,7 +1347,7 @@ interface GraphQLAdmin {
   }
   
   // ============================================================================
-  // SEARCH UTILITIES - HANDLE SPECIAL CHARACTERS
+  // SEARCH UTILITIES
   // ============================================================================
   
   class SearchSanitizer {
@@ -1359,38 +1358,32 @@ interface GraphQLAdmin {
     static sanitize(searchTerm: string): string {
       if (!searchTerm) return '';
       
-      // Trim whitespace
       let sanitized = searchTerm.trim();
       
-      // Replace & with AND (Shopify search syntax treats & as AND operator)
-      // Or escape it with backslash if we want literal &
+      // Replace & with escaped version or space
       sanitized = sanitized.replace(/&/g, '\\&');
-      
-      // Handle other special characters that might cause issues
-      sanitized = sanitized.replace(/\|/g, '\\|'); // OR operator
-      sanitized = sanitized.replace(/!/g, '\\!');    // NOT operator
-      sanitized = sanitized.replace(/:/g, '\\:');   // Field separator
-      sanitized = sanitized.replace(/\(/g, '\\(');   // Grouping
-      sanitized = sanitized.replace(/\)/g, '\\)'); // Grouping
+      sanitized = sanitized.replace(/\|/g, '\\|');
+      sanitized = sanitized.replace(/!/g, '\\!');
+      sanitized = sanitized.replace(/:/g, '\\:');
+      sanitized = sanitized.replace(/\(/g, '\\(');
+      sanitized = sanitized.replace(/\)/g, '\\)');
       
       return sanitized;
     }
   
     /**
      * Alternative: Prepare search term for partial matching
-     * Removes special characters and creates a search-friendly version
      */
     static prepareForSearch(searchTerm: string): string {
       if (!searchTerm) return '';
       
-      // Remove or replace problematic characters
       return searchTerm
         .trim()
-        .replace(/&/g, ' ')      // Replace & with space (searches both words)
+        .replace(/&/g, ' ')
         .replace(/\|/g, ' ')
         .replace(/!/g, ' ')
         .replace(/[()]/g, ' ')
-        .replace(/\s+/g, ' ')     // Normalize spaces
+        .replace(/\s+/g, ' ')
         .trim();
     }
   
@@ -1406,13 +1399,13 @@ interface GraphQLAdmin {
       // Without special chars
       variations.push(this.prepareForSearch(searchTerm));
       
-      // Just the first word (for broader matches)
+      // Just the first word
       const firstWord = searchTerm.split(/[\s&|]/)[0];
       if (firstWord && firstWord !== searchTerm) {
         variations.push(firstWord);
       }
       
-      return [...new Set(variations)]; // Remove duplicates
+      return [...new Set(variations)];
     }
   }
   
@@ -1654,12 +1647,10 @@ interface GraphQLAdmin {
                     ... on TaxonomyChoiceListAttribute {
                       id
                       name
-                      handle
                     }
                     ... on TaxonomyMeasurementAttribute {
                       id
                       name
-                      handle
                       options {
                         key
                         value
@@ -1697,7 +1688,6 @@ interface GraphQLAdmin {
           return {
             id: node.id,
             name: node.name,
-            handle: node.handle,
             taxonomyId: node.id,
             type: typeMap[node.__typename] || 'unknown',
             ...(node.options && { options: node.options })
@@ -1729,7 +1719,7 @@ interface GraphQLAdmin {
     }
   
     // ==========================================================================
-    // SEARCH WITH SPECIAL CHARACTER HANDLING
+    // SEARCH - FIXED VERSION
     // ==========================================================================
   
     async search(
@@ -1745,8 +1735,7 @@ interface GraphQLAdmin {
         attributesFirst: options.attributesFirst ?? 100,
         valuesFirst: options.valuesFirst ?? 250,
         attributeTypes: options.attributeTypes,
-        concurrency: options.concurrency ?? 5,
-        exactMatch: options.exactMatch ?? false
+        concurrency: options.concurrency ?? 5
       };
   
       // Try multiple search strategies
@@ -1756,15 +1745,18 @@ interface GraphQLAdmin {
       console.log(`🔍 Searching for: "${searchTerm}"`);
       console.log(`   Trying variations:`, searchVariations);
   
-      // Try each search variation until we find results
       for (const variation of searchVariations) {
-        if (allCategories.length > 0) break; // Stop if we found results
+        if (allCategories.length > 0) break;
         
-        const categories = await this.executeSearch(variation, config);
-        allCategories = categories;
+        try {
+          const categories = await this.executeSearch(variation, config);
+          allCategories = categories;
+        } catch (error) {
+          console.error(`   Search error for "${variation}":`, (error as Error).message);
+        }
       }
   
-      // If still no results, try browsing the taxonomy tree
+      // If still no results, try hierarchical search
       if (allCategories.length === 0) {
         console.log(`   ⚠️ No direct matches, trying hierarchical search...`);
         allCategories = await this.hierarchicalSearch(searchTerm, config);
@@ -1786,6 +1778,7 @@ interface GraphQLAdmin {
               category.attributes = attrs;
               return category;
             } catch (error) {
+              category.attributes = [];
               return category;
             }
           }
@@ -1803,13 +1796,14 @@ interface GraphQLAdmin {
     }
   
     // ==========================================================================
-    // EXECUTE SEARCH QUERY
+    // EXECUTE SEARCH QUERY - FIXED (NO handle FIELD)
     // ==========================================================================
   
     private async executeSearch(
       searchTerm: string,
       config: any
     ): Promise<TaxonomyCategory[]> {
+      // FIXED: Removed 'handle' field which doesn't exist on TaxonomyCategory
       const query = `#graphql
         query SearchTaxonomyCategories($search: String!, $first: Int!, $after: String) {
           taxonomy {
@@ -1823,10 +1817,13 @@ interface GraphQLAdmin {
                   id
                   name
                   fullName
-                  handle
                   ancestorIds
                   childrenIds
                   isLeaf
+                  isRoot
+                  isArchived
+                  level
+                  parentId
                 }
               }
             }
@@ -1858,7 +1855,7 @@ interface GraphQLAdmin {
           hasNextPage = conn.pageInfo.hasNextPage;
           cursor = conn.pageInfo.endCursor;
         } catch (error) {
-          console.error(`   Search error for "${searchTerm}":`, error);
+          console.error(`   Search execution error:`, (error as Error).message);
           break;
         }
       }
@@ -1867,15 +1864,14 @@ interface GraphQLAdmin {
     }
   
     // ==========================================================================
-    // HIERARCHICAL SEARCH - Browse taxonomy tree
+    // HIERARCHICAL SEARCH - FIXED
     // ==========================================================================
   
     private async hierarchicalSearch(
       searchTerm: string,
       config: any
     ): Promise<TaxonomyCategory[]> {
-      // Try to find by searching parent categories first
-      const parentTerms = ['Apparel & Accessories', 'Clothing', 'Men', 'Women'];
+      const parentTerms = ['Apparel & Accessories', 'Clothing', 'Men', 'Women', 'Hoodies'];
       const results: TaxonomyCategory[] = [];
       
       for (const parentTerm of parentTerms) {
@@ -1909,18 +1905,21 @@ interface GraphQLAdmin {
           // Search children of each parent
           for (const parent of parents) {
             const childrenQuery = `#graphql
-              query GetChildren($id: ID!, $search: String!) {
+              query GetChildren($id: ID!) {
                 taxonomy {
-                  categories(first: 100, search: $search, children_of: $id) {
+                  categories(first: 100, children_of: $id) {
                     edges {
                       node {
                         id
                         name
                         fullName
-                        handle
                         ancestorIds
                         childrenIds
                         isLeaf
+                        isRoot
+                        isArchived
+                        level
+                        parentId
                       }
                     }
                   }
@@ -1928,17 +1927,17 @@ interface GraphQLAdmin {
               }
             `;
             
-            const searchWords = searchTerm.toLowerCase().split(/[\s&]+/);
-            
             const childrenData = await this.client.execute(
               childrenQuery,
-              { id: parent.node.id, search: searchWords[0] }, // Use first word
+              { id: parent.node.id },
               `SearchChildren-${parent.node.id}`
             );
             
             const children = childrenData?.taxonomy?.categories?.edges || [];
             
             // Filter manually for better matching
+            const searchWords = searchTerm.toLowerCase().split(/[\s&]+/).filter(w => w.length > 0);
+            
             const matching = children.filter((e: any) => {
               const name = e.node.name.toLowerCase();
               const fullName = e.node.fullName.toLowerCase();
@@ -1965,12 +1964,13 @@ interface GraphQLAdmin {
         id: node.id,
         name: node.name,
         fullName: node.fullName,
-        handle: node.handle,
         ancestorIds: node.ancestorIds || [],
         childrenIds: node.childrenIds || [],
         isLeaf: node.isLeaf,
-        level: node.ancestorIds?.length || 0,
-        parentId: node.ancestorIds?.[node.ancestorIds.length - 1],
+        isRoot: node.isRoot,
+        isArchived: node.isArchived,
+        level: node.level || (node.ancestorIds?.length || 0),
+        parentId: node.parentId || node.ancestorIds?.[node.ancestorIds.length - 1],
         taxonomyId: node.id,
         attributes: [],
         path: node.fullName?.split(' > ') || [node.name]
