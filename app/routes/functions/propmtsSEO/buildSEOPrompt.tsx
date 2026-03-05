@@ -585,60 +585,37 @@ export async function getTaxonomyIdForCategory(
       console.log(`🔍 Searching for category: "${category}"`);
       
       // Search with pagination
-    //   const results = await searchTaxonomyCategory(admin, category, 500);
-    //   console.log('her rsult of the tamoxy is her ',results)
-    //   if (results.length === 0) {
-    //     console.warn(`⚠️ No taxonomy found for: "${category}"`);
-    //     return null;
-    //   }
+      const results = await searchTaxonomyCategory(admin, category, 500);
+      console.log('her rsult of the tamoxy is her ',results)
+      if (results.length === 0) {
+        console.warn(`⚠️ No taxonomy found for: "${category}"`);
+        return null;
+      }
   
-    //   // Find best match
-    //   let bestMatch = results[0];
+      // Find best match
+      let bestMatch = results[0];
       
-    //   for (const edge of results) {
-    //     const node = edge.name;
+      for (const edge of results) {
+        const node = edge.name;
         
-    //     // Prefer exact name match
-    //     if (node.toLowerCase() === category.toLowerCase()) {
-    //       bestMatch = edge;
-    //       break;
-    //     }
+        // Prefer exact name match
+        if (node.toLowerCase() === category.toLowerCase()) {
+          bestMatch = edge;
+          break;
+        }
         
-    //     // Prefer leaf categories (actual product categories)
-    //     if (node.isLeaf && !bestMatch.node.productTaxonomyNode.isLeaf) {
-    //       bestMatch = edge;
-    //     }
-    //   }
+        // Prefer leaf categories (actual product categories)
+        if (node.isLeaf && !bestMatch.node.productTaxonomyNode.isLeaf) {
+          bestMatch = edge;
+        }
+      }
   
-    //   const taxonomy = bestMatch;
-    //   console.log(`✅ Found: ${taxonomy.fullName}`);
-    //   console.log(`   ID: ${taxonomy.id}`);
+      const taxonomy = bestMatch;
+      console.log(`✅ Found: ${taxonomy.fullName}`);
+      console.log(`   ID: ${taxonomy.id}`);
       
-    //   return taxonomy.id;
+      return taxonomy.id;
   
-    const result = await searchTaxonomyAdvanced(admin, category, {
-        maxResults: 100,
-        fetchAttributes: true,
-        attributeTypes: ['choice', 'measurement'], // Only these types
-        valuesFirst: 500, // Get up to 500 values per attribute
-        concurrency: 10 // Higher concurrency for faster fetching
-      });
-      console.log('result is tested and her is oky ',result)
-      // Access results
-      result.categories.forEach(cat => {
-        console.log(`\n📁 ${cat.fullName} (${cat.attributes.length} attributes)`);
-        
-        cat.attributes.forEach(attr => {
-          if (attr.type === 'choice' && attr.values) {
-            console.log(`  🔹 ${attr.name}: ${attr.values.length} values`);
-            // Show sample values
-            attr.values.slice(0, 5).forEach(v => {
-              console.log(`     • ${v.name}${v.synonyms ? ` (${v.synonyms.join(', ')})` : ''}`);
-            });
-          }
-        });
-      });
-
     } catch (error) {
       console.error(`❌ Error finding taxonomy for "${category}":`, error);
       return null;
@@ -1323,18 +1300,17 @@ interface GraphQLAdmin {
   interface TaxonomyValue {
     id: string;
     name: string;
-    [key: string]: any;
+    taxonomyId: string;
   }
   
   interface TaxonomyAttribute {
     id: string;
     name: string;
     handle?: string;
-    type: 'choice' | 'measurement' | 'text' | 'number' | 'unknown';
+    taxonomyId: string;
+    type: 'choice' | 'measurement' | 'unknown';
     values?: TaxonomyValue[];
     options?: Array<{ key: string; value: string }>;
-    description?: string;
-    required?: boolean;
   }
   
   interface TaxonomyCategory {
@@ -1342,15 +1318,13 @@ interface GraphQLAdmin {
     name: string;
     fullName: string;
     handle?: string;
-    description?: string;
     ancestorIds: string[];
     childrenIds: string[];
     isLeaf: boolean;
     level: number;
     parentId?: string;
+    taxonomyId: string;
     attributes: TaxonomyAttribute[];
-    path: string[];
-    metadata?: Record<string, any>;
   }
   
   interface SearchOptions {
@@ -1359,10 +1333,9 @@ interface GraphQLAdmin {
     fetchAttributes?: boolean;
     attributesFirst?: number;
     valuesFirst?: number;
-    includeMetadata?: boolean;
-    attributeTypes?: ('choice' | 'measurement' | 'text' | 'number')[];
+    attributeTypes?: ('choice' | 'measurement')[];
     concurrency?: number;
-    timeout?: number;
+    exactMatch?: boolean; // New option for exact matching
   }
   
   interface SearchResult {
@@ -1371,170 +1344,109 @@ interface GraphQLAdmin {
     totalFound: number;
     searchTerm: string;
     executionTimeMs: number;
-    stats: RequestStats;
-    errors: SearchError[];
     hasMore: boolean;
   }
   
-  interface RequestStats {
-    totalRequests: number;
-    cachedHits: number;
-    failedRequests: number;
-    retryCount: number;
-    averageResponseTime: number;
-  }
-  
-  interface SearchError {
-    categoryId?: string;
-    attributeId?: string;
-    operation: string;
-    message: string;
-    timestamp: Date;
-  }
-  
   // ============================================================================
-  // CONFIGURATION
+  // SEARCH UTILITIES - HANDLE SPECIAL CHARACTERS
   // ============================================================================
   
-  const CONFIG = {
-    DEFAULTS: {
-      MAX_RESULTS: 250,
-      PAGE_SIZE: 50,
-      ATTRIBUTES_FIRST: 100,
-      VALUES_FIRST: 250,
-      CONCURRENCY: 5,
-      TIMEOUT: 30000,
-      RETRIES: 3,
-      BASE_DELAY: 300
-    },
-    CACHE: {
-      MAX_SIZE: 1000,
-      TTL_MS: 1000 * 60 * 60 * 2, // 2 hours
-      CHECK_PERIOD: 1000 * 60 * 10 // 10 minutes
-    },
-    RATE_LIMIT: {
-      MIN_AVAILABLE_POINTS: 100,
-      COOLDOWN_MS: 500,
-      MAX_COOLDOWN_MS: 5000
+  class SearchSanitizer {
+    /**
+     * Sanitize search term for Shopify GraphQL search
+     * Handles special characters like &, |, !, etc.
+     */
+    static sanitize(searchTerm: string): string {
+      if (!searchTerm) return '';
+      
+      // Trim whitespace
+      let sanitized = searchTerm.trim();
+      
+      // Replace & with AND (Shopify search syntax treats & as AND operator)
+      // Or escape it with backslash if we want literal &
+      sanitized = sanitized.replace(/&/g, '\\&');
+      
+      // Handle other special characters that might cause issues
+      sanitized = sanitized.replace(/\|/g, '\\|'); // OR operator
+      sanitized = sanitized.replace(/!/g, '\\!');    // NOT operator
+      sanitized = sanitized.replace(/:/g, '\\:');   // Field separator
+      sanitized = sanitized.replace(/\(/g, '\\(');   // Grouping
+      sanitized = sanitized.replace(/\)/g, '\\)'); // Grouping
+      
+      return sanitized;
     }
-  } as const;
   
-  // ============================================================================
-  // ERRORS
-  // ============================================================================
-  
-  class TaxonomyError extends Error {
-    constructor(
-      message: string,
-      public code: string,
-      public context?: Record<string, any>
-    ) {
-      super(message);
-      this.name = 'TaxonomyError';
+    /**
+     * Alternative: Prepare search term for partial matching
+     * Removes special characters and creates a search-friendly version
+     */
+    static prepareForSearch(searchTerm: string): string {
+      if (!searchTerm) return '';
+      
+      // Remove or replace problematic characters
+      return searchTerm
+        .trim()
+        .replace(/&/g, ' ')      // Replace & with space (searches both words)
+        .replace(/\|/g, ' ')
+        .replace(/!/g, ' ')
+        .replace(/[()]/g, ' ')
+        .replace(/\s+/g, ' ')     // Normalize spaces
+        .trim();
     }
-  }
   
-  class GraphQLError extends TaxonomyError {
-    constructor(
-      message: string,
-      public errors: any[],
-      context?: Record<string, any>
-    ) {
-      super(message, 'GRAPHQL_ERROR', context);
-      this.name = 'GraphQLError';
-    }
-  }
-  
-  class RateLimitError extends TaxonomyError {
-    constructor(message: string, public retryAfter: number) {
-      super(message, 'RATE_LIMIT');
-      this.name = 'RateLimitError';
+    /**
+     * Create multiple search variations for better matching
+     */
+    static createSearchVariations(searchTerm: string): string[] {
+      const variations: string[] = [];
+      
+      // Original (sanitized)
+      variations.push(this.sanitize(searchTerm));
+      
+      // Without special chars
+      variations.push(this.prepareForSearch(searchTerm));
+      
+      // Just the first word (for broader matches)
+      const firstWord = searchTerm.split(/[\s&|]/)[0];
+      if (firstWord && firstWord !== searchTerm) {
+        variations.push(firstWord);
+      }
+      
+      return [...new Set(variations)]; // Remove duplicates
     }
   }
   
   // ============================================================================
-  // CACHE IMPLEMENTATION
+  // CACHE
   // ============================================================================
   
   class TTLCache<K, V> {
     private cache = new Map<K, { value: V; expires: number }>();
-    private accessOrder: K[] = [];
     
     constructor(
-      private maxSize = CONFIG.CACHE.MAX_SIZE,
-      private defaultTTL = CONFIG.CACHE.TTL_MS
-    ) {
-      // Periodic cleanup
-      setInterval(() => this.cleanup(), CONFIG.CACHE.CHECK_PERIOD);
-    }
+      private maxSize = 1000,
+      private defaultTTL = 1000 * 60 * 60 * 2
+    ) {}
   
     get(key: K): V | undefined {
       const entry = this.cache.get(key);
       if (!entry) return undefined;
-  
       if (Date.now() > entry.expires) {
-        this.delete(key);
+        this.cache.delete(key);
         return undefined;
       }
-  
-      // Update access order
-      this.updateAccess(key);
+      this.cache.delete(key);
+      this.cache.set(key, entry);
       return entry.value;
     }
   
     set(key: K, value: V, ttl?: number): void {
-      if (this.cache.has(key)) {
-        this.delete(key);
-      }
-  
+      if (this.cache.has(key)) this.cache.delete(key);
       const expires = Date.now() + (ttl ?? this.defaultTTL);
       this.cache.set(key, { value, expires });
-      this.accessOrder.push(key);
-  
       if (this.cache.size > this.maxSize) {
-        this.evictLRU();
-      }
-    }
-  
-    has(key: K): boolean {
-      return this.get(key) !== undefined;
-    }
-  
-    delete(key: K): boolean {
-      this.cache.delete(key);
-      const index = this.accessOrder.indexOf(key);
-      if (index > -1) this.accessOrder.splice(index, 1);
-      return true;
-    }
-  
-    clear(): void {
-      this.cache.clear();
-      this.accessOrder = [];
-    }
-  
-    size(): number {
-      return this.cache.size;
-    }
-  
-    private updateAccess(key: K): void {
-      const index = this.accessOrder.indexOf(key);
-      if (index > -1) {
-        this.accessOrder.splice(index, 1);
-        this.accessOrder.push(key);
-      }
-    }
-  
-    private evictLRU(): void {
-      const lru = this.accessOrder.shift();
-      if (lru) this.cache.delete(lru);
-    }
-  
-    private cleanup(): void {
-      const now = Date.now();
-      for (const [key, entry] of this.cache.entries()) {
-        if (now > entry.expires) {
-          this.delete(key);
-        }
+        const first = this.cache.keys().next().value;
+        this.cache.delete(first);
       }
     }
   }
@@ -1544,15 +1456,10 @@ interface GraphQLAdmin {
   // ============================================================================
   
   class GraphQLExecutor {
-    private requestCount = 0;
-    private cachedCount = 0;
-    private failedCount = 0;
-    private retryCount = 0;
-    private totalResponseTime = 0;
-  
     constructor(
       private admin: GraphQLAdmin,
-      private config = CONFIG.DEFAULTS
+      private retries = 3,
+      private baseDelay = 300
     ) {}
   
     async execute<T = any>(
@@ -1560,15 +1467,9 @@ interface GraphQLAdmin {
       variables: Record<string, any>,
       operationName?: string
     ): Promise<T> {
-      const startTime = Date.now();
-      this.requestCount++;
-  
       try {
-        const result = await this.executeWithRetry(query, variables, operationName);
-        this.totalResponseTime += Date.now() - startTime;
-        return result;
+        return await this.executeWithRetry(query, variables, operationName);
       } catch (error) {
-        this.failedCount++;
         throw error;
       }
     }
@@ -1577,76 +1478,38 @@ interface GraphQLAdmin {
       query: string,
       variables: Record<string, any>,
       operationName?: string,
-      retries = this.config.RETRIES
+      retriesLeft = this.retries
     ): Promise<any> {
       try {
         const response = await this.admin.graphql(query, { variables });
         const json = await response.json();
   
         if (json.errors?.length) {
-          throw new GraphQLError(
-            `GraphQL operation failed: ${operationName}`,
-            json.errors,
-            { variables, operationName }
-          );
+          throw new Error(`GraphQL Error: ${JSON.stringify(json.errors)}`);
         }
   
         // Rate limit handling
-        await this.handleRateLimit(json.extensions?.cost);
+        const cost = json?.extensions?.cost;
+        if (cost?.throttleStatus?.currentlyAvailable < 100) {
+          await this.sleep(500);
+        }
   
         return json.data;
       } catch (error) {
-        if (retries <= 0) throw error;
-  
-        this.retryCount++;
-        const delay = this.calculateBackoff(this.config.RETRIES - retries);
+        if (retriesLeft <= 0) throw error;
+        const delay = this.baseDelay * Math.pow(2, this.retries - retriesLeft);
         await this.sleep(delay);
-  
-        return this.executeWithRetry(query, variables, operationName, retries - 1);
+        return this.executeWithRetry(query, variables, operationName, retriesLeft - 1);
       }
-    }
-  
-    private async handleRateLimit(cost?: any): Promise<void> {
-      if (!cost?.throttleStatus) return;
-  
-      const available = cost.throttleStatus.currentlyAvailable;
-      
-      if (available < CONFIG.RATE_LIMIT.MIN_AVAILABLE_POINTS) {
-        const waitTime = Math.min(
-          CONFIG.RATE_LIMIT.MAX_COOLDOWN_MS,
-          CONFIG.RATE_LIMIT.COOLDOWN_MS * (1 + (CONFIG.RATE_LIMIT.MIN_AVAILABLE_POINTS - available) / 10)
-        );
-        
-        await this.sleep(waitTime);
-      }
-    }
-  
-    private calculateBackoff(attempt: number): number {
-      return this.config.BASE_DELAY * Math.pow(2, attempt) + Math.random() * 100;
     }
   
     private sleep(ms: number): Promise<void> {
       return new Promise(resolve => setTimeout(resolve, ms));
     }
-  
-    getStats(): RequestStats {
-      const avg = this.requestCount > 0 ? this.totalResponseTime / this.requestCount : 0;
-      return {
-        totalRequests: this.requestCount,
-        cachedHits: this.cachedCount,
-        failedRequests: this.failedCount,
-        retryCount: this.retryCount,
-        averageResponseTime: Math.round(avg)
-      };
-    }
-  
-    incrementCacheHit(): void {
-      this.cachedCount++;
-    }
   }
   
   // ============================================================================
-  // CONCURRENCY CONTROLLER
+  // CONCURRENCY POOL
   // ============================================================================
   
   class ConcurrencyPool {
@@ -1657,13 +1520,10 @@ interface GraphQLAdmin {
   
     async execute<T>(task: () => Promise<T>): Promise<T> {
       if (this.active >= this.limit) {
-        await new Promise<void>(resolve => {
-          this.queue.push(resolve);
-        });
+        await new Promise<void>(resolve => this.queue.push(resolve));
       }
   
       this.active++;
-      
       try {
         return await task();
       } finally {
@@ -1673,29 +1533,15 @@ interface GraphQLAdmin {
       }
     }
   
-    async map<T, R>(
-      items: T[],
-      mapper: (item: T, index: number) => Promise<R>,
-      onProgress?: (completed: number, total: number) => void
-    ): Promise<R[]> {
+    async map<T, R>(items: T[], mapper: (item: T) => Promise<R>): Promise<R[]> {
       const results = new Array<R>(items.length);
-      let completed = 0;
-  
-      const tasks = items.map((item, index) => 
-        this.execute(async () => {
-          try {
-            results[index] = await mapper(item, index);
-          } catch (error) {
-            console.error(`Task ${index} failed:`, error);
-            throw error;
-          } finally {
-            completed++;
-            onProgress?.(completed, items.length);
-          }
-        })
+      await Promise.all(
+        items.map((item, index) => 
+          this.execute(async () => {
+            results[index] = await mapper(item);
+          })
+        )
       );
-  
-      await Promise.all(tasks);
       return results;
     }
   }
@@ -1706,33 +1552,25 @@ interface GraphQLAdmin {
   
   class TaxonomyRepository {
     private client: GraphQLExecutor;
-    private categoryCache: TTLCache<string, TaxonomyCategory>;
-    private attributesCache: TTLCache<string, TaxonomyAttribute[]>;
     private valuesCache: TTLCache<string, TaxonomyValue[]>;
     private pool: ConcurrencyPool;
   
-    constructor(admin: GraphQLAdmin, concurrency = CONFIG.DEFAULTS.CONCURRENCY) {
+    constructor(admin: GraphQLAdmin, concurrency = 5) {
       this.client = new GraphQLExecutor(admin);
-      this.categoryCache = new TTLCache();
-      this.attributesCache = new TTLCache();
       this.valuesCache = new TTLCache();
       this.pool = new ConcurrencyPool(concurrency);
     }
   
     // ==========================================================================
-    // VALUE EXTRACTION - CORE METHOD
+    // GET ATTRIBUTE VALUES
     // ==========================================================================
   
     async getAttributeValues(
       attributeId: string,
-      first = CONFIG.DEFAULTS.VALUES_FIRST
+      first = 250
     ): Promise<TaxonomyValue[]> {
-      // Check cache
       const cached = this.valuesCache.get(attributeId);
-      if (cached) {
-        this.client.incrementCacheHit();
-        return cached;
-      }
+      if (cached) return cached;
   
       const query = `#graphql
         query GetAttributeValues($id: ID!, $first: Int!, $after: String) {
@@ -1749,9 +1587,6 @@ interface GraphQLAdmin {
                   node {
                     id
                     name
-                    ... on TaxonomyChoiceListAttributeValue {
-                      synonyms
-                    }
                   }
                 }
               }
@@ -1763,44 +1598,34 @@ interface GraphQLAdmin {
       const values: TaxonomyValue[] = [];
       let cursor: string | null = null;
       let hasNextPage = true;
-      let pageCount = 0;
-      const maxPages = 20;
   
-      while (hasNextPage && pageCount < maxPages) {
-        pageCount++;
-        
+      while (hasNextPage) {
         const data = await this.client.execute(
           query,
           { id: attributeId, first, after: cursor },
-          `GetAttributeValues-${attributeId}-page${pageCount}`
+          `GetValues-${attributeId}`
         );
   
         const node = data?.node;
-        if (!node?.values) {
-          console.warn(`No values found for attribute ${attributeId}`);
-          break;
-        }
+        if (!node?.values) break;
   
         const pageValues = node.values.edges.map((e: any) => ({
           id: e.node.id,
           name: e.node.name,
-          ...(e.node.synonyms && { synonyms: e.node.synonyms })
+          taxonomyId: e.node.id
         }));
   
         values.push(...pageValues);
-  
         hasNextPage = node.values.pageInfo.hasNextPage;
         cursor = node.values.pageInfo.endCursor;
       }
   
-      // Cache results
       this.valuesCache.set(attributeId, values);
-      
       return values;
     }
   
     // ==========================================================================
-    // ATTRIBUTE FETCHING
+    // GET CATEGORY ATTRIBUTES
     // ==========================================================================
   
     async getCategoryAttributes(
@@ -1808,17 +1633,10 @@ interface GraphQLAdmin {
       options: {
         first?: number;
         valuesFirst?: number;
-        types?: ('choice' | 'measurement' | 'text' | 'number')[];
+        types?: ('choice' | 'measurement')[];
       } = {}
     ): Promise<TaxonomyAttribute[]> {
       const { first = 100, valuesFirst = 250, types } = options;
-  
-      // Check cache
-      const cached = this.attributesCache.get(categoryId);
-      if (cached) {
-        this.client.incrementCacheHit();
-        return cached;
-      }
   
       const query = `#graphql
         query GetCategoryAttributes($id: ID!, $first: Int!, $after: String) {
@@ -1837,33 +1655,15 @@ interface GraphQLAdmin {
                       id
                       name
                       handle
-                      description
-                      required
                     }
                     ... on TaxonomyMeasurementAttribute {
                       id
                       name
                       handle
-                      description
-                      required
                       options {
                         key
                         value
                       }
-                    }
-                    ... on TaxonomyTextAttribute {
-                      id
-                      name
-                      handle
-                      description
-                      required
-                    }
-                    ... on TaxonomyNumberAttribute {
-                      id
-                      name
-                      handle
-                      description
-                      required
                     }
                   }
                 }
@@ -1881,7 +1681,7 @@ interface GraphQLAdmin {
         const data = await this.client.execute(
           query,
           { id: categoryId, first, after: cursor },
-          `GetCategoryAttributes-${categoryId}`
+          `GetAttributes-${categoryId}`
         );
   
         const node = data?.node;
@@ -1891,37 +1691,29 @@ interface GraphQLAdmin {
           const node = e.node;
           const typeMap: Record<string, TaxonomyAttribute['type']> = {
             'TaxonomyChoiceListAttribute': 'choice',
-            'TaxonomyMeasurementAttribute': 'measurement',
-            'TaxonomyTextAttribute': 'text',
-            'TaxonomyNumberAttribute': 'number'
+            'TaxonomyMeasurementAttribute': 'measurement'
           };
   
           return {
             id: node.id,
             name: node.name,
             handle: node.handle,
-            description: node.description,
-            required: node.required,
+            taxonomyId: node.id,
             type: typeMap[node.__typename] || 'unknown',
             ...(node.options && { options: node.options })
           } as TaxonomyAttribute;
         });
   
-        // Filter by types if specified
-        const filteredBatch = types 
-          ? batch.filter(a => types.includes(a.type))
-          : batch;
+        const filteredBatch = types ? batch.filter(a => types.includes(a.type)) : batch;
   
-        // Fetch values for choice attributes concurrently
+        // Fetch values for choice attributes
         const choiceAttrs = filteredBatch.filter(a => a.type === 'choice');
-        
         if (choiceAttrs.length > 0) {
           await Promise.all(
             choiceAttrs.map(async (attr) => {
               try {
                 attr.values = await this.getAttributeValues(attr.id, valuesFirst);
               } catch (error) {
-                console.error(`Failed to fetch values for ${attr.name}:`, error);
                 attr.values = [];
               }
             })
@@ -1929,70 +1721,15 @@ interface GraphQLAdmin {
         }
   
         attributes.push(...filteredBatch);
-  
         hasNextPage = node.attributes.pageInfo.hasNextPage;
         cursor = node.attributes.pageInfo.endCursor;
       }
-  
-      // Cache results
-      this.attributesCache.set(categoryId, attributes);
   
       return attributes;
     }
   
     // ==========================================================================
-    // CATEGORY FETCHING
-    // ==========================================================================
-  
-    async getCategoryById(
-      categoryId: string,
-      includeAttributes = true
-    ): Promise<TaxonomyCategory | null> {
-      const cached = this.categoryCache.get(categoryId);
-      if (cached) {
-        this.client.incrementCacheHit();
-        return cached;
-      }
-  
-      const query = `#graphql
-        query GetCategory($id: ID!) {
-          node(id: $id) {
-            ... on TaxonomyCategory {
-              id
-              name
-              fullName
-              handle
-              description
-              ancestorIds
-              childrenIds
-              isLeaf
-            }
-          }
-        }
-      `;
-  
-      try {
-        const data = await this.client.execute(query, { id: categoryId }, `GetCategory-${categoryId}`);
-        const node = data?.node;
-        
-        if (!node) return null;
-  
-        const category = this.buildCategory(node, []);
-  
-        if (includeAttributes) {
-          category.attributes = await this.getCategoryAttributes(categoryId);
-        }
-  
-        this.categoryCache.set(categoryId, category);
-        return category;
-      } catch (error) {
-        console.error(`Failed to fetch category ${categoryId}:`, error);
-        return null;
-      }
-    }
-  
-    // ==========================================================================
-    // SEARCH - MAIN METHOD
+    // SEARCH WITH SPECIAL CHARACTER HANDLING
     // ==========================================================================
   
     async search(
@@ -2000,26 +1737,79 @@ interface GraphQLAdmin {
       options: SearchOptions = {}
     ): Promise<SearchResult> {
       const startTime = Date.now();
-      const errors: SearchError[] = [];
   
       const config = {
-        maxResults: options.maxResults ?? CONFIG.DEFAULTS.MAX_RESULTS,
-        pageSize: options.pageSize ?? CONFIG.DEFAULTS.PAGE_SIZE,
+        maxResults: options.maxResults ?? 250,
+        pageSize: options.pageSize ?? 50,
         fetchAttributes: options.fetchAttributes ?? true,
-        attributesFirst: options.attributesFirst ?? CONFIG.DEFAULTS.ATTRIBUTES_FIRST,
-        valuesFirst: options.valuesFirst ?? CONFIG.DEFAULTS.VALUES_FIRST,
-        includeMetadata: options.includeMetadata ?? false,
+        attributesFirst: options.attributesFirst ?? 100,
+        valuesFirst: options.valuesFirst ?? 250,
         attributeTypes: options.attributeTypes,
-        concurrency: options.concurrency ?? CONFIG.DEFAULTS.CONCURRENCY
+        concurrency: options.concurrency ?? 5,
+        exactMatch: options.exactMatch ?? false
       };
   
-      console.log(`🔍 [Taxonomy Search] Starting search for: "${searchTerm}"`);
-      console.log(`   Configuration:`, {
-        maxResults: config.maxResults,
-        fetchAttributes: config.fetchAttributes,
-        concurrency: config.concurrency
-      });
+      // Try multiple search strategies
+      const searchVariations = SearchSanitizer.createSearchVariations(searchTerm);
+      let allCategories: TaxonomyCategory[] = [];
+      
+      console.log(`🔍 Searching for: "${searchTerm}"`);
+      console.log(`   Trying variations:`, searchVariations);
   
+      // Try each search variation until we find results
+      for (const variation of searchVariations) {
+        if (allCategories.length > 0) break; // Stop if we found results
+        
+        const categories = await this.executeSearch(variation, config);
+        allCategories = categories;
+      }
+  
+      // If still no results, try browsing the taxonomy tree
+      if (allCategories.length === 0) {
+        console.log(`   ⚠️ No direct matches, trying hierarchical search...`);
+        allCategories = await this.hierarchicalSearch(searchTerm, config);
+      }
+  
+      // Enrich with attributes
+      if (config.fetchAttributes && allCategories.length > 0) {
+        console.log(`   📦 Enriching ${allCategories.length} categories with attributes...`);
+        
+        const enriched = await this.pool.map(
+          allCategories,
+          async (category) => {
+            try {
+              const attrs = await this.getCategoryAttributes(category.id, {
+                first: config.attributesFirst,
+                valuesFirst: config.valuesFirst,
+                types: config.attributeTypes
+              });
+              category.attributes = attrs;
+              return category;
+            } catch (error) {
+              return category;
+            }
+          }
+        );
+      }
+  
+      return {
+        success: allCategories.length > 0,
+        categories: allCategories.slice(0, config.maxResults),
+        totalFound: allCategories.length,
+        searchTerm,
+        executionTimeMs: Date.now() - startTime,
+        hasMore: false
+      };
+    }
+  
+    // ==========================================================================
+    // EXECUTE SEARCH QUERY
+    // ==========================================================================
+  
+    private async executeSearch(
+      searchTerm: string,
+      config: any
+    ): Promise<TaxonomyCategory[]> {
       const query = `#graphql
         query SearchTaxonomyCategories($search: String!, $first: Int!, $after: String) {
           taxonomy {
@@ -2034,7 +1824,6 @@ interface GraphQLAdmin {
                   name
                   fullName
                   handle
-                  description
                   ancestorIds
                   childrenIds
                   isLeaf
@@ -2048,11 +1837,8 @@ interface GraphQLAdmin {
       const categories: TaxonomyCategory[] = [];
       let cursor: string | null = null;
       let hasNextPage = true;
-      let pageCount = 0;
   
-      // Fetch all categories first
       while (hasNextPage && categories.length < config.maxResults) {
-        pageCount++;
         const remaining = config.maxResults - categories.length;
         const fetchSize = Math.min(config.pageSize, remaining);
   
@@ -2060,122 +1846,134 @@ interface GraphQLAdmin {
           const data = await this.client.execute(
             query,
             { search: searchTerm, first: fetchSize, after: cursor },
-            `SearchTaxonomy-${searchTerm}-page${pageCount}`
+            `Search-${searchTerm}`
           );
   
           const conn = data?.taxonomy?.categories;
           if (!conn) break;
   
-          const batch = conn.edges.map((e: any) => this.buildCategory(e.node, []));
-  
+          const batch = conn.edges.map((e: any) => this.buildCategory(e.node));
           categories.push(...batch);
   
           hasNextPage = conn.pageInfo.hasNextPage;
           cursor = conn.pageInfo.endCursor;
-  
-          console.log(`   📄 Page ${pageCount}: Fetched ${batch.length} categories (Total: ${categories.length})`);
-  
         } catch (error) {
-          errors.push({
-            operation: 'search',
-            message: error instanceof Error ? error.message : 'Unknown error',
-            timestamp: new Date()
-          });
+          console.error(`   Search error for "${searchTerm}":`, error);
           break;
         }
       }
   
-      // Enrich with attributes if requested
-      if (config.fetchAttributes && categories.length > 0) {
-        console.log(`   📦 Enriching ${categories.length} categories with attributes...`);
-        
-        const enriched = await this.pool.map(
-          categories,
-          async (category, index) => {
-            try {
-              const attrs = await this.getCategoryAttributes(category.id, {
-                first: config.attributesFirst,
-                valuesFirst: config.valuesFirst,
-                types: config.attributeTypes
-              });
-              
-              category.attributes = attrs;
-              
-              if ((index + 1) % 10 === 0 || index === categories.length - 1) {
-                console.log(`      ✅ Enriched ${index + 1}/${categories.length} categories`);
-              }
-              
-              return category;
-            } catch (error) {
-              errors.push({
-                categoryId: category.id,
-                operation: 'enrichAttributes',
-                message: error instanceof Error ? error.message : 'Unknown error',
-                timestamp: new Date()
-              });
-              return category;
-            }
-          },
-          (completed, total) => {
-            if (completed % 5 === 0) {
-              console.log(`      🔄 Progress: ${completed}/${total}`);
-            }
-          }
-        );
-      }
-  
-      const executionTime = Date.now() - startTime;
-      const stats = this.client.getStats();
-  
-      console.log(`✅ [Taxonomy Search] Completed in ${executionTime}ms`);
-      console.log(`   Found: ${categories.length} categories | Errors: ${errors.length}`);
-      console.log(`   Stats: ${stats.totalRequests} requests, ${stats.cachedHits} cached`);
-  
-      return {
-        success: errors.length === 0,
-        categories: categories.slice(0, config.maxResults),
-        totalFound: categories.length,
-        searchTerm,
-        executionTimeMs: executionTime,
-        stats,
-        errors,
-        hasMore: hasNextPage
-      };
+      return categories;
     }
   
     // ==========================================================================
-    // UTILITY METHODS
+    // HIERARCHICAL SEARCH - Browse taxonomy tree
     // ==========================================================================
   
-    private buildCategory(node: any, attributes: TaxonomyAttribute[]): TaxonomyCategory {
+    private async hierarchicalSearch(
+      searchTerm: string,
+      config: any
+    ): Promise<TaxonomyCategory[]> {
+      // Try to find by searching parent categories first
+      const parentTerms = ['Apparel & Accessories', 'Clothing', 'Men', 'Women'];
+      const results: TaxonomyCategory[] = [];
+      
+      for (const parentTerm of parentTerms) {
+        if (results.length > 0) break;
+        
+        try {
+          // Get parent category
+          const parentQuery = `#graphql
+            query SearchParent($search: String!) {
+              taxonomy {
+                categories(first: 10, search: $search) {
+                  edges {
+                    node {
+                      id
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          `;
+          
+          const parentData = await this.client.execute(
+            parentQuery,
+            { search: parentTerm },
+            `FindParent-${parentTerm}`
+          );
+          
+          const parents = parentData?.taxonomy?.categories?.edges || [];
+          
+          // Search children of each parent
+          for (const parent of parents) {
+            const childrenQuery = `#graphql
+              query GetChildren($id: ID!, $search: String!) {
+                taxonomy {
+                  categories(first: 100, search: $search, children_of: $id) {
+                    edges {
+                      node {
+                        id
+                        name
+                        fullName
+                        handle
+                        ancestorIds
+                        childrenIds
+                        isLeaf
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+            
+            const searchWords = searchTerm.toLowerCase().split(/[\s&]+/);
+            
+            const childrenData = await this.client.execute(
+              childrenQuery,
+              { id: parent.node.id, search: searchWords[0] }, // Use first word
+              `SearchChildren-${parent.node.id}`
+            );
+            
+            const children = childrenData?.taxonomy?.categories?.edges || [];
+            
+            // Filter manually for better matching
+            const matching = children.filter((e: any) => {
+              const name = e.node.name.toLowerCase();
+              const fullName = e.node.fullName.toLowerCase();
+              return searchWords.some(word => 
+                name.includes(word) || fullName.includes(word)
+              );
+            });
+            
+            if (matching.length > 0) {
+              results.push(...matching.map((e: any) => this.buildCategory(e.node)));
+              break;
+            }
+          }
+        } catch (error) {
+          continue;
+        }
+      }
+      
+      return results;
+    }
+  
+    private buildCategory(node: any): TaxonomyCategory {
       return {
         id: node.id,
         name: node.name,
         fullName: node.fullName,
         handle: node.handle,
-        description: node.description,
         ancestorIds: node.ancestorIds || [],
         childrenIds: node.childrenIds || [],
         isLeaf: node.isLeaf,
         level: node.ancestorIds?.length || 0,
         parentId: node.ancestorIds?.[node.ancestorIds.length - 1],
-        attributes,
+        taxonomyId: node.id,
+        attributes: [],
         path: node.fullName?.split(' > ') || [node.name]
-      };
-    }
-  
-    clearCaches(): void {
-      this.categoryCache.clear();
-      this.attributesCache.clear();
-      this.valuesCache.clear();
-      console.log('🧹 All caches cleared');
-    }
-  
-    getCacheStats(): object {
-      return {
-        categories: this.categoryCache.size(),
-        attributes: this.attributesCache.size(),
-        values: this.valuesCache.size()
       };
     }
   }
@@ -2193,31 +1991,6 @@ interface GraphQLAdmin {
     return repository;
   }
   
-  /**
-   * Main search function - Professional taxonomy category search with full attribute values
-   */
-  export async function searchTaxonomyCategory(
-    admin: GraphQLAdmin,
-    searchTerm: string,
-    maxResults?: number,
-    pageSize?: number,
-    attributesFirst?: number,
-    valuesFirst?: number
-  ): Promise<SearchResult> {
-    const repo = getRepository(admin);
-    
-    return repo.search(searchTerm, {
-      maxResults,
-      pageSize,
-      attributesFirst,
-      valuesFirst,
-      fetchAttributes: true
-    });
-  }
-  
-  /**
-   * Advanced search with full options control
-   */
   export async function searchTaxonomyAdvanced(
     admin: GraphQLAdmin,
     searchTerm: string,
@@ -2227,33 +2000,21 @@ interface GraphQLAdmin {
     return repo.search(searchTerm, options);
   }
   
-  /**
-   * Get single category by ID with all attributes and values
-   */
-  export async function getTaxonomyCategory(
+  export async function searchTaxonomyCategory(
     admin: GraphQLAdmin,
-    categoryId: string
-  ): Promise<TaxonomyCategory | null> {
-    const repo = getRepository(admin);
-    return repo.getCategoryById(categoryId, true);
-  }
-  
-  /**
-   * Get attribute values only (useful for specific attribute inspection)
-   */
-  export async function getAttributeValues(
-    admin: GraphQLAdmin,
-    attributeId: string
-  ): Promise<TaxonomyValue[]> {
-    const repo = getRepository(admin);
-    return repo.getAttributeValues(attributeId);
-  }
-  
-  /**
-   * Clear all caches
-   */
-  export function clearTaxonomyCaches(): void {
-    repository?.clearCaches();
+    searchTerm: string,
+    maxResults?: number,
+    pageSize?: number,
+    attributesFirst?: number,
+    valuesFirst?: number
+  ): Promise<SearchResult> {
+    return searchTaxonomyAdvanced(admin, searchTerm, {
+      maxResults,
+      pageSize,
+      attributesFirst,
+      valuesFirst,
+      fetchAttributes: true
+    });
   }
   
   // Type exports
