@@ -135,7 +135,7 @@ console.log('hello messages im her ',batch.messages)
 
 await Promise.all(
   batch.messages.map(async(message)=>{
-    const payload = decompressPayload(message.body as string);
+    const payload = decompressPayload(message.body.body as string);
 
     const {shop,products,accessToken}=payload
     console.log('messager is her for see the data',message)
