@@ -308,7 +308,7 @@ const productSchema = {
 
         const mergedTags = [...new Set([
           ...(OLD_DESC.tags || []),
-          (SEO.category|| []),
+          (SEO.category?.name|| []),
           "DESC_AI"])];
         // const response = 
         await admin.graphql(productsupdated, {
@@ -532,28 +532,3 @@ function createShopifyAdmin(shop: string, token: string): GraphQLAdmin {
 
 
 
-export class AIBatcher {
-
-  queue = []
-
-  async fetch({request,context}:{request:any,context:any}) {
-    let {admin}=await shopify(context).authenticate.admin(request)
-
-    const data = await request.json()
-
-    this.queue.push(data)
-
-    if (this.queue.length >= 20) {
-
-      const batch = this.queue
-      this.queue = []
-
-      await runBatchAI(batch)
-
-    }
-
-    return new Response("queued")
-
-  }
-
-}
