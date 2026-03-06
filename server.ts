@@ -3,7 +3,9 @@ import { createRequestHandler, type ServerBuild } from "@remix-run/cloudflare";
 // @ts-ignore This file won’t exist if it hasn’t yet been built
 import * as build from "./build/server"; // eslint-disable-line import/no-unresolved
 import { getLoadContext } from "./load-context";
-import { generateSeoHtml } from "@/routes/app.descreptionupdated";
+import { generateSeoHtml, generateSeoHtmlgimini } from "@/routes/app.descreptionupdated";
+import { generateSeoMetadata, getTaxonomyIdForCategory } from "@/routes/functions/propmtsSEO/buildSEOPrompt";
+import { productsupdated } from "@/routes/functions/query/updateprooductquery";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const handleRemixRequest = createRequestHandler(build as any as ServerBuild);
@@ -127,5 +129,326 @@ export default {
 // }
      
 //     }
+console.log('hello messages im her ',batch.messages)
+      for(const message of batch.messages){
+        const {admin,products}=message.body
+
+        try {
+          await processProducts(products, admin,env);
+
+          message.ack();
+        }catch(err){
+          console.error("Queue processing failed", err);
+
+          message.retry();
+  
+        }
+      }
+
   }
 } satisfies ExportedHandler<Env>;
+
+
+
+
+async function processProducts(products: any[],admin:any, env: any) {
+
+
+  const categoryCache = new Map();
+
+  const concurrency = 5;
+  const pool: Promise<any>[] = [];
+
+  const oldDescreptionsMap=new Map(products.map(item=>[item.id,item]))
+
+
+  // for (const product of products) {
+
+    const task = processSingleProduct(products, admin, env, categoryCache,oldDescreptionsMap);
+
+    pool.push(task);
+
+    if (pool.length >= concurrency) {
+      await Promise.all(pool);
+      pool.length = 0;
+    }
+
+  // }
+
+  await Promise.all(pool);
+}
+
+
+async function processSingleProduct(
+  products: any,
+  admin: any,
+  env: any,
+  categoryCache: Map<string,string>,
+  oldDescreptionsMap:any
+) {
+
+  let optimizedHtml;
+  let seo;
+
+  try {
+
+    optimizedHtml = await generateSeoHtmlgimini(
+      env.GEMINI_API_KEY,
+      products
+    );
+
+    seo = await generateSeoMetadata(
+      products,
+      env.GEMINI_API_KEY
+    );
+
+  } catch {
+
+    optimizedHtml = await generateSeoHtml(
+      products,
+      env.DEEP_SEEK_API_KEY
+    );
+
+    seo = await generateSeoMetadata(
+      products,
+      env.DEEP_SEEK_API_KEY
+    );
+
+
+  }
+
+
+
+  try {
+    
+ 
+    //  console.log('SEO_OPTIMISE_TITLE_DECPRETION_HANDEL ',seotitle_descreption_handel)
+
+
+
+for( const DESC_AI of optimizedHtml){
+    if (!DESC_AI.id|| !DESC_AI.detailedDescription || !DESC_AI.shortDescription) {
+        console.error("AI returned empty fields", optimizedHtml);
+        return Response.json({ error: "Empty content from AI" }, { status: 500 });
+      }
+  // for (const OLD_DESC of updatedDescreptionAI ){
+      const OLD_DESC=oldDescreptionsMap.get(DESC_AI.id)
+      console.log(OLD_DESC.id)
+      if (!OLD_DESC)continue;
+      if (!seo)return
+      for (const SEO of seo){
+
+         if(DESC_AI.id===OLD_DESC.id && SEO.id===OLD_DESC.id){
+        // console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
+        // console.log('is true is very nice ')
+        // Merge tags: preserve existing + add DESC_AI (productUpdate overwrites, so we must include all)
+      const CATEGORY_TAMMOXY_ID=await getTaxonomyIdForCategory(admin,SEO.category)
+console.log('her is the value of tamoxy',CATEGORY_TAMMOXY_ID)
+const productSchema = {
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": SEO.seoTitle || OLD_DESC.title, // ✅ REQUIRED
+  "description": SEO.seoDescription || OLD_DESC.title,
+  "image":OLD_DESC.image,
+  "sku": OLD_DESC.sku || OLD_DESC.id?.split('/').pop() || '',
+  "mpn": OLD_DESC.barcode || OLD_DESC.id?.split('/').pop() || '',
+  "brand": {
+    "@type": "Brand",
+    "name": OLD_DESC.vendor || "PlatiNum"
+  },
+  "offers": {
+    "@type": "Offer",
+    "url": `https://platinumshop.it/products/${SEO.handle}`,
+    "priceCurrency": "EUR",
+    "price": OLD_DESC.price ? parseFloat(OLD_DESC.price.toString()).toFixed(2) : "0.00",
+    // "availability": OLD_DESC.available 
+    //   ? "https://schema.org/InStock" 
+    //   : "https://schema.org/OutOfStock",
+    "priceValidUntil": new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    "itemCondition": "https://schema.org/NewCondition",
+    "seller": {
+      "@type": "Organization",
+      "name": "PlatiNum"
+    }
+  }
+};
+
+
+
+
+
+        const mergedTags = [...new Set([
+          ...(OLD_DESC.tags || []),
+          (SEO.category|| []),
+          "DESC_AI"])];
+        // const response = 
+        await admin.graphql(productsupdated, {
+          variables: {
+            product: {
+              id: OLD_DESC.id,
+              descriptionHtml: DESC_AI.detailedDescription,
+              tags: mergedTags,
+              category:CATEGORY_TAMMOXY_ID,
+              handle:SEO.handle,
+              productType:SEO.productType,
+              seo:{
+                description:SEO.seoDescription,
+                title:SEO.seoTitle
+              },
+              metafields: [
+                {
+                  namespace: "custom",
+                  key: "descriptionsai",
+                  type: "json",
+                  value: JSON.stringify(DESC_AI.shortDescription)
+                },
+                {
+                  namespace: "custom",
+                  key: "seo_title",
+                  type: "json",
+                  value: JSON.stringify(SEO.seoTitle)
+                },
+                {
+                  namespace: "custom",
+                  key: "seo_descreption",
+                  type: "json",
+                  value: JSON.stringify(SEO.seoDescription)
+                },
+                {
+                  namespace: "seo",
+                  key: "schema_org",
+                  type: "json",
+                  value: JSON.stringify(productSchema)
+                }
+              ]
+            }
+          }
+        });
+             
+          
+  
+         
+      
+      
+       
+        }
+      }
+
+   
+
+   
+
+}
+
+
+
+
+
+
+    return Response.json(optimizedHtml,  {headers: {
+      "Cache-Control": "public, max-age=60, s-maxage=300"
+    }});
+  } catch (error) {
+    console.error(error);
+    return Response.json({ error: "Failed to generate content" }, { status: 500 });
+  }
+
+
+
+
+  // const DESC_AI = optimizedHtml[0];
+  // const SEO = seo[0];
+
+  // if (!DESC_AI || !SEO) return;
+
+  // let taxonomyId = categoryCache.get(SEO.category);
+
+  // if (!taxonomyId) {
+  //   taxonomyId = await getTaxonomyIdForCategory(admin, SEO.category);
+  //   categoryCache.set(SEO.category, taxonomyId);
+  // }
+
+  // const mergedTags = [
+  //   ...new Set([
+  //     ...(OLD_DESC.tags || []),
+  //     SEO.category,
+  //     "DESC_AI"
+  //   ])
+  // ];
+
+  // const productSchema = {
+  //   "@context": "https://schema.org/",
+  //   "@type": "Product",
+  //   name: SEO.seoTitle || OLD_DESC.title,
+  //   description: SEO.seoDescription || OLD_DESC.title,
+  //   image: OLD_DESC.image,
+  //   sku: OLD_DESC.sku || OLD_DESC.id?.split("/").pop(),
+  //   mpn: OLD_DESC.barcode || OLD_DESC.id?.split("/").pop(),
+  //   brand: {
+  //     "@type": "Brand",
+  //     name: OLD_DESC.vendor || "PlatiNum"
+  //   },
+  //   offers: {
+  //     "@type": "Offer",
+  //     url: `https://platinumshop.it/products/${SEO.handle}`,
+  //     priceCurrency: "EUR",
+  //     price: OLD_DESC.price
+  //       ? parseFloat(OLD_DESC.price).toFixed(2)
+  //       : "0.00",
+  //     priceValidUntil: new Date(
+  //       Date.now() + 365 * 24 * 60 * 60 * 1000
+  //     )
+  //       .toISOString()
+  //       .split("T")[0],
+  //     itemCondition: "https://schema.org/NewCondition",
+  //     seller: {
+  //       "@type": "Organization",
+  //       name: "PlatiNum"
+  //     }
+  //   }
+  // };
+
+  // await admin.graphql(productsupdated, {
+  //   variables: {
+  //     product: {
+  //       id: OLD_DESC.id,
+  //       descriptionHtml: DESC_AI.detailedDescription,
+  //       tags: mergedTags,
+  //       category: taxonomyId,
+  //       handle: SEO.handle,
+  //       productType: SEO.productType,
+  //       seo: {
+  //         title: SEO.seoTitle,
+  //         description: SEO.seoDescription
+  //       },
+  //       metafields: [
+  //         {
+  //           namespace: "custom",
+  //           key: "descriptionsai",
+  //           type: "json",
+  //           value: JSON.stringify(DESC_AI.shortDescription)
+  //         },
+  //         {
+  //           namespace: "custom",
+  //           key: "seo_title",
+  //           type: "json",
+  //           value: JSON.stringify(SEO.seoTitle)
+  //         },
+  //         {
+  //           namespace: "custom",
+  //           key: "seo_descreption",
+  //           type: "json",
+  //           value: JSON.stringify(SEO.seoDescription)
+  //         },
+  //         {
+  //           namespace: "seo",
+  //           key: "schema_org",
+  //           type: "json",
+  //           value: JSON.stringify(productSchema)
+  //         }
+  //       ]
+  //     }
+  //   }
+  // });
+
+}

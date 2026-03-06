@@ -1160,31 +1160,17 @@ export async function action({context ,request }: ActionFunctionArgs) {
    console.error("Invalid or missing 'descreptionAI' data");
    return Response.json({ error: "Invalid or missing 'descreptionAI' data" }, { status: 400 });
  }
-
-// let x;
-// const {env}=context
-// console.log('env context is her ',context)
-// // for(const desc of updatedDescreptionAI){
-//   let message=updatedDescreptionAI
-//   // {
-//   //   body:{
-//   //     id:desc?.id,
-//   //     descreption:desc?.descreption,
-//   //     tags:desc?.tags
-//   //   }
-//   // }
-// console.log('body meaasge',message)
-//   try {
-//     // @ts-ignore
-//    const f= await context.cloudflare.env.SEO_QUEUE.send(message);
-//     console.log('ffffffff',f)
-//    x=f
-//     return Response.json({ status: "success", message: "Product queued for generation!" });
-//   } catch (error) {
-//     return Response.json({ status: "error", message: "Failed to queue" }, { status: 500 });
-//   }
-// }
-//  return Response.json({ data:x,status: "success", message: "Product queued for generation!" });
+const queue =context.cloudflare.env.SEO_QUEUE
+console.log('ques is her verified ',queue)
+console.log('quest is her is verifed ')
+await queue.send({
+  admin:admin,
+  products:updatedDescreptionAI
+})
+return Response.json({
+  status:"queued",
+  total:updatedDescreptionAI.length
+})
 
     const API_KEY_DEEP_SEEK=context.cloudflare?.env?.DEEP_SEEK_API_KEY
     // console.log('api key is her ',API_KEY_DEEP_SEEK)
@@ -1281,12 +1267,6 @@ const productSchema = {
   }
 };
 
-// ✅ Validation
-// console.log('📊 Schema validation:');
-// console.log('   Name:', productSchema.name ? '✓' : '✗ MISSING');
-// console.log('   Description:', productSchema.description ? '✓' : '✗ MISSING');
-// console.log('   Images:', productSchema.image.length, 'found');
-// console.log('   Price:', productSchema.offers.price);
 
 
 
@@ -1295,7 +1275,8 @@ const productSchema = {
           ...(OLD_DESC.tags || []),
           (SEO.category|| []),
           "DESC_AI"])];
-        const response = await admin.graphql(productsupdated, {
+        // const response = 
+        await admin.graphql(productsupdated, {
           variables: {
             product: {
               id: OLD_DESC.id,
@@ -1340,7 +1321,7 @@ const productSchema = {
              
           
   
-          responses=response
+          // responses=response
       
       
        
@@ -1785,7 +1766,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
 
 
 
-async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description:DESCREPTION) {
+export async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description:DESCREPTION) {
   const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
   
   // Using Gemini 3 Flash for speed and intelligence
