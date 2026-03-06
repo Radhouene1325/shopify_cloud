@@ -10,12 +10,13 @@ import { useEffect, useState } from "react";
 import JSON5 from "json5";
   // sk-c8552ae161ed4db684bb1268bf4ba758
   import { Deepseek } from 'node-deepseek';
-
+import pako from "pako"
   
 import  { generateSeoHtmlGemini } from "./functions/parser";
 import { productsupdated } from "./functions/query/updateprooductquery";
 import { parserData } from "@/parser/parser_data";
 import { generateSeoMetadata, getTaxonomyIdForCategory } from "./functions/propmtsSEO/buildSEOPrompt";
+import { uint8ToBase64 } from "./functions/uint8ToBase64/uint8ToBase64";
   interface DeepSeekResponse {
     choices?: Array<{
       message?: {
@@ -1164,12 +1165,19 @@ export async function action({context ,request }: ActionFunctionArgs) {
 const queue =context.cloudflare.env.SEO_QUEUE
 console.log('ques is her verified ',JSON.stringify(queue))
 console.log('quest is her is verifed ')
-await queue.send({
+
+const payload = {
   shop: session.shop,
   sessionId: session.id,
-  accessToken:session.accessToken,
-  products:updatedDescreptionAI
-})
+  accessToken: session.accessToken,
+  products: updatedDescreptionAI
+};
+
+const compressed = pako.gzip(JSON.stringify(payload));
+ const compressedBase64 = uint8ToBase64(compressed);
+ await queue.send({
+  body: compressedBase64 // body must be a string according to queue type
+});
 return Response.json({
   status:"queued",
   total:updatedDescreptionAI.length

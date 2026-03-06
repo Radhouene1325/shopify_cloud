@@ -6,6 +6,7 @@ import { getLoadContext } from "./load-context";
 import { generateSeoHtml, generateSeoHtmlgimini } from "@/routes/app.descreptionupdated";
 import { generateSeoMetadata, getTaxonomyIdForCategory } from "@/routes/functions/propmtsSEO/buildSEOPrompt";
 import { productsupdated } from "@/routes/functions/query/updateprooductquery";
+import { decompressPayload } from "@/routes/functions/uint8ToBase64/uint8ToBase64";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const handleRemixRequest = createRequestHandler(build as any as ServerBuild);
@@ -134,7 +135,9 @@ console.log('hello messages im her ',batch.messages)
 
 await Promise.all(
   batch.messages.map(async(message)=>{
-    const {shop,products,accessToken}=message.body
+    const payload = decompressPayload(message.body as string);
+
+    const {shop,products,accessToken}=payload
     console.log('messager is her for see the data',message)
     console.log('api token is her hello ',env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
     const admin= createShopifyAdmin(shop,env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
@@ -153,23 +156,7 @@ await Promise.all(
 )
 
 
-//       for(const message of batch.messages){
-//         const {shop,products,accessToken}=message.body
-// console.log('messager is her for see the data',message)
-// console.log('api token is her hello ',env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
-// const admin= createShopifyAdmin(shop,env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
-// console.log(admin)
-//         try {
-//           await processProducts(products, admin,env);
 
-//           message.ack();
-//         }catch(err){
-//           console.error("Queue processing failed", err);
-
-//           message.retry();
-  
-//         }
-//       }
 
   }
 } satisfies ExportedHandler<Env>;
@@ -482,28 +469,7 @@ const productSchema = {
 
 }
 
-// function createShopifyAdmin(shop: string, token: string) {
 
-//   return {
-//     async graphql(query: string, variables?: any) {
-
-//       const res = await fetch(
-//         `https://${shop}/admin/api/2026-01/graphql.json`,
-//         {
-//           method: "POST",
-//           headers: {
-//             "Content-Type": "application/json",
-//             "X-Shopify-Access-Token": token
-//           },
-//           body: JSON.stringify({ query, variables })
-//         }
-//       );
-
-//       return res.json();
-//     }
-//   };
-
-// }
 interface GraphQLAdmin {
   graphql: (query: string, options?: { variables?: Record<string, any> }) => Promise<Response>;
 }
