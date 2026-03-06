@@ -246,9 +246,9 @@ for( const DESC_AI of optimizedHtml){
         // console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
         // console.log('is true is very nice ')
         // Merge tags: preserve existing + add DESC_AI (productUpdate overwrites, so we must include all)
-     console.log('seo is activated her ',SEO.category)
+     console.log('seo is activated her ',SEO.category.id)
      console.log('seo is activated her ',SEO)
-        const CATEGORY_TAMMOXY_ID=await getTaxonomyIdForCategory(admin,"Jakkets")
+        const CATEGORY_TAMMOXY_ID=await getTaxonomyIdForCategory(admin,SEO.category.name)
 console.log('her is the value of tamoxy',CATEGORY_TAMMOXY_ID)
 const productSchema = {
   "@context": "https://schema.org/",
@@ -294,7 +294,7 @@ const productSchema = {
               id: OLD_DESC.id,
               descriptionHtml: DESC_AI.detailedDescription,
               tags: mergedTags,
-              category:SEO.category,
+              category:SEO.category?.id,
               handle:SEO.handle,
               productType:SEO.productType,
               seo:{
