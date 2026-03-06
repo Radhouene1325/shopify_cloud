@@ -1841,11 +1841,18 @@ interface GraphQLAdmin {
         const fetchSize = Math.min(config.pageSize, remaining);
   
         try {
-          const data = await this.client.execute(
-            query,
-            { search: searchTerm, first: fetchSize, after: cursor },
-            `Search-${searchTerm}`
-          );
+        //   const data = await this.client.execute(
+        //     query,
+        //     { search: searchTerm, first: fetchSize, after: cursor },
+        //     `Search-${searchTerm}`
+        //   );
+        const safeSearch = SearchSanitizer.prepareForSearch(searchTerm);
+
+const data = await this.client.execute(
+  query,
+  { search: safeSearch, first: fetchSize, after: cursor },
+  `Search-${safeSearch}`
+);
   
           const conn = data?.taxonomy?.categories;
           if (!conn) break;
