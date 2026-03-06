@@ -5,8 +5,8 @@ import {type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node
 import { useActionData, Form, useNavigation, useLoaderData, useFetcher, useSubmit } from "@remix-run/react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { shopify } from "../shopify.server";
-import { Button } from "@shopify/polaris";
-import { useEffect, useState } from "react";
+import { Badge, Button, Card, Checkbox, DataTable, Pagination, Thumbnail } from "@shopify/polaris";
+import { useCallback, useEffect, useState } from "react";
 import JSON5 from "json5";
   // sk-c8552ae161ed4db684bb1268bf4ba758
   import { Deepseek } from 'node-deepseek';
@@ -1363,209 +1363,526 @@ const productSchema = {
 
 
 
-export default function Descriptionupdated(){
+// export default function Descriptionupdated(){
 
-    const initial = useLoaderData<typeof loader>();
-    console.log('initia deta is her helo ',initial)
+//     const initial = useLoaderData<typeof loader>();
+//     console.log('initia deta is her helo ',initial)
     
-    const fetcher = useFetcher();
-    const submit =useSubmit()
-    const actionData=useActionData()
-    const navigation=useNavigation()
-    const isSubmitting=navigation.state==="submitting"
-  console.log('action data is her',actionData)
-  console.log('fetcher data is her',fetcher)
+//     const fetcher = useFetcher();
+//     const submit =useSubmit()
+//     const actionData=useActionData()
+//     const navigation=useNavigation()
+//     const isSubmitting=navigation.state==="submitting"
+//   console.log('action data is her',actionData)
+//   console.log('fetcher data is her',fetcher)
   
-    const [rows, setRows] = useState(initial?.variants);
-    const [pageInfo, setPageInfo] = useState(initial?.pageInfo);
+//     const [rows, setRows] = useState(initial?.variants);
+//     const [pageInfo, setPageInfo] = useState(initial?.pageInfo);
   
-    // cursor history
+//     // cursor history
+//     const [cursorStack, setCursorStack] = useState<string[]>([]);
+  
+//     interface SelectedVariant {
+//       id: string;
+//       descreption: string,
+//       tags:string[]
+//     }
+  
+//     const [selected, setSelected] = useState<SelectedVariant[]>([]);
+  
+//     // Handle pagination result
+//     useEffect(() => {
+//       if (fetcher.data) {
+//         setRows(fetcher?.data?.variants);
+//         setPageInfo(fetcher?.data?.pageInfo);
+//       }
+//     }, [fetcher.data]);
+  
+//     // Auto-select CONTINUE variants on each page
+//     useEffect(() => {
+//       const autoSelected: SelectedVariant[] = rows
+//       .filter((v: any) => !v.tags?.includes('DESC_AI'))
+//         // .filter((v: any) => v.inventoryPolicy === "CONTINUE")
+//         .map((v: any) => ({
+//           id: v.id,
+//           descreption:v.descriptionHtml,
+//           tags:v.tags,
+//           handel:v.handle,
+//           vendor:v.vendor,
+//           image:v?.featuredMedia?.image?.url??'',
+//           productType:v.productType
+//         }));
+  
+//       setSelected(autoSelected);
+//     }, [rows]);
+//   console.log('selected',selected)
+  
+//   const handleSubmitFormData = () => {
+//     // if(selected.length===0) return 
+//     const formData = new FormData();
+//     formData.append("descreptionAI", JSON.stringify(selected));
+    
+//     submit(formData, { 
+//       method: "post",
+//       encType: "application/x-www-form-urlencoded" 
+//     });
+//   };
+  
+//     const prevCursor =
+//       cursorStack.length > 1
+//         ? cursorStack[cursorStack.length - 2]
+//         : undefined;
+  
+//     return (
+//       <>
+//       <div style={{ padding: 24 }}>
+//         <h1>Out of stock variants</h1>
+  
+//         <table width="100%" border={1} cellPadding={8}>
+//           <thead>
+//             <tr>
+//               <th>Select</th>
+              
+//             <th>Product image</th> 
+//               <th>title</th>
+//               <th>product ID</th>
+//               <th>descreption</th>
+//               <th>tags</th>
+//               <th>handel</th>
+//               {/* <th>Inventory</th>
+//               <th>Policy</th> */}
+//             </tr>
+//           </thead>
+  
+//           <tbody>
+//             {rows.map((v: any) => (
+//               <tr key={v.id}>
+//                 <td>
+//                   <input
+//                     type="checkbox"
+//                     checked={selected.some(s => s.id === v.id)}
+//                     onChange={(e) => {
+//                       if (e.target.checked) {
+//                         setSelected(prev => [
+//                           ...prev,
+//                           {
+//                             // ...v, // spread all properties of v to satisfy SelectedVariant type
+//                             id: v?.id,
+//                             descreption: v?.descriptionHtml,
+//                             tags:v?.tags,
+//                             handel:v?.handle,
+//                             vendor:v.vendor,
+//                             image:v?.featuredMedia?.image?.url??'',
+//                             productType:v.productType
+//                           }
+//                         ]);
+//                       } else {
+//                         setSelected(prev =>
+//                           prev.filter(s => s.id !== v.id)
+//                         );
+//                       }
+//                     }}
+//                   />
+//                 </td>
+//                 {/* <td>{v.product.title}</td>
+//                 <td>{v.product.id}</td> */}
+//                 <td>
+//                   <img src={v.featuredMedia?.image?.url ?? ''} alt={v.featuredMedia?.image?.altText ?? ''} width={200} height={200} />
+//                 </td>
+//                 <td>{v.vendor} </td>
+//                  <td>{v.title}</td>
+//                 <td>{v.id}</td>
+//                 <td>{v.descriptionHtml}</td>
+//                 <td>
+//                 {v.tags.map((tag:string,index:number)=>(
+//                   <span className="badge" key={index}>{tag}</span>
+//                 )
+                 
+//                 )}
+//                 </td>
+//                 <td>{v.handle}</td>
+//                 {/* <td>{v.inventoryQuantity}</td>
+//                 <td>{v.inventoryPolicy}</td> */}
+//               </tr>
+//             ))}
+//           </tbody>
+//         </table>
+  
+//         {/* Next page */}
+//         {pageInfo.hasNextPage && (
+//           <button
+//             disabled={fetcher.state === "loading"}
+//             onClick={() => {
+//               setCursorStack(prev => [...prev, pageInfo.endCursor]);
+//               fetcher.load(`?cursor=${pageInfo.endCursor}`);
+//             }}
+//           >
+//             {fetcher.state === "loading" ? "Loading..." : "Next page →"}
+//           </button>
+//         )}
+  
+//         {/* Previous page */}
+//         {prevCursor && (
+//           <button
+//             disabled={fetcher.state === "loading"}
+//             onClick={() => {
+//               setCursorStack(prev => prev.slice(0, -1));
+//               fetcher.load(`?cursor=${prevCursor}`);
+//             }}
+//           >
+//             ← Previous page
+//           </button>
+//         )}
+  
+//         {/* updated thedata */}
+//         <Button
+//                   variant="primary"
+//                   onClick={handleSubmitFormData}
+//                   loading={isSubmitting}
+//                   size="large"
+//                 >
+//                   Create updated policy
+//                 </Button>
+//       </div>
+
+//       {/* {Array.isArray(actionData) && actionData?.map((e: { detailedDescription?: string }, idx: number) => (
+//       <>
+//         <div key={idx} dangerouslySetInnerHTML={{ __html: e.detailedDescription || "" }} />
+//         <p>
+//           {e.detailedDescription
+//             ? (() => {
+//                 try {
+//                   return JSON.parse(e.detailedDescription);
+//                 } catch {
+//                   return e.detailedDescription;
+//                 }
+//               })()
+//             : ""}
+//         </p>
+//       </>
+//       ))} */}
+//   </>
+  
+//     );
+//   }
+  
+  interface Variant {
+    id: string;
+    title: string;
+    descriptionHtml: string;
+    tags: string[];
+    handle: string;
+    vendor: string;
+    productType: string;
+    featuredMedia?: {
+      image?: {
+        url: string;
+        altText?: string;
+      };
+    };
+  }
+  
+  interface PageInfo {
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+    endCursor: string;
+    startCursor: string;
+  }
+  
+  interface LoaderData {
+    variants: Variant[];
+    pageInfo: PageInfo;
+  }
+  
+  interface SelectedVariant {
+    id: string;
+    description: string;
+    tags: string[];
+    handle: string;
+    vendor: string;
+    image: string;
+    productType: string;
+  }
+  
+
+  
+  export default function DescriptionUpdated() {
+    // Hooks
+    const initial = useLoaderData<typeof loader>();
+    const fetcher = useFetcher<LoaderData>();
+    const submit = useSubmit();
+    const actionData = useActionData();
+    const navigation = useNavigation();
+  
+    // State
+    const [rows, setRows] = useState<Variant[]>(initial?.variants || []);
+    const [pageInfo, setPageInfo] = useState<PageInfo | null>(initial?.pageInfo || null);
     const [cursorStack, setCursorStack] = useState<string[]>([]);
-  
-    interface SelectedVariant {
-      id: string;
-      descreption: string,
-      tags:string[]
-    }
-  
     const [selected, setSelected] = useState<SelectedVariant[]>([]);
+    const [isSelectAllChecked, setIsSelectAllChecked] = useState(false);
+    const [isSelectAllIndeterminate, setIsSelectAllIndeterminate] = useState(false);
   
-    // Handle pagination result
+    const isSubmitting = navigation.state === "submitting";
+    const isLoading = fetcher.state === "loading";
+  
+    // Update rows when fetcher data changes
     useEffect(() => {
       if (fetcher.data) {
-        setRows(fetcher?.data?.variants);
-        setPageInfo(fetcher?.data?.pageInfo);
+        setRows(fetcher.data.variants);
+        setPageInfo(fetcher.data.pageInfo);
       }
     }, [fetcher.data]);
   
-    // Auto-select CONTINUE variants on each page
+    // Auto-select variants without DESC_AI tag
     useEffect(() => {
       const autoSelected: SelectedVariant[] = rows
-      .filter((v: any) => !v.tags?.includes('DESC_AI'))
-        // .filter((v: any) => v.inventoryPolicy === "CONTINUE")
-        .map((v: any) => ({
+        .filter((v) => !v.tags?.includes("DESC_AI"))
+        .map((v) => ({
           id: v.id,
-          descreption:v.descriptionHtml,
-          tags:v.tags,
-          handel:v.handle,
-          vendor:v.vendor,
-          image:v?.featuredMedia?.image?.url??'',
-          productType:v.productType
+          description: v.descriptionHtml || "",
+          tags: v.tags || [],
+          handle: v.handle,
+          vendor: v.vendor,
+          image: v.featuredMedia?.image?.url || "",
+          productType: v.productType,
         }));
   
       setSelected(autoSelected);
     }, [rows]);
-  console.log('selected',selected)
   
-  const handleSubmitFormData = () => {
-    // if(selected.length===0) return 
-    const formData = new FormData();
-    formData.append("descreptionAI", JSON.stringify(selected));
-    
-    submit(formData, { 
-      method: "post",
-      encType: "application/x-www-form-urlencoded" 
-    });
-  };
+    // Update select all checkbox state
+    useEffect(() => {
+      const allSelected = rows.length > 0 && rows.every((v) => selected.some((s) => s.id === v.id));
+      const someSelected = rows.some((v) => selected.some((s) => s.id === v.id));
+      
+      setIsSelectAllChecked(allSelected);
+      setIsSelectAllIndeterminate(someSelected && !allSelected);
+    }, [selected, rows]);
   
-    const prevCursor =
-      cursorStack.length > 1
-        ? cursorStack[cursorStack.length - 2]
-        : undefined;
+    // Handlers
+    const handleSelectAll = useCallback((checked: boolean) => {
+      if (checked) {
+        const allSelected: SelectedVariant[] = rows.map((v) => ({
+          id: v.id,
+          description: v.descriptionHtml || "",
+          tags: v.tags || [],
+          handle: v.handle,
+          vendor: v.vendor,
+          image: v.featuredMedia?.image?.url || "",
+          productType: v.productType,
+        }));
+        setSelected(allSelected);
+      } else {
+        setSelected([]);
+      }
+    }, [rows]);
+  
+    const handleSelectRow = useCallback((variant: Variant, checked: boolean) => {
+      if (checked) {
+        setSelected((prev) => [
+          ...prev,
+          {
+            id: variant.id,
+            description: variant.descriptionHtml || "",
+            tags: variant.tags || [],
+            handle: variant.handle,
+            vendor: variant.vendor,
+            image: variant.featuredMedia?.image?.url || "",
+            productType: variant.productType,
+          },
+        ]);
+      } else {
+        setSelected((prev) => prev.filter((s) => s.id !== variant.id));
+      }
+    }, []);
+  
+    const handleNextPage = useCallback(() => {
+      if (pageInfo?.endCursor) {
+        setCursorStack((prev) => [...prev, pageInfo.endCursor]);
+        fetcher.load(`?cursor=${pageInfo.endCursor}`);
+      }
+    }, [pageInfo, fetcher]);
+  
+    const handlePreviousPage = useCallback(() => {
+      if (cursorStack.length > 1) {
+        const prevCursor = cursorStack[cursorStack.length - 2];
+        setCursorStack((prev) => prev.slice(0, -1));
+        fetcher.load(`?cursor=${prevCursor}`);
+      }
+    }, [cursorStack, fetcher]);
+  
+    const handleSubmitFormData = useCallback(() => {
+      if (selected.length === 0) return;
+  
+      const formData = new FormData();
+      formData.append("descriptionAI", JSON.stringify(selected));
+  
+      submit(formData, {
+        method: "post",
+        encType: "application/x-www-form-urlencoded",
+      });
+    }, [selected, submit]);
+  
+    // Table columns configuration
+    const columns = [
+      {
+        title: (
+          <Checkbox
+            label="Select All"
+            labelHidden
+            checked={isSelectAllChecked}
+            indeterminate={isSelectAllIndeterminate}
+            onChange={handleSelectAll}
+          />
+        ),
+        key: "select",
+        width: "5%",
+      },
+      {
+        title: "Product Image",
+        key: "image",
+        width: "15%",
+      },
+      {
+        title: "Vendor",
+        key: "vendor",
+        width: "10%",
+      },
+      {
+        title: "Title",
+        key: "title",
+        width: "15%",
+      },
+      {
+        title: "Product ID",
+        key: "id",
+        width: "15%",
+      },
+      {
+        title: "Description",
+        key: "description",
+        width: "20%",
+      },
+      {
+        title: "Tags",
+        key: "tags",
+        width: "15%",
+      },
+      {
+        title: "Handle",
+        key: "handle",
+        width: "10%",
+      },
+    ];
+  
+    // Table rows
+    const tableRows = rows.map((variant) => [
+      <Checkbox
+        key={`checkbox-${variant.id}`}
+        label={`Select ${variant.title}`}
+        labelHidden
+        checked={selected.some((s) => s.id === variant.id)}
+        onChange={(checked) => handleSelectRow(variant, checked)}
+      />,
+      <Thumbnail
+        key={`image-${variant.id}`}
+        source={variant.featuredMedia?.image?.url || ""}
+        alt={variant.featuredMedia?.image?.altText || variant.title}
+        size="large"
+      />,
+      variant.vendor,
+      variant.title,
+      <span key={`id-${variant.id}`} className="font-mono text-sm">{variant.id}</span>,
+      <div 
+        key={`desc-${variant.id}`}
+        className="max-h-24 overflow-y-auto text-sm"
+        dangerouslySetInnerHTML={{ __html: variant.descriptionHtml || "No description" }}
+      />,
+      <div key={`tags-${variant.id}`} className="flex flex-wrap gap-1">
+        {variant.tags?.map((tag, index) => (
+          <Badge key={index} tone={tag === "DESC_AI" ? "success" : "info"}>
+            {tag}
+          </Badge>
+        )) || <span className="text-gray-400">No tags</span>}
+      </div>,
+      <span key={`handle-${variant.id}`} className="text-sm text-gray-600">{variant.handle}</span>,
+    ]);
   
     return (
-      <>
-      <div style={{ padding: 24 }}>
-        <h1>Out of stock variants</h1>
+      <div className="p-6 max-w-7xl mx-auto">
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Product Description Manager</h1>
+              <p className="text-gray-600 mt-1">
+                Manage and update product descriptions for {selected.length} selected variants
+              </p>
+            </div>
+            <Button
+              variant="primary"
+              onClick={handleSubmitFormData}
+              loading={isSubmitting}
+              disabled={selected.length === 0}
+              size="large"
+            >
+              Update Descriptions ({selected.length})
+            </Button>
+          </div>
   
-        <table width="100%" border={1} cellPadding={8}>
-          <thead>
-            <tr>
-              <th>Select</th>
-              
-            <th>Product image</th> 
-              <th>title</th>
-              <th>product ID</th>
-              <th>descreption</th>
-              <th>tags</th>
-              <th>handel</th>
-              {/* <th>Inventory</th>
-              <th>Policy</th> */}
-            </tr>
-          </thead>
+          <div className="mb-4 flex items-center gap-2">
+            <Badge tone="info">{rows.length} products on page</Badge>
+            <Badge tone="success">{selected.length} selected</Badge>
+            {selected.some((s) => s.tags.includes("DESC_AI")) && (
+              <Badge tone="warning">Some already processed</Badge>
+            )}
+          </div>
   
-          <tbody>
-            {rows.map((v: any) => (
-              <tr key={v.id}>
-                <td>
-                  <input
-                    type="checkbox"
-                    checked={selected.some(s => s.id === v.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelected(prev => [
-                          ...prev,
-                          {
-                            // ...v, // spread all properties of v to satisfy SelectedVariant type
-                            id: v?.id,
-                            descreption: v?.descriptionHtml,
-                            tags:v?.tags,
-                            handel:v?.handle,
-                            vendor:v.vendor,
-                            image:v?.featuredMedia?.image?.url??'',
-                            productType:v.productType
-                          }
-                        ]);
-                      } else {
-                        setSelected(prev =>
-                          prev.filter(s => s.id !== v.id)
-                        );
-                      }
-                    }}
-                  />
-                </td>
-                {/* <td>{v.product.title}</td>
-                <td>{v.product.id}</td> */}
-                <td>
-                  <img src={v.featuredMedia?.image?.url ?? ''} alt={v.featuredMedia?.image?.altText ?? ''} width={200} height={200} />
-                </td>
-                <td>{v.vendor} </td>
-                 <td>{v.title}</td>
-                <td>{v.id}</td>
-                <td>{v.descriptionHtml}</td>
-                <td>
-                {v.tags.map((tag:string,index:number)=>(
-                  <span className="badge" key={index}>{tag}</span>
-                )
-                 
-                )}
-                </td>
-                <td>{v.handle}</td>
-                {/* <td>{v.inventoryQuantity}</td>
-                <td>{v.inventoryPolicy}</td> */}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+          <DataTable
+            columnContentTypes={[
+              "text", // Select
+              "text", // Image
+              "text", // Vendor
+              "text", // Title
+              "text", // ID
+              "text", // Description
+              "text", // Tags
+              "text", // Handle
+            ]}
+            headings={columns.map((col) => col.title)}
+            rows={tableRows}
+            verticalAlign="middle"
+            hoverable
+          />
   
-        {/* Next page */}
-        {pageInfo.hasNextPage && (
-          <button
-            disabled={fetcher.state === "loading"}
-            onClick={() => {
-              setCursorStack(prev => [...prev, pageInfo.endCursor]);
-              fetcher.load(`?cursor=${pageInfo.endCursor}`);
-            }}
-          >
-            {fetcher.state === "loading" ? "Loading..." : "Next page →"}
-          </button>
+          <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+            <div className="text-sm text-gray-600">
+              {pageInfo?.hasPreviousPage && `Page ${cursorStack.length}`}
+            </div>
+            
+            <Pagination
+              hasPrevious={cursorStack.length > 0}
+              onPrevious={handlePreviousPage}
+              hasNext={pageInfo?.hasNextPage || false}
+              onNext={handleNextPage}
+              label={`${selected.length} items selected`}
+            />
+          </div>
+        </Card>
+  
+        {/* Action Data Display */}
+        {actionData && (
+          <Card className="mt-4">
+            <div className="p-4">
+              <h3 className="font-semibold mb-2">Action Result</h3>
+              <pre className="bg-gray-100 p-3 rounded text-sm overflow-auto">
+                {JSON.stringify(actionData, null, 2)}
+              </pre>
+            </div>
+          </Card>
         )}
-  
-        {/* Previous page */}
-        {prevCursor && (
-          <button
-            disabled={fetcher.state === "loading"}
-            onClick={() => {
-              setCursorStack(prev => prev.slice(0, -1));
-              fetcher.load(`?cursor=${prevCursor}`);
-            }}
-          >
-            ← Previous page
-          </button>
-        )}
-  
-        {/* updated thedata */}
-        <Button
-                  variant="primary"
-                  onClick={handleSubmitFormData}
-                  loading={isSubmitting}
-                  size="large"
-                >
-                  Create updated policy
-                </Button>
       </div>
-
-      {/* {Array.isArray(actionData) && actionData?.map((e: { detailedDescription?: string }, idx: number) => (
-      <>
-        <div key={idx} dangerouslySetInnerHTML={{ __html: e.detailedDescription || "" }} />
-        <p>
-          {e.detailedDescription
-            ? (() => {
-                try {
-                  return JSON.parse(e.detailedDescription);
-                } catch {
-                  return e.detailedDescription;
-                }
-              })()
-            : ""}
-        </p>
-      </>
-      ))} */}
-  </>
-  
     );
   }
-  
 
 
 
