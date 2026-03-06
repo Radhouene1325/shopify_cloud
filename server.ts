@@ -249,8 +249,8 @@ for( const DESC_AI of optimizedHtml){
      console.log('seo is activated her ',SEO.category.id)
      console.log('seo is activated her ',SEO.category.name)
      console.log('seo is activated her ',SEO)
-        const CATEGORY_TAMMOXY_ID=await getTaxonomyIdForCategory(admin,SEO.category.name)
-console.log('her is the value of tamoxy',CATEGORY_TAMMOXY_ID)
+//         const CATEGORY_TAMMOXY_ID=await getTaxonomyIdForCategory(admin,SEO.category.name)
+// console.log('her is the value of tamoxy',CATEGORY_TAMMOXY_ID)
 const productSchema = {
   "@context": "https://schema.org/",
   "@type": "Product",
