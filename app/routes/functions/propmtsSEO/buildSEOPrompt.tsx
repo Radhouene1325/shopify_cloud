@@ -578,7 +578,158 @@ export async function generateSeoMetadata(
   // Complete taxonomy search with pagination and error handling
 
 
-  function buildSEOPrompt(
+//   function buildSEOPrompt(
+//     chunk: { 
+//       id: string; 
+//       title: string; 
+//       description: string; 
+//       handle?: string; 
+//       vendor?: string;
+//       image?: string;
+//       productType?: string;
+//     }[]
+//   ): string {
+//     return `You are a Shopify SEO API specializing in Shopify Standard Product Taxonomy (2026-02).
+  
+//   STRICT OUTPUT FORMAT - JSON Array Only:
+//   [{
+//     "id": "gid://shopify/Product/xxxxx",
+//     "seoTitle": "50-60 chars, primary keyword first",
+//     "seoDescription": "150-160 chars, compelling CTA",
+//     "handle": "seo-friendly-url-slug",
+//     "category": "EXACT_TaxonomyCategory_ID",
+//     "productType": "Specific subcategory name"
+//   }]
+  
+//   ═══════════════════════════════════════════════════════════════
+//   SHOPIFY TAXONOMY 2026-02 - OFFICIAL CATEGORY IDs
+//   ═══════════════════════════════════════════════════════════════
+  
+//   FOOTWEAR (aa-8):
+//   ├── gid://shopify/TaxonomyCategory/aa-8-8 (Sneakers)
+//   ├── gid://shopify/TaxonomyCategory/aa-8-3 (Boots)
+//   ├── gid://shopify/TaxonomyCategory/aa-8-9 (Flats)
+//   ├── gid://shopify/TaxonomyCategory/aa-8-10 (Heels)
+//   ├── gid://shopify/TaxonomyCategory/aa-8-6 (Sandals)
+//   └── gid://shopify/TaxonomyCategory/aa-8-7 (Slippers)
+  
+//   OUTERWEAR (aa-1-10):
+//   ├── gid://shopify/TaxonomyCategory/aa-1-10-2 (Coats & Jackets)
+//   │   ├── aa-1-10-2-2 (Bomber Jackets)
+//   │   ├── aa-1-10-2-5 (Overcoats)
+//   │   ├── aa-1-10-2-17 (Wrap Coats)
+//   │   └── aa-1-10-2-1 (Bolero Jackets)
+//   └── gid://shopify/TaxonomyCategory/aa-1-10-6 (Vests)
+  
+//   ACTIVEWEAR (aa-1-1):
+//   ├── gid://shopify/TaxonomyCategory/aa-1-1-8 (Activewear Vests & Jackets)
+//   │   ├── aa-1-1-8-2 (Jackets)
+//   │   └── aa-1-1-8-1 (Vests)
+//   ├── gid://shopify/TaxonomyCategory/aa-1-1-7 (Activewear Sweatshirts & Hoodies)
+//   │   ├── aa-1-1-7-2 (Hoodies)
+//   │   └── aa-1-1-7-4 (Sweatshirts)
+//   └── gid://shopify/TaxonomyCategory/aa-1-1-1 (Activewear Pants)
+//       ├── aa-1-1-1-1 (Joggers)
+//       ├── aa-1-1-1-2 (Leggings)
+//       └── aa-1-1-1-4 (Sweatpants)
+  
+//   CLOTHING TOPS (aa-1-13):
+//   ├── gid://shopify/TaxonomyCategory/aa-1-13-13 (Hoodies)
+//   ├── gid://shopify/TaxonomyCategory/aa-1-13-14 (Sweatshirts)
+//   ├── gid://shopify/TaxonomyCategory/aa-1-13-8 (T-Shirts)
+//   ├── gid://shopify/TaxonomyCategory/aa-1-13-7 (Shirts)
+//   └── gid://shopify/TaxonomyCategory/aa-1-13-12 (Sweaters)
+  
+//   BABY & TODDLER (aa-1-2):
+//   └── gid://shopify/TaxonomyCategory/aa-1-2-4 (Baby & Toddler Outerwear)
+//       └── aa-1-2-4-17 (Baby & Toddler Coats & Jackets)
+  
+//   ═══════════════════════════════════════════════════════════════
+//   VISUAL ANALYSIS RULES
+//   ═══════════════════════════════════════════════════════════════
+  
+//   PUFFER JACKET DETECTION:
+//   → Horizontal quilting + padded appearance = aa-1-10-2 (Coats & Jackets)
+//   → ProductType: "Puffer Jacket" or "Quilted Jacket"
+  
+//   HOODED JACKET DETECTION:
+//   → Hood visible + quilted = aa-1-10-2 (Coats & Jackets)
+//   → ProductType: "Hooded Puffer Jacket"
+  
+//   ATHLETIC FOOTWEAR:
+//   → Sporty sole + laces = aa-8-8 (Sneakers)
+//   → ProductType: "Running Shoes" | "Walking Shoes" | "Training Shoes"
+  
+//   CASUAL FOOTWEAR:
+//   → Flat sole + casual design = aa-8-8 (Sneakers) or aa-8-9 (Flats)
+  
+//   ═══════════════════════════════════════════════════════════════
+//   SEO OPTIMIZATION RULES
+//   ═══════════════════════════════════════════════════════════════
+  
+//   TITLE FORMAT (50-60 chars):
+//   "[Brand] [Product] [Color/Key Feature] | [Gender/Age]"
+//   - "Nike Air Max Black | Men's Running Shoes"
+//   - "Kids Puffer Jacket Beige | Winter Outerwear"
+  
+//   DESCRIPTION FORMAT (150-160 chars):
+//   "Shop [product] in [color]. [Feature 1], [Feature 2]. [Benefit]. [CTA]"
+//   - "Shop Nike Air Max in black. Breathable mesh, cushioned sole. Perfect for running. Free shipping!"
+  
+//   HANDLE FORMAT:
+//   "brand-product-color" or "product-color-feature"
+//   - "nike-air-max-black"
+//   - "puffer-jacket-beige-kids"
+  
+//   ═══════════════════════════════════════════════════════════════
+//   EXAMPLES
+//   ═══════════════════════════════════════════════════════════════
+  
+//   INPUT: Kids beige quilted jacket with hood
+//   OUTPUT:
+//   {
+//     "id": "gid://shopify/Product/10456985305429",
+//     "seoTitle": "Beige Quilted Puffer Jacket | Kids Winter Coat",
+//     "seoDescription": "Shop kids' beige puffer jacket with hood. Warm quilted design, zip closure. Perfect for winter adventures. Free shipping available!",
+//     "handle": "kids-puffer-jacket-beige-hood",
+//     "category": "gid://shopify/TaxonomyCategory/aa-1-2-4-17",
+//     "productType": "Baby & Toddler Coats & Jackets"
+//   }
+  
+//   INPUT: Black running shoes with white sole
+//   OUTPUT:
+//   {
+//     "id": "gid://shopify/Product/10589930815829",
+//     "seoTitle": "Black Running Shoes White Sole | Men's Sneakers",
+//     "seoDescription": "Shop black running shoes with white sole. Lightweight design, cushioned insole. Perfect for training and daily runs. Order now!",
+//     "handle": "black-running-shoes-white-sole",
+//     "category": "gid://shopify/TaxonomyCategory/aa-8-8",
+//     "productType": "Sneakers"
+//   }
+  
+//   ═══════════════════════════════════════════════════════════════
+//   INPUT DATA
+//   ═══════════════════════════════════════════════════════════════
+  
+//   ${JSON.stringify(chunk, null, 2)}
+  
+//   ═══════════════════════════════════════════════════════════════
+//   CRITICAL RULES
+//   ═══════════════════════════════════════════════════════════════
+  
+//   1. Use EXACT category IDs from taxonomy above (gid://shopify/TaxonomyCategory/xx-x)
+//   2. ProductType must match the final node name (e.g., "Sneakers", not "Shoes")
+//   3. Analyze images first - visual cues determine category
+//   4. Include color in title and handle from image analysis
+//   5. Character limits: Title 50-60, Description 150-160 (strict)
+//   6. Return ONLY valid JSON array - no markdown, no explanations
+//   7. Escape quotes properly: \\"
+//   8. Array length must equal input count: ${chunk.length}
+  
+//   BEGIN PROCESSING:`;
+//   }
+
+function buildUniversalSEOPrompt(
     chunk: { 
       id: string; 
       title: string; 
@@ -587,9 +738,11 @@ export async function generateSeoMetadata(
       vendor?: string;
       image?: string;
       productType?: string;
+      tags?: string[];
+      price?: number;
     }[]
   ): string {
-    return `You are a Shopify SEO API specializing in Shopify Standard Product Taxonomy (2026-02).
+    return `You are a Shopify SEO API specializing in the Shopify Standard Product Taxonomy (2026-02) Universal Categorization System.
   
   STRICT OUTPUT FORMAT - JSON Array Only:
   [{
@@ -598,113 +751,226 @@ export async function generateSeoMetadata(
     "seoDescription": "150-160 chars, compelling CTA",
     "handle": "seo-friendly-url-slug",
     "category": "EXACT_TaxonomyCategory_ID",
-    "productType": "Specific subcategory name"
+    "productType": "Specific leaf node name",
+    "attributes": {
+      "color": "extracted or null",
+      "material": "extracted or null",
+      "targetGender": "extracted or null",
+      "size": "extracted or null"
+    }
   }]
   
   ═══════════════════════════════════════════════════════════════
-  SHOPIFY TAXONOMY 2026-02 - OFFICIAL CATEGORY IDs
+  UNIVERSAL TAXONOMY MAPPING (All 10 Root Categories)
   ═══════════════════════════════════════════════════════════════
   
-  FOOTWEAR (aa-8):
-  ├── gid://shopify/TaxonomyCategory/aa-8-8 (Sneakers)
-  ├── gid://shopify/TaxonomyCategory/aa-8-3 (Boots)
-  ├── gid://shopify/TaxonomyCategory/aa-8-9 (Flats)
-  ├── gid://shopify/TaxonomyCategory/aa-8-10 (Heels)
-  ├── gid://shopify/TaxonomyCategory/aa-8-6 (Sandals)
-  └── gid://shopify/TaxonomyCategory/aa-8-7 (Slippers)
+  1. APPAREL & ACCESSORIES (aa)
+     ├── Clothing (aa-1): Tops, Bottoms, Outerwear, Underwear, Activewear, Swimwear
+     ├── Shoes (aa-8): Sneakers, Boots, Sandals, Heels, Flats, Slippers
+     ├── Accessories (aa-2, aa-4, aa-5, aa-6, aa-7): Bags, Belts, Hats, Jewelry, Watches
+     └── Specialized: Maternity (aa-1-7), Baby Clothing (aa-1-2), Costumes (aa-3)
   
-  OUTERWEAR (aa-1-10):
-  ├── gid://shopify/TaxonomyCategory/aa-1-10-2 (Coats & Jackets)
-  │   ├── aa-1-10-2-2 (Bomber Jackets)
-  │   ├── aa-1-10-2-5 (Overcoats)
-  │   ├── aa-1-10-2-17 (Wrap Coats)
-  │   └── aa-1-10-2-1 (Bolero Jackets)
-  └── gid://shopify/TaxonomyCategory/aa-1-10-6 (Vests)
+  2. ARTS & ENTERTAINMENT (ae)
+     ├── Arts & Crafts (ae-2-1): Painting, Drawing, Sewing, Jewelry Making
+     ├── Musical Instruments (ae-2-2): Guitars, Keyboards, Drums, DJ Equipment
+     ├── Collectibles (ae-2-3): Coins, Trading Cards, Comic Books
+     └── Party & Celebration (ae-2-4): Decorations, Costumes, Supplies
   
-  ACTIVEWEAR (aa-1-1):
-  ├── gid://shopify/TaxonomyCategory/aa-1-1-8 (Activewear Vests & Jackets)
-  │   ├── aa-1-1-8-2 (Jackets)
-  │   └── aa-1-1-8-1 (Vests)
-  ├── gid://shopify/TaxonomyCategory/aa-1-1-7 (Activewear Sweatshirts & Hoodies)
-  │   ├── aa-1-1-7-2 (Hoodies)
-  │   └── aa-1-1-7-4 (Sweatshirts)
-  └── gid://shopify/TaxonomyCategory/aa-1-1-1 (Activewear Pants)
-      ├── aa-1-1-1-1 (Joggers)
-      ├── aa-1-1-1-2 (Leggings)
-      └── aa-1-1-1-4 (Sweatpants)
+  3. BABY & TODDLER (bt)
+     ├── Baby Clothing (bt-1): Bodysuits, Sleepwear, Outerwear
+     ├── Baby Care (bt-2): Diapering, Bathing, Health
+     ├── Feeding (bt-3): Bottles, Breastfeeding, Baby Food
+     ├── Nursery (bt-4): Furniture, Bedding, Decor
+     └── Baby Transport (bt-5): Strollers, Carriers, Car Seats
   
-  CLOTHING TOPS (aa-1-13):
-  ├── gid://shopify/TaxonomyCategory/aa-1-13-13 (Hoodies)
-  ├── gid://shopify/TaxonomyCategory/aa-1-13-14 (Sweatshirts)
-  ├── gid://shopify/TaxonomyCategory/aa-1-13-8 (T-Shirts)
-  ├── gid://shopify/TaxonomyCategory/aa-1-13-7 (Shirts)
-  └── gid://shopify/TaxonomyCategory/aa-1-13-12 (Sweaters)
+  4. BUSINESS & INDUSTRIAL (bi)
+     ├── Agriculture (bi-1): Machinery, Irrigation, Livestock
+     ├── Construction (bi-2): Tools, Safety Equipment, Raw Materials
+     ├── Manufacturing (bi-3): Industrial Machinery, Components
+     ├── Office Supplies (bi-4): Furniture, Stationery, Equipment
+     └── Work Safety (bi-5): Protective Gear, Safety Equipment
   
-  BABY & TODDLER (aa-1-2):
-  └── gid://shopify/TaxonomyCategory/aa-1-2-4 (Baby & Toddler Outerwear)
-      └── aa-1-2-4-17 (Baby & Toddler Coats & Jackets)
+  5. ELECTRONICS (el)
+     ├── Computers (el-1): Laptops, Desktops, Components, Peripherals
+     ├── Communication (el-2): Phones, Accessories, Smartwatches
+     ├── Audio (el-3): Headphones, Speakers, Components
+     ├── Video (el-4): TVs, Cameras, Projectors, Drones
+     ├── Gaming (el-5): Consoles, Accessories, PC Gaming
+     └── Components (el-6): Circuit Boards, Cables, Power Supplies
+  
+  6. FOOD, BEVERAGES & TOBACCO (fb)
+     ├── Food Items (fb-1): Fresh, Frozen, Canned, Snacks
+     ├── Beverages (fb-2): Coffee, Tea, Soft Drinks, Alcohol
+     ├── Tobacco (fb-3): Cigarettes, Cigars, Vaping
+     └── Cooking Ingredients (fb-4): Spices, Oils, Sauces
+  
+  7. HEALTH & BEAUTY (hb)
+     ├── Personal Care (hb-1): Skin Care, Hair Care, Oral Care
+     ├── Cosmetics (hb-2): Makeup, Nail Care, Tools
+     ├── Health Care (hb-3): Medical Devices, Supplements, First Aid
+     └── Wellness (hb-4): Fitness, Massage, Aromatherapy
+  
+  8. HOME & GARDEN (hg)
+     ├── Furniture (hg-1): Indoor, Outdoor, Office, Kids
+     ├── Kitchen (hg-2): Appliances, Cookware, Tableware
+     ├── Decor (hg-3): Lighting, Textiles, Art, Rugs
+     ├── Garden (hg-4): Plants, Tools, Outdoor Living
+     └── Household (hg-5): Cleaning, Storage, Safety
+  
+  9. LUGGAGE & BAGS (lb)
+     ├── Backpacks (lb-1): Laptop, Hiking, School, Travel
+     ├── Luggage (lb-2): Suitcases, Carry-ons, Travel Sets
+     ├── Handbags (lb-3): Totes, Crossbody, Clutches
+     └── Cases (lb-4): Phone, Laptop, Camera, Instrument
+  
+  10. SPORTING GOODS (sg)
+      ├── Exercise & Fitness (sg-1): Equipment, Apparel, Accessories
+      ├── Outdoor Recreation (sg-2): Camping, Hiking, Cycling
+      ├── Water Sports (sg-3): Swimming, Diving, Surfing
+      ├── Winter Sports (sg-4): Skiing, Snowboarding, Skating
+      ├── Team Sports (sg-5): Soccer, Basketball, Football
+      └── Racquet Sports (sg-6): Tennis, Badminton, Squash
+  
+  11. TOYS & GAMES (tg)
+      ├── Toys (tg-1): Action Figures, Dolls, Educational, Plush
+      ├── Games (tg-2): Board Games, Puzzles, Card Games
+      └── Outdoor Play (tg-3): Playsets, Trampolines, Ride-ons
+  
+  12. VEHICLES & PARTS (vp)
+      ├── Cars & Trucks (vp-1): Vehicles, Parts, Accessories
+      ├── Motorcycles (vp-2): Bikes, Parts, Gear
+      ├── Watercraft (vp-3): Boats, Parts, Accessories
+      ├── Aircraft (vp-4): Planes, Drones, Parts
+      └── Tools & Maintenance (vp-5): Repair Tools, Diagnostic Equipment
   
   ═══════════════════════════════════════════════════════════════
-  VISUAL ANALYSIS RULES
+  INTELLIGENT CATEGORIZATION WORKFLOW
   ═══════════════════════════════════════════════════════════════
   
-  PUFFER JACKET DETECTION:
-  → Horizontal quilting + padded appearance = aa-1-10-2 (Coats & Jackets)
-  → ProductType: "Puffer Jacket" or "Quilted Jacket"
+  STEP 1: IMAGE ANALYSIS (Primary Signal)
+  Analyze the main product image for:
+  - Physical form and shape
+  - Material texture and finish
+  - Color and pattern
+  - Functional components (buttons, zippers, screens, wheels)
+  - Size relative to known objects
+  - Context clues (lifestyle, environment, usage)
   
-  HOODED JACKET DETECTION:
-  → Hood visible + quilted = aa-1-10-2 (Coats & Jackets)
-  → ProductType: "Hooded Puffer Jacket"
+  STEP 2: TEXT ANALYSIS (Secondary Signal)
+  Parse title and description for:
+  - Brand names (Nike, Apple, Samsung, IKEA)
+  - Product type keywords (shoes, laptop, sofa, blender)
+  - Material mentions (leather, cotton, aluminum, glass)
+  - Size indicators (small, large, 42-inch, 500ml)
+  - Gender/age targeting (men, women, kids, baby)
+  - Use case (running, gaming, cooking, sleeping)
   
-  ATHLETIC FOOTWEAR:
-  → Sporty sole + laces = aa-8-8 (Sneakers)
-  → ProductType: "Running Shoes" | "Walking Shoes" | "Training Shoes"
+  STEP 3: TAXONOMY MATCHING
+  Map to specific category ID using this logic:
   
-  CASUAL FOOTWEAR:
-  → Flat sole + casual design = aa-8-8 (Sneakers) or aa-8-9 (Flats)
+  IF footwear_visible → aa-8 (Shoes)
+    ├── laces + sporty = aa-8-8 (Sneakers)
+    ├── ankle_high + sturdy = aa-8-3 (Boots)
+    ├── open_toe = aa-8-6 (Sandals)
+    └── flat + casual = aa-8-9 (Flats)
+  
+  IF clothing_visible → aa-1 (Clothing)
+    ├── upper_body + sleeves = aa-1-13 (Tops)
+    ├── lower_body + legs = aa-1-14 (Bottoms)
+    ├── outer_layer + warm = aa-1-10 (Outerwear)
+    └── one_piece = aa-1-15 (Dresses)
+  
+  IF electronics_visible → el (Electronics)
+    ├── screen + portable = el-1 (Computers) or el-2 (Communication)
+    ├── audio_output = el-3 (Audio)
+    ├── captures_video = el-4 (Video/Cameras)
+    └── plays_games = el-5 (Gaming)
+  
+  IF furniture_visible → hg-1 (Furniture)
+    ├── sits_people = hg-1-1 (Chairs) or hg-1-2 (Sofas)
+    ├── stores_items = hg-1-3 (Storage)
+    └── sleeps_people = hg-1-4 (Beds)
+  
+  IF bag_visible → lb (Luggage & Bags) or aa-5 (Handbags)
+    ├── carries_laptop = lb-1 (Backpacks) or lb-4 (Cases)
+    ├── travel_size = lb-2 (Luggage)
+    └── fashion_carry = aa-5-4 (Handbags)
   
   ═══════════════════════════════════════════════════════════════
-  SEO OPTIMIZATION RULES
+  SEO OPTIMIZATION RULES BY CATEGORY
   ═══════════════════════════════════════════════════════════════
   
-  TITLE FORMAT (50-60 chars):
-  "[Brand] [Product] [Color/Key Feature] | [Gender/Age]"
-  - "Nike Air Max Black | Men's Running Shoes"
-  - "Kids Puffer Jacket Beige | Winter Outerwear"
+  APPAREL & ACCESSORIES:
+  Title: "[Brand] [Type] [Color] | [Gender] [Category]"
+  Desc: "Shop [brand] [product] in [color]. [Material], [feature]. Perfect for [use case]. [CTA]"
+  Handle: "brand-type-color-gender" or "type-color-feature"
   
-  DESCRIPTION FORMAT (150-160 chars):
-  "Shop [product] in [color]. [Feature 1], [Feature 2]. [Benefit]. [CTA]"
-  - "Shop Nike Air Max in black. Breathable mesh, cushioned sole. Perfect for running. Free shipping!"
+  ELECTRONICS:
+  Title: "[Brand] [Model] [Key Spec] | [Category]"
+  Desc: "[Brand] [model] features [spec 1], [spec 2]. Ideal for [use case]. [Warranty/CTA]"
+  Handle: "brand-model-spec" or "product-type-brand"
   
-  HANDLE FORMAT:
-  "brand-product-color" or "product-color-feature"
-  - "nike-air-max-black"
-  - "puffer-jacket-beige-kids"
+  HOME & GARDEN:
+  Title: "[Style] [Product] [Material] | [Room/Use]"
+  Desc: "Beautiful [product] in [material]. [Dimension], [feature]. Perfect for [room]. [CTA]"
+  Handle: "style-product-material-room"
+  
+  FOOD & BEVERAGES:
+  Title: "[Brand] [Product] [Size/Flavor] | [Category]"
+  Desc: "Premium [product] by [brand]. [Origin/quality], [taste profile]. [Usage suggestion]. [CTA]"
+  Handle: "brand-product-size-flavor"
+  
+  HEALTH & BEAUTY:
+  Title: "[Brand] [Product] [Benefit] | [Skin/Hair Type]"
+  Desc: "[Brand] [product] for [benefit]. [Key ingredient], [result]. [Size]. [CTA]"
+  Handle: "brand-product-benefit-type"
   
   ═══════════════════════════════════════════════════════════════
-  EXAMPLES
+  EXAMPLES BY VERTICAL
   ═══════════════════════════════════════════════════════════════
   
-  INPUT: Kids beige quilted jacket with hood
-  OUTPUT:
+  EXAMPLE 1 - Apparel (Puffer Jacket):
   {
     "id": "gid://shopify/Product/10456985305429",
     "seoTitle": "Beige Quilted Puffer Jacket | Kids Winter Coat",
-    "seoDescription": "Shop kids' beige puffer jacket with hood. Warm quilted design, zip closure. Perfect for winter adventures. Free shipping available!",
+    "seoDescription": "Shop kids' beige puffer jacket with hood. Warm quilted padding, water-resistant. Perfect for winter adventures. Free shipping available!",
     "handle": "kids-puffer-jacket-beige-hood",
-    "category": "gid://shopify/TaxonomyCategory/aa-1-2-4-17",
-    "productType": "Baby & Toddler Coats & Jackets"
+    "category": "gid://shopify/TaxonomyCategory/aa-1-10-2",
+    "productType": "Coats & Jackets",
+    "attributes": {"color": "beige", "material": "polyester", "targetGender": "unisex kids", "size": null}
   }
   
-  INPUT: Black running shoes with white sole
-  OUTPUT:
+  EXAMPLE 2 - Electronics (Wireless Headphones):
   {
-    "id": "gid://shopify/Product/10589930815829",
-    "seoTitle": "Black Running Shoes White Sole | Men's Sneakers",
-    "seoDescription": "Shop black running shoes with white sole. Lightweight design, cushioned insole. Perfect for training and daily runs. Order now!",
-    "handle": "black-running-shoes-white-sole",
-    "category": "gid://shopify/TaxonomyCategory/aa-8-8",
-    "productType": "Sneakers"
+    "id": "gid://shopify/Product/20456985305430",
+    "seoTitle": "Sony WH-1000XM5 Noise Canceling | Wireless Headphones",
+    "seoDescription": "Sony WH-1000XM5 wireless headphones with industry-leading noise canceling. 30-hour battery, premium sound. Free shipping!",
+    "handle": "sony-wh1000xm5-noise-canceling-headphones",
+    "category": "gid://shopify/TaxonomyCategory/el-3-2-1",
+    "productType": "Over-Ear Headphones",
+    "attributes": {"color": "black", "material": null, "targetGender": "unisex", "size": null}
+  }
+  
+  EXAMPLE 3 - Home (Sofa):
+  {
+    "id": "gid://shopify/Product/30456985305431",
+    "seoTitle": "Modern Velvet Sofa 3-Seater | Navy Blue Couch",
+    "seoDescription": "Elegant navy blue velvet sofa with 3 seats. Mid-century modern design, solid wood legs. Perfect for living rooms. Shop now!",
+    "handle": "modern-velvet-sofa-3-seater-navy",
+    "category": "gid://shopify/TaxonomyCategory/hg-1-2-1",
+    "productType": "Sofas & Couches",
+    "attributes": {"color": "navy blue", "material": "velvet", "targetGender": null, "size": "3-seater"}
+  }
+  
+  EXAMPLE 4 - Food (Coffee):
+  {
+    "id": "gid://shopify/Product/40456985305432",
+    "seoTitle": "Lavazza Super Crema 1kg | Whole Bean Coffee",
+    "seoDescription": "Premium Lavazza Super Crema whole bean coffee, 1kg bag. Rich crema, medium roast, Italian blend. Perfect for espresso. Buy now!",
+    "handle": "lavazza-super-crema-1kg-whole-bean",
+    "category": "gid://shopify/TaxonomyCategory/fb-2-1-1",
+    "productType": "Whole Bean Coffee",
+    "attributes": {"color": null, "material": null, "targetGender": null, "size": "1kg"}
   }
   
   ═══════════════════════════════════════════════════════════════
@@ -717,19 +983,19 @@ export async function generateSeoMetadata(
   CRITICAL RULES
   ═══════════════════════════════════════════════════════════════
   
-  1. Use EXACT category IDs from taxonomy above (gid://shopify/TaxonomyCategory/xx-x)
-  2. ProductType must match the final node name (e.g., "Sneakers", not "Shoes")
-  3. Analyze images first - visual cues determine category
-  4. Include color in title and handle from image analysis
+  1. Use EXACT Shopify category IDs (gid://shopify/TaxonomyCategory/xx-x-x-x)
+  2. ProductType must be the LEAF node name from taxonomy (e.g., "Over-Ear Headphones" not "Audio")
+  3. Analyze images FIRST - visual signals override text if conflicting
+  4. Extract attributes: color, material, targetGender, size when visible/mentioned
   5. Character limits: Title 50-60, Description 150-160 (strict)
-  6. Return ONLY valid JSON array - no markdown, no explanations
-  7. Escape quotes properly: \\"
-  8. Array length must equal input count: ${chunk.length}
+  6. Handle format: lowercase, hyphens, no special characters, 3-6 words
+  7. Include brand in title if provided in input
+  8. Return ONLY valid JSON array - no markdown, no explanations
+  9. If uncertain between categories, choose the more specific leaf node
+  10. Array length must equal input count: ${chunk.length}
   
   BEGIN PROCESSING:`;
   }
-
-
 
   export async function getTaxonomyIdForCategory(
     admin: any,
