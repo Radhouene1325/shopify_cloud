@@ -459,25 +459,50 @@ const productSchema = {
 
 }
 
-function createShopifyAdmin(shop: string, token: string) {
+// function createShopifyAdmin(shop: string, token: string) {
 
+//   return {
+//     async graphql(query: string, variables?: any) {
+
+//       const res = await fetch(
+//         `https://${shop}/admin/api/2026-01/graphql.json`,
+//         {
+//           method: "POST",
+//           headers: {
+//             "Content-Type": "application/json",
+//             "X-Shopify-Access-Token": token
+//           },
+//           body: JSON.stringify({ query, variables })
+//         }
+//       );
+
+//       return res.json();
+//     }
+//   };
+
+// }
+interface GraphQLAdmin {
+  graphql: (query: string, options?: { variables?: Record<string, any> }) => Promise<Response>;
+}
+function createShopifyAdmin(shop: string, token: string): GraphQLAdmin {
   return {
-    async graphql(query: string, variables?: any) {
+    async graphql(query: string, options?: { variables?: Record<string, any> }) {
 
-      const res = await fetch(
-        `https://${shop}/admin/api/2026-01/graphql.json`,
+      return fetch(
+        `https://${shop}/admin/api/2024-10/graphql.json`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "X-Shopify-Access-Token": token
           },
-          body: JSON.stringify({ query, variables })
+          body: JSON.stringify({
+            query,
+            variables: options?.variables
+          })
         }
       );
 
-      return res.json();
     }
   };
-
 }
