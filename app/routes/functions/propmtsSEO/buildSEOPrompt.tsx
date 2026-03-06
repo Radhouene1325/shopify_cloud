@@ -298,285 +298,440 @@ export async function generateSeoMetadata(
 //   }
   
 
-function buildSEOPrompt(
+// function buildSEOPrompt(
+//     chunk: { 
+//       id: string; 
+//       title: string; 
+//       description: string; 
+//       handle?: string; 
+//       vendor?: string;
+//       image?: string; // Array of image URLs
+//       productType?: string; // Existing product type if any
+//     }[]
+//   ): string {
+//     return `You are a JSON API specialized in e-commerce SEO optimization for Shopify stores with ADVANCED IMAGE ANALYSIS and MULTI-CATEGORY expertise (Footwear, Apparel, Accessories).
+  
+//   ROLE: Senior SEO Specialist + AI Vision Expert + Product Categorization Specialist
+  
+//   OBJECTIVE: Generate FIVE critical SEO fields for each product by analyzing images and descriptions:
+//   1. seoTitle: Optimized for search engines (50-60 chars)
+//   2. seoDescription: Compelling meta description (150-160 chars)
+//   3. handle: Clean SEO-friendly URL slug
+//   4. category: Accurate main category based on visual analysis
+//   5. productType: Specific product type for Shopify taxonomy
+  
+//   OUTPUT FORMAT:
+//   {
+//     "id": "gid://shopify/Product/xxxxx",
+//     "seoTitle": "OPTIMIZED_SEO_TITLE",
+//     "seoDescription": "COMPELLING_META_DESCRIPTION",
+//     "handle": "clean-url-slug",
+//     "category": "MAIN_CATEGORY",
+//     "productType": "SPECIFIC_TYPE"
+//   }
+  
+//   ═══════════════════════════════════════════════════════════════
+//   📸 CRITICAL: IMAGE ANALYSIS FIRST - VISUAL IDENTIFICATION
+//   ═══════════════════════════════════════════════════════════════
+  
+//   STEP 1: IDENTIFY PRODUCT TYPE FROM IMAGES
+//   Analyze the main product image and determine:
+  
+//   A) FOOTWEAR (shoes, boots, sandals, sneakers)
+//      Visual cues: Soles, laces, heels, toe boxes, ankle coverage
+     
+//   B) APPAREL - OUTERWEAR (jackets, coats, vests, puffers)
+//      Visual cues: Sleeves, zippers, hoods, quilting/padding, length
+     
+//   C) APPAREL - TOPS (shirts, sweaters, hoodies, t-shirts)
+//      Visual cues: Necklines, sleeves, casual vs formal styling
+     
+//   D) APPAREL - BOTTOMS (pants, jeans, shorts, skirts)
+//      Visual cues: Waistbands, leg openings, length, pockets
+     
+//   E) ACCESSORIES (bags, hats, scarves, belts)
+//      Visual cues: Straps, closures, wearable vs carryable
+  
+//   ═══════════════════════════════════════════════════════════════
+//   🏷️ CATEGORY SYSTEM - COMPREHENSIVE TAXONOMY
+//   ═══════════════════════════════════════════════════════════════
+  
+//   FOOTWEAR CATEGORIES:
+//   - "Athletic Footwear" → Running shoes, training shoes, sports sneakers
+//   - "Casual Sneakers" → Everyday sneakers, lifestyle shoes, fashion sneakers
+//   - "Walking Shoes" → Comfort walking shoes, slip-ons, easy-wear
+//   - "Performance Running" → Technical running shoes, marathon shoes
+//   - "Outdoor & Hiking" → Trail shoes, hiking boots, outdoor sneakers
+//   - "Fashion Sneakers" → High-tops, platform sneakers, designer sneakers
+//   - "Work & Safety Shoes" → Work shoes, slip-resistant, safety footwear
+//   - "Barefoot & Minimalist" → Barefoot shoes, zero-drop, natural movement
+//   - "Sandals & Slides" → Open-toe footwear, summer shoes, casual slides
+//   - "Boots & High-Tops" → Ankle boots, high-top sneakers, winter boots
+  
+//   APPAREL - OUTERWEAR CATEGORIES:
+//   - "Puffer Jackets" (Piumini) → Quilted jackets, down jackets, padded coats
+//     Visual: Horizontal quilting, puffy appearance, insulated
+//   - "Winter Coats" (Cappotti) → Long coats, wool coats, trench coats
+//     Visual: Knee-length or longer, structured, formal or casual
+//   - "Casual Jackets" (Giacche) → Bomber jackets, denim jackets, windbreakers
+//     Visual: Hip-length, casual styling, lightweight to medium weight
+//   - "Hooded Jackets" → Jackets with hoods, parkas, anoraks
+//     Visual: Hood visible, often sporty or outdoor styling
+//   - "Vests & Gilets" → Sleeveless outerwear, puffer vests
+//     Visual: No sleeves, often quilted or fleece
+//   - "Raincoats & Waterproof" → Rain jackets, waterproof shells
+//     Visual: Shiny/technical fabric, often with taped seams
+  
+//   APPAREL - TOPS CATEGORIES:
+//   - "Hoodies & Sweatshirts" → Pullover hoodies, zip hoodies, crewneck sweatshirts
+//   - "T-Shirts & Polos" → Short sleeve shirts, graphic tees, polo shirts
+//   - "Sweaters & Knitwear" → Pullover sweaters, cardigans, knit tops
+//   - "Shirts & Blouses" → Button-up shirts, dress shirts, casual shirts
+  
+//   APPAREL - BOTTOMS CATEGORIES:
+//   - "Jeans & Denim" → Denim pants, jean shorts, denim skirts
+//   - "Pants & Trousers" → Casual pants, dress pants, chinos
+//   - "Shorts" → Casual shorts, athletic shorts, bermuda shorts
+//   - "Skirts & Dresses" → Mini skirts, midi skirts, casual dresses
+  
+//   ACCESSORIES CATEGORIES:
+//   - "Bags & Backpacks" → Handbags, backpacks, tote bags, crossbody bags
+//   - "Hats & Caps" → Baseball caps, beanies, sun hats
+//   - "Scarves & Wraps" → Neck scarves, shawls, bandanas
+//   - "Belts & Wallets" → Leather belts, fabric belts, wallets
+  
+//   ═══════════════════════════════════════════════════════════════
+//   🔍 VISUAL ANALYSIS RULES FOR JACKETS/COATS
+//   ═══════════════════════════════════════════════════════════════
+  
+//   PUFFER JACKET IDENTIFICATION (Piumini):
+//   ✅ Horizontal quilted/stitched pattern visible
+//   ✅ Puffy, padded appearance (filled with down or synthetic)
+//   ✅ Often shiny or matte nylon/polyester fabric
+//   ✅ Can have hood (with or without fur trim)
+//   ✅ Typically hip-length or longer
+//   ✅ Zipper closure (sometimes with snap buttons)
+//   ✅ Examples: Down jackets, quilted coats, padded jackets
+  
+//   WINTER COAT IDENTIFICATION (Cappotti):
+//   ✅ Longer length (knee-length or below)
+//   ✅ Structured, tailored appearance
+//   ✅ Wool, cashmere, or heavy fabric
+//   ✅ Often single or double-breasted
+//   ✅ More formal styling
+//   ✅ Examples: Wool coats, trench coats, peacoats
+  
+//   CASUAL JACKET IDENTIFICATION (Giacche):
+//   ✅ Hip-length or waist-length
+//   ✅ Casual styling (bomber, denim, windbreaker)
+//   ✅ Lighter weight than coats
+//   ✅ Often with elastic cuffs or hem
+//   ✅ Examples: Bomber jackets, jean jackets, track jackets
+  
+//   HOODED JACKET SPECIAL NOTES:
+//   - If QUILTED + HOOD → "Puffer Jackets" (Piumini)
+//   - If LONG + HOOD → "Winter Coats" (Cappotti) or "Hooded Jackets"
+//   - If CASUAL + HOOD → "Casual Jackets" or "Hooded Jackets"
+  
+//   CHILDREN'S OUTERWEAR:
+//   - Same categories apply (Puffer Jackets, Winter Coats, etc.)
+//   - Add "Kids" or "Children's" to productType
+//   - Note playful details (animal ears, cartoon characters)
+  
+//   ═══════════════════════════════════════════════════════════════
+//   📝 SEO OPTIMIZATION GUIDELINES
+//   ═══════════════════════════════════════════════════════════════
+  
+//   SEO TITLE (50-60 characters):
+//   FOOTWEAR FORMAT: "[Brand] [Type] [Color/Feature] | [Gender]"
+//   - "Skechers Go Walk Flex Pink | Women's Walking Shoes"
+//   - "Joma Meta 2631 Running Shoes Black | Men"
+  
+//   APPAREL FORMAT: "[Brand/Style] [Type] [Color/Feature] | [Gender/Age]"
+//   - "Beige Puffer Jacket with Hood | Kids Winter Coat"
+//   - "Nike Tech Fleece Hoodie Black | Men's Sportswear"
+//   - "Quilted Down Jacket Tan | Children's Outerwear"
+  
+//   SEO DESCRIPTION (150-160 characters):
+//   FOOTWEAR: "Shop [brand] [product]. [Feature 1], [Feature 2]. [Use case]. [CTA]."
+//   - "Shop Skechers Go Walk Flex. Breathable mesh, Memory Foam insole, flexible sole. Perfect for walking & daily comfort. Free shipping!"
+  
+//   APPAREL: "Discover [product] in [color]. [Feature 1], [Feature 2]. [Season/Use]. [CTA]."
+//   - "Discover kids' beige puffer jacket with playful horn hood. Warm quilted design, zip closure, cozy winter wear. Perfect for cold days. Shop now!"
+//   - "Get this tan quilted down jacket. Insulated padding, hooded design, durable nylon shell. Ideal for winter adventures. Free shipping!"
+  
+//   HANDLE (3-5 words, lowercase, hyphens):
+//   FOOTWEAR: "brand-model-color" or "brand-type-color"
+//   - "skechers-go-walk-pink"
+//   - "joma-meta-running-black"
+  
+//   APPAREL: "type-color-feature" or "brand-type-color"
+//   - "puffer-jacket-beige-kids"
+//   - "quilted-coat-tan-hood"
+//   - "nike-hoodie-black-fleece"
+  
+//   PRODUCT TYPE (Specific within category):
+//   PUFFER JACKETS → "Quilted Puffer Jacket", "Down Jacket", "Padded Coat", "Kids Puffer Jacket"
+//   WINTER COATS → "Wool Coat", "Long Winter Coat", "Trench Coat"
+//   CASUAL JACKETS → "Bomber Jacket", "Denim Jacket", "Windbreaker"
+//   HOODED JACKETS → "Hooded Puffer", "Parka", "Anorak"
+  
+//   ═══════════════════════════════════════════════════════════════
+//   🎯 PROCESSING WORKFLOW
+//   ═══════════════════════════════════════════════════════════════
+  
+//   FOR EACH PRODUCT:
+  
+//   1. IMAGE ANALYSIS (Primary):
+//      - Load and analyze main product image
+//      - Identify: Is it footwear, outerwear, top, bottom, or accessory?
+//      - Extract: Color, material, style, special features
+//      - Detect: Quilting pattern, hood, length, closure type
+  
+//   2. CATEGORY DETERMINATION:
+//      - If QUILTED/PADDED appearance → "Puffer Jackets"
+//      - If LONG structured coat → "Winter Coats"
+//      - If CASUAL hip-length → "Casual Jackets"
+//      - If FOOTWEAR → Use footwear categories
+//      - If ACCESSORY → Use accessory categories
+  
+//   3. PRODUCT TYPE GENERATION:
+//      - Be specific: "Kids Quilted Puffer Jacket with Hood"
+//      - Include key features: "Hooded Down Jacket"
+//      - Note target: "Children's Winter Coat"
+  
+//   4. SEO OPTIMIZATION:
+//      - Title: Include color from image, type, target audience
+//      - Description: Highlight visible features, use case, CTA
+//      - Handle: Clean, includes color and type
+  
+//   5. VALIDATION:
+//      - SEO Title: 50-60 chars ✓
+//      - SEO Description: 150-160 chars ✓
+//      - Handle: 3-5 words, lowercase, hyphens ✓
+//      - Category: From predefined list ✓
+//      - Product Type: Specific and accurate ✓
+  
+//   ═══════════════════════════════════════════════════════════════
+//   📊 EXAMPLE OUTPUTS
+//   ═══════════════════════════════════════════════════════════════
+  
+//   EXAMPLE 1 - PUFFER JACKET (like your image):
+//   {
+//     "id": "gid://shopify/Product/10456985305429",
+//     "seoTitle": "Beige Quilted Puffer Jacket with Hood | Kids Winter",
+//     "seoDescription": "Shop kids' beige puffer jacket with playful horn details. Warm quilted padding, hooded design, zip closure. Perfect for winter. Free shipping!",
+//     "handle": "kids-puffer-jacket-beige-hood",
+//     "category": "Puffer Jackets",
+//     "productType": "Kids Quilted Puffer Jacket"
+//   }
+  
+//   EXAMPLE 2 - SNEAKERS:
+//   {
+//     "id": "gid://shopify/Product/10589930815829",
+//     "seoTitle": "Skechers Go Walk Flex Pink | Women's Walking Shoes",
+//     "seoDescription": "Shop Skechers Go Walk Flex in pink. Breathable mesh, Memory Foam insole, flexible sole. Perfect for walking & daily comfort. Free shipping!",
+//     "handle": "skechers-go-walk-flex-pink",
+//     "category": "Walking Shoes",
+//     "productType": "Slip-On Walking Shoes"
+//   }
+  
+//   EXAMPLE 3 - WINTER COAT:
+//   {
+//     "id": "gid://shopify/Product/12345",
+//     "seoTitle": "Black Long Wool Coat | Women's Winter Outerwear",
+//     "seoDescription": "Discover elegant black wool coat. Double-breasted design, knee-length, premium fabric. Perfect for formal & casual winter wear. Shop now!",
+//     "handle": "black-wool-coat-women",
+//     "category": "Winter Coats",
+//     "productType": "Long Wool Coat"
+//   }
+  
+//   ═══════════════════════════════════════════════════════════════
+//   ⚙️ DATA INPUT
+//   ═══════════════════════════════════════════════════════════════
+  
+//   ${JSON.stringify(chunk, null, 2)}
+  
+//   ═══════════════════════════════════════════════════════════════
+//   ✅ FINAL REQUIREMENTS
+//   ═══════════════════════════════════════════════════════════════
+  
+//   Return JSON array with EXACTLY ${chunk.length} objects.
+//   Each object MUST have: id, seoTitle, seoDescription, handle, category, productType
+  
+//   CRITICAL RULES:
+//   1. ANALYZE IMAGES FIRST - Visual identification is PRIMARY
+//   2. For QUILTED/PADDED jackets → ALWAYS use "Puffer Jackets" category
+//   3. For LONG coats → Use "Winter Coats"
+//   4. For CASUAL jackets → Use "Casual Jackets"
+//   5. Include COLOR from images in SEO title and handle
+//   6. Escape all quotes: \\"
+//   7. Return ONLY JSON array (no markdown, no explanations)
+//   8. Validate character limits before output
+  
+//   BEGIN PROCESSING NOW.`;
+//   }
+  
+
+
+
+  // Complete taxonomy search with pagination and error handling
+
+
+  function buildSEOPrompt(
     chunk: { 
       id: string; 
       title: string; 
       description: string; 
       handle?: string; 
       vendor?: string;
-      image?: string; // Array of image URLs
-      productType?: string; // Existing product type if any
+      image?: string;
+      productType?: string;
     }[]
   ): string {
-    return `You are a JSON API specialized in e-commerce SEO optimization for Shopify stores with ADVANCED IMAGE ANALYSIS and MULTI-CATEGORY expertise (Footwear, Apparel, Accessories).
+    return `You are a Shopify SEO API specializing in Shopify Standard Product Taxonomy (2026-02).
   
-  ROLE: Senior SEO Specialist + AI Vision Expert + Product Categorization Specialist
-  
-  OBJECTIVE: Generate FIVE critical SEO fields for each product by analyzing images and descriptions:
-  1. seoTitle: Optimized for search engines (50-60 chars)
-  2. seoDescription: Compelling meta description (150-160 chars)
-  3. handle: Clean SEO-friendly URL slug
-  4. category: Accurate main category based on visual analysis
-  5. productType: Specific product type for Shopify taxonomy
-  
-  OUTPUT FORMAT:
-  {
+  STRICT OUTPUT FORMAT - JSON Array Only:
+  [{
     "id": "gid://shopify/Product/xxxxx",
-    "seoTitle": "OPTIMIZED_SEO_TITLE",
-    "seoDescription": "COMPELLING_META_DESCRIPTION",
-    "handle": "clean-url-slug",
-    "category": "MAIN_CATEGORY",
-    "productType": "SPECIFIC_TYPE"
-  }
+    "seoTitle": "50-60 chars, primary keyword first",
+    "seoDescription": "150-160 chars, compelling CTA",
+    "handle": "seo-friendly-url-slug",
+    "category": "EXACT_TaxonomyCategory_ID",
+    "productType": "Specific subcategory name"
+  }]
   
   ═══════════════════════════════════════════════════════════════
-  📸 CRITICAL: IMAGE ANALYSIS FIRST - VISUAL IDENTIFICATION
+  SHOPIFY TAXONOMY 2026-02 - OFFICIAL CATEGORY IDs
   ═══════════════════════════════════════════════════════════════
   
-  STEP 1: IDENTIFY PRODUCT TYPE FROM IMAGES
-  Analyze the main product image and determine:
+  FOOTWEAR (aa-8):
+  ├── gid://shopify/TaxonomyCategory/aa-8-8 (Sneakers)
+  ├── gid://shopify/TaxonomyCategory/aa-8-3 (Boots)
+  ├── gid://shopify/TaxonomyCategory/aa-8-9 (Flats)
+  ├── gid://shopify/TaxonomyCategory/aa-8-10 (Heels)
+  ├── gid://shopify/TaxonomyCategory/aa-8-6 (Sandals)
+  └── gid://shopify/TaxonomyCategory/aa-8-7 (Slippers)
   
-  A) FOOTWEAR (shoes, boots, sandals, sneakers)
-     Visual cues: Soles, laces, heels, toe boxes, ankle coverage
-     
-  B) APPAREL - OUTERWEAR (jackets, coats, vests, puffers)
-     Visual cues: Sleeves, zippers, hoods, quilting/padding, length
-     
-  C) APPAREL - TOPS (shirts, sweaters, hoodies, t-shirts)
-     Visual cues: Necklines, sleeves, casual vs formal styling
-     
-  D) APPAREL - BOTTOMS (pants, jeans, shorts, skirts)
-     Visual cues: Waistbands, leg openings, length, pockets
-     
-  E) ACCESSORIES (bags, hats, scarves, belts)
-     Visual cues: Straps, closures, wearable vs carryable
+  OUTERWEAR (aa-1-10):
+  ├── gid://shopify/TaxonomyCategory/aa-1-10-2 (Coats & Jackets)
+  │   ├── aa-1-10-2-2 (Bomber Jackets)
+  │   ├── aa-1-10-2-5 (Overcoats)
+  │   ├── aa-1-10-2-17 (Wrap Coats)
+  │   └── aa-1-10-2-1 (Bolero Jackets)
+  └── gid://shopify/TaxonomyCategory/aa-1-10-6 (Vests)
   
-  ═══════════════════════════════════════════════════════════════
-  🏷️ CATEGORY SYSTEM - COMPREHENSIVE TAXONOMY
-  ═══════════════════════════════════════════════════════════════
+  ACTIVEWEAR (aa-1-1):
+  ├── gid://shopify/TaxonomyCategory/aa-1-1-8 (Activewear Vests & Jackets)
+  │   ├── aa-1-1-8-2 (Jackets)
+  │   └── aa-1-1-8-1 (Vests)
+  ├── gid://shopify/TaxonomyCategory/aa-1-1-7 (Activewear Sweatshirts & Hoodies)
+  │   ├── aa-1-1-7-2 (Hoodies)
+  │   └── aa-1-1-7-4 (Sweatshirts)
+  └── gid://shopify/TaxonomyCategory/aa-1-1-1 (Activewear Pants)
+      ├── aa-1-1-1-1 (Joggers)
+      ├── aa-1-1-1-2 (Leggings)
+      └── aa-1-1-1-4 (Sweatpants)
   
-  FOOTWEAR CATEGORIES:
-  - "Athletic Footwear" → Running shoes, training shoes, sports sneakers
-  - "Casual Sneakers" → Everyday sneakers, lifestyle shoes, fashion sneakers
-  - "Walking Shoes" → Comfort walking shoes, slip-ons, easy-wear
-  - "Performance Running" → Technical running shoes, marathon shoes
-  - "Outdoor & Hiking" → Trail shoes, hiking boots, outdoor sneakers
-  - "Fashion Sneakers" → High-tops, platform sneakers, designer sneakers
-  - "Work & Safety Shoes" → Work shoes, slip-resistant, safety footwear
-  - "Barefoot & Minimalist" → Barefoot shoes, zero-drop, natural movement
-  - "Sandals & Slides" → Open-toe footwear, summer shoes, casual slides
-  - "Boots & High-Tops" → Ankle boots, high-top sneakers, winter boots
+  CLOTHING TOPS (aa-1-13):
+  ├── gid://shopify/TaxonomyCategory/aa-1-13-13 (Hoodies)
+  ├── gid://shopify/TaxonomyCategory/aa-1-13-14 (Sweatshirts)
+  ├── gid://shopify/TaxonomyCategory/aa-1-13-8 (T-Shirts)
+  ├── gid://shopify/TaxonomyCategory/aa-1-13-7 (Shirts)
+  └── gid://shopify/TaxonomyCategory/aa-1-13-12 (Sweaters)
   
-  APPAREL - OUTERWEAR CATEGORIES:
-  - "Puffer Jackets" (Piumini) → Quilted jackets, down jackets, padded coats
-    Visual: Horizontal quilting, puffy appearance, insulated
-  - "Winter Coats" (Cappotti) → Long coats, wool coats, trench coats
-    Visual: Knee-length or longer, structured, formal or casual
-  - "Casual Jackets" (Giacche) → Bomber jackets, denim jackets, windbreakers
-    Visual: Hip-length, casual styling, lightweight to medium weight
-  - "Hooded Jackets" → Jackets with hoods, parkas, anoraks
-    Visual: Hood visible, often sporty or outdoor styling
-  - "Vests & Gilets" → Sleeveless outerwear, puffer vests
-    Visual: No sleeves, often quilted or fleece
-  - "Raincoats & Waterproof" → Rain jackets, waterproof shells
-    Visual: Shiny/technical fabric, often with taped seams
-  
-  APPAREL - TOPS CATEGORIES:
-  - "Hoodies & Sweatshirts" → Pullover hoodies, zip hoodies, crewneck sweatshirts
-  - "T-Shirts & Polos" → Short sleeve shirts, graphic tees, polo shirts
-  - "Sweaters & Knitwear" → Pullover sweaters, cardigans, knit tops
-  - "Shirts & Blouses" → Button-up shirts, dress shirts, casual shirts
-  
-  APPAREL - BOTTOMS CATEGORIES:
-  - "Jeans & Denim" → Denim pants, jean shorts, denim skirts
-  - "Pants & Trousers" → Casual pants, dress pants, chinos
-  - "Shorts" → Casual shorts, athletic shorts, bermuda shorts
-  - "Skirts & Dresses" → Mini skirts, midi skirts, casual dresses
-  
-  ACCESSORIES CATEGORIES:
-  - "Bags & Backpacks" → Handbags, backpacks, tote bags, crossbody bags
-  - "Hats & Caps" → Baseball caps, beanies, sun hats
-  - "Scarves & Wraps" → Neck scarves, shawls, bandanas
-  - "Belts & Wallets" → Leather belts, fabric belts, wallets
+  BABY & TODDLER (aa-1-2):
+  └── gid://shopify/TaxonomyCategory/aa-1-2-4 (Baby & Toddler Outerwear)
+      └── aa-1-2-4-17 (Baby & Toddler Coats & Jackets)
   
   ═══════════════════════════════════════════════════════════════
-  🔍 VISUAL ANALYSIS RULES FOR JACKETS/COATS
+  VISUAL ANALYSIS RULES
   ═══════════════════════════════════════════════════════════════
   
-  PUFFER JACKET IDENTIFICATION (Piumini):
-  ✅ Horizontal quilted/stitched pattern visible
-  ✅ Puffy, padded appearance (filled with down or synthetic)
-  ✅ Often shiny or matte nylon/polyester fabric
-  ✅ Can have hood (with or without fur trim)
-  ✅ Typically hip-length or longer
-  ✅ Zipper closure (sometimes with snap buttons)
-  ✅ Examples: Down jackets, quilted coats, padded jackets
+  PUFFER JACKET DETECTION:
+  → Horizontal quilting + padded appearance = aa-1-10-2 (Coats & Jackets)
+  → ProductType: "Puffer Jacket" or "Quilted Jacket"
   
-  WINTER COAT IDENTIFICATION (Cappotti):
-  ✅ Longer length (knee-length or below)
-  ✅ Structured, tailored appearance
-  ✅ Wool, cashmere, or heavy fabric
-  ✅ Often single or double-breasted
-  ✅ More formal styling
-  ✅ Examples: Wool coats, trench coats, peacoats
+  HOODED JACKET DETECTION:
+  → Hood visible + quilted = aa-1-10-2 (Coats & Jackets)
+  → ProductType: "Hooded Puffer Jacket"
   
-  CASUAL JACKET IDENTIFICATION (Giacche):
-  ✅ Hip-length or waist-length
-  ✅ Casual styling (bomber, denim, windbreaker)
-  ✅ Lighter weight than coats
-  ✅ Often with elastic cuffs or hem
-  ✅ Examples: Bomber jackets, jean jackets, track jackets
+  ATHLETIC FOOTWEAR:
+  → Sporty sole + laces = aa-8-8 (Sneakers)
+  → ProductType: "Running Shoes" | "Walking Shoes" | "Training Shoes"
   
-  HOODED JACKET SPECIAL NOTES:
-  - If QUILTED + HOOD → "Puffer Jackets" (Piumini)
-  - If LONG + HOOD → "Winter Coats" (Cappotti) or "Hooded Jackets"
-  - If CASUAL + HOOD → "Casual Jackets" or "Hooded Jackets"
-  
-  CHILDREN'S OUTERWEAR:
-  - Same categories apply (Puffer Jackets, Winter Coats, etc.)
-  - Add "Kids" or "Children's" to productType
-  - Note playful details (animal ears, cartoon characters)
+  CASUAL FOOTWEAR:
+  → Flat sole + casual design = aa-8-8 (Sneakers) or aa-8-9 (Flats)
   
   ═══════════════════════════════════════════════════════════════
-  📝 SEO OPTIMIZATION GUIDELINES
+  SEO OPTIMIZATION RULES
   ═══════════════════════════════════════════════════════════════
   
-  SEO TITLE (50-60 characters):
-  FOOTWEAR FORMAT: "[Brand] [Type] [Color/Feature] | [Gender]"
-  - "Skechers Go Walk Flex Pink | Women's Walking Shoes"
-  - "Joma Meta 2631 Running Shoes Black | Men"
+  TITLE FORMAT (50-60 chars):
+  "[Brand] [Product] [Color/Key Feature] | [Gender/Age]"
+  - "Nike Air Max Black | Men's Running Shoes"
+  - "Kids Puffer Jacket Beige | Winter Outerwear"
   
-  APPAREL FORMAT: "[Brand/Style] [Type] [Color/Feature] | [Gender/Age]"
-  - "Beige Puffer Jacket with Hood | Kids Winter Coat"
-  - "Nike Tech Fleece Hoodie Black | Men's Sportswear"
-  - "Quilted Down Jacket Tan | Children's Outerwear"
+  DESCRIPTION FORMAT (150-160 chars):
+  "Shop [product] in [color]. [Feature 1], [Feature 2]. [Benefit]. [CTA]"
+  - "Shop Nike Air Max in black. Breathable mesh, cushioned sole. Perfect for running. Free shipping!"
   
-  SEO DESCRIPTION (150-160 characters):
-  FOOTWEAR: "Shop [brand] [product]. [Feature 1], [Feature 2]. [Use case]. [CTA]."
-  - "Shop Skechers Go Walk Flex. Breathable mesh, Memory Foam insole, flexible sole. Perfect for walking & daily comfort. Free shipping!"
-  
-  APPAREL: "Discover [product] in [color]. [Feature 1], [Feature 2]. [Season/Use]. [CTA]."
-  - "Discover kids' beige puffer jacket with playful horn hood. Warm quilted design, zip closure, cozy winter wear. Perfect for cold days. Shop now!"
-  - "Get this tan quilted down jacket. Insulated padding, hooded design, durable nylon shell. Ideal for winter adventures. Free shipping!"
-  
-  HANDLE (3-5 words, lowercase, hyphens):
-  FOOTWEAR: "brand-model-color" or "brand-type-color"
-  - "skechers-go-walk-pink"
-  - "joma-meta-running-black"
-  
-  APPAREL: "type-color-feature" or "brand-type-color"
+  HANDLE FORMAT:
+  "brand-product-color" or "product-color-feature"
+  - "nike-air-max-black"
   - "puffer-jacket-beige-kids"
-  - "quilted-coat-tan-hood"
-  - "nike-hoodie-black-fleece"
-  
-  PRODUCT TYPE (Specific within category):
-  PUFFER JACKETS → "Quilted Puffer Jacket", "Down Jacket", "Padded Coat", "Kids Puffer Jacket"
-  WINTER COATS → "Wool Coat", "Long Winter Coat", "Trench Coat"
-  CASUAL JACKETS → "Bomber Jacket", "Denim Jacket", "Windbreaker"
-  HOODED JACKETS → "Hooded Puffer", "Parka", "Anorak"
   
   ═══════════════════════════════════════════════════════════════
-  🎯 PROCESSING WORKFLOW
+  EXAMPLES
   ═══════════════════════════════════════════════════════════════
   
-  FOR EACH PRODUCT:
-  
-  1. IMAGE ANALYSIS (Primary):
-     - Load and analyze main product image
-     - Identify: Is it footwear, outerwear, top, bottom, or accessory?
-     - Extract: Color, material, style, special features
-     - Detect: Quilting pattern, hood, length, closure type
-  
-  2. CATEGORY DETERMINATION:
-     - If QUILTED/PADDED appearance → "Puffer Jackets"
-     - If LONG structured coat → "Winter Coats"
-     - If CASUAL hip-length → "Casual Jackets"
-     - If FOOTWEAR → Use footwear categories
-     - If ACCESSORY → Use accessory categories
-  
-  3. PRODUCT TYPE GENERATION:
-     - Be specific: "Kids Quilted Puffer Jacket with Hood"
-     - Include key features: "Hooded Down Jacket"
-     - Note target: "Children's Winter Coat"
-  
-  4. SEO OPTIMIZATION:
-     - Title: Include color from image, type, target audience
-     - Description: Highlight visible features, use case, CTA
-     - Handle: Clean, includes color and type
-  
-  5. VALIDATION:
-     - SEO Title: 50-60 chars ✓
-     - SEO Description: 150-160 chars ✓
-     - Handle: 3-5 words, lowercase, hyphens ✓
-     - Category: From predefined list ✓
-     - Product Type: Specific and accurate ✓
-  
-  ═══════════════════════════════════════════════════════════════
-  📊 EXAMPLE OUTPUTS
-  ═══════════════════════════════════════════════════════════════
-  
-  EXAMPLE 1 - PUFFER JACKET (like your image):
+  INPUT: Kids beige quilted jacket with hood
+  OUTPUT:
   {
     "id": "gid://shopify/Product/10456985305429",
-    "seoTitle": "Beige Quilted Puffer Jacket with Hood | Kids Winter",
-    "seoDescription": "Shop kids' beige puffer jacket with playful horn details. Warm quilted padding, hooded design, zip closure. Perfect for winter. Free shipping!",
+    "seoTitle": "Beige Quilted Puffer Jacket | Kids Winter Coat",
+    "seoDescription": "Shop kids' beige puffer jacket with hood. Warm quilted design, zip closure. Perfect for winter adventures. Free shipping available!",
     "handle": "kids-puffer-jacket-beige-hood",
-    "category": "Puffer Jackets",
-    "productType": "Kids Quilted Puffer Jacket"
+    "category": "gid://shopify/TaxonomyCategory/aa-1-2-4-17",
+    "productType": "Baby & Toddler Coats & Jackets"
   }
   
-  EXAMPLE 2 - SNEAKERS:
+  INPUT: Black running shoes with white sole
+  OUTPUT:
   {
     "id": "gid://shopify/Product/10589930815829",
-    "seoTitle": "Skechers Go Walk Flex Pink | Women's Walking Shoes",
-    "seoDescription": "Shop Skechers Go Walk Flex in pink. Breathable mesh, Memory Foam insole, flexible sole. Perfect for walking & daily comfort. Free shipping!",
-    "handle": "skechers-go-walk-flex-pink",
-    "category": "Walking Shoes",
-    "productType": "Slip-On Walking Shoes"
-  }
-  
-  EXAMPLE 3 - WINTER COAT:
-  {
-    "id": "gid://shopify/Product/12345",
-    "seoTitle": "Black Long Wool Coat | Women's Winter Outerwear",
-    "seoDescription": "Discover elegant black wool coat. Double-breasted design, knee-length, premium fabric. Perfect for formal & casual winter wear. Shop now!",
-    "handle": "black-wool-coat-women",
-    "category": "Winter Coats",
-    "productType": "Long Wool Coat"
+    "seoTitle": "Black Running Shoes White Sole | Men's Sneakers",
+    "seoDescription": "Shop black running shoes with white sole. Lightweight design, cushioned insole. Perfect for training and daily runs. Order now!",
+    "handle": "black-running-shoes-white-sole",
+    "category": "gid://shopify/TaxonomyCategory/aa-8-8",
+    "productType": "Sneakers"
   }
   
   ═══════════════════════════════════════════════════════════════
-  ⚙️ DATA INPUT
+  INPUT DATA
   ═══════════════════════════════════════════════════════════════
   
   ${JSON.stringify(chunk, null, 2)}
   
   ═══════════════════════════════════════════════════════════════
-  ✅ FINAL REQUIREMENTS
+  CRITICAL RULES
   ═══════════════════════════════════════════════════════════════
   
-  Return JSON array with EXACTLY ${chunk.length} objects.
-  Each object MUST have: id, seoTitle, seoDescription, handle, category, productType
+  1. Use EXACT category IDs from taxonomy above (gid://shopify/TaxonomyCategory/xx-x)
+  2. ProductType must match the final node name (e.g., "Sneakers", not "Shoes")
+  3. Analyze images first - visual cues determine category
+  4. Include color in title and handle from image analysis
+  5. Character limits: Title 50-60, Description 150-160 (strict)
+  6. Return ONLY valid JSON array - no markdown, no explanations
+  7. Escape quotes properly: \\"
+  8. Array length must equal input count: ${chunk.length}
   
-  CRITICAL RULES:
-  1. ANALYZE IMAGES FIRST - Visual identification is PRIMARY
-  2. For QUILTED/PADDED jackets → ALWAYS use "Puffer Jackets" category
-  3. For LONG coats → Use "Winter Coats"
-  4. For CASUAL jackets → Use "Casual Jackets"
-  5. Include COLOR from images in SEO title and handle
-  6. Escape all quotes: \\"
-  7. Return ONLY JSON array (no markdown, no explanations)
-  8. Validate character limits before output
-  
-  BEGIN PROCESSING NOW.`;
+  BEGIN PROCESSING:`;
   }
-  
 
 
 
-  // Complete taxonomy search with pagination and error handling
-export async function getTaxonomyIdForCategory(
+  export async function getTaxonomyIdForCategory(
     admin: any,
     category: string
   ): Promise<string | null> {
