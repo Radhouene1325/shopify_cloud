@@ -1162,7 +1162,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
    return Response.json({ error: "Invalid or missing 'descreptionAI' data" }, { status: 400 });
  }
 const queue =context.cloudflare.env.SEO_QUEUE
-console.log('ques is her verified ',queue)
+console.log('ques is her verified ',JSON.stringify(queue))
 console.log('quest is her is verifed ')
 await queue.send({
   shop: session.shop,
