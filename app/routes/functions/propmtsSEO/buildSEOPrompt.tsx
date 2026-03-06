@@ -729,7 +729,7 @@ export async function generateSeoMetadata(
 //   BEGIN PROCESSING:`;
 //   }
 
-function buildUniversalSEOPrompt(
+function buildSEOPrompt(
     chunk: { 
       id: string; 
       title: string; 
