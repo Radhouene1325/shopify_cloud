@@ -317,7 +317,7 @@ async function processSingleProduct(
     }
     
     // 4️⃣ Run throttled updates
-    await throttledUpdates(updateProducts, 5, 500);
+    await throttledUpdates(updateProducts, 1, 500);
 
 
 // for( const DESC_AI of optimizedHtml){
