@@ -7,6 +7,7 @@ import { generateSeoHtml, generateSeoHtmlgimini } from "@/routes/app.descreption
 import { generateSeoMetadata, getTaxonomyIdForCategory } from "@/routes/functions/propmtsSEO/buildSEOPrompt";
 import { productsupdated } from "@/routes/functions/query/updateprooductquery";
 import { decompressPayload } from "@/routes/functions/uint8ToBase64/uint8ToBase64";
+import PQueue from "p-queue";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const handleRemixRequest = createRequestHandler(build as any as ServerBuild);
@@ -52,6 +53,13 @@ export default {
   },
   async queue(batch: MessageBatch<any>, env: Env, ctx: ExecutionContext) {
     console.log("QUEUE HANDLER ACTIVE");
+
+    const queue=new PQueue({
+      concurrency:2,
+      interval:1000,
+      intervalCap:1
+    })
+
 
 //     for (const message of batch.messages) {
 //       const productData = message.body;
@@ -132,28 +140,56 @@ export default {
 //     }
 console.log('hello messages im her ',batch.messages)
 
-
 await Promise.all(
-  batch.messages.map(async(message)=>{
-    const payload = decompressPayload(message.body.body as string);
+  batch.messages.map((message) =>
+    queue.add(async () => {
+      const payload = decompressPayload(message.body.body as string);
+      const { shop, products } = payload;
 
-    const {shop,products,accessToken}=payload
-    console.log('messager is her for see the data',message)
-    console.log('api token is her hello ',env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
-    const admin= createShopifyAdmin(shop,env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
-    console.log(admin)
-            try {
-              await processProducts(products, admin,env);
+      const admin = createShopifyAdmin(
+        shop,
+        env.SHOPIFY_API_TOKEN_PALITINUMSHOP
+      );
+
+      try {
+        // 3️⃣ Process products safely
+        await processProducts(products, admin, env);
+
+        // 4️⃣ Acknowledge the message
+        message.ack();
+      } catch (err) {
+        console.error("Queue processing failed for message", message.id, err);
+        message.retry();
+      }
+    })
+  )
+);
+
+// 5️⃣ Wait until all tasks are finished
+await queue.onIdle();
+
+
+// await Promise.all(
+//   batch.messages.map(async(message)=>{
+//     const payload = decompressPayload(message.body.body as string);
+
+//     const {shop,products,accessToken}=payload
+//     console.log('messager is her for see the data',message)
+//     console.log('api token is her hello ',env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
+//     const admin= createShopifyAdmin(shop,env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
+//     console.log(admin)
+//             try {
+//               await processProducts(products, admin,env);
     
-              message.ack();
-            }catch(err){
-              console.error("Queue processing failed", err);
+//               message.ack();
+//             }catch(err){
+//               console.error("Queue processing failed", err);
     
-              message.retry();
+//               message.retry();
       
-            }
-  })
-)
+//             }
+//   })
+// )
 
 
 
