@@ -248,8 +248,8 @@ for( const DESC_AI of optimizedHtml){
         // Merge tags: preserve existing + add DESC_AI (productUpdate overwrites, so we must include all)
      console.log('seo is activated her ',SEO.category)
      console.log('seo is activated her ',SEO)
-//         const CATEGORY_TAMMOXY_ID=await getTaxonomyIdForCategory(admin,"Jakkets")
-// console.log('her is the value of tamoxy',CATEGORY_TAMMOXY_ID)
+        const CATEGORY_TAMMOXY_ID=await getTaxonomyIdForCategory(admin,"Jakkets")
+console.log('her is the value of tamoxy',CATEGORY_TAMMOXY_ID)
 const productSchema = {
   "@context": "https://schema.org/",
   "@type": "Product",
