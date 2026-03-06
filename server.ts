@@ -131,23 +131,45 @@ export default {
 //     }
 console.log('hello messages im her ',batch.messages)
 
-      for(const message of batch.messages){
-        const {shop,products,accessToken}=message.body
-console.log('messager is her for see the data',message)
-console.log('api token is her hello ',env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
-const admin= createShopifyAdmin(shop,env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
-console.log(admin)
-        try {
-          await processProducts(products, admin,env);
 
-          message.ack();
-        }catch(err){
-          console.error("Queue processing failed", err);
+await Promise.all(
+  batch.messages.map(async(message)=>{
+    const {shop,products,accessToken}=message.body
+    console.log('messager is her for see the data',message)
+    console.log('api token is her hello ',env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
+    const admin= createShopifyAdmin(shop,env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
+    console.log(admin)
+            try {
+              await processProducts(products, admin,env);
+    
+              message.ack();
+            }catch(err){
+              console.error("Queue processing failed", err);
+    
+              message.retry();
+      
+            }
+  })
+)
 
-          message.retry();
+
+//       for(const message of batch.messages){
+//         const {shop,products,accessToken}=message.body
+// console.log('messager is her for see the data',message)
+// console.log('api token is her hello ',env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
+// const admin= createShopifyAdmin(shop,env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
+// console.log(admin)
+//         try {
+//           await processProducts(products, admin,env);
+
+//           message.ack();
+//         }catch(err){
+//           console.error("Queue processing failed", err);
+
+//           message.retry();
   
-        }
-      }
+//         }
+//       }
 
   }
 } satisfies ExportedHandler<Env>;
@@ -506,4 +528,32 @@ function createShopifyAdmin(shop: string, token: string): GraphQLAdmin {
 
     }
   };
+}
+
+
+
+export class AIBatcher {
+
+  queue = []
+
+  async fetch({request,context}:{request:any,context:any}) {
+    let {admin}=await shopify(context).authenticate.admin(request)
+
+    const data = await request.json()
+
+    this.queue.push(data)
+
+    if (this.queue.length >= 20) {
+
+      const batch = this.queue
+      this.queue = []
+
+      await runBatchAI(batch)
+
+    }
+
+    return new Response("queued")
+
+  }
+
 }
