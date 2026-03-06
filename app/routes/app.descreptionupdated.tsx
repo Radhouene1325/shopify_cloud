@@ -1715,8 +1715,11 @@ const productSchema = {
       if (selected.length === 0) return;
   
       const formData = new FormData();
-      formData.append("descriptionAI", JSON.stringify(selected));
-  
+      formData.append("descreptionAI", JSON.stringify(selected));
+  //     submit(formData, { 
+//       method: "post",
+//       encType: "application/x-www-form-urlencoded" 
+//     });
       submit(formData, {
         method: "post",
         encType: "application/x-www-form-urlencoded",
