@@ -130,9 +130,11 @@ export default {
      
 //     }
 console.log('hello messages im her ',batch.messages)
-      for(const message of batch.messages){
-        const {admin,products}=message.body
 
+      for(const message of batch.messages){
+        const {shop,products}=message.body
+console.log('messager is her for see the data',message)
+const admin= createShopifyAdmin(shop,env.SHOPIFY_API_KEY)
         try {
           await processProducts(products, admin,env);
 
@@ -450,5 +452,28 @@ const productSchema = {
   //     }
   //   }
   // });
+
+}
+
+function createShopifyAdmin(shop: string, token: string) {
+
+  return {
+    async graphql(query: string, variables?: any) {
+
+      const res = await fetch(
+        `https://${shop}/admin/api/2024-10/graphql.json`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Shopify-Access-Token": token
+          },
+          body: JSON.stringify({ query, variables })
+        }
+      );
+
+      return res.json();
+    }
+  };
 
 }
