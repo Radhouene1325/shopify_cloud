@@ -1167,6 +1167,7 @@ console.log('quest is her is verifed ')
 await queue.send({
   shop: session.shop,
   sessionId: session.id,
+  accessToken:session.accessToken,
   products:updatedDescreptionAI
 })
 return Response.json({
