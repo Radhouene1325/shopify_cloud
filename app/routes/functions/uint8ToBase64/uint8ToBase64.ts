@@ -28,8 +28,33 @@ export function base64ToUint8Array(base64: string): Uint8Array {
     return bytes;
   }
 
-  export function decompressPayload(base64Payload: string) {
-    const compressedBytes = base64ToUint8Array(base64Payload);
+  export function decompressPayload(payload: string | Uint8Array | Buffer) {
+    let compressedBytes: Uint8Array;
+  
+    if (typeof payload === "string") {
+      // Convert URL-safe base64 to standard base64
+      const b64 = payload.replace(/-/g, "+").replace(/_/g, "/");
+      const pad = b64.length % 4;
+      const padded = pad ? b64 + "=".repeat(4 - pad) : b64;
+  
+      // Node.js or browser compatible
+      if (typeof Buffer !== "undefined") {
+        // Node.js
+        compressedBytes = Uint8Array.from(Buffer.from(padded, "base64"));
+      } else {
+        // Browser
+        const binary = atob(padded);
+        compressedBytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+          compressedBytes[i] = binary.charCodeAt(i);
+        }
+      }
+    } else if (payload instanceof Uint8Array || Buffer.isBuffer(payload)) {
+      compressedBytes = new Uint8Array(payload);
+    } else {
+      throw new Error("Invalid payload type for decompression");
+    }
+  
     const jsonStr = Pako.ungzip(compressedBytes, { to: "string" });
     return JSON.parse(jsonStr);
   }
