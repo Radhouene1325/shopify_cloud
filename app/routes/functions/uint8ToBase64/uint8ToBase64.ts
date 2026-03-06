@@ -11,8 +11,15 @@ import Pako from "pako";
   }
 
 
-  export function base64ToUint8Array(base64: string): Uint8Array {
-    const binary = atob(base64); // decode base64 to binary string
+export function base64ToUint8Array(base64: string): Uint8Array {
+    // Convert URL-safe Base64 to standard Base64
+    const b64 = base64.replace(/-/g, '+').replace(/_/g, '/');
+    
+    // Pad with '=' if needed
+    const pad = b64.length % 4;
+    const padded = pad ? b64 + '='.repeat(4 - pad) : b64;
+  
+    const binary = atob(padded);
     const len = binary.length;
     const bytes = new Uint8Array(len);
     for (let i = 0; i < len; i++) {
