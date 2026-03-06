@@ -237,112 +237,113 @@ async function processSingleProduct(
  
     //  console.log('SEO_OPTIMISE_TITLE_DECPRETION_HANDEL ',seotitle_descreption_handel)
 const findIdOldproducts=products.map(e=>e.id)
-const findnewdescreption=optimizedHtml.find(e=>e.id===findIdOldproducts)
-console.log("new descreption by id is her",findnewdescreption)
-const seofind=seo.find(e=>e.id===findIdOldproducts)
-console.log('newseo finded secces is her',seofind)
+console.log(findIdOldproducts)
+const allNewDescriptions = optimizedHtml.filter(e => findIdOldproducts.includes(e.id));
+console.log("new descreption by id is her",allNewDescriptions)
+const allSEO = seo.filter(e => findIdOldproducts.includes(e.id));
+console.log('newseo finded secces is her',allSEO)
 
-// for( const DESC_AI of optimizedHtml){
-//     if (!DESC_AI.id|| !DESC_AI.detailedDescription || !DESC_AI.shortDescription) {
-//         console.error("AI returned empty fields", optimizedHtml);
-//         return Response.json({ error: "Empty content from AI" }, { status: 500 });
-//       }
-//   // for (const OLD_DESC of updatedDescreptionAI ){
-//       const OLD_DESC=oldDescreptionsMap.get(DESC_AI.id)
-//       console.log(OLD_DESC.id)
-//       if (!OLD_DESC)continue;
-//       if (!seo)return
-//       for (const SEO of seo){
+for( const DESC_AI of optimizedHtml){
+    if (!DESC_AI.id|| !DESC_AI.detailedDescription || !DESC_AI.shortDescription) {
+        console.error("AI returned empty fields", optimizedHtml);
+        return Response.json({ error: "Empty content from AI" }, { status: 500 });
+      }
+  // for (const OLD_DESC of updatedDescreptionAI ){
+      const OLD_DESC=oldDescreptionsMap.get(DESC_AI.id)
+      console.log(OLD_DESC.id)
+      if (!OLD_DESC)continue;
+      if (!seo)return
+      for (const SEO of seo){
 
-//          if(DESC_AI.id===OLD_DESC.id && SEO.id===OLD_DESC.id){
-//         // console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
-//         // console.log('is true is very nice ')
-//         // Merge tags: preserve existing + add DESC_AI (productUpdate overwrites, so we must include all)
-//      console.log('seo is activated her ',SEO.category.id)
-//      console.log('seo is activated her ',SEO.category.name)
-//      console.log('seo is activated her ',SEO)
-// //         const CATEGORY_TAMMOXY_ID=await getTaxonomyIdForCategory(admin,SEO.category.name)
-// // console.log('her is the value of tamoxy',CATEGORY_TAMMOXY_ID)
-// const productSchema = {
-//   "@context": "https://schema.org/",
-//   "@type": "Product",
-//   "name": SEO.seoTitle || OLD_DESC.title, // ✅ REQUIRED
-//   "description": SEO.seoDescription || OLD_DESC.title,
-//   "image":OLD_DESC.image,
-//   "sku": OLD_DESC.sku || OLD_DESC.id?.split('/').pop() || '',
-//   "mpn": OLD_DESC.barcode || OLD_DESC.id?.split('/').pop() || '',
-//   "brand": {
-//     "@type": "Brand",
-//     "name": OLD_DESC.vendor || "PlatiNum"
-//   },
-//   "offers": {
-//     "@type": "Offer",
-//     "url": `https://platinumshop.it/products/${SEO.handle}`,
-//     "priceCurrency": "EUR",
-//     "price": OLD_DESC.price ? parseFloat(OLD_DESC.price.toString()).toFixed(2) : "0.00",
-//     // "availability": OLD_DESC.available 
-//     //   ? "https://schema.org/InStock" 
-//     //   : "https://schema.org/OutOfStock",
-//     "priceValidUntil": new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-//     "itemCondition": "https://schema.org/NewCondition",
-//     "seller": {
-//       "@type": "Organization",
-//       "name": "PlatiNum"
-//     }
-//   }
-// };
-
-
-
+         if(DESC_AI.id===OLD_DESC.id && SEO.id===OLD_DESC.id){
+        // console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
+        // console.log('is true is very nice ')
+        // Merge tags: preserve existing + add DESC_AI (productUpdate overwrites, so we must include all)
+     console.log('seo is activated her ',SEO.category.id)
+     console.log('seo is activated her ',SEO.category.name)
+     console.log('seo is activated her ',SEO)
+//         const CATEGORY_TAMMOXY_ID=await getTaxonomyIdForCategory(admin,SEO.category.name)
+// console.log('her is the value of tamoxy',CATEGORY_TAMMOXY_ID)
+const productSchema = {
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": SEO.seoTitle || OLD_DESC.title, // ✅ REQUIRED
+  "description": SEO.seoDescription || OLD_DESC.title,
+  "image":OLD_DESC.image,
+  "sku": OLD_DESC.sku || OLD_DESC.id?.split('/').pop() || '',
+  "mpn": OLD_DESC.barcode || OLD_DESC.id?.split('/').pop() || '',
+  "brand": {
+    "@type": "Brand",
+    "name": OLD_DESC.vendor || "PlatiNum"
+  },
+  "offers": {
+    "@type": "Offer",
+    "url": `https://platinumshop.it/products/${SEO.handle}`,
+    "priceCurrency": "EUR",
+    "price": OLD_DESC.price ? parseFloat(OLD_DESC.price.toString()).toFixed(2) : "0.00",
+    // "availability": OLD_DESC.available 
+    //   ? "https://schema.org/InStock" 
+    //   : "https://schema.org/OutOfStock",
+    "priceValidUntil": new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    "itemCondition": "https://schema.org/NewCondition",
+    "seller": {
+      "@type": "Organization",
+      "name": "PlatiNum"
+    }
+  }
+};
 
 
-//         const mergedTags = [...new Set([
-//           ...(OLD_DESC.tags || []),
-//           (SEO.category?.name|| []),
-//           "DESC_AI"])];
-//         // const response = 
-//         await admin.graphql(productsupdated, {
-//           variables: {
-//             product: {
-//               id: OLD_DESC.id,
-//               descriptionHtml: DESC_AI.detailedDescription,
-//               tags: mergedTags,
-//               category:SEO.category?.id,
-//               handle:SEO.handle,
-//               productType:SEO.productType,
-//               seo:{
-//                 description:SEO.seoDescription,
-//                 title:SEO.seoTitle
-//               },
-//               metafields: [
-//                 {
-//                   namespace: "custom",
-//                   key: "descriptionsai",
-//                   type: "json",
-//                   value: JSON.stringify(DESC_AI.shortDescription)
-//                 },
-//                 {
-//                   namespace: "custom",
-//                   key: "seo_title",
-//                   type: "json",
-//                   value: JSON.stringify(SEO.seoTitle)
-//                 },
-//                 {
-//                   namespace: "custom",
-//                   key: "seo_descreption",
-//                   type: "json",
-//                   value: JSON.stringify(SEO.seoDescription)
-//                 },
-//                 {
-//                   namespace: "seo",
-//                   key: "schema_org",
-//                   type: "json",
-//                   value: JSON.stringify(productSchema)
-//                 }
-//               ]
-//             }
-//           }
-//         });
+
+
+
+        const mergedTags = [...new Set([
+          ...(OLD_DESC.tags || []),
+          (SEO.category?.name|| []),
+          "DESC_AI"])];
+        // const response = 
+        await admin.graphql(productsupdated, {
+          variables: {
+            product: {
+              id: OLD_DESC.id,
+              descriptionHtml: DESC_AI.detailedDescription,
+              tags: mergedTags,
+              category:SEO.category?.id,
+              handle:SEO.handle,
+              productType:SEO.productType,
+              seo:{
+                description:SEO.seoDescription,
+                title:SEO.seoTitle
+              },
+              metafields: [
+                {
+                  namespace: "custom",
+                  key: "descriptionsai",
+                  type: "json",
+                  value: JSON.stringify(DESC_AI.shortDescription)
+                },
+                {
+                  namespace: "custom",
+                  key: "seo_title",
+                  type: "json",
+                  value: JSON.stringify(SEO.seoTitle)
+                },
+                {
+                  namespace: "custom",
+                  key: "seo_descreption",
+                  type: "json",
+                  value: JSON.stringify(SEO.seoDescription)
+                },
+                {
+                  namespace: "seo",
+                  key: "schema_org",
+                  type: "json",
+                  value: JSON.stringify(productSchema)
+                }
+              ]
+            }
+          }
+        });
              
           
   
@@ -350,14 +351,14 @@ console.log('newseo finded secces is her',seofind)
       
       
        
-//         }
-//       }
+        }
+      }
 
    
 
    
 
-// }
+}
 
 
 
