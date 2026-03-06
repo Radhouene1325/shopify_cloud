@@ -236,12 +236,8 @@ async function processSingleProduct(
     
  
     //  console.log('SEO_OPTIMISE_TITLE_DECPRETION_HANDEL ',seotitle_descreption_handel)
-const findIdOldproducts=products.map(e=>e.id)
-console.log(findIdOldproducts)
-const allNewDescriptions = optimizedHtml.filter(e => findIdOldproducts.includes(e.id));
-console.log("new descreption by id is her",allNewDescriptions)
-const allSEO = seo.filter(e => findIdOldproducts.includes(e.id));
-console.log('newseo finded secces is her',allSEO)
+    const seoMap = new Map(seo.map(s => [s.id, s]));
+
 
 for( const DESC_AI of optimizedHtml){
     if (!DESC_AI.id|| !DESC_AI.detailedDescription || !DESC_AI.shortDescription) {
@@ -251,24 +247,25 @@ for( const DESC_AI of optimizedHtml){
   // for (const OLD_DESC of updatedDescreptionAI ){
       const OLD_DESC=oldDescreptionsMap.get(DESC_AI.id)
       console.log(OLD_DESC.id)
+      const SEO=seoMap.get(DESC_AI.id)
       if (!OLD_DESC)continue;
       if (!seo)return
-      for (const SEO of seo){
+      // for (const SEO of seo){
 
-         if(DESC_AI.id===OLD_DESC.id && SEO.id===OLD_DESC.id){
+         if(DESC_AI.id===OLD_DESC.id && SEO?.id===OLD_DESC.id){
         // console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
         // console.log('is true is very nice ')
         // Merge tags: preserve existing + add DESC_AI (productUpdate overwrites, so we must include all)
-     console.log('seo is activated her ',SEO.category.id)
-     console.log('seo is activated her ',SEO.category.name)
-     console.log('seo is activated her ',SEO)
+                   console.log('seo is activated her ',SEO?.category.id)
+                  console.log('seo is activated her ',SEO?.category.name)
+                    console.log('seo is activated her ',SEO)
 //         const CATEGORY_TAMMOXY_ID=await getTaxonomyIdForCategory(admin,SEO.category.name)
 // console.log('her is the value of tamoxy',CATEGORY_TAMMOXY_ID)
-const productSchema = {
+               const productSchema = {
   "@context": "https://schema.org/",
   "@type": "Product",
-  "name": SEO.seoTitle || OLD_DESC.title, // ✅ REQUIRED
-  "description": SEO.seoDescription || OLD_DESC.title,
+  "name": SEO?.seoTitle || OLD_DESC.title, // ✅ REQUIRED
+  "description": SEO?.seoDescription || OLD_DESC.title,
   "image":OLD_DESC.image,
   "sku": OLD_DESC.sku || OLD_DESC.id?.split('/').pop() || '',
   "mpn": OLD_DESC.barcode || OLD_DESC.id?.split('/').pop() || '',
@@ -291,7 +288,7 @@ const productSchema = {
       "name": "PlatiNum"
     }
   }
-};
+                  };
 
 
 
@@ -299,7 +296,7 @@ const productSchema = {
 
         const mergedTags = [...new Set([
           ...(OLD_DESC.tags || []),
-          (SEO.category?.name|| []),
+          (SEO?.category?.name|| []),
           "DESC_AI"])];
         // const response = 
         await admin.graphql(productsupdated, {
@@ -308,12 +305,12 @@ const productSchema = {
               id: OLD_DESC.id,
               descriptionHtml: DESC_AI.detailedDescription,
               tags: mergedTags,
-              category:SEO.category?.id,
-              handle:SEO.handle,
-              productType:SEO.productType,
+              category:SEO?.category?.id,
+              handle:SEO?.handle,
+              productType:SEO?.productType,
               seo:{
-                description:SEO.seoDescription,
-                title:SEO.seoTitle
+                description:SEO?.seoDescription,
+                title:SEO?.seoTitle
               },
               metafields: [
                 {
@@ -326,13 +323,13 @@ const productSchema = {
                   namespace: "custom",
                   key: "seo_title",
                   type: "json",
-                  value: JSON.stringify(SEO.seoTitle)
+                  value: JSON.stringify(SEO?.seoTitle)
                 },
                 {
                   namespace: "custom",
                   key: "seo_descreption",
                   type: "json",
-                  value: JSON.stringify(SEO.seoDescription)
+                  value: JSON.stringify(SEO?.seoDescription)
                 },
                 {
                   namespace: "seo",
@@ -352,7 +349,7 @@ const productSchema = {
       
        
         }
-      }
+      
 
    
 
