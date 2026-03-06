@@ -1164,7 +1164,7 @@ const queue =context.cloudflare.env.SEO_QUEUE
 console.log('ques is her verified ',queue)
 console.log('quest is her is verifed ')
 await queue.send({
-  admin:admin,
+  admin,
   products:updatedDescreptionAI
 })
 return Response.json({
