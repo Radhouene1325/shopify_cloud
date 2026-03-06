@@ -135,6 +135,7 @@ console.log('hello messages im her ',batch.messages)
         const {shop,products,accessToken}=message.body
 console.log('messager is her for see the data',message)
 const admin= createShopifyAdmin(shop,accessToken)
+console.log(admin)
         try {
           await processProducts(products, admin,env);
 
