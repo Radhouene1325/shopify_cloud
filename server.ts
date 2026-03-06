@@ -205,7 +205,7 @@ async function processProducts(products: any[],admin:any, env: any) {
 
   const categoryCache = new Map();
 
-  const concurrency = 5;
+  const concurrency = 15;
   const pool: Promise<any>[] = [];
 
   const oldDescreptionsMap=new Map(products.map(item=>[item.id,item]))
