@@ -1153,6 +1153,7 @@ CRITICAL:
  // 2. Remix Action (Server Side)
 export async function action({context ,request }: ActionFunctionArgs) {
  let {admin}=await shopify(context).authenticate.admin(request)
+ let {session}=await shopify(context).authenticate.admin(request)
 
  let formData=await request.formData()
  const updatedDescreptionAI:DESCREPTION = JSON.parse(formData.get('descreptionAI') as string);
@@ -1161,10 +1162,11 @@ export async function action({context ,request }: ActionFunctionArgs) {
    return Response.json({ error: "Invalid or missing 'descreptionAI' data" }, { status: 400 });
  }
 const queue =context.cloudflare.env.SEO_QUEUE
-console.log('ques is her verified ',queue)
+console.log('ques is her verified ',[...queue])
 console.log('quest is her is verifed ')
 await queue.send({
-  admin,
+  shop: session.shop,
+  sessionId: session.id,
   products:updatedDescreptionAI
 })
 return Response.json({
