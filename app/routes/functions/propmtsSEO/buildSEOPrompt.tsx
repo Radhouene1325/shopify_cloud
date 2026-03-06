@@ -1475,6 +1475,7 @@ interface GraphQLAdmin {
     ): Promise<any> {
       try {
         const response = await this.admin.graphql(query, { variables });
+        console.log('response is her 1',response)
         const json = await response.json();
   
         if (json.errors?.length) {

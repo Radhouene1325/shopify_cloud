@@ -134,6 +134,7 @@ console.log('hello messages im her ',batch.messages)
       for(const message of batch.messages){
         const {shop,products,accessToken}=message.body
 console.log('messager is her for see the data',message)
+console.log('api token is her hello ',env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
 const admin= createShopifyAdmin(shop,env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
 console.log(admin)
         try {
