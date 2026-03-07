@@ -1625,7 +1625,7 @@ export default function DescriptionManager() {
   const [cursorStack, setCursorStack] = useState<string[]>([]);
   const [selected, setSelected] = useState<SelectedVariant[]>([]);
   const [isSelectAllIndeterminate, setIsSelectAllIndeterminate] = useState(false);
-
+console.log("rows is her see",rows)
   const isLoading = fetcher.state === "loading";
   const isSubmitting = navigation.state === "submitting";
 
