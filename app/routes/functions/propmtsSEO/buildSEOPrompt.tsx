@@ -1,4 +1,4 @@
-import { sendPrompt } from "@/routes/app.descreptionupdated";
+import { sendPrompt } from "../deepseekai/deepseekai";
 
 // Add this new function alongside your existing generateSeoHtml
 export async function generateSeoMetadata(
@@ -1311,7 +1311,7 @@ function buildSEOPrompt(
         }
         
         // Prefer leaf categories (actual product categories)
-        if (node.isLeaf && !bestMatch.node.productTaxonomyNode.isLeaf) {
+        if (node?.isLeaf && !bestMatch.node.productTaxonomyNode.isLeaf) {
           bestMatch = edge;
         }
       }

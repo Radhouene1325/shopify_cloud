@@ -328,7 +328,7 @@ async function processSingleProduct(
           { namespace: "custom", key: "descriptionsai", type: "json", value: JSON.stringify(DESC_AI.shortDescription) },
           { namespace: "custom", key: "seo_title", type: "json", value: JSON.stringify(SEO.seoTitle) },
           { namespace: "custom", key: "seo_descreption", type: "json", value: JSON.stringify(SEO.seoDescription) },
-          // { namespace: "seo", key: "schema_org", type: "json", value: JSON.stringify(productSchema) }
+           { namespace: "seo", key: "schema_org", type: "json", value: JSON.stringify(productSchema) }
         ]
       });
     }
