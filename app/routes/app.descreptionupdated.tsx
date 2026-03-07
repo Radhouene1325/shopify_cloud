@@ -1778,7 +1778,7 @@ console.log('selected is her ',selected)
     "Tags",
     "Handle",
   ];
-
+console.log('rows is seccesfuly her ',rows)
   // Table rows
   const rowsData = useMemo(() => {
     return rows.map((variant) => [
