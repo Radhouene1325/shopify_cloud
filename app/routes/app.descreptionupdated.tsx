@@ -2051,6 +2051,11 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                       ... on TaxonomyChoiceListAttribute{
                         id
                         name
+                        
+                      }
+                      ... on TaxonomyMeasurementAttribute {
+                        id
+                        name
                         options{
                           key value
                         }
