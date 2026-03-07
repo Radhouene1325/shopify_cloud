@@ -804,10 +804,14 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
 // - Just pure JSON
 // - Perfect responsive on ALL devices`;
 // }
-
+// let isUrl=`https://platinumshop.it/products/${SEO.handle}`
+interface VARIBALES{
+  handle:string,id: string; descreption: string,url:string
+  , vendor:string,title:string,totalInventory:number,tracksInventory:number,max_amount:string,currencyCode:string,min_amount:string
+}
 
 function buildPrompt(
-  chunk: { id: string; descreption: string }[],
+  chunk: VARIBALES[],
   outputField: 'shortDescription' | 'detailedDescription'
 ): string {
   const isShort = outputField === 'shortDescription';
@@ -845,16 +849,16 @@ function buildPrompt(
       '    - Tutto il contenuto visibile deve essere racchiuso in un <div> con:',
       '        <div itemscope itemtype="https://schema.org/Product" style="max-width:100%;overflow-wrap:break-word;">',
       '    - Subito dopo l’apertura del div, aggiungere i seguenti meta tag (invisibili) – **sono MANDATORI**:',
-      '        <meta itemprop="name" content="{{PRODUCT_NAME}}">',
+      '        <meta itemprop="name" content="{{title}}">',
       '        <meta itemprop="description" content="{{SEO_DESCRIPTION}}">   <!-- breve descrizione SEO, 150-160 caratteri -->',
       '        <link itemprop="image" href="{{MAIN_IMAGE_URL}}">',
       '        <div itemprop="brand" itemscope itemtype="https://schema.org/Brand">',
-      '          <meta itemprop="name" content="{{BRAND_NAME}}">',
+      '          <meta itemprop="name" content="{{vendor}}">',
       '        </div>',
       '        <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">',
-      '          <meta itemprop="url" content="{{PRODUCT_URL}}">      <!-- se non disponibile, omettere o usare "#" -->',
-      '          <meta itemprop="priceCurrency" content="EUR">',
-      '          <meta itemprop="price" content="{{PRICE}}">          <!-- es. "89.95" – se il prezzo non è trovato, usare "0.00" -->',
+      '          <meta itemprop="url" content="{{https://platinumshop.it/products/handle}}">      <!-- se non disponibile, omettere o usare "#" -->',
+      '          <meta itemprop="priceCurrency" content=currencyCode>',
+      '          <meta itemprop="price" content="{{max_amount,min_amount}}">          <!-- es. "89.95" – se il prezzo non è trovato, usare "0.00" -->',
       '          <link itemprop="availability" href="https://schema.org/InStock">',
       '        </div>',
       '    - I placeholder ({{...}}) vanno sostituiti con valori estratti dal contenuto della descrizione originale:',
@@ -1083,9 +1087,9 @@ CRITICAL:
       // console.log(`Processing chunk ${idx + 1}/${chunks.length} (${chunk.length} products) - split into 2 API calls`);
 
       // Call 1: shortDescription only (keeps output under token limit)
-      const shortPrompt = buildPrompt(chunk as { id: string; descreption: string }[], 'shortDescription');
+      const shortPrompt = buildPrompt(chunk as VARIBALES[], 'shortDescription');
       // Call 2: detailedDescription only
-      const detailedPrompt = buildPrompt(chunk as { id: string; descreption: string }[], 'detailedDescription');
+      const detailedPrompt = buildPrompt(chunk as VARIBALES[], 'detailedDescription');
 
       let shortResults: { id: string; shortDescription?: string }[] = [];
       let detailedResults: { id: string; detailedDescription?: string }[] = [];
@@ -1576,12 +1580,26 @@ interface Variant {
   productType: string;
   inventoryQuantity?: number;
   inventoryPolicy?: string;
+  totalInventory?:number
+  tracksInventory?:boolean
   featuredMedia?: {
     image?: {
       url: string;
       altText?: string;
     };
   };
+  priceRangeV2?:{
+    maxVariantPrice?:{
+      amount:string
+      currencyCode:string
+    }
+
+    minVariantPrice?:{
+      amount:string
+      currencyCode:string
+     }
+
+  }
 }
 
 interface PageInfo {
@@ -1670,6 +1688,15 @@ console.log("fetch is her succes",fetcher)
         vendor: v.vendor,
         image: v.featuredMedia?.image?.url || "",
         productType: v.productType,
+        title:v.title,
+        totalInventory:v?.totalInventory,
+        tracksInventory:v?.tracksInventory,
+        max_amount:v?.priceRangeV2?.maxVariantPrice?.amount,
+        currencyCode:v?.priceRangeV2?.maxVariantPrice?.currencyCode,
+        min_amount:v.priceRangeV2?.minVariantPrice?.amount
+
+       
+
       }));
       setSelected(allSelected);
     } else {
