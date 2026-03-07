@@ -806,873 +806,277 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
 // }
 
 
-// function buildPrompt(
-//   chunk: { id: string; descreption: string }[],
-//   outputField: 'shortDescription' | 'detailedDescription'
-// ): string {
-//   const isShort = outputField === 'shortDescription';
-//   const outputStructure = isShort
-//     ? '{ "id": "original_product_id", "shortDescription": "RESPONSIVE_HTML_STRING" }'
-//     : '{ "id": "original_product_id", "detailedDescription": "RESPONSIVE_HTML_STRING_WITH_MICRODATA" }';
-
-//   let constraints: string[];
-//   if (isShort) {
-//     constraints = [
-//       'STRICT: La shortDescription deve contenere SOLO:',
-//       '  - Un contenitore principale <div> con stili responsivi',
-//       '  - Una lista non ordinata <ul> con 4-5 bullet points',
-//       '  - Ogni bullet: <li><strong>Beneficio:</strong> spiegazione breve</li>',
-//       '  - Un paragrafo finale <p> con call-to-action (es. spedizione gratuita)',
-//       '  - NIENTE ALTRO: niente titoli <h2>, <h3>, tabelle, immagini, sezioni aggiuntive',
-//       '  - Non usare emoji (o al massimo 1-2, ma non obbligatorie)',
-//       'Lunghezza massima: 150 parole.',
-//       'Stili consentiti: solo per spaziatura e layout (margin, padding, line-height, max-width).',
-//       'Il tema Shopify gestisce font, colori e dimensioni.',
-//       'Tutto il contenuto deve essere responsivo (320px in su).'
-//     ];
-//   } else {
-//     constraints = [
-//       'La detailedDescription DEVE includere TUTTI questi elementi (se presenti nei dati o ricavabili):',
-//       '  1. <h2>Product Overview</h2> con 1-2 paragrafi introduttivi.',
-//       '  2. <h3>Key Features</h3> con lista <ul> di 5-6 caratteristiche.',
-//       '  3. <h3>Benefits</h3> con 2-3 paragrafi che spiegano i vantaggi.',
-//       '  4. <h3>Specifications</h3> con tabella responsiva a due colonne (Feature | Value).',
-//       '  5. Se sono presenti informazioni sulle taglie (misure, conversioni EU/US, lunghezza piede), creare una sezione <h3>Size Chart</h3> con tabella a 4 colonne (EU | US | UK | Foot Length cm) o colonne appropriate.',
-//       '  6. Tutte le immagini originali (<img>) devono essere preservate e avvolte in <div style="max-width:100%;margin:1em 0;"><img style="max-width:100%;height:auto;display:block;" ...></div>',
-//       '  7. Un paragrafo finale <p> con CTA (es. "Free shipping on orders over €50!").',
-//       '',
-//       '  ✅ MICRODATA SCHEMA.ORG (OBBLIGATORIO – deve superare il Google Rich Results Test):',
-//       '    - Tutto il contenuto visibile deve essere racchiuso in un <div> con:',
-//       '        <div itemscope itemtype="https://schema.org/Product" style="max-width:100%;overflow-wrap:break-word;">',
-//       '    - Subito dopo l’apertura del div, aggiungere i seguenti meta tag (invisibili) – **sono MANDATORI**:',
-//       '        <meta itemprop="name" content="{{PRODUCT_NAME}}">',
-//       '        <meta itemprop="description" content="{{SEO_DESCRIPTION}}">   <!-- breve descrizione SEO, 150-160 caratteri -->',
-//       '        <link itemprop="image" href="{{MAIN_IMAGE_URL}}">',
-//       '        <div itemprop="brand" itemscope itemtype="https://schema.org/Brand">',
-//       '          <meta itemprop="name" content="{{BRAND_NAME}}">',
-//       '        </div>',
-//       '        <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">',
-//       '          <meta itemprop="url" content="{{PRODUCT_URL}}">      <!-- se non disponibile, omettere o usare "#" -->',
-//       '          <meta itemprop="priceCurrency" content="EUR">',
-//       '          <meta itemprop="price" content="{{PRICE}}">          <!-- es. "89.95" – se il prezzo non è trovato, usare "0.00" -->',
-//       '          <link itemprop="availability" href="https://schema.org/InStock">',
-//       '        </div>',
-//       '    - I placeholder ({{...}}) vanno sostituiti con valori estratti dal contenuto della descrizione originale:',
-//       '        * PRODUCT_NAME: nome del prodotto (es. "Birkenstock Arizona White-Gold") – **questo campo è obbligatorio**',
-//       '        * SEO_DESCRIPTION: una frase breve e accattivante che riassume il prodotto (può essere presa dal primo paragrafo o generata)',
-//       '        * MAIN_IMAGE_URL: URL della prima immagine trovata nella descrizione (se nessuna, omettere il tag <link>)',
-//       '        * BRAND_NAME: marca del prodotto (es. "Birkenstock", "Skechers", "XTI") – se non chiara, usare "PlatiNum"',
-//       '        * PRODUCT_URL: se non presente, omettere il meta (o usare "#")',
-//       '        * PRICE: prezzo del prodotto (es. "79.95") – **se non trovato, usare "0.00"** per evitare errori',
-//       '    - Dopo i meta tag, inizia il contenuto visibile descritto nei punti 1-7.',
-//       '',
-//       '  ✅ REQUISITI GOOGLE RICH RESULTS:',
-//       '    - Il campo `name` è obbligatorio.',
-//       '    - Il campo `offers` (prezzo, valuta, disponibilità) è obbligatorio (se non hai recensioni o valutazioni).',
-//       '    - Se hai recensioni, puoi usare `review` o `aggregateRating` al posto di `offers`, ma per semplicità includi sempre `offers`.',
-//       '    - Assicurati che il prezzo sia un numero con punto (es. "89.95") e la valuta sia "EUR".',
-//       '',
-//       '  (Opzionale) Le caratteristiche possono essere marcate anche con itemprop="additionalProperty":',
-//       '    <article itemprop="additionalProperty" itemscope itemtype="https://schema.org/PropertyValue">',
-//       '      <h3 itemprop="name">Feature Name</h3>',
-//       '      <p itemprop="description">Feature description</p>',
-//       '      <meta itemprop="propertyID" content="feature-id">',
-//       '    </article>',
-//       '',
-//       '  La tabella delle specifiche e quella delle taglie devono essere avvolte in un contenitore con overflow-x:auto per lo scorrimento orizzontale su mobile.',
-//       '  Usare SOLO stili inline per layout/responsività (margin, padding, line-height, max-width, overflow, border).',
-//       '  Non usare colori, font-size, font-family (lasciarli al tema).',
-//       '  Il risultato deve essere perfettamente visibile da 320px a 1920px.'
-//     ];
-//   }
-
-//   return `You are a JSON API specialized in creating professional, PERFECTLY RESPONSIVE Shopify product descriptions with embedded Schema.org microdata.
-
-// ROLE: Senior E-commerce Copywriter + Responsive Design Expert + Schema.org Specialist
-// - Expert in Amazon A+ Content, Shopify optimization, conversion copywriting
-// - Specialist in mobile-first responsive design (320px to 1920px)
-// - Focus on benefits-driven, scannable, accessible content
-// - Expert in structured data for rich snippets and **Google Rich Results Test compliance**
-
-// OBJECTIVE: Transform raw product data into clean, semantic, RESPONSIVE HTML that:
-// - Works perfectly on ALL devices (mobile, tablet, desktop)
-// - Uses minimal inline styles (spacing/layout only)
-// - Lets Shopify theme control typography and colors
-// - Drives conversions through benefit-focused copy
-// - Preserves all existing images with responsive wrappers
-// - Follows e-commerce best practices
-// - **Includes complete Schema.org microdata with ALL required fields (name, offers, brand, image, description) to pass Google Rich Results Test**
-// - **Distingue nettamente short e detailed description**: la short è solo bullet points + CTA; la detailed include tutte le sezioni (sommario, caratteristiche, benefici, specifiche, tabella taglie se disponibile, immagini, CTA) **e i microdata all’inizio**.
-
-// OUTPUT FORMAT:
-// {
-//   ${
-//     isShort
-//       ? '"shortDescription": "RESPONSIVE_HTML (solo bullet points e CTA)"'
-//       : '"detailedDescription": "RESPONSIVE_HTML (struttura completa con microdata all’inizio)"'
-//   }
-// }
-
-// TONE & STYLE:
-// - Professional and trustworthy
-// - Benefit-driven (not feature-heavy)
-// - Sophisticated yet accessible
-// - Emotionally resonant for premium products
-// - Concise and scannable on small screens
-
-// BRAND-SPECIFIC GUIDELINES:
-// - Birkenstock: "legendary comfort", "anatomical footbed", "premium craftsmanship"
-// - Skechers: "Memory Foam", "all-day comfort", "lightweight design"
-// - Joma: "performance technology" (VTS, Phylon, ReactiveBall), "athletic excellence"
-// - Adidas/Nike: "iconic style", "heritage", "innovation"
-// - Vans: "classic design", "skateboard culture", "versatile style"
-// - UGG: "luxury comfort", "premium materials", "timeless design"
-// - Barefoot (Mustang, Victoria): "natural movement", "barefoot feel", "foot health"
-// - XTI: "vegan certified", "sustainable fashion"
-// - Natural World: "eco-friendly", "sustainable materials", "organic cotton"
-
-// TRUST SIGNALS (include naturally):
-// - "Premium quality"
-// - "Free shipping" (Italian market)
-// - "Satisfaction guaranteed"
-// - "Authentic [brand]"
-// - "Durable construction"
-// - "All-day comfort"
-
-// CONSTRAINTS:
-// ${JSON.stringify(constraints, null, 2).replace(/\n/g, '\n')}
-
-// RESPONSIVE INLINE STYLES (allowed for layout/spacing only):
-// ✅ max-width, width, min-width
-// ✅ margin, padding (use em units for scalability)
-// ✅ line-height (1.6 for body, 1.3 for headings)
-// ✅ overflow-x, overflow-wrap, word-wrap
-// ✅ border, border-collapse (tables only)
-// ✅ display, vertical-align
-// ✅ -webkit-overflow-scrolling:touch (smooth mobile scroll)
-
-// FORBIDDEN STYLES:
-// ❌ font-size, font-family, color, background-color
-// ❌ position:absolute/fixed
-// ❌ Custom classes or IDs
-// ❌ External CSS or <style> tags
-// ❌ JavaScript or onclick
-
-// ALLOWED HTML TAGS:
-// ✅ <div> (ONLY for responsive wrappers and microdata container)
-// ✅ <h2>, <h3>, <p>, <ul>, <li>, <table>, <tr>, <td>, <strong>, <em>, <img>
-// ✅ <meta>, <link> (only inside the microdata wrapper, for invisible data)
-
-// ESEMPIO shortDescription (CORRETTO, solo bullet + CTA):
-// <div style="max-width:100%;overflow-wrap:break-word;">
-// <ul style="padding-left:1.2em;margin:0.5em 0;line-height:1.6;">
-// <li style="margin-bottom:0.5em;"><strong>Legendary Comfort:</strong> Birkenstock's signature molded footbed provides superior arch support</li>
-// <li style="margin-bottom:0.5em;"><strong>Modern Style:</strong> Sleek white-gold colorway pairs perfectly with any casual outfit</li>
-// <li style="margin-bottom:0.5em;"><strong>All-Day Wearability:</strong> Platform sole adds height while maintaining stability</li>
-// <li style="margin-bottom:0.5em;"><strong>Premium Quality:</strong> Durable construction built to last season after season</li>
-// </ul>
-// <p style="margin-top:1em;font-style:italic;">Free shipping on orders over €50. Shop authentic Birkenstock sneakers today!</p>
-// </div>
-
-// ESEMPIO detailedDescription (CON MICRODATA E TABELLA TAGLIE):
-// <div itemscope itemtype="https://schema.org/Product" style="max-width:100%;overflow-wrap:break-word;word-wrap:break-word;">
-
-// <!-- MICRODATA INVISIBILI (MANDATORI per Google Rich Results) -->
-// <meta itemprop="name" content="Birkenstock Arizona White-Gold">
-// <meta itemprop="description" content="Legendary comfort meets modern style in these Birkenstock Arizona sandals with a elegant white-gold finish.">
-// <link itemprop="image" href="https://example.com/images/birkenstock-arizona-whitegold-1.jpg">
-// <div itemprop="brand" itemscope itemtype="https://schema.org/Brand">
-//   <meta itemprop="name" content="Birkenstock">
-// </div>
-// <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
-//   <meta itemprop="url" content="https://shop.com/products/birkenstock-arizona-whitegold">
-//   <meta itemprop="priceCurrency" content="EUR">
-//   <meta itemprop="price" content="89.95">
-//   <link itemprop="availability" href="https://schema.org/InStock">
-// </div>
-
-// <!-- CONTENUTO VISIBILE -->
-// <h2 style="margin:1em 0 0.5em;line-height:1.3;">Product Overview</h2>
-// <p style="margin:0.8em 0;line-height:1.6;">Experience the perfect fusion of Birkenstock's legendary comfort and contemporary sneaker style...</p>
-
-// <h3 style="margin:1.2em 0 0.5em;line-height:1.3;">Key Features</h3>
-// <ul style="padding-left:1.2em;margin:0.8em 0;line-height:1.6;">
-// <li style="margin-bottom:0.5em;">Signature Birkenstock molded insole for superior arch support</li>
-// <li style="margin-bottom:0.5em;">Elegant white-gold finish for versatile styling</li>
-// </ul>
-
-// <h3 style="margin:1.2em 0 0.5em;line-height:1.3;">Size Chart</h3>
-// <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1em 0;">
-// <table style="width:100%;min-width:280px;border-collapse:collapse;border:1px solid #ddd;">
-// <tr style="border-bottom:1px solid #ddd;background-color:#f2f2f2;">
-// <th style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;text-align:left;">EU</th>
-// <th style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;text-align:left;">US</th>
-// <th style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;text-align:left;">UK</th>
-// <th style="padding:0.6em 0.8em;font-weight:bold;text-align:left;">Foot Length (cm)</th>
-// </tr>
-// <tr style="border-bottom:1px solid #ddd;">
-// <td style="padding:0.6em 0.8em;border-right:1px solid #ddd;">36</td>
-// <td style="padding:0.6em 0.8em;border-right:1px solid #ddd;">5.5</td>
-// <td style="padding:0.6em 0.8em;border-right:1px solid #ddd;">3.5</td>
-// <td style="padding:0.6em 0.8em;">23.0</td>
-// </tr>
-// </table>
-// </div>
-
-// <h3 style="margin:1.2em 0 0.5em;line-height:1.3;">Specifications</h3>
-// <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1em 0;">
-// <table style="width:100%;min-width:280px;border-collapse:collapse;border:1px solid #ddd;">
-// <tr style="border-bottom:1px solid #ddd;">
-// <td style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;width:40%;vertical-align:top;">Brand:</td>
-// <td style="padding:0.6em 0.8em;width:60%;vertical-align:top;">Birkenstock</td>
-// </tr>
-// </table>
-// </div>
-
-// <p style="margin-top:1.5em;font-style:italic;">Free shipping on orders over €50. Shop now!</p>
-// </div>
-
-// CRITICAL IMAGE HANDLING:
-// When you find images in original content like:
-// <img src="https://example.com/image.jpg" alt="Product">
-
-// Transform to responsive format:
-// <div style="max-width:100%;margin:1em 0;">
-// <img src="https://example.com/image.jpg" style="max-width:100%;height:auto;display:block;" alt="Product">
-// </div>
-
-// DATA TO PROCESS (analyze each independently):
-// ${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })), null, 2)}
-
-// PROCESSING INSTRUCTIONS:
-// 1. Analizza ogni prodotto separatamente.
-// 2. Estrai: brand, caratteristiche, specifiche, immagini, informazioni sulle taglie, **nome prodotto, prezzo, URL immagine principale**.
-// 3. **Per shortDescription**: genera SOLO bullet points e CTA, nient'altro.
-// 4. **Per detailedDescription**: 
-//    - Costruisci il wrapper principale con \`itemscope\` e i meta tag per i microdata (come da esempio). **I meta tag per name e offers sono obbligatori**.
-//    - Includi TUTTE le sezioni: overview, key features, benefits, specifications, size chart (se disponibile), immagini, CTA.
-//    - I valori per i microdata (nome, descrizione SEO, immagine, brand, prezzo, valuta, disponibilità) devono essere dedotti dal contenuto della descrizione originale. Se mancano, usa valori di default sensati:
-//         * brand → "PlatiNum"
-//         * price → "0.00"
-//         * name → (cerca di estrarlo dal contesto, altrimenti usa "Prodotto")
-// 5. Avvolgi tutto in un contenitore <div> responsivo con \`itemscope\`.
-// 6. Usa esclusivamente stili inline per spaziatura e layout.
-// 7. Rendi le tabelle scrollabili orizzontalmente su mobile con wrapper \`overflow-x:auto\`.
-// 8. Avvolgi ogni immagine in un <div> responsivo.
-// 9. Preserva tutte le immagini originali.
-// 10. Aggiungi segnali di fiducia e una CTA convincente.
-// 11. Assicura la perfetta visualizzazione su dispositivi da 320px a 1920px.
-
-// Return JSON array with EXACTLY ${chunk.length} objects.
-// Format: ${outputStructure}
-
-// CRITICAL: 
-// - Escape all quotes in HTML: \\"
-// - Return ONLY the JSON array
-// - NO markdown code blocks
-// - NO explanatory text
-// - Just pure JSON
-// - Perfect responsive on ALL devices
-// - **Per detailedDescription, la presenza dei microdata è obbligatoria e deve superare il Google Rich Results Test – includi SEMPRE name e offers**`;
-// }
-
 function buildPrompt(
-  chunk: { 
-    id: string; 
-    title: string; 
-    description: string; 
-    handle?: string; 
-    vendor?: string;
-    image?: string;
-    productType?: string;
-    tags?: string[];
-    price?: number;
-  }[]
+  chunk: { id: string; descreption: string }[],
+  outputField: 'shortDescription' | 'detailedDescription'
 ): string {
-  return `You are a Multi-Platform SEO API specializing in Shopify Standard Product Taxonomy (2026-02) with optimization for Google Search, Brave Search, Facebook Shop, TikTok Shop, and Pinterest.
+  const isShort = outputField === 'shortDescription';
+  const outputStructure = isShort
+    ? '{ "id": "original_product_id", "shortDescription": "RESPONSIVE_HTML_STRING" }'
+    : '{ "id": "original_product_id", "detailedDescription": "RESPONSIVE_HTML_STRING_WITH_MICRODATA" }';
 
-STRICT OUTPUT FORMAT - JSON Array Only:
-[{
-  "id": "gid://shopify/Product/xxxxx",
-  "seoTitle": "50-60 chars, keyword-first, emotional trigger",
-  "seoDescription": "150-160 chars, benefit-driven, urgency/CTA",
-  "handle": "seo-friendly-url-slug",
-  "category": {
-    "id": "gid://shopify/TaxonomyCategory/xx-x-x-x",
-    "name": "Human-readable category name",
-    "breadcrumb": "Parent > Child > Leaf"
-  },
-  "productType": "Specific leaf node name",
-  "attributes": {
-    "color": "extracted or null",
-    "material": "extracted or null",
-    "targetGender": "extracted or null",
-    "size": "extracted or null",
-    "pattern": "extracted or null"
-  },
-  "socialOptimization": {
-    "facebookTitle": "80-100 chars, engagement focused",
-    "facebookDescription": "200-300 chars, social proof, emojis allowed",
-    "tiktokTitle": "100-150 chars, hashtag-friendly, trend-aware",
-    "pinterestTitle": "100-500 chars, descriptive, keyword-rich",
-    "pinterestDescription": "500 chars max, SEO keywords, call to action"
-  },
-  "schemaOrg": {
-    "@type": "Product",
-    "name": "Product name",
-    "description": "SEO description",
-    "brand": "Brand name",
-    "offers": {
-      "@type": "Offer",
-      "priceCurrency": "EUR",
-      "availability": "https://schema.org/InStock"
-    }
+  let constraints: string[];
+  if (isShort) {
+    constraints = [
+      'STRICT: La shortDescription deve contenere SOLO:',
+      '  - Un contenitore principale <div> con stili responsivi',
+      '  - Una lista non ordinata <ul> con 4-5 bullet points',
+      '  - Ogni bullet: <li><strong>Beneficio:</strong> spiegazione breve</li>',
+      '  - Un paragrafo finale <p> con call-to-action (es. spedizione gratuita)',
+      '  - NIENTE ALTRO: niente titoli <h2>, <h3>, tabelle, immagini, sezioni aggiuntive',
+      '  - Non usare emoji (o al massimo 1-2, ma non obbligatorie)',
+      'Lunghezza massima: 150 parole.',
+      'Stili consentiti: solo per spaziatura e layout (margin, padding, line-height, max-width).',
+      'Il tema Shopify gestisce font, colori e dimensioni.',
+      'Tutto il contenuto deve essere responsivo (320px in su).'
+    ];
+  } else {
+    constraints = [
+      'La detailedDescription DEVE includere TUTTI questi elementi (se presenti nei dati o ricavabili):',
+      '  1. <h2>Product Overview</h2> con 1-2 paragrafi introduttivi.',
+      '  2. <h3>Key Features</h3> con lista <ul> di 5-6 caratteristiche.',
+      '  3. <h3>Benefits</h3> con 2-3 paragrafi che spiegano i vantaggi.',
+      '  4. <h3>Specifications</h3> con tabella responsiva a due colonne (Feature | Value).',
+      '  5. Se sono presenti informazioni sulle taglie (misure, conversioni EU/US, lunghezza piede), creare una sezione <h3>Size Chart</h3> con tabella a 4 colonne (EU | US | UK | Foot Length cm) o colonne appropriate.',
+      '  6. Tutte le immagini originali (<img>) devono essere preservate e avvolte in <div style="max-width:100%;margin:1em 0;"><img style="max-width:100%;height:auto;display:block;" ...></div>',
+      '  7. Un paragrafo finale <p> con CTA (es. "Free shipping on orders over €50!").',
+      '',
+      '  ✅ MICRODATA SCHEMA.ORG (OBBLIGATORIO – deve superare il Google Rich Results Test):',
+      '    - Tutto il contenuto visibile deve essere racchiuso in un <div> con:',
+      '        <div itemscope itemtype="https://schema.org/Product" style="max-width:100%;overflow-wrap:break-word;">',
+      '    - Subito dopo l’apertura del div, aggiungere i seguenti meta tag (invisibili) – **sono MANDATORI**:',
+      '        <meta itemprop="name" content="{{PRODUCT_NAME}}">',
+      '        <meta itemprop="description" content="{{SEO_DESCRIPTION}}">   <!-- breve descrizione SEO, 150-160 caratteri -->',
+      '        <link itemprop="image" href="{{MAIN_IMAGE_URL}}">',
+      '        <div itemprop="brand" itemscope itemtype="https://schema.org/Brand">',
+      '          <meta itemprop="name" content="{{BRAND_NAME}}">',
+      '        </div>',
+      '        <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">',
+      '          <meta itemprop="url" content="{{PRODUCT_URL}}">      <!-- se non disponibile, omettere o usare "#" -->',
+      '          <meta itemprop="priceCurrency" content="EUR">',
+      '          <meta itemprop="price" content="{{PRICE}}">          <!-- es. "89.95" – se il prezzo non è trovato, usare "0.00" -->',
+      '          <link itemprop="availability" href="https://schema.org/InStock">',
+      '        </div>',
+      '    - I placeholder ({{...}}) vanno sostituiti con valori estratti dal contenuto della descrizione originale:',
+      '        * PRODUCT_NAME: nome del prodotto (es. "Birkenstock Arizona White-Gold") – **questo campo è obbligatorio**',
+      '        * SEO_DESCRIPTION: una frase breve e accattivante che riassume il prodotto (può essere presa dal primo paragrafo o generata)',
+      '        * MAIN_IMAGE_URL: URL della prima immagine trovata nella descrizione (se nessuna, omettere il tag <link>)',
+      '        * BRAND_NAME: marca del prodotto (es. "Birkenstock", "Skechers", "XTI") – se non chiara, usare "PlatiNum"',
+      '        * PRODUCT_URL: se non presente, omettere il meta (o usare "#")',
+      '        * PRICE: prezzo del prodotto (es. "79.95") – **se non trovato, usare "0.00"** per evitare errori',
+      '    - Dopo i meta tag, inizia il contenuto visibile descritto nei punti 1-7.',
+      '',
+      '  ✅ REQUISITI GOOGLE RICH RESULTS:',
+      '    - Il campo `name` è obbligatorio.',
+      '    - Il campo `offers` (prezzo, valuta, disponibilità) è obbligatorio (se non hai recensioni o valutazioni).',
+      '    - Se hai recensioni, puoi usare `review` o `aggregateRating` al posto di `offers`, ma per semplicità includi sempre `offers`.',
+      '    - Assicurati che il prezzo sia un numero con punto (es. "89.95") e la valuta sia "EUR".',
+      '',
+      '  (Opzionale) Le caratteristiche possono essere marcate anche con itemprop="additionalProperty":',
+      '    <article itemprop="additionalProperty" itemscope itemtype="https://schema.org/PropertyValue">',
+      '      <h3 itemprop="name">Feature Name</h3>',
+      '      <p itemprop="description">Feature description</p>',
+      '      <meta itemprop="propertyID" content="feature-id">',
+      '    </article>',
+      '',
+      '  La tabella delle specifiche e quella delle taglie devono essere avvolte in un contenitore con overflow-x:auto per lo scorrimento orizzontale su mobile.',
+      '  Usare SOLO stili inline per layout/responsività (margin, padding, line-height, max-width, overflow, border).',
+      '  Non usare colori, font-size, font-family (lasciarli al tema).',
+      '  Il risultato deve essere perfettamente visibile da 320px a 1920px.'
+    ];
   }
-}]
 
-═══════════════════════════════════════════════════════════════
-MULTI-PLATFORM SEO STRATEGY (2025 Standards)
-═══════════════════════════════════════════════════════════════
+  return `You are a JSON API specialized in creating professional, PERFECTLY RESPONSIVE Shopify product descriptions with embedded Schema.org microdata.
 
-GOOGLE SEARCH (Primary - 90% traffic):
-• Title: 50-60 chars, primary keyword FIRST, year/modifier [2025]
-• Description: 150-160 chars, emotional trigger, clear CTA
-• Focus: Search intent matching, featured snippets, rich results
-• Keywords: Front-load in first 40 characters
+ROLE: Senior E-commerce Copywriter + Responsive Design Expert + Schema.org Specialist
+- Expert in Amazon A+ Content, Shopify optimization, conversion copywriting
+- Specialist in mobile-first responsive design (320px to 1920px)
+- Focus on benefits-driven, scannable, accessible content
+- Expert in structured data for rich snippets and **Google Rich Results Test compliance**
 
-BRAVE SEARCH (Privacy-focused, <1% but growing):
-• Title: Same as Google (independent index, no personalization)
-• Description: Fact-focused, less promotional, privacy-conscious tone
-• Focus: Independent indexing, diverse viewpoints, no tracking
-• Note: Brave doesn't personalize results - same query = same result
+OBJECTIVE: Transform raw product data into clean, semantic, RESPONSIVE HTML that:
+- Works perfectly on ALL devices (mobile, tablet, desktop)
+- Uses minimal inline styles (spacing/layout only)
+- Lets Shopify theme control typography and colors
+- Drives conversions through benefit-focused copy
+- Preserves all existing images with responsive wrappers
+- Follows e-commerce best practices
+- **Includes complete Schema.org microdata with ALL required fields (name, offers, brand, image, description) to pass Google Rich Results Test**
+- **Distingue nettamente short e detailed description**: la short è solo bullet points + CTA; la detailed include tutte le sezioni (sommario, caratteristiche, benefici, specifiche, tabella taglie se disponibile, immagini, CTA) **e i microdata all’inizio**.
 
-FACEBOOK SHOP (Social commerce):
-• Title: 80-100 chars, social proof, emotional connection
-• Description: 200-300 chars, lifestyle focus, benefits over features
-• Focus: Shareability, engagement, social validation
-• Use: Emojis, urgency ("Limited time"), community language
-
-TIKTOK SHOP (Video-commerce):
-• Title: 100-150 chars, hashtag-friendly, trend-jacking
-• Description: Short, punchy, video-context aware
-• Focus: Virality potential, Gen Z language, "TikTok made me buy it"
-• Use: Trending sounds, challenges, duet-friendly descriptions
-
-PINTEREST (Visual search engine):
-• Title: 100-500 chars, highly descriptive, keyword-stuffed naturally
-• Description: 500 chars max, solution-oriented, DIY/inspiration focus
-• Focus: Visual discovery, Rich Pins, long-tail keywords
-• Use: Seasonal keywords, style descriptors, room/occasion context
-
-═══════════════════════════════════════════════════════════════
-SHOPIFY TAXONOMY 2026-02 REFERENCE
-═══════════════════════════════════════════════════════════════
-
-ID FORMAT: gid://shopify/TaxonomyCategory/[vertical]-[level1]-[level2]-[level3]-[level4]
-
-VERTICAL CODES:
-aa = Apparel & Accessories
-ae = Arts & Entertainment
-bt = Baby & Toddler
-bi = Business & Industrial
-el = Electronics
-fb = Food, Beverages & Tobacco
-hb = Health & Beauty
-hg = Home & Garden
-lb = Luggage & Bags
-sg = Sporting Goods
-tg = Toys & Games
-vp = Vehicles & Parts
-
-═══════════════════════════════════════════════════════════════
-CORE CATEGORY HIERARCHIES (2026-02 Updated)
-═══════════════════════════════════════════════════════════════
-
-1. APPAREL & ACCESSORIES (aa)
-   ├── Clothing (aa-1)
-   │   ├── aa-1-1: Activewear (Sports clothing, 2026: expanded)
-   │   ├── aa-1-2: Baby & Children's Clothing (NEW 2026: consolidated 96 categories)
-   │   ├── aa-1-3: Dresses (Casual, Formal, Maxi, Evening)
-   │   ├── aa-1-4: One-Pieces (Jumpsuits, Rompers, Overalls)
-   │   ├── aa-1-5: Outerwear (Coats, Jackets, Vests)
-   │   │   └── aa-1-5-2: Coats (Winter, Trench, Rain)
-   │   │   └── aa-1-5-4: Vests (Puffer, Fleece, Down)
-   │   ├── aa-1-6: Sleepwear & Loungewear
-   │   ├── aa-1-7: Suits & Formal Wear
-   │   ├── aa-1-8: Traditional & Cultural Wear
-   │   ├── aa-1-9: Uniforms & Workwear (2026: relocated from separate)
-   │   │   └── aa-1-9-3: Scrubs (NEW 2026: relocated from Business)
-   │   ├── aa-1-10: Tops (Shirts, T-Shirts, Sweaters, Hoodies)
-   │   │   └── aa-1-10-2: Shirts (Casual, Dress, Flannel)
-   │   │   └── aa-1-10-4: Sweaters (Pullover, Cardigan, Turtleneck)
-   │   │   └── aa-1-10-5: T-Shirts (Graphic, Plain, Long-sleeve)
-   │   │   └── aa-1-10-6: Tank Tops & Camisoles
-   │   │   └── aa-1-10-7: Hoodies & Sweatshirts
-   │   └── aa-1-14: Bottoms (Pants, Jeans, Shorts, Skirts)
-   │       └── aa-1-14-1: Pants (Casual, Dress, Cargo)
-   │       └── aa-1-14-2: Jeans (Skinny, Straight, Bootcut)
-   │       └── aa-1-14-6: Shorts (Denim, Cargo, Athletic)
-   │       └── aa-1-14-8: Skirts (Mini, Midi, Maxi)
-   ├── Shoes (aa-8)
-   │   ├── aa-8-3: Boots (Ankle, Knee-high, Winter, Rain)
-   │   ├── aa-8-6: Sandals (Flat, Heeled, Slides, Flip-flops)
-   │   ├── aa-8-8: Sneakers (Running, Casual, Fashion, Basketball)
-   │   │   └── aa-8-8-1: Running Shoes
-   │   │   └── aa-8-8-2: Fashion Sneakers
-   │   └── aa-8-9: Flats (Ballet, Loafers, Slip-ons)
-   ├── Accessories (aa-2 to aa-7)
-   │   ├── aa-2: Belts (Casual, Formal, Utility)
-   │   ├── aa-4: Jewelry (Necklaces, Rings, Earrings, Bracelets)
-   │   ├── aa-5: Handbags (Totes, Clutches, Crossbody, Backpacks)
-   │   ├── aa-6: Sunglasses & Eyewear Accessories
-   │   └── aa-7: Watches (Analog, Digital, Smart)
-   └── Specialized Apparel
-       ├── aa-1-2: Baby & Children's Clothing (Bodysuits, Sleepwear)
-       ├── aa-1-2-1: Baby Bodysuits & One-Pieces
-       └── aa-1-2-2: Baby & Children's Underwear (NEW 2026: consolidated)
-
-2. ARTS & ENTERTAINMENT (ae)
-   ├── ae-2: Arts & Crafts
-   │   ├── ae-2-1: Painting & Drawing Supplies
-   │   ├── ae-2-2: Musical Instruments (Guitars, Pianos, Drums)
-   │   │   └── ae-2-2-1: Guitars (Acoustic, Electric, Bass)
-   │   │   └── ae-2-2-1-1: Acoustic Guitars
-   │   │   └── ae-2-2-1-2: Electric Guitars (NEW 2026: Guitar Pedals)
-   │   │   └── ae-2-2-1-5: Ukuleles (NEW 2026: Baritone, Concert, Soprano)
-   │   │   └── ae-2-2-1-6: Mandolins (NEW 2026: A-Style, F-Style)
-   │   │   └── ae-2-2-1-7: Banjos (NEW 2026: 4-String, 5-String)
-   │   └── ae-2-3: Collectibles (Coins, Cards, Comics, 2026: +Comic Books)
-   └── ae-3: Entertainment Media
-
-3. BABY & TODDLER (bt)
-   ├── bt-1: Baby & Children's Clothing (See aa-1-2, consolidated 2026)
-   ├── bt-2: Baby Care (Diapers, Bathing, Health)
-   ├── bt-3: Baby Health & Safety
-   ├── bt-4: Nursery Furniture (Cribs, Changing tables)
-   └── bt-5: Feeding Essentials (NEW 2026: relocated bottles/bibs)
-       ├── bt-5-1: Baby Bottles & Nipples
-       ├── bt-5-2: Bibs & Burp Cloths
-       └── bt-5-3: Sippy Cups & Training Cups
-
-4. BUSINESS & INDUSTRIAL (bi)
-   ├── bi-2: Construction (Tools, Safety equipment)
-   │   └── bi-2-1: Raw Structural Components (NEW 2026)
-   ├── bi-4: Office Supplies (Furniture, Stationery)
-   └── bi-5: Medical (NEW 2026: +Simulator Accessories, Training Equipment)
-
-5. ELECTRONICS (el)
-   ├── el-1: Computers (Laptops, Desktops, Components, Gaming Computers 2026)
-   │   ├── el-1-1: Laptops
-   │   ├── el-1-2: Desktops
-   │   └── el-1-7: Computer Components
-   ├── el-2: Communication (Smartphones, Accessories)
-   │   ├── el-2-1: Mobile & Smart Phones (Feature Phones, Smartphones)
-   │   └── el-2-2: Mobile Phone Accessories (Cases, Chargers, Screen Protectors)
-   ├── el-3: Audio (Headphones, Speakers, Earbuds)
-   │   ├── el-3-2: Headphones & Headsets
-   │   │   └── el-3-2-1: Over-Ear Headphones
-   │   │   └── el-3-2-2: Earbud & In-Ear Headphones
-   │   │   └── el-3-2-3: Gaming Headsets (NEW 2026)
-   │   │   └── el-3-2-4: Aviation Headsets (NEW 2026)
-   │   └── el-3-3: Speakers (Bookshelf, Outdoor, Portable, NEW 2026 expanded)
-   ├── el-4: Video (Cameras, TVs, Projectors)
-   │   ├── el-4-1: Cameras (DSLR, Mirrorless, Action)
-   │   ├── el-4-2: TVs & Displays (Smart TVs, Monitors, NEW: Portable Monitors 2026)
-   │   └── el-4-3: Projectors (Home, Portable, NEW: Film Projectors 2026)
-   ├── el-5: Gaming (Consoles, Controllers, PC gaming)
-   │   ├── el-5-1: Video Game Consoles (Handheld, Home)
-   │   └── el-5-2: Video Game Accessories (Controllers, Cases, Memory)
-   └── el-6: Networking (Routers, Modems, NEW 2026 expanded)
-       ├── el-6-1: Bridges & Routers (Cellular, Mesh, Wired)
-       └── el-6-2: Modems (Cable, Cellular, Satellite)
-
-6. FOOD, BEVERAGES & TOBACCO (fb)
-   ├── fb-1: Food Items (Snacks, Fresh, Frozen)
-   ├── fb-2: Beverages (Coffee, Tea, Soft drinks)
-   │   └── fb-2-1: Coffee (NEW 2026: Grind size, Caffeine content attributes)
-   ├── fb-4: Cooking Ingredients (Spices, Oils, Sauces)
-   └── fb-5: Tobacco & Cannabis (NEW 2026: Cannabis Products)
-       ├── fb-5-1: Cannabis Seeds (Non-Viable, Viable)
-       ├── fb-5-2: Medical Cannabis
-       ├── fb-5-3: Recreational Cannabis
-       └── fb-5-4: Vaping (E-Liquid, Cartridges, Devices)
-
-7. HEALTH & BEAUTY (hb)
-   ├── hb-1: Personal Care (Skincare, Haircare)
-   │   ├── hb-1-1: Bath & Body
-   │   ├── hb-1-2: Hair Care (NEW 2026: Hair color attribute renamed)
-   │   └── hb-1-3: Skin Care
-   ├── hb-2: Cosmetics (Makeup, Nail care)
-   │   └── hb-2-1: Makeup (NEW 2026: Makeup shade attribute)
-   ├── hb-3: Health Care (Devices, Supplements)
-   │   ├── hb-3-1: Medical Devices
-   │   └── hb-3-2: Vitamins & Supplements (gid://shopify/TaxonomyCategory/hb-3-2)
-   └── hb-4: Weight Loss (NEW 2026: Detox, Meal Replacements, Supplements)
-
-8. HOME & GARDEN (hg)
-   ├── hg-1: Furniture (Sofas, Beds, Storage)
-   │   ├── hg-1-2: Living Room Furniture
-   │   │   └── hg-1-2-1: Sofas & Couches (Sectionals, Loveseats)
-   │   ├── hg-1-3: Bedroom Furniture (Beds, Dressers, Nightstands)
-   │   └── hg-1-4: Kitchen & Dining Furniture
-   ├── hg-2: Kitchen & Dining (Appliances, Cookware)
-   │   └── hg-2-1: Kitchen Appliances (NEW 2026: +Freezer Baskets, Coffee Accessories)
-   ├── hg-3: Home Decor (Lighting, Rugs, Art, Clocks)
-   │   └── hg-3-17: Clocks (Alarm Clocks: hg-3-17-1)
-   ├── hg-4: Garden & Outdoor (Plants, Tools, Outdoor)
-   │   └── hg-4-1: Outdoor Kitchens (NEW 2026)
-   └── hg-13: Home Appliances (Vacuums, Heating/Cooling)
-
-9. LUGGAGE & BAGS (lb)
-   ├── lb-1: Backpacks (Laptop, Hiking, School)
-   ├── lb-2: Luggage (Suitcases, Carry-ons, Garment Bags)
-   └── lb-3: Handbags (Totes, Crossbody, Clutches, Wallets)
-
-10. SPORTING GOODS (sg)
-    ├── sg-1: Exercise & Fitness (Equipment, Apparel)
-    ├── sg-2: Outdoor Recreation (Camping, Hiking)
-    ├── sg-4: Winter Sports (Skiing, Snowboarding)
-    │   └── sg-4-17: Skiing & Snowboarding
-    │       └── sg-4-17-2: Snowboards (gid://shopify/TaxonomyCategory/sg-4-17-2-17)
-    └── sg-5: Water Sports (NEW 2026: +Racing Canoes/Kayaks, Windfoiling, Wingfoiling)
-        ├── sg-5-1: Boating & Water Sport Protective Gear
-        ├── sg-5-2: Canoeing (NEW: Racing Canoes)
-        ├── sg-5-3: Kayaking (NEW: Racing Kayaks)
-        └── sg-5-4: Windfoiling & Wingfoiling (NEW 2026)
-
-11. TOYS & GAMES (tg)
-    ├── tg-1: Toys (Action figures, Dolls, Educational)
-    │   └── tg-1-1: Action Figures & Playsets
-    │   └── tg-1-2: Dolls & Accessories
-    │   └── tg-1-3: Educational Toys
-    └── tg-2: Games (Board games, Puzzles)
-        └── tg-2-1: Board Games
-    └── tg-3: Sensory Toys (NEW 2026)
-
-12. VEHICLES & PARTS (vp)
-    ├── vp-1: Cars & Trucks (Parts, Accessories)
-    │   └── vp-1-1: Motor Vehicle Parts (NEW 2026 expanded)
-    │       ├── vp-1-1-1: Braking Systems
-    │       ├── vp-1-1-2: Cooling Systems (Radiators, Fans, Pumps)
-    │       ├── vp-1-1-3: Engine Parts (Ignition, Coils, Plugs)
-    │       └── vp-1-1-4: Transmission & Drivetrain
-    ├── vp-2: Motorcycles (Bikes, Gear)
-    └── vp-3: Aircraft (NEW 2026: Drones, Helicopters, Jets)
-        ├── vp-3-1: Heavier-Than-Air (Drones, Gliders, Helicopters)
-        └── vp-3-2: Lighter-Than-Air (Hot Air Balloons, Airships)
-
-═══════════════════════════════════════════════════════════════
-INTELLIGENT CATEGORIZATION ENGINE
-═══════════════════════════════════════════════════════════════
-
-ANALYZE BOTH IMAGE AND TEXT TO DETERMINE EXACT CATEGORY ID.
-
-STEP 1: Visual Analysis (Primary)
-- Detect primary object category (clothing, electronics, furniture, food)
-- Identify subcategory by features:
-  • Sleeves, collar, hem = Tops (aa-1-10)
-  • Legs, waist, inseam = Bottoms (aa-1-14)
-  • Screen, keyboard, ports = Electronics (el)
-  • Cushions, legs, upholstery = Furniture (hg-1)
-- Determine specific type:
-  • Hood, puffer, zipper = aa-1-5-4 (Vests) or aa-1-5-5 (Puffer Jackets)
-  • Laces, sole, tread = aa-8-8 (Sneakers) or aa-8-3 (Boots)
-  • Keyboard, screen, trackpad = el-1-1 (Laptops)
-
-STEP 2: Text Analysis (Confirmation)
-- Parse title for brand + product type keywords
-- Extract material mentions (leather, cotton, aluminum, velvet)
-- Identify gender indicators (men, women, kids, unisex, boys, girls)
-- Detect size specifications (S, M, L, XL, numeric, age ranges)
-- Look for function keywords (running, hiking, gaming, cooking)
-
-STEP 3: Category Selection Logic
-- IF multiple matches → Choose most specific LEAF node (deepest level)
-- IF conflict between image and text → Image takes priority for category
-- IF uncertain → Default to broader parent with specific productType
-- MUST return exact gid://shopify/TaxonomyCategory/xx-x-x-x format
-
-STEP 4: Attribute Extraction
-- color: Extract from title, description, or image analysis
-- material: Identify fabric, construction material
-- targetGender: men, women, unisex, kids, boys, girls, baby
-- size: Standard sizes, dimensions, or age groups
-- pattern: solid, striped, floral, geometric, etc.
-
-═══════════════════════════════════════════════════════════════
-PLATFORM-SPECIFIC OPTIMIZATION RULES
-═══════════════════════════════════════════════════════════════
-
-GOOGLE/Brave (Search Engines):
-Title Formula: [Primary Keyword] + [Benefit/Feature] + [Brand] + [Year/Modifier]
-Length: 50-60 characters
-Example: "Waterproof Hiking Boots Men | Timberland 2025 | All Terrain"
-
-Description Formula: [Problem] + [Solution] + [Key Features] + [Social Proof] + [CTA]
-Length: 150-160 characters
-Example: "Conquer any trail with Timberland waterproof hiking boots. Premium leather, anti-fatigue sole, 100% waterproof. Rated 4.8/5 by 2,000+ hikers. Shop now!"
-
-FACEBOOK (Social Commerce):
-Title: "🔥 [Product] - [Benefit] | [Social Proof]"
-Length: 80-100 characters
-Description: "Love this [product]! ❤️ [Benefit 1], [Benefit 2]. Perfect for [use case]. Tag a friend who needs this! 👇 [CTA]"
-Length: 200-300 characters
-
-TIKTOK (Video Commerce):
-Title: "[Trending hashtag] [Product] that [benefit] ✨ #[category] #[viral]"
-Length: 100-150 characters
-Description: "POV: You finally found the [product] that [solves problem] 😍 Link in bio! #TikTokMadeMeBuyIt #[brand]"
-
-PINTEREST (Visual Discovery):
-Title: "[Style] [Product] for [Occasion/Room] | [Color] [Material] [Feature]"
-Length: 100-500 characters
-Description: "Looking for [solution]? This [product] is perfect for [use case]! [Feature 1], [Feature 2], [Feature 3]. Save this for later! #[category] #[style] #[room]"
-Length: Up to 500 characters
-
-═══════════════════════════════════════════════════════════════
-REAL EXAMPLES WITH EXACT TAXONOMY IDs
-═══════════════════════════════════════════════════════════════
-
-EXAMPLE 1 - Apparel (Sneakers):
-Input: "Nike Air Max 270 Black Running Shoes Men's Size 10"
+OUTPUT FORMAT:
 {
-  "id": "gid://shopify/Product/12345",
-  "seoTitle": "Nike Air Max 270 Black | Men's Running Shoes 2025",
-  "seoDescription": "Experience ultimate comfort with Nike Air Max 270. Black mesh upper, 270° air unit, lightweight design. Perfect for running or street style. Free returns!",
-  "handle": "nike-air-max-270-black-mens",
-  "category": {
-    "id": "gid://shopify/TaxonomyCategory/aa-8-8-1",
-    "name": "Running Shoes",
-    "breadcrumb": "Apparel & Accessories > Shoes > Sneakers > Running Shoes"
-  },
-  "productType": "Running Shoes",
-  "attributes": {
-    "color": "black",
-    "material": "mesh",
-    "targetGender": "men",
-    "size": "10",
-    "pattern": null
-  },
-  "socialOptimization": {
-    "facebookTitle": "🔥 Nike Air Max 270 - Ultimate Comfort | 50K+ Sold",
-    "facebookDescription": "Walk on air! ☁️ The Nike Air Max 270 features the biggest Air unit yet. Perfect for workouts or weekends. Tag your workout buddy! 👟💪",
-    "tiktokTitle": "These Nike Air Max 270s hit different 😤 #SneakerTok #Nike #AirMax",
-    "pinterestTitle": "Black Nike Air Max 270 Running Shoes for Men | Street Style Sneakers",
-    "pinterestDescription": "Upgrade your sneaker game with Nike Air Max 270! All-black design, maximum cushioning, perfect for running or casual wear. Men's sizes available. #Nike #Sneakers #MensFashion #RunningShoes"
-  },
-  "schemaOrg": {
-    "@type": "Product",
-    "name": "Nike Air Max 270 Black",
-    "description": "Experience ultimate comfort with Nike Air Max 270 running shoes",
-    "brand": "Nike",
-    "offers": {
-      "@type": "Offer",
-      "priceCurrency": "EUR",
-      "availability": "https://schema.org/InStock"
-    }
+  ${
+    isShort
+      ? '"shortDescription": "RESPONSIVE_HTML (solo bullet points e CTA)"'
+      : '"detailedDescription": "RESPONSIVE_HTML (struttura completa con microdata all’inizio)"'
   }
 }
 
-EXAMPLE 2 - Electronics (Noise Canceling Headphones):
-Input: "Sony WH-1000XM5 Wireless Noise Canceling Headphones Silver"
-{
-  "id": "gid://shopify/Product/67890",
-  "seoTitle": "Sony WH-1000XM5 Noise Canceling | Wireless Headphones",
-  "seoDescription": "Industry-leading noise canceling with Sony WH-1000XM5. 30hr battery, crystal clear calls, premium comfort. Perfect for travel & work. Shop now!",
-  "handle": "sony-wh1000xm5-noise-canceling-headphones",
-  "category": {
-    "id": "gid://shopify/TaxonomyCategory/el-3-2-1",
-    "name": "Over-Ear Headphones",
-    "breadcrumb": "Electronics > Audio > Headphones & Headsets > Over-Ear Headphones"
-  },
-  "productType": "Noise Canceling Headphones",
-  "attributes": {
-    "color": "silver",
-    "material": null,
-    "targetGender": "unisex",
-    "size": null,
-    "pattern": null
-  },
-  "socialOptimization": {
-    "facebookTitle": "🎧 Sony WH-1000XM5 - Silence the World | 30Hr Battery",
-    "facebookDescription": "Block out the noise, tune into the music 🎵 Sony's best noise-canceling headphones yet. 30 hours of pure bliss. Who needs these for their commute? 🚆",
-    "tiktokTitle": "The silence is INSANE 🤯 Sony WH-1000XM5 review #TechTok #Headphones",
-    "pinterestTitle": "Sony WH-1000XM5 Wireless Noise Canceling Headphones | Travel Essential",
-    "pinterestDescription": "The ultimate travel companion! Sony WH-1000XM5 features industry-leading noise canceling, 30-hour battery life, and premium comfort. Perfect for flights, work, or relaxation. #Sony #Headphones #TravelEssentials #NoiseCanceling"
-  },
-  "schemaOrg": {
-    "@type": "Product",
-    "name": "Sony WH-1000XM5",
-    "description": "Industry-leading noise canceling wireless headphones",
-    "brand": "Sony",
-    "offers": {
-      "@type": "Offer",
-      "priceCurrency": "EUR",
-      "availability": "https://schema.org/InStock"
-    }
-  }
+TONE & STYLE:
+- Professional and trustworthy
+- Benefit-driven (not feature-heavy)
+- Sophisticated yet accessible
+- Emotionally resonant for premium products
+- Concise and scannable on small screens
+
+BRAND-SPECIFIC GUIDELINES:
+- Birkenstock: "legendary comfort", "anatomical footbed", "premium craftsmanship"
+- Skechers: "Memory Foam", "all-day comfort", "lightweight design"
+- Joma: "performance technology" (VTS, Phylon, ReactiveBall), "athletic excellence"
+- Adidas/Nike: "iconic style", "heritage", "innovation"
+- Vans: "classic design", "skateboard culture", "versatile style"
+- UGG: "luxury comfort", "premium materials", "timeless design"
+- Barefoot (Mustang, Victoria): "natural movement", "barefoot feel", "foot health"
+- XTI: "vegan certified", "sustainable fashion"
+- Natural World: "eco-friendly", "sustainable materials", "organic cotton"
+
+TRUST SIGNALS (include naturally):
+- "Premium quality"
+- "Free shipping" (Italian market)
+- "Satisfaction guaranteed"
+- "Authentic [brand]"
+- "Durable construction"
+- "All-day comfort"
+
+CONSTRAINTS:
+${JSON.stringify(constraints, null, 2).replace(/\n/g, '\n')}
+
+RESPONSIVE INLINE STYLES (allowed for layout/spacing only):
+✅ max-width, width, min-width
+✅ margin, padding (use em units for scalability)
+✅ line-height (1.6 for body, 1.3 for headings)
+✅ overflow-x, overflow-wrap, word-wrap
+✅ border, border-collapse (tables only)
+✅ display, vertical-align
+✅ -webkit-overflow-scrolling:touch (smooth mobile scroll)
+
+FORBIDDEN STYLES:
+❌ font-size, font-family, color, background-color
+❌ position:absolute/fixed
+❌ Custom classes or IDs
+❌ External CSS or <style> tags
+❌ JavaScript or onclick
+
+ALLOWED HTML TAGS:
+✅ <div> (ONLY for responsive wrappers and microdata container)
+✅ <h2>, <h3>, <p>, <ul>, <li>, <table>, <tr>, <td>, <strong>, <em>, <img>
+✅ <meta>, <link> (only inside the microdata wrapper, for invisible data)
+
+ESEMPIO shortDescription (CORRETTO, solo bullet + CTA):
+<div style="max-width:100%;overflow-wrap:break-word;">
+<ul style="padding-left:1.2em;margin:0.5em 0;line-height:1.6;">
+<li style="margin-bottom:0.5em;"><strong>Legendary Comfort:</strong> Birkenstock's signature molded footbed provides superior arch support</li>
+<li style="margin-bottom:0.5em;"><strong>Modern Style:</strong> Sleek white-gold colorway pairs perfectly with any casual outfit</li>
+<li style="margin-bottom:0.5em;"><strong>All-Day Wearability:</strong> Platform sole adds height while maintaining stability</li>
+<li style="margin-bottom:0.5em;"><strong>Premium Quality:</strong> Durable construction built to last season after season</li>
+</ul>
+<p style="margin-top:1em;font-style:italic;">Free shipping on orders over €50. Shop authentic Birkenstock sneakers today!</p>
+</div>
+
+ESEMPIO detailedDescription (CON MICRODATA E TABELLA TAGLIE):
+<div itemscope itemtype="https://schema.org/Product" style="max-width:100%;overflow-wrap:break-word;word-wrap:break-word;">
+
+<!-- MICRODATA INVISIBILI (MANDATORI per Google Rich Results) -->
+<meta itemprop="name" content="Birkenstock Arizona White-Gold">
+<meta itemprop="description" content="Legendary comfort meets modern style in these Birkenstock Arizona sandals with a elegant white-gold finish.">
+<link itemprop="image" href="https://example.com/images/birkenstock-arizona-whitegold-1.jpg">
+<div itemprop="brand" itemscope itemtype="https://schema.org/Brand">
+  <meta itemprop="name" content="Birkenstock">
+</div>
+<div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+  <meta itemprop="url" content="https://shop.com/products/birkenstock-arizona-whitegold">
+  <meta itemprop="priceCurrency" content="EUR">
+  <meta itemprop="price" content="89.95">
+  <link itemprop="availability" href="https://schema.org/InStock">
+</div>
+
+<!-- CONTENUTO VISIBILE -->
+<h2 style="margin:1em 0 0.5em;line-height:1.3;">Product Overview</h2>
+<p style="margin:0.8em 0;line-height:1.6;">Experience the perfect fusion of Birkenstock's legendary comfort and contemporary sneaker style...</p>
+
+<h3 style="margin:1.2em 0 0.5em;line-height:1.3;">Key Features</h3>
+<ul style="padding-left:1.2em;margin:0.8em 0;line-height:1.6;">
+<li style="margin-bottom:0.5em;">Signature Birkenstock molded insole for superior arch support</li>
+<li style="margin-bottom:0.5em;">Elegant white-gold finish for versatile styling</li>
+</ul>
+
+<h3 style="margin:1.2em 0 0.5em;line-height:1.3;">Size Chart</h3>
+<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1em 0;">
+<table style="width:100%;min-width:280px;border-collapse:collapse;border:1px solid #ddd;">
+<tr style="border-bottom:1px solid #ddd;background-color:#f2f2f2;">
+<th style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;text-align:left;">EU</th>
+<th style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;text-align:left;">US</th>
+<th style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;text-align:left;">UK</th>
+<th style="padding:0.6em 0.8em;font-weight:bold;text-align:left;">Foot Length (cm)</th>
+</tr>
+<tr style="border-bottom:1px solid #ddd;">
+<td style="padding:0.6em 0.8em;border-right:1px solid #ddd;">36</td>
+<td style="padding:0.6em 0.8em;border-right:1px solid #ddd;">5.5</td>
+<td style="padding:0.6em 0.8em;border-right:1px solid #ddd;">3.5</td>
+<td style="padding:0.6em 0.8em;">23.0</td>
+</tr>
+</table>
+</div>
+
+<h3 style="margin:1.2em 0 0.5em;line-height:1.3;">Specifications</h3>
+<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1em 0;">
+<table style="width:100%;min-width:280px;border-collapse:collapse;border:1px solid #ddd;">
+<tr style="border-bottom:1px solid #ddd;">
+<td style="padding:0.6em 0.8em;border-right:1px solid #ddd;font-weight:bold;width:40%;vertical-align:top;">Brand:</td>
+<td style="padding:0.6em 0.8em;width:60%;vertical-align:top;">Birkenstock</td>
+</tr>
+</table>
+</div>
+
+<p style="margin-top:1.5em;font-style:italic;">Free shipping on orders over €50. Shop now!</p>
+</div>
+
+CRITICAL IMAGE HANDLING:
+When you find images in original content like:
+<img src="https://example.com/image.jpg" alt="Product">
+
+Transform to responsive format:
+<div style="max-width:100%;margin:1em 0;">
+<img src="https://example.com/image.jpg" style="max-width:100%;height:auto;display:block;" alt="Product">
+</div>
+
+DATA TO PROCESS (analyze each independently):
+${JSON.stringify(chunk.map(p => ({ id: p.id, content: p.descreption })), null, 2)}
+
+PROCESSING INSTRUCTIONS:
+1. Analizza ogni prodotto separatamente.
+2. Estrai: brand, caratteristiche, specifiche, immagini, informazioni sulle taglie, **nome prodotto, prezzo, URL immagine principale**.
+3. **Per shortDescription**: genera SOLO bullet points e CTA, nient'altro.
+4. **Per detailedDescription**: 
+   - Costruisci il wrapper principale con \`itemscope\` e i meta tag per i microdata (come da esempio). **I meta tag per name e offers sono obbligatori**.
+   - Includi TUTTE le sezioni: overview, key features, benefits, specifications, size chart (se disponibile), immagini, CTA.
+   - I valori per i microdata (nome, descrizione SEO, immagine, brand, prezzo, valuta, disponibilità) devono essere dedotti dal contenuto della descrizione originale. Se mancano, usa valori di default sensati:
+        * brand → "PlatiNum"
+        * price → "0.00"
+        * name → (cerca di estrarlo dal contesto, altrimenti usa "Prodotto")
+5. Avvolgi tutto in un contenitore <div> responsivo con \`itemscope\`.
+6. Usa esclusivamente stili inline per spaziatura e layout.
+7. Rendi le tabelle scrollabili orizzontalmente su mobile con wrapper \`overflow-x:auto\`.
+8. Avvolgi ogni immagine in un <div> responsivo.
+9. Preserva tutte le immagini originali.
+10. Aggiungi segnali di fiducia e una CTA convincente.
+11. Assicura la perfetta visualizzazione su dispositivi da 320px a 1920px.
+
+Return JSON array with EXACTLY ${chunk.length} objects.
+Format: ${outputStructure}
+
+CRITICAL: 
+- Escape all quotes in HTML: \\"
+- Return ONLY the JSON array
+- NO markdown code blocks
+- NO explanatory text
+- Just pure JSON
+- Perfect responsive on ALL devices
+- **Per detailedDescription, la presenza dei microdata è obbligatoria e deve superare il Google Rich Results Test – includi SEMPRE name e offers**`;
 }
 
-EXAMPLE 3 - Home & Garden (Sectional Sofa):
-Input: "Grey Velvet Sectional Sofa Mid-Century Modern 3-Seater"
-{
-  "id": "gid://shopify/Product/11111",
-  "seoTitle": "Velvet Sectional Sofa Grey | Modern Living Room 2025",
-  "seoDescription": "Transform your living room with this grey velvet sectional. Mid-century modern design, solid wood legs, stain-resistant fabric. Seats 4 comfortably. Shop now!",
-  "handle": "velvet-sectional-sofa-grey-modern",
-  "category": {
-    "id": "gid://shopify/TaxonomyCategory/hg-1-2-1",
-    "name": "Sofas & Couches",
-    "breadcrumb": "Home & Garden > Furniture > Living Room Furniture > Sofas & Couches"
-  },
-  "productType": "Sectional Sofa",
-  "attributes": {
-    "color": "grey",
-    "material": "velvet",
-    "targetGender": null,
-    "size": "3-seater",
-    "pattern": null
-  },
-  "socialOptimization": {
-    "facebookTitle": "✨ Grey Velvet Sectional - Modern Luxury | Free Delivery",
-    "facebookDescription": "Your dream living room starts here! 😍 This grey velvet sectional is giving major luxury vibes. Who else is obsessed with velvet furniture? 🙋‍♀️",
-    "tiktokTitle": "The couch that changed my living room 😍 #HomeDecor #Sofa #Velvet",
-    "pinterestTitle": "Grey Velvet Sectional Sofa | Mid-Century Modern Living Room Furniture",
-    "pinterestDescription": "Create the perfect living room with this stunning grey velvet sectional! Mid-century modern style, plush velvet upholstery, solid wood legs. Seats 4 comfortably. #HomeDecor #LivingRoom #SectionalSofa #VelvetFurniture"
-  },
-  "schemaOrg": {
-    "@type": "Product",
-    "name": "Grey Velvet Sectional Sofa",
-    "description": "Mid-century modern velvet sectional sofa for living room",
-    "brand": null,
-    "offers": {
-      "@type": "Offer",
-      "priceCurrency": "EUR",
-      "availability": "https://schema.org/InStock"
-    }
-  }
-}
 
-EXAMPLE 4 - Sporting Goods (Snowboard):
-Input: "Korua Cafe Racer Snowboard 2025 All-Mountain Directional"
-{
-  "id": "gid://shopify/Product/22222",
-  "seoTitle": "Korua Cafe Racer Snowboard 2025 | All-Mountain Directional",
-  "seoDescription": "Ride everything with the Korua Cafe Racer. Directional shape, camber profile, perfect for all-mountain freeriding. 2025 model now in stock! Order today.",
-  "handle": "korua-cafe-racer-snowboard-2025",
-  "category": {
-    "id": "gid://shopify/TaxonomyCategory/sg-4-17-2-17",
-    "name": "Snowboards",
-    "breadcrumb": "Sporting Goods > Winter Sports > Skiing & Snowboarding > Snowboards"
-  },
-  "productType": "All-Mountain Snowboard",
-  "attributes": {
-    "color": null,
-    "material": "fiberglass",
-    "targetGender": "unisex",
-    "size": null,
-    "pattern": "directional"
-  },
-  "socialOptimization": {
-    "facebookTitle": "🏂 Korua Cafe Racer - All-Mountain Beast | 2025 Model",
-    "facebookDescription": "The ultimate all-mountain snowboard! 🏔️ Directional shape for charging hard, camber for precision. Who's ready for powder season? ❄️",
-    "tiktokTitle": "This snowboard carves like a dream 😍 #Snowboarding #Korua #WinterSports",
-    "pinterestTitle": "Korua Cafe Racer All-Mountain Snowboard | 2025 Freeride Board",
-    "pinterestDescription": "The perfect all-mountain snowboard for freeride enthusiasts! Directional shape, camber profile, designed for charging hard on any terrain. Save for your next mountain trip! #Snowboarding #Freeride #AllMountain #WinterSports"
-  },
-  "schemaOrg": {
-    "@type": "Product",
-    "name": "Korua Cafe Racer Snowboard",
-    "description": "All-mountain directional snowboard for freeriding",
-    "brand": "Korua",
-    "offers": {
-      "@type": "Offer",
-      "priceCurrency": "EUR",
-      "availability": "https://schema.org/InStock"
-    }
-  }
-}
-
-EXAMPLE 5 - Health & Beauty (Vitamin Supplement):
-Input: "Organic Multivitamin Gummies for Adults 60 Count"
-{
-  "id": "gid://shopify/Product/33333",
-  "seoTitle": "Organic Multivitamin Gummies | Adult Daily Supplement",
-  "seoDescription": "Complete daily nutrition with organic multivitamin gummies. 60 count, natural flavors, non-GMO. Supports immunity, energy & wellness. Buy now!",
-  "handle": "organic-multivitamin-gummies-adults",
-  "category": {
-    "id": "gid://shopify/TaxonomyCategory/hb-3-2",
-    "name": "Vitamins & Supplements",
-    "breadcrumb": "Health & Beauty > Health Care > Vitamins & Supplements"
-  },
-  "productType": "Multivitamin",
-  "attributes": {
-    "color": null,
-    "material": null,
-    "targetGender": "adults",
-    "size": "60 count",
-    "pattern": null
-  },
-  "socialOptimization": {
-    "facebookTitle": "💊 Organic Multivitamin Gummies - Daily Wellness | Non-GMO",
-    "facebookDescription": "Get your daily nutrients the tasty way! 🍓 These organic gummy vitamins are perfect for busy adults. Who else hates swallowing pills? 🙋‍♀️",
-    "tiktokTitle": "The vitamins that actually taste good 😋 #Wellness #Vitamins #HealthyLiving",
-    "pinterestTitle": "Organic Multivitamin Gummies for Adults | Daily Health Supplement",
-    "pinterestDescription": "Delicious organic multivitamin gummies for daily wellness! 60 count bottle, natural fruit flavors, non-GMO ingredients. Supports immune health, energy levels, and overall vitality. #Vitamins #Wellness #Organic #HealthSupplements"
-  },
-  "schemaOrg": {
-    "@type": "Product",
-    "name": "Organic Multivitamin Gummies",
-    "description": "Organic daily multivitamin gummies for adult wellness",
-    "brand": null,
-    "offers": {
-      "@type": "Offer",
-      "priceCurrency": "EUR",
-      "availability": "https://schema.org/InStock"
-    }
-  }
-}
-
-═══════════════════════════════════════════════════════════════
-INPUT DATA
-═══════════════════════════════════════════════════════════════
-
-${JSON.stringify(chunk, null, 2)}
-
-═══════════════════════════════════════════════════════════════
-CRITICAL RULES - READ CAREFULLY
-═══════════════════════════════════════════════════════════════
-
-1. category.id: MUST be exact Shopify GID format: gid://shopify/TaxonomyCategory/[code]
-   - Use hierarchical codes: aa-1-10-2 (not just aa-1)
-   - Examples: gid://shopify/TaxonomyCategory/aa-8-8-1, gid://shopify/TaxonomyCategory/el-3-2-1
-
-2. category.name: Exact leaf node name from taxonomy (e.g., "Running Shoes" not "Shoes")
-
-3. category.breadcrumb: Full path with > separators (e.g., "Apparel & Accessories > Shoes > Sneakers > Running Shoes")
-
-4. productType: Most specific product type matching the category leaf node
-
-5. seoTitle: 50-60 chars, keyword first, NO emojis, NO all caps
-
-6. seoDescription: 150-160 chars, compelling CTA, NO emojis
-
-7. socialOptimization: Platform-appropriate length and tone (emojis allowed here)
-
-8. attributes: Extract from input data, use null if not found, never guess
-
-9. schemaOrg: Valid JSON-LD structured data for Google rich snippets
-
-10. Output: Return ONLY valid JSON array - no markdown, no explanations, no code blocks
-
-11. Array length: Must exactly match input length: ${chunk.length}
-
-12. Image Analysis: If image URL provided, analyze visual features to confirm category
-
-13. 2026 Updates: Use new consolidated categories (Baby & Children's, Uniforms & Workwear, Cannabis)
-
-BEGIN PROCESSING:`;
-}
 
 
     const chunkPromises = chunks.map(async (chunk, idx) => {
