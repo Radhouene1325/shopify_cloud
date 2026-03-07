@@ -1655,17 +1655,14 @@ ESEMPIO detailedDescription (CON MICRODATA - SENZA URL IMMAGINE):
 <p style="margin-top:1.5em;font-style:italic;">Free shipping on orders over €50. Shop now!</p>
 </div>
 
-CRITICAL IMAGE HANDLING:
-When processing the \`descreption\` field:
-1. **Cerca tag <img> esistenti** nel testo originale.
-2. **Preserva ESATTAMENTE** gli attributi src, alt, title, width, height, etc.
-3. **Trasforma solo il wrapper**: Avvolgi ogni <img> trovato in:
-   <div style="max-width:100%;margin:1em 0;">
-     <img style="max-width:100%;height:auto;display:block;" [TUTTI GLI ATTRIBUTI ORIGINALI]>
-   </div>
-4. **NON aggiungere nuove immagini** che non esistono nel testo originale.
-5. **NON modificare gli URL** delle immagini esistenti.
-6. Se non ci sono immagini in descreption, **non aggiungere alcuna immagine**.
+ CRITICAL IMAGE HANDLING:
+ When you find images in original content like:
+ <img src="https://example.com/image.jpg" alt="Product">
+
+ Transform to responsive format:
+ <div style="max-width:100%;margin:1em 0;">
+ <img src="https://example.com/image.jpg" style="max-width:100%;height:auto;display:block;" alt="Product">
+ </div>
 
 DATA TO PROCESS (analyze each independently):
 ${JSON.stringify(chunk.map(p => ({ 
@@ -1703,7 +1700,9 @@ PROCESSING INSTRUCTIONS:
 7. Rendi le tabelle scrollabili orizzontalmente su mobile con wrapper \`overflow-x:auto\`.
 8. **Preserva tutte le immagini originali** dalla descreption esattamente come sono, solo aggiungendo il wrapper responsivo.
 9. Aggiungi segnali di fiducia e una CTA convincente.
-10. Assicura la perfetta visualizzazione su dispositivi da 320px a 1920px.
+ 10. Wrap ALL images in responsive divs with fluid styles
+ 11. Preserve ALL <img> tags exactly as they appear
+12. Assicura la perfetta visualizzazione su dispositivi da 320px a 1920px.
 
 Return JSON array with EXACTLY ${chunk.length} objects.
 Format: ${outputStructure}
