@@ -1076,7 +1076,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:s
 // - **Per detailedDescription, la presenza dei microdata è obbligatoria e deve superare il Google Rich Results Test – includi SEMPRE name e offers**`;
 // }
 
-function buildSEOPrompt(
+function buildPrompt(
   chunk: { 
     id: string; 
     title: string; 
