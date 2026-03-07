@@ -332,7 +332,7 @@ async function processSingleProduct(
         ]
       });
     }
-    async function throttledUpdates(products, batchSize = 5, delayMs = 500) {
+    async function throttledUpdates(products, batchSize = 20, delayMs = 500) {
       for (let i = 0; i < products.length; i += batchSize) {
         const batch = products.slice(i, i + batchSize);
     
@@ -353,7 +353,7 @@ async function processSingleProduct(
     }
     
     // 4️⃣ Run throttled updates
-    await throttledUpdates(updateProducts, 1, 500);
+    await throttledUpdates(updateProducts, 2, 500);
 
 
 // for( const DESC_AI of optimizedHtml){
