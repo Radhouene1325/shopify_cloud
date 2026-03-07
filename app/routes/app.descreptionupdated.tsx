@@ -2035,7 +2035,11 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
     products(first: 30,after:$cursor) {
         edges{
             node{
-
+              publishedAt
+              createdAt
+              totalInventory
+              tracksInventory
+              updatedAt
               productParents(first:30) {
                   edges{
                     node{
