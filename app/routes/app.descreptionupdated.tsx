@@ -1137,7 +1137,6 @@ function buildPrompt(
       '    - Subito dopo l\'apertura del div, aggiungere i seguenti meta tag (invisibili) – **sono MANDATORI**:',
       '        <meta itemprop="name" content="{{title}}">',
       '        <meta itemprop="description" content="{{SEO_DESCRIPTION}}">   <!-- breve descrizione SEO, 150-160 caratteri -->',
-      '        <link itemprop="image" href="{{url}}">                        <!-- URL immagine principale dal campo url -->',
       '        <div itemprop="brand" itemscope itemtype="https://schema.org/Brand">',
       '          <meta itemprop="name" content="{{vendor}}">',
       '        </div>',
@@ -1151,7 +1150,6 @@ function buildPrompt(
       '        * {{title}} → usa il campo "title"',
       '        * {{vendor}} → usa il campo "vendor"',
       '        * {{handle}} → usa il campo "handle"',
-      '        * {{url}} → usa il campo "url" (URL immagine)',
       '        * {{currencyCode}} → usa il campo "currencyCode"',
       '        * {{min_amount}} → usa il campo "min_amount"',
       '        * {{max_amount}} → usa il campo "max_amount" (se serve range)',
@@ -1201,7 +1199,6 @@ AVAILABLE PRODUCT VARIABLES (use these exact values in meta tags and content):
   id: p.id,
   descreption: p.descreption.substring(0,100) + "..."
 }))}..." (full text available)
-- url: "${chunk.map(p => p.url).join('", "')}"
 - totalInventory: ${chunk.map(p => p.totalInventory).join(', ')}
 - tracksInventory: ${chunk.map(p => p.tracksInventory).join(', ')}
 - min_amount: "${chunk.map(p => p.min_amount).join('", "')}"
@@ -1284,7 +1281,7 @@ ESEMPIO detailedDescription (CON MICRODATA E TABELLA TAGLIE - USA I VALORI REALI
 <!-- MICRODATA INVISIBILI (MANDATORI per Google Rich Results) - USA I VALORI REALI -->
 <meta itemprop="name" content="${chunk[0]?.title || 'Product Name'}">
 <meta itemprop="description" content="SEO description extracted from descreption field, 150-160 chars">
-<link itemprop="image" href="${chunk[0]?.url || ''}">
+
 <div itemprop="brand" itemscope itemtype="https://schema.org/Brand">
   <meta itemprop="name" content="${chunk[0]?.vendor || 'PlatiNum'}">
 </div>
