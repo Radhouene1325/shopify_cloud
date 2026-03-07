@@ -2045,10 +2045,10 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                 attributes(first:30){
                   edges{
                     node{
-                      TaxonomyAttribute{
+                    ... on  TaxonomyAttribute{
                         id
                       }
-                      TaxonomyChoiceListAttribute{
+                      ... on TaxonomyChoiceListAttribute{
                         id
                         name
                         options{
