@@ -1626,6 +1626,8 @@ export default function DescriptionManager() {
   const [selected, setSelected] = useState<SelectedVariant[]>([]);
   const [isSelectAllIndeterminate, setIsSelectAllIndeterminate] = useState(false);
 console.log("rows is her see",rows)
+console.log('intital data is her ',initial)
+console.log("fetch is her succes",fetcher)
   const isLoading = fetcher.state === "loading";
   const isSubmitting = navigation.state === "submitting";
 
@@ -2030,9 +2032,31 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
   console.log('cursor her ',cursor)
   let query=    `#graphql
   query GetProducts($cursor:String) {
-    products(first: 25,after:$cursor) {
+    products(first: 30,after:$cursor) {
         edges{
             node{
+
+              productParents(first:30) {
+                  edges{
+                    node{
+                      totalInventory
+                      tracksInventory
+                      title
+                      updatedAt
+                      vendor
+                      publishedAt
+                      createdAt
+                      productType
+                      
+                      onlineStorePreviewUrl
+                      id
+                      hasOutOfStockVariants
+                      hasOnlyDefaultVariant
+                      handle
+                    }
+                  }
+              }
+
               priceRangeV2{
                 maxVariantPrice{
                    amount
