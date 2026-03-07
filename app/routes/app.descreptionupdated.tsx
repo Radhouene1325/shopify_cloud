@@ -1187,10 +1187,10 @@ return Response.json({
   total:updatedDescreptionAI.length
 })
 
-    const API_KEY_DEEP_SEEK=context.cloudflare?.env?.DEEP_SEEK_API_KEY
+    const API_KEY_DEEP_SEEK=context.cloudflare?.envariant?.DEEP_SEEK_API_KEY
     // console.log('api key is her ',API_KEY_DEEP_SEEK)
 
-    const API_KEY_GEMINI_GEMINI=context.cloudflare?.env?.GEMINI_API_KEY
+    const API_KEY_GEMINI_GEMINI=context.cloudflare?.envariant?.GEMINI_API_KEY
     // console.log('api key is her ',API_KEY_GEMINI_GEMINI)
     // console.log('hello UPDATE_PRODUCT',UPDATE_PRODUCT?.loc?.source.body)
 
@@ -1413,7 +1413,7 @@ const productSchema = {
 //           tags:v.tags,
 //           handel:v.handle,
 //           vendor:v.vendor,
-//           image:v?.featuredMedia?.image?.url??'',
+//           image:variant?.featuredMedia?.image?.url??'',
 //           productType:v.productType
 //         }));
   
@@ -1471,12 +1471,12 @@ const productSchema = {
 //                           ...prev,
 //                           {
 //                             // ...v, // spread all properties of v to satisfy SelectedVariant type
-//                             id: v?.id,
-//                             descreption: v?.descriptionHtml,
-//                             tags:v?.tags,
-//                             handel:v?.handle,
+//                             id: variant?.id,
+//                             descreption: variant?.descriptionHtml,
+//                             tags:variant?.tags,
+//                             handel:variant?.handle,
 //                             vendor:v.vendor,
-//                             image:v?.featuredMedia?.image?.url??'',
+//                             image:variant?.featuredMedia?.image?.url??'',
 //                             productType:v.productType
 //                           }
 //                         ]);
@@ -1717,6 +1717,14 @@ console.log("fetch is her succes",fetcher)
           vendor: variant.vendor,
           image: variant.featuredMedia?.image?.url || "",
           productType: variant.productType,
+          title:variant.title,
+          totalInventory:variant?.totalInventory,
+          tracksInventory:variant?.tracksInventory,
+          max_amount:variant?.priceRangeV2?.maxVariantPrice?.amount,
+          currencyCode:variant?.priceRangeV2?.maxVariantPrice?.currencyCode,
+          min_amount:variant.priceRangeV2?.minVariantPrice?.amount
+  
+         
         },
       ]);
     } else {
