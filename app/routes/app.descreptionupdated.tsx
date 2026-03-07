@@ -2033,6 +2033,20 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
     products(first: 15,after:$cursor) {
         edges{
             node{
+              priceRangeV2{
+                maxVariantPrice{
+                   amount
+                   currencyCode{
+                    EUR
+                   }
+                }
+                minVariantPrice{
+                  amount
+                   currencyCode{
+                    EUR
+                   }
+                }
+              }
               productType
 
               options(first: 10) {
