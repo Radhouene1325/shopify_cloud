@@ -2036,15 +2036,11 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
               priceRangeV2{
                 maxVariantPrice{
                    amount
-                   currencyCode{
-                    EUR
-                   }
+                   currencyCode
                 }
                 minVariantPrice{
                   amount
-                   currencyCode{
-                    EUR
-                   }
+                   currencyCode
                 }
               }
               productType
