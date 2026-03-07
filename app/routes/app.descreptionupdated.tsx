@@ -1197,7 +1197,10 @@ AVAILABLE PRODUCT VARIABLES (use these exact values in meta tags and content):
 - handle: "${chunk.map(p => p.handle).join('", "')}"
 - title: "${chunk.map(p => p.title).join('", "')}"
 - vendor: "${chunk.map(p => p.vendor).join('", "')}"
-- descreption: "${chunk.map(p => p.descreption).substring(0, 100)}..." (full text available)
+- descreption: "${chunk.map(p => ({
+  id: p.id,
+  descreption: p.descreption.substring(0,100) + "..."
+}))}..." (full text available)
 - url: "${chunk.map(p => p.url).join('", "')}"
 - totalInventory: ${chunk.map(p => p.totalInventory).join(', ')}
 - tracksInventory: ${chunk.map(p => p.tracksInventory).join(', ')}
