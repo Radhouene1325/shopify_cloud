@@ -5,8 +5,8 @@ import {type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node
 import { useActionData, Form, useNavigation, useLoaderData, useFetcher, useSubmit } from "@remix-run/react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { shopify } from "../shopify.server";
-import { Badge, Button, Card, Checkbox, DataTable, Pagination, Thumbnail } from "@shopify/polaris";
-import { useCallback, useEffect, useState } from "react";
+import { Badge, Banner, BlockStack, Box, Button, Card, Checkbox, DataTable, Divider, EmptyState, InlineStack, Page, Pagination, Spinner, Tag, Text, Thumbnail, Tooltip, useBreakpoints } from "@shopify/polaris";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import JSON5 from "json5";
   // sk-c8552ae161ed4db684bb1268bf4ba758
   import { Deepseek } from 'node-deepseek';
@@ -1155,7 +1155,7 @@ CRITICAL:
 export async function action({context ,request }: ActionFunctionArgs) {
  let {admin}=await shopify(context).authenticate.admin(request)
  let {session}=await shopify(context).authenticate.admin(request)
-
+ 
  let formData=await request.formData()
  const updatedDescreptionAI:DESCREPTION = JSON.parse(formData.get('descreptionAI') as string);
  if (!Array.isArray(updatedDescreptionAI)) {
@@ -1566,326 +1566,400 @@ const productSchema = {
 //     );
 //   }
   
-  interface Variant {
-    id: string;
-    title: string;
-    descriptionHtml: string;
-    tags: string[];
-    handle: string;
-    vendor: string;
-    productType: string;
-    featuredMedia?: {
-      image?: {
-        url: string;
-        altText?: string;
-      };
+interface Variant {
+  id: string;
+  title: string;
+  descriptionHtml: string;
+  tags: string[];
+  handle: string;
+  vendor: string;
+  productType: string;
+  inventoryQuantity?: number;
+  featuredMedia?: {
+    image?: {
+      url: string;
+      altText?: string;
     };
-  }
-  
-  interface PageInfo {
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
-    endCursor: string;
-    startCursor: string;
-  }
-  
-  interface LoaderData {
-    variants: Variant[];
-    pageInfo: PageInfo;
-  }
-  
-  interface SelectedVariant {
-    id: string;
-    description: string;
-    tags: string[];
-    handle: string;
-    vendor: string;
-    image: string;
-    productType: string;
-  }
-  
+  };
+}
 
-  
-  export default function DescriptionUpdated() {
-    // Hooks
-    const initial = useLoaderData<typeof loader>();
-    const fetcher = useFetcher<LoaderData>();
-    const submit = useSubmit();
-    const actionData = useActionData();
-    const navigation = useNavigation();
-  
-    // State
-    const [rows, setRows] = useState<Variant[]>(initial?.variants || []);
-    const [pageInfo, setPageInfo] = useState<PageInfo | null>(initial?.pageInfo || null);
-    const [cursorStack, setCursorStack] = useState<string[]>([]);
-    const [selected, setSelected] = useState<SelectedVariant[]>([]);
-    const [isSelectAllChecked, setIsSelectAllChecked] = useState(false);
-    const [isSelectAllIndeterminate, setIsSelectAllIndeterminate] = useState(false);
-  
-    const isSubmitting = navigation.state === "submitting";
-    const isLoading = fetcher.state === "loading";
-  
-    // Update rows when fetcher data changes
-    useEffect(() => {
-      if (fetcher.data) {
-        setRows(fetcher.data.variants);
-        setPageInfo(fetcher.data.pageInfo);
-      }
-    }, [fetcher.data]);
-  
-    // Auto-select variants without DESC_AI tag
-    useEffect(() => {
-      const autoSelected: SelectedVariant[] = rows
-        .filter((v) => !v.tags?.includes("DESC_AI"))
-        .map((v) => ({
-          id: v.id,
-          description: v.descriptionHtml || "",
-          tags: v.tags || [],
-          handle: v.handle,
-          vendor: v.vendor,
-          image: v.featuredMedia?.image?.url || "",
-          productType: v.productType,
-        }));
-  
-      setSelected(autoSelected);
-    }, [rows]);
-  
-    // Update select all checkbox state
-    useEffect(() => {
-      const allSelected = rows.length > 0 && rows.every((v) => selected.some((s) => s.id === v.id));
-      const someSelected = rows.some((v) => selected.some((s) => s.id === v.id));
-      
-      setIsSelectAllChecked(allSelected);
-      setIsSelectAllIndeterminate(someSelected && !allSelected);
-    }, [selected, rows]);
-  
-    // Handlers
-    const handleSelectAll = useCallback((checked: boolean) => {
+interface PageInfo {
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  endCursor: string;
+  startCursor: string;
+}
+
+interface LoaderData {
+  variants: Variant[];
+  pageInfo: PageInfo;
+}
+
+interface SelectedVariant {
+  id: string;
+  description: string;
+  tags: string[];
+  handle: string;
+  vendor: string;
+  image: string;
+  productType: string;
+}
+
+// Loader & Action
+
+
+export default function DescriptionManager() {
+  // Hooks
+  const initial = useLoaderData<LoaderData>();
+  const fetcher = useFetcher<LoaderData>();
+  const submit = useSubmit();
+  const actionData = useActionData<{ success?: boolean; error?: string }>();
+  const navigation = useNavigation();
+  const { smDown } = useBreakpoints();
+
+  // State
+  const [rows, setRows] = useState<Variant[]>(initial?.variants || []);
+  const [pageInfo, setPageInfo] = useState<PageInfo | null>(initial?.pageInfo || null);
+  const [cursorStack, setCursorStack] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isSelectAllIndeterminate, setIsSelectAllIndeterminate] = useState(false);
+
+  const isLoading = fetcher.state === "loading";
+  const isSubmitting = navigation.state === "submitting";
+
+  // Memoized selected variants data
+  const selectedVariants = useMemo<SelectedVariant[]>(() => {
+    return rows
+      .filter((v) => selectedIds.has(v.id))
+      .map((v) => ({
+        id: v.id,
+        description: v.descriptionHtml || "",
+        tags: v.tags || [],
+        handle: v.handle,
+        vendor: v.vendor,
+        image: v.featuredMedia?.image?.url || "",
+        productType: v.productType,
+      }));
+  }, [rows, selectedIds]);
+console.log('section params is her ',selectedIds)
+  // Update rows when fetcher data changes
+  useEffect(() => {
+    if (fetcher.data) {
+      setRows(fetcher.data.variants);
+      setPageInfo(fetcher.data.pageInfo);
+      // Clear selection when changing pages to avoid confusion
+      setSelectedIds(new Set());
+    }
+  }, [fetcher.data]);
+
+  // Update select all checkbox state
+  useEffect(() => {
+    if (rows.length === 0) {
+      setIsSelectAllIndeterminate(false);
+      return;
+    }
+    const allSelected = rows.every((v) => selectedIds.has(v.id));
+    const someSelected = rows.some((v) => selectedIds.has(v.id));
+    setIsSelectAllIndeterminate(someSelected && !allSelected);
+  }, [selectedIds, rows]);
+
+  // Handlers
+  const handleSelectAll = useCallback((checked: boolean) => {
+    if (checked) {
+      const newSelected = new Set(rows.map((v) => v.id));
+      setSelectedIds(newSelected);
+    } else {
+      setSelectedIds(new Set());
+    }
+  }, [rows]);
+
+  const handleSelectRow = useCallback((id: string, checked: boolean) => {
+    setSelectedIds((prev) => {
+      const newSet = new Set(prev);
       if (checked) {
-        const allSelected: SelectedVariant[] = rows.map((v) => ({
-          id: v.id,
-          description: v.descriptionHtml || "",
-          tags: v.tags || [],
-          handle: v.handle,
-          vendor: v.vendor,
-          image: v.featuredMedia?.image?.url || "",
-          productType: v.productType,
-        }));
-        setSelected(allSelected);
+        newSet.add(id);
       } else {
-        setSelected([]);
+        newSet.delete(id);
       }
-    }, [rows]);
-  
-    const handleSelectRow = useCallback((variant: Variant, checked: boolean) => {
-      if (checked) {
-        setSelected((prev) => [
-          ...prev,
-          {
-            id: variant.id,
-            description: variant.descriptionHtml || "",
-            tags: variant.tags || [],
-            handle: variant.handle,
-            vendor: variant.vendor,
-            image: variant.featuredMedia?.image?.url || "",
-            productType: variant.productType,
-          },
-        ]);
-      } else {
-        setSelected((prev) => prev.filter((s) => s.id !== variant.id));
-      }
-    }, []);
-  
-    const handleNextPage = useCallback(() => {
-      if (pageInfo?.endCursor) {
-        setCursorStack((prev) => [...prev, pageInfo.endCursor]);
-        fetcher.load(`?cursor=${pageInfo.endCursor}`);
-      }
-    }, [pageInfo, fetcher]);
-  
-    const handlePreviousPage = useCallback(() => {
-      if (cursorStack.length > 1) {
-        const prevCursor = cursorStack[cursorStack.length - 2];
-        setCursorStack((prev) => prev.slice(0, -1));
-        fetcher.load(`?cursor=${prevCursor}`);
-      }
-    }, [cursorStack, fetcher]);
-  
-    const handleSubmitFormData = useCallback(() => {
-      if (selected.length === 0) return;
-  
-      const formData = new FormData();
-      formData.append("descreptionAI", JSON.stringify(selected));
-  //     submit(formData, { 
-//       method: "post",
-//       encType: "application/x-www-form-urlencoded" 
-//     });
-      submit(formData, {
-        method: "post",
-        encType: "application/x-www-form-urlencoded",
-      });
-    }, [selected, submit]);
-  
-    // Table columns configuration
-    const columns = [
-      {
-        title: (
-          <Checkbox
-            label="Select All"
-            labelHidden
-            checked={isSelectAllChecked}
-            indeterminate={isSelectAllIndeterminate}
-            onChange={handleSelectAll}
-          />
-        ),
-        key: "select",
-        width: "5%",
-      },
-      {
-        title: "Product Image",
-        key: "image",
-        width: "15%",
-      },
-      {
-        title: "Vendor",
-        key: "vendor",
-        width: "10%",
-      },
-      {
-        title: "Title",
-        key: "title",
-        width: "15%",
-      },
-      {
-        title: "Product ID",
-        key: "id",
-        width: "15%",
-      },
-      {
-        title: "Description",
-        key: "description",
-        width: "20%",
-      },
-      {
-        title: "Tags",
-        key: "tags",
-        width: "15%",
-      },
-      {
-        title: "Handle",
-        key: "handle",
-        width: "10%",
-      },
-    ];
-  
-    // Table rows
-    const tableRows = rows.map((variant) => [
+      return newSet;
+    });
+  }, []);
+
+  const handleNextPage = useCallback(() => {
+    if (pageInfo?.endCursor) {
+      setCursorStack((prev) => [...prev, pageInfo.endCursor]);
+      fetcher.load(`?cursor=${pageInfo.endCursor}`);
+    }
+  }, [pageInfo, fetcher]);
+
+  const handlePreviousPage = useCallback(() => {
+    if (cursorStack.length > 0) {
+      const newStack = cursorStack.slice(0, -1);
+      setCursorStack(newStack);
+      const prevCursor = newStack[newStack.length - 1];
+      fetcher.load(prevCursor ? `?cursor=${prevCursor}` : "?cursor=");
+    }
+  }, [cursorStack, fetcher]);
+
+  const handleSubmit = useCallback(() => {
+    if (selectedIds.size === 0) return;
+
+    const formData = new FormData();
+    formData.append("descreptionAI", JSON.stringify(selectedVariants));
+
+    submit(formData, {
+      method: "post",
+      encType: "application/x-www-form-urlencoded",
+    });
+  }, [selectedIds, selectedVariants, submit]);
+
+  // Table configuration
+  const headings = [
+    <Checkbox
+      key="select-all"
+      label="Select all variants"
+      labelHidden
+      checked={rows.length > 0 && rows.every((v) => selectedIds.has(v.id))}
+      indeterminate={isSelectAllIndeterminate}
+      onChange={handleSelectAll}
+      disabled={rows.length === 0}
+    />,
+    "Image",
+    "Product Details",
+    "Description",
+    "Tags",
+    "Handle",
+  ];
+
+  const rowsData = useMemo(() => {
+    return rows.map((variant) => [
       <Checkbox
         key={`checkbox-${variant.id}`}
         label={`Select ${variant.title}`}
         labelHidden
-        checked={selected.some((s) => s.id === variant.id)}
-        onChange={(checked) => handleSelectRow(variant, checked)}
+        checked={selectedIds.has(variant.id)}
+        onChange={(checked) => handleSelectRow(variant.id, checked)}
       />,
       <Thumbnail
-        key={`image-${variant.id}`}
+        key={`thumb-${variant.id}`}
         source={variant.featuredMedia?.image?.url || ""}
         alt={variant.featuredMedia?.image?.altText || variant.title}
-        size="large"
+        size="medium"
       />,
-      variant.vendor,
-      variant.title,
-      <span key={`id-${variant.id}`} className="font-mono text-sm">{variant.id}</span>,
-      <div 
-        key={`desc-${variant.id}`}
-        className="max-h-24 overflow-y-auto text-sm"
-        dangerouslySetInnerHTML={{ __html: variant.descriptionHtml || "No description" }}
-      />,
-      <div key={`tags-${variant.id}`} className="flex flex-wrap gap-1">
-        {variant.tags?.map((tag, index) => (
-          <Badge key={index} tone={tag === "DESC_AI" ? "success" : "info"}>
-            {tag}
-          </Badge>
-        )) || <span className="text-gray-400">No tags</span>}
-      </div>,
-      <span key={`handle-${variant.id}`} className="text-sm text-gray-600">{variant.handle}</span>,
-    ]);
-  
-    return (
-      <div className="p-6 max-w-7xl mx-auto">
-        <Card>
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Product Description Manager</h1>
-              <p className="text-gray-600 mt-1">
-                Manage and update product descriptions for {selected.length} selected variants
-              </p>
-            </div>
-            <Button
-              variant="primary"
-              onClick={handleSubmitFormData}
-              loading={isSubmitting}
-              disabled={selected.length === 0}
-              size="large"
-            >
-              Update Descriptions ({selected.length})
-            </Button>
-          </div>
-  
-          <div className="mb-4 flex items-center gap-2">
-            <Badge tone="info">{rows.length} products on page</Badge>
-            <Badge tone="success">{selected.length} selected</Badge>
-            {selected.some((s) => s.tags.includes("DESC_AI")) && (
-              <Badge tone="warning">Some already processed</Badge>
-            )}
-          </div>
-  
-          <DataTable
-            columnContentTypes={[
-              "text", // Select
-              "text", // Image
-              "text", // Vendor
-              "text", // Title
-              "text", // ID
-              "text", // Description
-              "text", // Tags
-              "text", // Handle
-            ]}
-            headings={columns.map((col) => col.title)}
-            rows={tableRows}
-            verticalAlign="middle"
-            hoverable
-          />
-  
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
-            <div className="text-sm text-gray-600">
-              {pageInfo?.hasPreviousPage && `Page ${cursorStack.length}`}
-            </div>
-            
-            <Pagination
-              hasPrevious={cursorStack.length > 0}
-              onPrevious={handlePreviousPage}
-              hasNext={pageInfo?.hasNextPage || false}
-              onNext={handleNextPage}
-              label={`${selected.length} items selected`}
-            />
-          </div>
-        </Card>
-  
-        {/* Action Data Display */}
-        {actionData && (
-          <Card className="mt-4">
-            <div className="p-4">
-              <h3 className="font-semibold mb-2">Action Result</h3>
-              <pre className="bg-gray-100 p-3 rounded text-sm overflow-auto">
-                {JSON.stringify(actionData, null, 2)}
-              </pre>
-            </div>
-          </Card>
+      <BlockStack key={`details-${variant.id}`} gap="100">
+        <Text as="span" variant="bodyMd" fontWeight="semibold">
+          {variant.title}
+        </Text>
+        <Text as="span" variant="bodySm" tone="subdued">
+          {variant.vendor} • {variant.productType}
+        </Text>
+        <Text as="span" variant="bodySm" fontWeight="medium" fontFamily="monospace">
+          ID: {variant.id.split("/").pop()}
+        </Text>
+      </BlockStack>,
+      <Box key={`desc-${variant.id}`} maxWidth="300px">
+        <div
+          style={{
+            maxHeight: "80px",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical",
+            fontSize: "13px",
+            lineHeight: "1.4",
+            color: variant.descriptionHtml ? "inherit" : "#999",
+          }}
+          dangerouslySetInnerHTML={{
+            __html: variant.descriptionHtml || "<em>No description available</em>",
+          }}
+        />
+      </Box>,
+      <InlineStack key={`tags-${variant.id}`} gap="100" wrap>
+        {variant.tags?.length > 0 ? (
+          variant.tags.map((tag) => (
+            <Tag key={tag} tone={tag === "DESC_AI" ? "success" : "neutral"}>
+              {tag}
+            </Tag>
+          ))
+        ) : (
+          <Text as="span" tone="subdued" variant="bodySm">
+            No tags
+          </Text>
         )}
-      </div>
+      </InlineStack>,
+      <Text key={`handle-${variant.id}`} as="span" variant="bodySm" tone="subdued" breakWord>
+        /{variant.handle}
+      </Text>,
+    ]);
+  }, [rows, selectedIds, handleSelectRow]);
+
+  // Empty state
+  if (rows.length === 0 && !isLoading) {
+    return (
+      <Page title="Description Manager">
+        <Card>
+          <EmptyState
+            heading="No variants found"
+            image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
+          >
+            <p>There are no product variants to display.</p>
+          </EmptyState>
+        </Card>
+      </Page>
     );
   }
+
+  return (
+    <Page
+      title="Description Manager"
+      subtitle={`${selectedIds.size} variants selected for update`}
+      primaryAction={
+        <Button
+          variant="primary"
+          onClick={handleSubmit}
+          loading={isSubmitting}
+          disabled={selectedIds.size === 0}
+        >
+          Update Descriptions
+        </Button>
+      }
+      secondaryActions={[
+        {
+          content: "Refresh",
+          onAction: () => fetcher.load(window.location.search),
+          loading: isLoading,
+        },
+      ]}
+    >
+      <BlockStack gap="400">
+        {/* Status Banner */}
+        {actionData?.success && (
+          <Banner title="Success" tone="success" onDismiss={() => {}}>
+            <p>Successfully updated {selectedIds.size} product descriptions.</p>
+          </Banner>
+        )}
+        {actionData?.error && (
+          <Banner title="Error" tone="critical">
+            <p>{actionData.error}</p>
+          </Banner>
+        )}
+
+        {/* Stats Bar */}
+        <Card padding="400">
+          <InlineStack gap="400" align="space-between" blockAlign="center" wrap={false}>
+            <InlineStack gap="400">
+              <Box>
+                <Text as="p" variant="bodySm" tone="subdued">
+                  Total on Page
+                </Text>
+                <Text as="p" variant="headingMd">
+                  {rows.length}
+                </Text>
+              </Box>
+              <Box>
+                <Text as="p" variant="bodySm" tone="subdued">
+                  Selected
+                </Text>
+                <Text as="p" variant="headingMd" tone="success">
+                  {selectedIds.size}
+                </Text>
+              </Box>
+              <Box>
+                <Text as="p" variant="bodySm" tone="subdued">
+                  Already Processed
+                </Text>
+                <Text as="p" variant="headingMd">
+                  {rows.filter((v) => v.tags?.includes("DESC_AI")).length}
+                </Text>
+              </Box>
+            </InlineStack>
+            
+            <Tooltip content="Select variants without DESC_AI tag">
+              <Button
+                size="slim"
+                onClick={() => {
+                  const autoSelect = new Set(
+                    rows
+                      .filter((v) => !v.tags?.includes("DESC_AI"))
+                      .map((v) => v.id)
+                  );
+                  setSelectedIds(autoSelect);
+                }}
+              >
+                Auto-select New
+              </Button>
+            </Tooltip>
+          </InlineStack>
+        </Card>
+
+        {/* Data Table */}
+        <Card padding="0">
+          {isLoading ? (
+            <Box padding="600" alignItems="center" display="flex" justifyContent="center">
+              <Spinner size="large" />
+            </Box>
+          ) : (
+            <>
+              <DataTable
+                columnContentTypes={[
+                  "text", // Checkbox
+                  "text", // Image
+                  "text", // Details
+                  "text", // Description
+                  "text", // Tags
+                  "text", // Handle
+                ]}
+                headings={headings}
+                rows={rowsData}
+                verticalAlign="middle"
+                hoverable
+                truncate={false}
+              />
+              
+              {/* Pagination */}
+              <Divider />
+              <Box padding="400">
+                <InlineStack align="center">
+                  <Pagination
+                    hasPrevious={cursorStack.length > 0}
+                    onPrevious={handlePreviousPage}
+                    hasNext={pageInfo?.hasNextPage || false}
+                    onNext={handleNextPage}
+                    label={`Page ${cursorStack.length + 1}`}
+                  />
+                </InlineStack>
+              </Box>
+            </>
+          )}
+        </Card>
+
+        {/* Bulk Actions Footer (Mobile) */}
+        {smDown && selectedIds.size > 0 && (
+          <Box
+            position="fixed"
+            insetBlockEnd="0"
+            insetInlineStart="0"
+            insetInlineEnd="0"
+            padding="400"
+            background="bg-surface"
+            borderBlockStartWidth="100"
+            borderColor="border"
+          >
+            <Button
+              variant="primary"
+              fullWidth
+              onClick={handleSubmit}
+              loading={isSubmitting}
+            >
+              Update {selectedIds.size} Descriptions
+            </Button>
+          </Box>
+        )}
+      </BlockStack>
+    </Page>
+  );
+}
 
 
 

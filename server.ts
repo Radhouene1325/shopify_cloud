@@ -596,7 +596,7 @@ function createShopifyAdmin(shop: string, token: string): GraphQLAdmin {
     async graphql(query: string, options?: { variables?: Record<string, any> }) {
 
       return fetch(
-        `https://${shop}/admin/api/2024-10/graphql.json`,
+        `https://${shop}/admin/api/2022-01/graphql.json`,
         {
           method: "POST",
           headers: {
