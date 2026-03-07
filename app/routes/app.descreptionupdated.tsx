@@ -2035,6 +2035,30 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
     products(first: 30,after:$cursor) {
         edges{
             node{
+              category{
+                ancestorIds
+                fullName
+                id
+                isLeaf
+                name
+                parentId
+                attributes(first:30){
+                  edges{
+                    node{
+                      TaxonomyAttribute{
+                        id
+                      }
+                      TaxonomyChoiceListAttribute{
+                        id
+                        name
+                        options{
+                          key value
+                        }
+                      }
+                    }
+                  }
+                }
+              }
               publishedAt
               createdAt
               totalInventory
