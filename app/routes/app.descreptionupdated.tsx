@@ -1754,13 +1754,13 @@ export default function DescriptionManager() {
 
     const formData = new FormData();
     formData.append("descreptionAI", JSON.stringify(selected));
-
+    
     submit(formData, {
       method: "post",
       encType: "application/x-www-form-urlencoded",
     });
   }, [selected, submit]);
-
+console.log('selected is her ',selected)
   // Table headings with Select All checkbox
   const headings = [
     <Checkbox
