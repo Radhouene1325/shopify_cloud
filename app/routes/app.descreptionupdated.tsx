@@ -1162,7 +1162,6 @@ function buildPrompt(
       '    - Il campo `name` (title) è obbligatorio.',
       '    - Il campo `offers` (prezzo, valuta, disponibilità) è obbligatorio.',
       '    - Il campo `brand` (vendor) è obbligatorio.',
-      '    - Il campo `image` (url) è fortemente raccomandato.',
       '    - Assicurati che il prezzo sia un numero con punto (es. "89.95") e la valuta sia "EUR".',
       '',
       '  La tabella delle specifiche e quella delle taglie devono essere avvolte in un contenitore con overflow-x:auto per lo scorrimento orizzontale su mobile.',
@@ -1352,7 +1351,7 @@ ${JSON.stringify(chunk.map(p => ({
   title: p.title,
   vendor: p.vendor,
   descreption: p.descreption.substring(0, 200) + (p.descreption.length > 200 ? '...' : ''),
-  url: p.url,
+  
   totalInventory: p.totalInventory,
   tracksInventory: p.tracksInventory,
   min_amount: p.min_amount,
@@ -1366,7 +1365,7 @@ PROCESSING INSTRUCTIONS:
    - title → <meta itemprop="name" content="VALORE">
    - vendor → <meta itemprop="name" content="VALORE"> (dentro Brand)
    - handle → https://platinumshop.it/products/VALORE
-   - url → <link itemprop="image" href="VALORE">
+   
    - min_amount → <meta itemprop="price" content="VALORE">
    - currencyCode → <meta itemprop="priceCurrency" content="VALORE">
    - totalInventory → se > 0 usa InStock, altrimenti OutOfStock
@@ -1393,7 +1392,7 @@ CRITICAL:
 - NO explanatory text
 - Just pure JSON
 - Perfect responsive on ALL devices
-- **Per detailedDescription, usa SEMPRE i valori reali dei campi handle, title, vendor, url, min_amount, currencyCode, totalInventory nei meta tag Schema.org**`;
+- **Per detailedDescription, usa SEMPRE i valori reali dei campi handle, title, vendor,  min_amount, currencyCode, totalInventory nei meta tag Schema.org**`;
 }
 
 
