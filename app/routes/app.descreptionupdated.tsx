@@ -1575,6 +1575,7 @@ interface Variant {
   vendor: string;
   productType: string;
   inventoryQuantity?: number;
+  inventoryPolicy?: string;
   featuredMedia?: {
     image?: {
       url: string;
@@ -1595,11 +1596,12 @@ interface LoaderData {
   pageInfo: PageInfo;
 }
 
+// Your exact selection structure
 interface SelectedVariant {
   id: string;
-  description: string;
+  descreption: string;  // Note: matches your spelling
   tags: string[];
-  handle: string;
+  handel: string;       // Note: matches your spelling
   vendor: string;
   image: string;
   productType: string;
@@ -1621,34 +1623,21 @@ export default function DescriptionManager() {
   const [rows, setRows] = useState<Variant[]>(initial?.variants || []);
   const [pageInfo, setPageInfo] = useState<PageInfo | null>(initial?.pageInfo || null);
   const [cursorStack, setCursorStack] = useState<string[]>([]);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selected, setSelected] = useState<SelectedVariant[]>([]);
   const [isSelectAllIndeterminate, setIsSelectAllIndeterminate] = useState(false);
 
   const isLoading = fetcher.state === "loading";
   const isSubmitting = navigation.state === "submitting";
 
-  // Memoized selected variants data
-  const selectedVariants = useMemo<SelectedVariant[]>(() => {
-    return rows
-      .filter((v) => selectedIds.has(v.id))
-      .map((v) => ({
-        id: v.id,
-        description: v.descriptionHtml || "",
-        tags: v.tags || [],
-        handle: v.handle,
-        vendor: v.vendor,
-        image: v.featuredMedia?.image?.url || "",
-        productType: v.productType,
-      }));
-  }, [rows, selectedIds]);
-console.log('section params is her ',selectedIds)
   // Update rows when fetcher data changes
   useEffect(() => {
     if (fetcher.data) {
       setRows(fetcher.data.variants);
       setPageInfo(fetcher.data.pageInfo);
-      // Clear selection when changing pages to avoid confusion
-      setSelectedIds(new Set());
+      // Keep existing selections that are still in new rows, remove others
+      setSelected((prev) => 
+        prev.filter((s) => fetcher?.data?.variants.some((v: Variant) => v.id === s.id))
+      );
     }
   }, [fetcher.data]);
 
@@ -1658,33 +1647,91 @@ console.log('section params is her ',selectedIds)
       setIsSelectAllIndeterminate(false);
       return;
     }
-    const allSelected = rows.every((v) => selectedIds.has(v.id));
-    const someSelected = rows.some((v) => selectedIds.has(v.id));
+    const allSelected = rows.every((v) => selected.some((s) => s.id === v.id));
+    const someSelected = rows.some((v) => selected.some((s) => s.id === v.id));
     setIsSelectAllIndeterminate(someSelected && !allSelected);
-  }, [selectedIds, rows]);
+  }, [selected, rows]);
 
-  // Handlers
+  // Check if a variant is selected
+  const isSelected = useCallback((id: string) => {
+    return selected.some((s) => s.id === id);
+  }, [selected]);
+
+  // Handle select all
   const handleSelectAll = useCallback((checked: boolean) => {
     if (checked) {
-      const newSelected = new Set(rows.map((v) => v.id));
-      setSelectedIds(newSelected);
+      const allSelected: SelectedVariant[] = rows.map((v) => ({
+        id: v.id,
+        descreption: v.descriptionHtml || "",
+        tags: v.tags || [],
+        handel: v.handle,
+        vendor: v.vendor,
+        image: v.featuredMedia?.image?.url || "",
+        productType: v.productType,
+      }));
+      setSelected(allSelected);
     } else {
-      setSelectedIds(new Set());
+      setSelected([]);
     }
   }, [rows]);
 
-  const handleSelectRow = useCallback((id: string, checked: boolean) => {
-    setSelectedIds((prev) => {
-      const newSet = new Set(prev);
-      if (checked) {
-        newSet.add(id);
-      } else {
-        newSet.delete(id);
-      }
-      return newSet;
-    });
+  // Handle individual row selection
+  const handleSelectRow = useCallback((variant: Variant, checked: boolean) => {
+    if (checked) {
+      setSelected((prev) => [
+        ...prev,
+        {
+          id: variant.id,
+          descreption: variant.descriptionHtml || "",
+          tags: variant.tags || [],
+          handel: variant.handle,
+          vendor: variant.vendor,
+          image: variant.featuredMedia?.image?.url || "",
+          productType: variant.productType,
+        },
+      ]);
+    } else {
+      setSelected((prev) => prev.filter((s) => s.id !== variant.id));
+    }
   }, []);
 
+  // Toggle row selection (add if not exists, remove if exists)
+  const toggleSelection = useCallback((variant: Variant) => {
+    const exists = selected.some((s) => s.id === variant.id);
+    if (exists) {
+      setSelected((prev) => prev.filter((s) => s.id !== variant.id));
+    } else {
+      setSelected((prev) => [
+        ...prev,
+        {
+          id: variant.id,
+          descreption: variant.descriptionHtml || "",
+          tags: variant.tags || [],
+          handel: variant.handle,
+          vendor: variant.vendor,
+          image: variant.featuredMedia?.image?.url || "",
+          productType: variant.productType,
+        },
+      ]);
+    }
+  }, [selected]);
+  // Auto-select variants without DESC_AI tag
+  const handleAutoSelect = useCallback(() => {
+    const newSelected: SelectedVariant[] = rows
+      .filter((v) => !v.tags?.includes("DESC_AI"))
+      .map((v) => ({
+        id: v.id,
+        descreption: v.descriptionHtml || "",
+        tags: v.tags || [],
+        handel: v.handle,
+        vendor: v.vendor,
+        image: v.featuredMedia?.image?.url || "",
+        productType: v.productType,
+      }));
+    setSelected(newSelected);
+  }, [rows]);
+
+  // Pagination handlers
   const handleNextPage = useCallback(() => {
     if (pageInfo?.endCursor) {
       setCursorStack((prev) => [...prev, pageInfo.endCursor]);
@@ -1701,25 +1748,26 @@ console.log('section params is her ',selectedIds)
     }
   }, [cursorStack, fetcher]);
 
+  // Submit handler
   const handleSubmit = useCallback(() => {
-    if (selectedIds.size === 0) return;
+    if (selected.length === 0) return;
 
     const formData = new FormData();
-    formData.append("descreptionAI", JSON.stringify(selectedVariants));
+    formData.append("descreptionAI", JSON.stringify(selected));
 
     submit(formData, {
       method: "post",
       encType: "application/x-www-form-urlencoded",
     });
-  }, [selectedIds, selectedVariants, submit]);
+  }, [selected, submit]);
 
-  // Table configuration
+  // Table headings with Select All checkbox
   const headings = [
     <Checkbox
       key="select-all"
       label="Select all variants"
       labelHidden
-      checked={rows.length > 0 && rows.every((v) => selectedIds.has(v.id))}
+      checked={rows.length > 0 && rows.every((v) => isSelected(v.id))}
       indeterminate={isSelectAllIndeterminate}
       onChange={handleSelectAll}
       disabled={rows.length === 0}
@@ -1731,14 +1779,15 @@ console.log('section params is her ',selectedIds)
     "Handle",
   ];
 
+  // Table rows
   const rowsData = useMemo(() => {
     return rows.map((variant) => [
       <Checkbox
         key={`checkbox-${variant.id}`}
         label={`Select ${variant.title}`}
         labelHidden
-        checked={selectedIds.has(variant.id)}
-        onChange={(checked) => handleSelectRow(variant.id, checked)}
+        checked={isSelected(variant.id)}
+        onChange={(checked) => handleSelectRow(variant, checked)}
       />,
       <Thumbnail
         key={`thumb-${variant.id}`}
@@ -1792,7 +1841,7 @@ console.log('section params is her ',selectedIds)
         /{variant.handle}
       </Text>,
     ]);
-  }, [rows, selectedIds, handleSelectRow]);
+  }, [rows, isSelected, handleSelectRow]);
 
   // Empty state
   if (rows.length === 0 && !isLoading) {
@@ -1813,13 +1862,13 @@ console.log('section params is her ',selectedIds)
   return (
     <Page
       title="Description Manager"
-      subtitle={`${selectedIds.size} variants selected for update`}
+      subtitle={`${selected.length} variants selected for update`}
       primaryAction={
         <Button
           variant="primary"
           onClick={handleSubmit}
           loading={isSubmitting}
-          disabled={selectedIds.size === 0}
+          disabled={selected.length === 0}
         >
           Update Descriptions
         </Button>
@@ -1833,10 +1882,10 @@ console.log('section params is her ',selectedIds)
       ]}
     >
       <BlockStack gap="400">
-        {/* Status Banner */}
+        {/* Status Banners */}
         {actionData?.success && (
           <Banner title="Success" tone="success" onDismiss={() => {}}>
-            <p>Successfully updated {selectedIds.size} product descriptions.</p>
+            <p>Successfully updated {selected.length} product descriptions.</p>
           </Banner>
         )}
         {actionData?.error && (
@@ -1862,7 +1911,7 @@ console.log('section params is her ',selectedIds)
                   Selected
                 </Text>
                 <Text as="p" variant="headingMd" tone="success">
-                  {selectedIds.size}
+                  {selected.length}
                 </Text>
               </Box>
               <Box>
@@ -1878,14 +1927,8 @@ console.log('section params is her ',selectedIds)
             <Tooltip content="Select variants without DESC_AI tag">
               <Button
                 size="slim"
-                onClick={() => {
-                  const autoSelect = new Set(
-                    rows
-                      .filter((v) => !v.tags?.includes("DESC_AI"))
-                      .map((v) => v.id)
-                  );
-                  setSelectedIds(autoSelect);
-                }}
+                onClick={handleAutoSelect}
+                disabled={rows.filter((v) => !v.tags?.includes("DESC_AI")).length === 0}
               >
                 Auto-select New
               </Button>
@@ -1934,8 +1977,23 @@ console.log('section params is her ',selectedIds)
           )}
         </Card>
 
-        {/* Bulk Actions Footer (Mobile) */}
-        {smDown && selectedIds.size > 0 && (
+        {/* Debug: Show selected data structure */}
+        {process.env.NODE_ENV === "development" && selected.length > 0 && (
+          <Card>
+            <Box padding="400">
+              <Text as="h3" variant="headingSm">Debug: Selected Data Structure</Text>
+              <Box padding="200" background="bg-surface-secondary" borderRadius="200">
+                <pre style={{ fontSize: "11px", overflow: "auto" }}>
+                  {JSON.stringify(selected.slice(0, 2), null, 2)}
+                  {selected.length > 2 && `\n... and ${selected.length - 2} more`}
+                </pre>
+              </Box>
+            </Box>
+          </Card>
+        )}
+
+        {/* Mobile Bulk Actions */}
+        {smDown && selected.length > 0 && (
           <Box
             position="fixed"
             insetBlockEnd="0"
@@ -1945,6 +2003,7 @@ console.log('section params is her ',selectedIds)
             background="bg-surface"
             borderBlockStartWidth="100"
             borderColor="border"
+            zIndex="100"
           >
             <Button
               variant="primary"
@@ -1952,7 +2011,7 @@ console.log('section params is her ',selectedIds)
               onClick={handleSubmit}
               loading={isSubmitting}
             >
-              Update {selectedIds.size} Descriptions
+              Update {selected.length} Descriptions
             </Button>
           </Box>
         )}
@@ -1960,7 +2019,6 @@ console.log('section params is her ',selectedIds)
     </Page>
   );
 }
-
 
 
 
