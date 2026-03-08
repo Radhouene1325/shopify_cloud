@@ -588,7 +588,7 @@ console.log('products ins stream',products)
 
     // Option 2: Use concurrent map (simpler)
     // await processConcurrent(products);
-
+console.log("all resultes is her hello",allResults)
     console.log(`Total products processed: ${allResults.length}/${updatedDescreptionAI.length}`);
     return allResults;
   } catch (err) {
