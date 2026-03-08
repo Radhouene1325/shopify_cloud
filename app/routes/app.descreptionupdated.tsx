@@ -525,7 +525,7 @@ async function processProduct(product: VARIBALES): Promise<{ id: string; shortDe
   //   sendPrompt(detailedPrompt, DEEP_SEEK_API_KEY)
   // ]);
 console.log('short is her',shortResults)
-console.log('detaisl is her worked',detailedPrompt)
+console.log('detaisl is her worked',detailedResults)
   // Ensure responses are arrays
   const shortArray = Array.isArray(shortResults) ? shortResults : [];
   const detailedArray = Array.isArray(detailedResults) ? detailedResults : [];

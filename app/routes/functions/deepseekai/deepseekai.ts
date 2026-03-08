@@ -16,10 +16,10 @@ interface DeepSeekResponse {
     }>;
   }
 export async function sendPrompt(prompt: string, DEEP_SEEK_API_KEY: string) {
-    const controller = new AbortController(); // ✅ create controller
-    const timeout = setTimeout(() => {
-        controller.abort();
-      }, 30000); // 30s timeout
+    // const controller = new AbortController(); // ✅ create controller
+    // const timeout = setTimeout(() => {
+    //     controller.abort();
+    //   }, 30000); // 30s timeout
     
     try {
         const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
@@ -38,10 +38,10 @@ export async function sendPrompt(prompt: string, DEEP_SEEK_API_KEY: string) {
             temperature: 0.7,
             max_tokens: 8192
           }),
-          signal:controller.signal
+        //   signal:controller.signal
         });
         
-        clearTimeout(timeout);
+        // clearTimeout(timeout);
 
         if (!response.ok) {
           const errorText = await response.text();
