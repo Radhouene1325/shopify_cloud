@@ -20,6 +20,7 @@ import { sendPrompt } from "./functions/deepseekai/deepseekai";
 import pLimit from 'p-limit';
 import { parserData } from "@/parser/parser_data";
 import { processStream } from "./functions/chunkprocess/chunk";
+import { buildPrompt } from "./functions/propmtsSEO/propmts_descreption";
   interface DESCREPTION{
     descreption:string,
     id:string,
@@ -318,54 +319,54 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,DEEP_SEEK_API_KE
 
 
 
-    // const chunkPromises = chunks.map(async (chunk, idx) => {
-    //   // console.log(`Processing chunk ${idx + 1}/${chunks.length} (${chunk.length} products) - split into 2 API calls`);
+    const chunkPromises = chunks.map(async (chunk, idx) => {
+      // console.log(`Processing chunk ${idx + 1}/${chunks.length} (${chunk.length} products) - split into 2 API calls`);
 
-    //   // Call 1: shortDescription only (keeps output under token limit)
-    //   const shortPrompt = buildPrompt(chunk as VARIBALES[], 'shortDescription');
-    //   // Call 2: detailedDescription only
-    //   const detailedPrompt = buildPrompt(chunk as VARIBALES[], 'detailedDescription');
+      // Call 1: shortDescription only (keeps output under token limit)
+      const shortPrompt = buildPrompt(chunk as VARIBALES[], 'shortDescription');
+      // Call 2: detailedDescription only
+      const detailedPrompt = buildPrompt(chunk as VARIBALES[], 'detailedDescription');
 
-    //   let shortResults: { id: string; shortDescription?: string }[] = [];
-    //   let detailedResults: { id: string; detailedDescription?: string }[] = [];
+      let shortResults: { id: string; shortDescription?: string }[] = [];
+      let detailedResults: { id: string; detailedDescription?: string }[] = [];
 
-    //   try {
-    //     [shortResults, detailedResults] = await Promise.all([
-    //       sendPrompt(shortPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; shortDescription?: string }[]>,
-    //       sendPrompt(detailedPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; detailedDescription?: string }[]>
-    //     ]);
-    //   } catch (err) {
-    //     console.error(`Error processing chunk ${idx + 1}:`, err);
-    //     throw err;
-    //   }
+      try {
+        [shortResults, detailedResults] = await Promise.all([
+          sendPrompt(shortPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; shortDescription?: string }[]>,
+          sendPrompt(detailedPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; detailedDescription?: string }[]>
+        ]);
+      } catch (err) {
+        console.error(`Error processing chunk ${idx + 1}:`, err);
+        throw err;
+      }
 
-    //   if (!Array.isArray(shortResults) || !Array.isArray(detailedResults)) {
-    //     throw new Error(`Chunk ${idx + 1} returned invalid format`);
-    //   }
+      if (!Array.isArray(shortResults) || !Array.isArray(detailedResults)) {
+        throw new Error(`Chunk ${idx + 1} returned invalid format`);
+      }
 
-    //   // Merge by id: { id, shortDescription, detailedDescription }
-    //   const merged = (chunk as { id: string; descreption: string }[]).map((p: { id: string; descreption: string }) => {
-    //     const short = shortResults.find((r) => r.id === p.id);
-    //     const detailed = detailedResults.find((r) => r.id === p.id);
-    //     return {
-    //       id: p.id,
-    //       shortDescription: short?.shortDescription ?? '',
-    //       detailedDescription: detailed?.detailedDescription ?? ''
-    //     };
-    //   });
+      // Merge by id: { id, shortDescription, detailedDescription }
+      const merged = (chunk as { id: string; descreption: string }[]).map((p: { id: string; descreption: string }) => {
+        const short = shortResults.find((r) => r.id === p.id);
+        const detailed = detailedResults.find((r) => r.id === p.id);
+        return {
+          id: p.id,
+          shortDescription: short?.shortDescription ?? '',
+          detailedDescription: detailed?.detailedDescription ?? ''
+        };
+      });
 
-    //   return merged;
-    // });
+      return merged;
+    });
 
-    // // Wait for all chunks to complete
-    // const results = await Promise.all(chunkPromises);
+    // Wait for all chunks to complete
+    const results = await Promise.all(chunkPromises);
 
-    // // Flatten results into a single array
-    // results.forEach(r => allResults.push(...r));
+    // Flatten results into a single array
+    results.forEach(r => allResults.push(...r));
 
-    // // console.log(`Total products processed: ${allResults.length}/${updatedDescreptionAI.length}`);
+    // console.log(`Total products processed: ${allResults.length}/${updatedDescreptionAI.length}`);
 
-    // return allResults;
+    return allResults;
 
 
  
