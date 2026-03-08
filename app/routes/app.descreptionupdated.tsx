@@ -17,7 +17,6 @@ import { generateSeoMetadata, getTaxonomyIdForCategory } from "./functions/propm
 import { uint8ToBase64 } from "./functions/uint8ToBase64/uint8ToBase64";
 import { sendPrompt } from "./functions/deepseekai/deepseekai";
 import pLimit from 'p-limit';
-import { Readable } from 'stream';
   interface DESCREPTION{
     descreption:string,
     id:string,
@@ -537,19 +536,28 @@ async function processProduct(product: VARIBALES): Promise<{ id: string; shortDe
 }
 
 
-async function processStream(products: VARIBALES[]) {
-  // Create a readable stream from the products array
-  const CONCURRENCY = 5;
-  const readable = Readable.from(products);
 
-  // Concurrency limiter
+async function processStream(products: VARIBALES[]) {
+  const CONCURRENCY = 5;
   const limit = pLimit(CONCURRENCY);
 
-  // Process each product as it comes, but limit concurrency
+  // Create a Web ReadableStream from the array
+  const stream = new ReadableStream<VARIBALES>({
+    start(controller) {
+      for (const product of products) {
+        controller.enqueue(product);
+      }
+      controller.close();
+    }
+  });
+
+  const reader = stream.getReader();
   const promises: Promise<void>[] = [];
 
-  readable.on('data', (product: VARIBALES) => {
-    // Wrap processing in concurrency limiter
+  while (true) {
+    const { value: product, done } = await reader.read();
+    if (done) break;
+
     const promise = limit(async () => {
       try {
         const result = await processProduct(product);
@@ -557,17 +565,11 @@ async function processStream(products: VARIBALES[]) {
         console.log(`Processed ${product.id}`);
       } catch (err) {
         console.error(`Failed to process ${product.id}:`, err);
-        // Optionally collect errors
       }
     });
-    promises.push(promise);
-  });
 
-  // Wait for stream to end and all tasks to complete
-  await new Promise((resolve, reject) => {
-    readable.on('end', resolve);
-    readable.on('error', reject);
-  });
+    promises.push(promise);
+  }
 
   await Promise.all(promises);
 }
