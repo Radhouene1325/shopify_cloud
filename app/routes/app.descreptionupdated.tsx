@@ -540,7 +540,7 @@ async function processProduct(product: VARIBALES): Promise<{ id: string; shortDe
 async function processStream(products: VARIBALES[]) {
   const CONCURRENCY = 5;
   const limit = pLimit(CONCURRENCY);
-
+console.log('her is the products hello',products)
   // Create a Web ReadableStream from the array
   const stream = new ReadableStream<VARIBALES>({
     start(controller) {
