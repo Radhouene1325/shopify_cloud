@@ -183,12 +183,9 @@ import pLimit from 'p-limit';
 async function processProduct(
     product: VARIBALES | VARIBALES[], 
     DEEP_SEEK_API_KEY: string
-  ): Promise<{ id: string; shortDescription: string; detailedDescription: string }[]> {
+  ): Promise<{ id: string; shortDescription: string; detailedDescription: string } | { id: string; shortDescription: string; detailedDescription: string }[]> {
   
-    // Normalize product input to always be an array
     const productsArray = Array.isArray(product) ? product : [product];
-  
-    console.log("productsArray:", productsArray);
   
     const chunkPromises = productsArray.map(async (p) => {
       const shortPrompt = buildPrompt([p], 'shortDescription');
@@ -202,8 +199,6 @@ async function processProduct(
           sendPrompt(shortPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; shortDescription?: string }[]>,
           sendPrompt(detailedPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; detailedDescription?: string }[]>
         ]);
-        console.log('short results:', shortResults);
-        console.log('detailed results:', detailedResults);
       } catch (err) {
         console.error('Error in API calls:', err);
       }
@@ -221,7 +216,8 @@ async function processProduct(
       };
     });
   
-    return Promise.all(chunkPromises);
+    const results = await Promise.all(chunkPromises);
+    return Array.isArray(product) ? results : results[0];
   }
 
 
