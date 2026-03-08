@@ -266,7 +266,7 @@ async function processSingleProduct(
 
   }
 
-
+console.log('optimise is her seccesd',optimizedHtml)
 
   try {
     

@@ -582,7 +582,7 @@ async function processStream(products: VARIBALES[]) {
     // But since BATCH_SIZE=1, chunks is just an array of single-product arrays.
     // We'll flatten it for simpler processing.
     const products = chunks.flat(); // or directly use updatedDescreptionAI
-
+console.log('products ins stream',products)
     // Option 1: Use streaming (good for > 1000 products)
     await processStream(products);
 
