@@ -179,47 +179,45 @@ import pLimit from 'p-limit';
 
 
 
-
 async function processProduct(
     product: VARIBALES | VARIBALES[], 
     DEEP_SEEK_API_KEY: string
-  ): Promise<{ id: string; shortDescription: string; detailedDescription: string } | { id: string; shortDescription: string; detailedDescription: string }[]> {
-  
+  ): Promise<{ id: string; shortDescription: string; detailedDescription: string }[]> {
+    // Normalize product input to always be an array
     const productsArray = Array.isArray(product) ? product : [product];
   
-    const chunkPromises = productsArray.map(async (p) => {
-      const shortPrompt = buildPrompt([p], 'shortDescription');
-      const detailedPrompt = buildPrompt([p], 'detailedDescription');
+    const results = await Promise.all(
+      productsArray.map(async (p) => {
+        const shortPrompt = buildPrompt([p], 'shortDescription');
+        const detailedPrompt = buildPrompt([p], 'detailedDescription');
   
-      let shortResults: { id: string; shortDescription?: string }[] = [];
-      let detailedResults: { id: string; detailedDescription?: string }[] = [];
+        let shortResults: { id: string; shortDescription?: string }[] = [];
+        let detailedResults: { id: string; detailedDescription?: string }[] = [];
   
-      try {
-        [shortResults, detailedResults] = await Promise.all([
-          sendPrompt(shortPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; shortDescription?: string }[]>,
-          sendPrompt(detailedPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; detailedDescription?: string }[]>
-        ]);
-      } catch (err) {
-        console.error('Error in API calls:', err);
-      }
+        try {
+          [shortResults, detailedResults] = await Promise.all([
+            sendPrompt(shortPrompt, DEEP_SEEK_API_KEY),
+            sendPrompt(detailedPrompt, DEEP_SEEK_API_KEY),
+          ]);
+        } catch (err) {
+          console.error('Error in API calls:', err);
+          // Optional: return empty results instead of throwing
+          return { id: p.id, shortDescription: '', detailedDescription: '' };
+        }
   
-      const shortMap = new Map(shortResults.map(item => [item.id, item]));
-      const detailedMap = new Map(detailedResults.map(item => [item.id, item]));
+        const short = shortResults.find(r => r.id === p.id);
+        const detailed = detailedResults.find(r => r.id === p.id);
   
-      const short = shortMap.get(p.id);
-      const detailed = detailedMap.get(p.id);
+        return {
+          id: p.id,
+          shortDescription: short?.shortDescription ?? '',
+          detailedDescription: detailed?.detailedDescription ?? ''
+        };
+      })
+    );
   
-      return {
-        id: p.id,
-        shortDescription: short?.shortDescription ?? '',
-        detailedDescription: detailed?.detailedDescription ?? ''
-      };
-    });
-  
-    const results = await Promise.all(chunkPromises);
-    return Array.isArray(product) ? results : results[0];
+    return results; // always returns an array
   }
-
 
 export async function processStream(products: VARIBALES[],DEEP_SEEK_API_KEY:string) {
   const CONCURRENCY = 5;
