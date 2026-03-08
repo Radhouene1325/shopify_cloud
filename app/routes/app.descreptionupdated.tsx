@@ -511,11 +511,19 @@ async function processProduct(product: VARIBALES): Promise<{ id: string; shortDe
   const shortPrompt = buildPrompt(chunk as VARIBALES[], 'shortDescription');
   const detailedPrompt = buildPrompt(chunk as VARIBALES[], 'detailedDescription');
 
+  let shortResults: { id: string; shortDescription?: string }[] = [];
+      let detailedResults: { id: string; detailedDescription?: string }[] = [];
+
+      
+        [shortResults, detailedResults] = await Promise.all([
+          sendPrompt(shortPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; shortDescription?: string }[]>,
+          sendPrompt(detailedPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; detailedDescription?: string }[]>
+        ]);
   // Execute both API calls concurrently
-  const [shortResults, detailedResults] = await Promise.all([
-    sendPrompt(shortPrompt, DEEP_SEEK_API_KEY),
-    sendPrompt(detailedPrompt, DEEP_SEEK_API_KEY)
-  ]);
+  // const [shortResults, detailedResults] = await Promise.all([
+  //   sendPrompt(shortPrompt, DEEP_SEEK_API_KEY),
+  //   sendPrompt(detailedPrompt, DEEP_SEEK_API_KEY)
+  // ]);
 console.log('short is her',shortResults)
 console.log('detaisl is her worked',detailedPrompt)
   // Ensure responses are arrays
@@ -631,7 +639,9 @@ console.log("all resultes is her hello",allResults)
     // // console.log(`Total products processed: ${allResults.length}/${updatedDescreptionAI.length}`);
 
     // return allResults;
-}
+
+
+  }
 
 
 
