@@ -17,7 +17,10 @@ interface DeepSeekResponse {
   }
 export async function sendPrompt(prompt: string, DEEP_SEEK_API_KEY: string) {
     const controller = new AbortController(); // ✅ create controller
-
+    const timeout = setTimeout(() => {
+        controller.abort();
+      }, 30000); // 30s timeout
+    
     try {
         const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
           method: 'POST',
@@ -38,7 +41,8 @@ export async function sendPrompt(prompt: string, DEEP_SEEK_API_KEY: string) {
           signal:controller.signal
         });
         
-    
+        clearTimeout(timeout);
+
         if (!response.ok) {
           const errorText = await response.text();
           console.error('DeepSeek API error:', response.status, errorText);
