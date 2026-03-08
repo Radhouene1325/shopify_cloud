@@ -514,11 +514,17 @@ async function processProduct(product: VARIBALES): Promise<{ id: string; shortDe
   let shortResults: { id: string; shortDescription?: string }[] = [];
       let detailedResults: { id: string; detailedDescription?: string }[] = [];
 
-      
-        [shortResults, detailedResults] = await Promise.all([
-          sendPrompt(shortPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; shortDescription?: string }[]>,
-          sendPrompt(detailedPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; detailedDescription?: string }[]>
-        ]);
+    
+        try {
+          [shortResults, detailedResults] = await Promise.all([
+            sendPrompt(shortPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; shortDescription?: string }[]>,
+            sendPrompt(detailedPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; detailedDescription?: string }[]>
+          ]);
+          console.log('short results:', shortResults);
+          console.log('detailed results:', detailedResults);
+        } catch (err) {
+          console.error('Error in API calls:', err);
+        }
   // Execute both API calls concurrently
   // const [shortResults, detailedResults] = await Promise.all([
   //   sendPrompt(shortPrompt, DEEP_SEEK_API_KEY),
