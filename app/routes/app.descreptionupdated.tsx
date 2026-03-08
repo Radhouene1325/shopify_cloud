@@ -598,146 +598,146 @@ CRITICAL:
 }
 
 
-async function processProduct(product: VARIBALES): Promise<{ id: string; shortDescription: string; detailedDescription: string }> {
-  const chunk = [product]; // BATCH_SIZE = 1
-console.log("chunk is her hello ",chunk)
-  const shortPrompt = buildPrompt(chunk as VARIBALES[], 'shortDescription');
-  const detailedPrompt = buildPrompt(chunk as VARIBALES[], 'detailedDescription');
+// async function processProduct(product: VARIBALES): Promise<{ id: string; shortDescription: string; detailedDescription: string }> {
+//   const chunk = [product]; // BATCH_SIZE = 1
+// console.log("chunk is her hello ",chunk)
+//   const shortPrompt = buildPrompt(chunk as VARIBALES[], 'shortDescription');
+//   const detailedPrompt = buildPrompt(chunk as VARIBALES[], 'detailedDescription');
 
-  let shortResults: { id: string; shortDescription?: string }[] = [];
-      let detailedResults: { id: string; detailedDescription?: string }[] = [];
+//   let shortResults: { id: string; shortDescription?: string }[] = [];
+//       let detailedResults: { id: string; detailedDescription?: string }[] = [];
 
     
-        try {
-          [shortResults, detailedResults] = await Promise.all([
-            sendPrompt(shortPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; shortDescription?: string }[]>,
-            sendPrompt(detailedPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; detailedDescription?: string }[]>
-          ]);
-          console.log('short results:', shortResults);
-          console.log('detailed results:', detailedResults);
-        } catch (err) {
-          console.error('Error in API calls:', err);
-        }
-  // Execute both API calls concurrently
-  // const [shortResults, detailedResults] = await Promise.all([
-  //   sendPrompt(shortPrompt, DEEP_SEEK_API_KEY),
-  //   sendPrompt(detailedPrompt, DEEP_SEEK_API_KEY)
-  // ]);
-console.log('short is her',shortResults)
-console.log('detaisl is her worked',detailedResults)
-  // Ensure responses are arrays
-  const shortArray = Array.isArray(shortResults) ? shortResults : [];
-  const detailedArray = Array.isArray(detailedResults) ? detailedResults : [];
+//         try {
+//           [shortResults, detailedResults] = await Promise.all([
+//             sendPrompt(shortPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; shortDescription?: string }[]>,
+//             sendPrompt(detailedPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; detailedDescription?: string }[]>
+//           ]);
+//           console.log('short results:', shortResults);
+//           console.log('detailed results:', detailedResults);
+//         } catch (err) {
+//           console.error('Error in API calls:', err);
+//         }
+//   // Execute both API calls concurrently
+//   // const [shortResults, detailedResults] = await Promise.all([
+//   //   sendPrompt(shortPrompt, DEEP_SEEK_API_KEY),
+//   //   sendPrompt(detailedPrompt, DEEP_SEEK_API_KEY)
+//   // ]);
+// console.log('short is her',shortResults)
+// console.log('detaisl is her worked',detailedResults)
+//   // Ensure responses are arrays
+//   const shortArray = Array.isArray(shortResults) ? shortResults : [];
+//   const detailedArray = Array.isArray(detailedResults) ? detailedResults : [];
 
-  // Merge using Maps for O(1) lookup
-  const shortMap = new Map(shortArray.map(item => [item.id, item]));
-  const detailedMap = new Map(detailedArray.map(item => [item.id, item]));
+//   // Merge using Maps for O(1) lookup
+//   const shortMap = new Map(shortArray.map(item => [item.id, item]));
+//   const detailedMap = new Map(detailedArray.map(item => [item.id, item]));
 
-  const short = shortMap.get(product.id);
-  const detailed = detailedMap.get(product.id);
+//   const short = shortMap.get(product.id);
+//   const detailed = detailedMap.get(product.id);
 
-  return {
-    id: product.id,
-    shortDescription: short?.shortDescription ?? '',
-    detailedDescription: detailed?.detailedDescription ?? ''
-  };
-}
-
-
-
-async function processStream(products: VARIBALES[]) {
-  const CONCURRENCY = 5;
-  const limit = pLimit(CONCURRENCY);
-
-  await Promise.all(
-    products.map(product =>
-      limit(async () => {
-        try {
-          const result = await processProduct(product);
-          console.log('result is here', result);
-          allResults.push(result);
-          console.log(`Processed ${product.id}`);
-        } catch (err) {
-          console.error(`Failed to process ${product.id}:`, err);
-        }
-      })
-    )
-  );
-}
+//   return {
+//     id: product.id,
+//     shortDescription: short?.shortDescription ?? '',
+//     detailedDescription: detailed?.detailedDescription ?? ''
+//   };
+// }
 
 
 
-(async () => {
-  try {
-    const chunks = chunkArray(updatedDescreptionAI, BATCH_SIZE); // still chunked if needed
-    // But since BATCH_SIZE=1, chunks is just an array of single-product arrays.
-    // We'll flatten it for simpler processing.
-    const products = chunks.flat(); // or directly use updatedDescreptionAI
-console.log('products ins stream',products)
-    // Option 1: Use streaming (good for > 1000 products)
-    await processStream(products);
+// async function processStream(products: VARIBALES[]) {
+//   const CONCURRENCY = 5;
+//   const limit = pLimit(CONCURRENCY);
 
-    // Option 2: Use concurrent map (simpler)
-    // await processConcurrent(products);
-console.log("all resultes is her hello",allResults)
-    console.log(`Total products processed: ${allResults.length}/${updatedDescreptionAI.length}`);
+//   await Promise.all(
+//     products.map(product =>
+//       limit(async () => {
+//         try {
+//           const result = await processProduct(product);
+//           console.log('result is here', result);
+//           allResults.push(result);
+//           console.log(`Processed ${product.id}`);
+//         } catch (err) {
+//           console.error(`Failed to process ${product.id}:`, err);
+//         }
+//       })
+//     )
+//   );
+// }
+
+
+
+// (async () => {
+//   try {
+//     const chunks = chunkArray(updatedDescreptionAI, BATCH_SIZE); // still chunked if needed
+//     // But since BATCH_SIZE=1, chunks is just an array of single-product arrays.
+//     // We'll flatten it for simpler processing.
+//     const products = chunks.flat(); // or directly use updatedDescreptionAI
+// console.log('products ins stream',products)
+//     // Option 1: Use streaming (good for > 1000 products)
+//     await processStream(products);
+
+//     // Option 2: Use concurrent map (simpler)
+//     // await processConcurrent(products);
+// console.log("all resultes is her hello",allResults)
+//     console.log(`Total products processed: ${allResults.length}/${updatedDescreptionAI.length}`);
+//     return allResults;
+//   } catch (err) {
+//     console.error('Fatal error:', err);
+//     throw err;
+//   }
+// })();
+
+
+
+    const chunkPromises = chunks.map(async (chunk, idx) => {
+      // console.log(`Processing chunk ${idx + 1}/${chunks.length} (${chunk.length} products) - split into 2 API calls`);
+
+      // Call 1: shortDescription only (keeps output under token limit)
+      const shortPrompt = buildPrompt(chunk as VARIBALES[], 'shortDescription');
+      // Call 2: detailedDescription only
+      const detailedPrompt = buildPrompt(chunk as VARIBALES[], 'detailedDescription');
+
+      let shortResults: { id: string; shortDescription?: string }[] = [];
+      let detailedResults: { id: string; detailedDescription?: string }[] = [];
+
+      try {
+        [shortResults, detailedResults] = await Promise.all([
+          sendPrompt(shortPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; shortDescription?: string }[]>,
+          sendPrompt(detailedPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; detailedDescription?: string }[]>
+        ]);
+      } catch (err) {
+        console.error(`Error processing chunk ${idx + 1}:`, err);
+        throw err;
+      }
+
+      if (!Array.isArray(shortResults) || !Array.isArray(detailedResults)) {
+        throw new Error(`Chunk ${idx + 1} returned invalid format`);
+      }
+
+      // Merge by id: { id, shortDescription, detailedDescription }
+      const merged = (chunk as { id: string; descreption: string }[]).map((p: { id: string; descreption: string }) => {
+        const short = shortResults.find((r) => r.id === p.id);
+        const detailed = detailedResults.find((r) => r.id === p.id);
+        return {
+          id: p.id,
+          shortDescription: short?.shortDescription ?? '',
+          detailedDescription: detailed?.detailedDescription ?? ''
+        };
+      });
+
+      return merged;
+    });
+
+    // Wait for all chunks to complete
+    const results = await Promise.all(chunkPromises);
+
+    // Flatten results into a single array
+    results.forEach(r => allResults.push(...r));
+
+    // console.log(`Total products processed: ${allResults.length}/${updatedDescreptionAI.length}`);
+
     return allResults;
-  } catch (err) {
-    console.error('Fatal error:', err);
-    throw err;
-  }
-})();
-
-
-
-    // const chunkPromises = chunks.map(async (chunk, idx) => {
-    //   // console.log(`Processing chunk ${idx + 1}/${chunks.length} (${chunk.length} products) - split into 2 API calls`);
-
-    //   // Call 1: shortDescription only (keeps output under token limit)
-    //   const shortPrompt = buildPrompt(chunk as VARIBALES[], 'shortDescription');
-    //   // Call 2: detailedDescription only
-    //   const detailedPrompt = buildPrompt(chunk as VARIBALES[], 'detailedDescription');
-
-    //   let shortResults: { id: string; shortDescription?: string }[] = [];
-    //   let detailedResults: { id: string; detailedDescription?: string }[] = [];
-
-    //   try {
-    //     [shortResults, detailedResults] = await Promise.all([
-    //       sendPrompt(shortPrompt, API_KEY_GEMINI) as Promise<{ id: string; shortDescription?: string }[]>,
-    //       sendPrompt(detailedPrompt, API_KEY_GEMINI) as Promise<{ id: string; detailedDescription?: string }[]>
-    //     ]);
-    //   } catch (err) {
-    //     console.error(`Error processing chunk ${idx + 1}:`, err);
-    //     throw err;
-    //   }
-
-    //   if (!Array.isArray(shortResults) || !Array.isArray(detailedResults)) {
-    //     throw new Error(`Chunk ${idx + 1} returned invalid format`);
-    //   }
-
-    //   // Merge by id: { id, shortDescription, detailedDescription }
-    //   const merged = (chunk as { id: string; descreption: string }[]).map((p: { id: string; descreption: string }) => {
-    //     const short = shortResults.find((r) => r.id === p.id);
-    //     const detailed = detailedResults.find((r) => r.id === p.id);
-    //     return {
-    //       id: p.id,
-    //       shortDescription: short?.shortDescription ?? '',
-    //       detailedDescription: detailed?.detailedDescription ?? ''
-    //     };
-    //   });
-
-    //   return merged;
-    // });
-
-    // // Wait for all chunks to complete
-    // const results = await Promise.all(chunkPromises);
-
-    // // Flatten results into a single array
-    // results.forEach(r => allResults.push(...r));
-
-    // // console.log(`Total products processed: ${allResults.length}/${updatedDescreptionAI.length}`);
-
-    // return allResults;
 
 
   }
