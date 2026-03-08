@@ -180,59 +180,49 @@ import pLimit from 'p-limit';
 
 
 
-
-async function processProduct(product: VARIBALES,DEEP_SEEK_API_KEY:string): Promise<{ id: string; shortDescription: string; detailedDescription: string }> {
-  const chunk = [product]; // BATCH_SIZE = 1
-console.log("chunk is her hello ",chunk)
-
-const chunkPromises = chunk.map(async (chunk, idx) => {
-    const shortPrompt = buildPrompt(chunk as VARIBALES[], 'shortDescription');
-    const detailedPrompt = buildPrompt(chunk as VARIBALES[], 'detailedDescription');
+async function processProduct(
+    product: VARIBALES | VARIBALES[], 
+    DEEP_SEEK_API_KEY: string
+  ): Promise<{ id: string; shortDescription: string; detailedDescription: string }[]> {
   
-    let shortResults: { id: string; shortDescription?: string }[] = [];
-        let detailedResults: { id: string; detailedDescription?: string }[] = [];
+    // Normalize product input to always be an array
+    const productsArray = Array.isArray(product) ? product : [product];
   
-      
-          try {
-            [shortResults, detailedResults] = await Promise.all([
-              sendPrompt(shortPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; shortDescription?: string }[]>,
-              sendPrompt(detailedPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; detailedDescription?: string }[]>
-            ]);
-            console.log('short results:', shortResults);
-            console.log('detailed results:', detailedResults);
-          } catch (err) {
-            console.error('Error in API calls:', err);
-          }
-          console.log('short is her',shortResults)
-console.log('detaisl is her worked',detailedResults)
-  // Ensure responses are arrays
-  const shortArray = Array.isArray(shortResults) ? shortResults : [];
-  const detailedArray = Array.isArray(detailedResults) ? detailedResults : [];
-  const shortMap = new Map(shortArray.map(item => [item.id, item]));
-  const detailedMap = new Map(detailedArray.map(item => [item.id, item]));
-
-  const short = shortMap.get(product.id);
-  const detailed = detailedMap.get(product.id);
-
-  return {
-    id: product.id,
-    shortDescription: short?.shortDescription ?? '',
-    detailedDescription: detailed?.detailedDescription ?? ''
-  };
-})
-const results = await Promise.all(chunkPromises);
-return results
-  // Execute both API calls concurrently
-  // const [shortResults, detailedResults] = await Promise.all([
-  //   sendPrompt(shortPrompt, DEEP_SEEK_API_KEY),
-  //   sendPrompt(detailedPrompt, DEEP_SEEK_API_KEY)
-  // ]);
-
-
-  // Merge using Maps for O(1) lookup
-
-}
-
+    console.log("productsArray:", productsArray);
+  
+    const chunkPromises = productsArray.map(async (p) => {
+      const shortPrompt = buildPrompt([p], 'shortDescription');
+      const detailedPrompt = buildPrompt([p], 'detailedDescription');
+  
+      let shortResults: { id: string; shortDescription?: string }[] = [];
+      let detailedResults: { id: string; detailedDescription?: string }[] = [];
+  
+      try {
+        [shortResults, detailedResults] = await Promise.all([
+          sendPrompt(shortPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; shortDescription?: string }[]>,
+          sendPrompt(detailedPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; detailedDescription?: string }[]>
+        ]);
+        console.log('short results:', shortResults);
+        console.log('detailed results:', detailedResults);
+      } catch (err) {
+        console.error('Error in API calls:', err);
+      }
+  
+      const shortMap = new Map(shortResults.map(item => [item.id, item]));
+      const detailedMap = new Map(detailedResults.map(item => [item.id, item]));
+  
+      const short = shortMap.get(p.id);
+      const detailed = detailedMap.get(p.id);
+  
+      return {
+        id: p.id,
+        shortDescription: short?.shortDescription ?? '',
+        detailedDescription: detailed?.detailedDescription ?? ''
+      };
+    });
+  
+    return Promise.all(chunkPromises);
+  }
 
 
 export async function processStream(products: VARIBALES[],DEEP_SEEK_API_KEY:string) {
