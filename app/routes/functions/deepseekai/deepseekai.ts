@@ -48,7 +48,9 @@ export async function sendPrompt(prompt: string, DEEP_SEEK_API_KEY: string) {
         const data = await response.json() as DeepSeekResponse;
         console.log('data from dess seek is arrived ',data)
         const choice = data?.choices?.[0];
+        console.log('chois is oky',choice)
         let resulter = choice?.message?.content;
+        console.log("result is oky",resulter)
         if (choice?.finish_reason === 'length') {
           throw new Error('Response truncated: Output hit token limit. Try processing fewer products or shortening product descriptions.');
         }
