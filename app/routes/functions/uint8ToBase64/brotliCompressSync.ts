@@ -1,5 +1,5 @@
 import { pack,unpack } from "msgpackr";
-import { brotliCompressSync } from "zlib";
+import { brotliCompressSync, brotliDecompressSync } from "zlib";
 import { base64ToUint8Array } from "./uint8ToBase64";
 
 
@@ -71,7 +71,7 @@ export function ultraDecompress(base64: string) {
 
     const buffer = base64ToUint8Array(base64);
 
-  const decompressed = brotliCompressSync(buffer);
+    const decompressed = brotliDecompressSync(buffer);
 
   const unpacked = unpack(decompressed);
 
