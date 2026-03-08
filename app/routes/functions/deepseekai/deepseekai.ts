@@ -16,6 +16,7 @@ interface DeepSeekResponse {
     }>;
   }
 export async function sendPrompt(prompt: string, API_KEY_GEMINI: string) {
+    const controller = new AbortController(); // ✅ create controller
 
     try {
         const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
