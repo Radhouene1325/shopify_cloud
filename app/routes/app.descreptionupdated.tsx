@@ -540,40 +540,21 @@ async function processProduct(product: VARIBALES): Promise<{ id: string; shortDe
 async function processStream(products: VARIBALES[]) {
   const CONCURRENCY = 5;
   const limit = pLimit(CONCURRENCY);
-console.log('her is the products hello',products)
-  // Create a Web ReadableStream from the array
-  const stream = new ReadableStream<VARIBALES>({
-    start(controller) {
-      for (const product of products) {
-        controller.enqueue(product);
-      }
-      controller.close();
-    }
-  });
 
-  const reader = stream.getReader();
-  const promises: Promise<void>[] = [];
-console.log('reader is verifed ok ',reader)
-  while (true) {
-    const { value: product, done } = await reader.read();
-    console.log('resut products i s oky ',{ product, done })
-    if (done) break;
-
-    const promise = limit(async () => {
-      try {
-        const result = await processProduct(product);
-        console.log('result is her ',result)
-        allResults.push(result);
-        console.log(`Processed ${product.id}`);
-      } catch (err) {
-        console.error(`Failed to process ${product.id}:`, err);
-      }
-    });
-
-    promises.push(promise);
-  }
-
-  await Promise.all(promises);
+  await Promise.all(
+    products.map(product =>
+      limit(async () => {
+        try {
+          const result = await processProduct(product);
+          console.log('result is here', result);
+          allResults.push(result);
+          console.log(`Processed ${product.id}`);
+        } catch (err) {
+          console.error(`Failed to process ${product.id}:`, err);
+        }
+      })
+    )
+  );
 }
 
 
