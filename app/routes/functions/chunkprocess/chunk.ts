@@ -3,6 +3,10 @@
 // import AbortController from 'abort-controller';
 // import { Readable } from 'stream';
 
+import { allResults, chunkArray, VARIBALES } from "@/routes/app.descreptionupdated";
+import { buildPrompt } from "../propmtsSEO/propmts_descreption";
+import { sendPrompt } from "../deepseekai/deepseekai";
+
 // // Configuration
 // const BATCH_SIZE = 1;              // One product per "chunk" (two API calls)
 // const CONCURRENCY = 5;              // Max products processed in parallel
@@ -164,3 +168,85 @@
 //     throw err;
 //   }
 // })();
+
+
+
+
+
+
+import pLimit from 'p-limit';
+
+
+
+
+
+
+ async function processProduct(product: VARIBALES,DEEP_SEEK_API_KEY:string): Promise<{ id: string; shortDescription: string; detailedDescription: string }> {
+  const chunk = [product]; // BATCH_SIZE = 1
+console.log("chunk is her hello ",chunk)
+  const shortPrompt = buildPrompt(chunk as VARIBALES[], 'shortDescription');
+  const detailedPrompt = buildPrompt(chunk as VARIBALES[], 'detailedDescription');
+
+  let shortResults: { id: string; shortDescription?: string }[] = [];
+      let detailedResults: { id: string; detailedDescription?: string }[] = [];
+
+    
+        try {
+          [shortResults, detailedResults] = await Promise.all([
+            sendPrompt(shortPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; shortDescription?: string }[]>,
+            sendPrompt(detailedPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; detailedDescription?: string }[]>
+          ]);
+          console.log('short results:', shortResults);
+          console.log('detailed results:', detailedResults);
+        } catch (err) {
+          console.error('Error in API calls:', err);
+        }
+  // Execute both API calls concurrently
+  // const [shortResults, detailedResults] = await Promise.all([
+  //   sendPrompt(shortPrompt, DEEP_SEEK_API_KEY),
+  //   sendPrompt(detailedPrompt, DEEP_SEEK_API_KEY)
+  // ]);
+console.log('short is her',shortResults)
+console.log('detaisl is her worked',detailedResults)
+  // Ensure responses are arrays
+  const shortArray = Array.isArray(shortResults) ? shortResults : [];
+  const detailedArray = Array.isArray(detailedResults) ? detailedResults : [];
+
+  // Merge using Maps for O(1) lookup
+  const shortMap = new Map(shortArray.map(item => [item.id, item]));
+  const detailedMap = new Map(detailedArray.map(item => [item.id, item]));
+
+  const short = shortMap.get(product.id);
+  const detailed = detailedMap.get(product.id);
+
+  return {
+    id: product.id,
+    shortDescription: short?.shortDescription ?? '',
+    detailedDescription: detailed?.detailedDescription ?? ''
+  };
+}
+
+
+
+export async function processStream(products: VARIBALES[],DEEP_SEEK_API_KEY:string) {
+  const CONCURRENCY = 5;
+  const limit = pLimit(CONCURRENCY);
+
+  await Promise.all(
+    products.map(product =>
+      limit(async () => {
+        try {
+          const result = await processProduct(product,DEEP_SEEK_API_KEY);
+          console.log('result is here', result);
+          allResults.push(result);
+          console.log(`Processed ${product.id}`);
+        } catch (err) {
+          console.error(`Failed to process ${product.id}:`, err);
+        }
+      })
+    )
+  );
+}
+
+
+
