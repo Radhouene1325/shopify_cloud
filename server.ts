@@ -138,7 +138,6 @@ export default {
 // }
      
 //     }
-console.log('hello messages im her ',batch.messages)
 
 await Promise.all(
   batch.messages.map((message) =>
@@ -266,7 +265,6 @@ async function processSingleProduct(
 
   }
 
-console.log('optimise is her seccesd',optimizedHtml)
 
   try {
     
