@@ -556,6 +556,7 @@ console.log('her is the products hello',products)
 console.log('reader is verifed ok ',reader)
   while (true) {
     const { value: product, done } = await reader.read();
+    console.log('resut products i s oky ',{ product, done })
     if (done) break;
 
     const promise = limit(async () => {
