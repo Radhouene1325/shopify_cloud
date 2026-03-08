@@ -8,6 +8,7 @@ import { generateSeoMetadata, getTaxonomyIdForCategory } from "@/routes/function
 import { productsupdated } from "@/routes/functions/query/updateprooductquery";
 import { decompressPayload } from "@/routes/functions/uint8ToBase64/uint8ToBase64";
 import PQueue from "p-queue";
+import { ultraDecompress } from "@/routes/functions/uint8ToBase64/brotliCompressSync";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const handleRemixRequest = createRequestHandler(build as any as ServerBuild);
@@ -142,7 +143,9 @@ export default {
 await Promise.all(
   batch.messages.map((message) =>
     queue.add(async () => {
-      const payload = decompressPayload(message.body.body as string);
+      // const payload = decompressPayload(message.body.body as string);
+      console.log('message her from queue',message.body)
+      const payload=ultraDecompress(message.body.body as string)
       const { shop, products } = payload;
 
       const admin = createShopifyAdmin(

@@ -21,6 +21,7 @@ import pLimit from 'p-limit';
 import { parserData } from "@/parser/parser_data";
 import { processStream } from "./functions/chunkprocess/chunk";
 import { buildPrompt } from "./functions/propmtsSEO/propmts_descreption";
+import { ultraCompress } from "./functions/uint8ToBase64/brotliCompressSync";
   interface DESCREPTION{
     descreption:string,
     id:string,
@@ -416,12 +417,16 @@ const payload = {
   accessToken: session.accessToken,
   products: updatedDescreptionAI
 };
+const compressedBase64 = ultraCompress(payload);
 
-const compressed = pako.gzip(JSON.stringify(payload));
- const compressedBase64 = uint8ToBase64(compressed);
- await queue.send({
-  body: compressedBase64 // body must be a string according to queue type
+await queue.send({
+  body: compressedBase64
 });
+// const compressed = pako.gzip(JSON.stringify(payload));
+//  const compressedBase64 = uint8ToBase64(compressed);
+//  await queue.send({
+//   body: compressedBase64 // body must be a string according to queue type
+// });
 return Response.json({
   status:"queued",
   total:updatedDescreptionAI.length
