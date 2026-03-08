@@ -659,6 +659,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
  
  let formData=await request.formData()
  const updatedDescreptionAI:DESCREPTION = JSON.parse(formData.get('descreptionAI') as string);
+ console.log('formdata is er hehe',updatedDescreptionAI)
  if (!Array.isArray(updatedDescreptionAI)) {
    console.error("Invalid or missing 'descreptionAI' data");
    return Response.json({ error: "Invalid or missing 'descreptionAI' data" }, { status: 400 });
