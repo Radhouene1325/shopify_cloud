@@ -1310,7 +1310,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
   console.log('cursor her ',cursor)
   let query=    `#graphql
   query GetProducts($cursor:String) {
-    products(first: 50,after:$cursor) {
+    products(first: 40,after:$cursor) {
         edges{
             node{
               category{
