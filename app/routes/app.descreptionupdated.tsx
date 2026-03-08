@@ -187,7 +187,7 @@ import pLimit from 'p-limit';
   // }
 
 // 1. Logic to call Gemini
-export  async function generateSeoHtml(updatedDescreptionAI:any,API_KEY_GEMINI:string) {
+export  async function generateSeoHtml(updatedDescreptionAI:any,DEEP_SEEK_API_KEY:string) {
 
   
   const BATCH_SIZE = 1;
@@ -513,8 +513,8 @@ async function processProduct(product: VARIBALES): Promise<{ id: string; shortDe
 
   // Execute both API calls concurrently
   const [shortResults, detailedResults] = await Promise.all([
-    sendPrompt(shortPrompt, API_KEY_GEMINI),
-    sendPrompt(detailedPrompt, API_KEY_GEMINI)
+    sendPrompt(shortPrompt, DEEP_SEEK_API_KEY),
+    sendPrompt(detailedPrompt, DEEP_SEEK_API_KEY)
   ]);
 
   // Ensure responses are arrays

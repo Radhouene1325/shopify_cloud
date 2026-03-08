@@ -15,7 +15,7 @@ interface DeepSeekResponse {
       finish_reason?: string;
     }>;
   }
-export async function sendPrompt(prompt: string, API_KEY_GEMINI: string) {
+export async function sendPrompt(prompt: string, DEEP_SEEK_API_KEY: string) {
     const controller = new AbortController(); // ✅ create controller
 
     try {
@@ -23,7 +23,7 @@ export async function sendPrompt(prompt: string, API_KEY_GEMINI: string) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${API_KEY_GEMINI}`
+            'Authorization': `Bearer ${DEEP_SEEK_API_KEY}`
           },
           body: JSON.stringify({
             model: 'deepseek-chat',
@@ -46,6 +46,7 @@ export async function sendPrompt(prompt: string, API_KEY_GEMINI: string) {
         }
     
         const data = await response.json() as DeepSeekResponse;
+        console.log('data from dess seek is arrived ',data)
         const choice = data?.choices?.[0];
         let resulter = choice?.message?.content;
         if (choice?.finish_reason === 'length') {
