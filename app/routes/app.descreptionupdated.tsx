@@ -506,7 +506,7 @@ CRITICAL:
 }
 
 async function processProduct(product: VARIBALES): Promise<{ id: string; shortDescription: string; detailedDescription: string }> {
-  const chunk = [product]; // BATCH_SIZE = 1
+  const chunk = product; // BATCH_SIZE = 1
 
   const shortPrompt = buildPrompt(chunk as VARIBALES[], 'shortDescription');
   const detailedPrompt = buildPrompt(chunk as VARIBALES[], 'detailedDescription');
