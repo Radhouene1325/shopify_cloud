@@ -1601,7 +1601,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
               totalInventory
               tracksInventory
               updatedAt
-              productParents(first:30) {
+              productParents(first:1) {
                   edges{
                     node{
                       totalInventory
