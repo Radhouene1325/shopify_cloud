@@ -553,7 +553,7 @@ console.log('her is the products hello',products)
 
   const reader = stream.getReader();
   const promises: Promise<void>[] = [];
-
+console.log('reader is verifed ok ',reader)
   while (true) {
     const { value: product, done } = await reader.read();
     if (done) break;
@@ -561,6 +561,7 @@ console.log('her is the products hello',products)
     const promise = limit(async () => {
       try {
         const result = await processProduct(product);
+        console.log('result is her ',result)
         allResults.push(result);
         console.log(`Processed ${product.id}`);
       } catch (err) {
