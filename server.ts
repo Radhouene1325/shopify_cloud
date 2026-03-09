@@ -62,83 +62,7 @@ export default {
     })
 
 
-//     for (const message of batch.messages) {
-//       const productData = message.body;
-// console.log('productedData',productData)
-// for (const des of productData){
-//   try {
-//     console.log("Processing:", des?.id);
-
-//     const results = await generateSeoHtml(
-//       productData,
-//       env.KIMI_API_KEY
-//     );
-
-//     if (!results?.length) {
-// //         for (const res of results) {
-// //           const { id, shortDescription, detailedDescription } = res;
-// //           await env.DB.prepare(`
-// //             INSERT INTO descreption (id, short_description, detailed_description)
-// //             VALUES (?, ?, ?)
-// //             ON CONFLICT(id) DO UPDATE SET
-// //     short_description = excluded.short_description,
-// //     detailed_description = excluded.detailed_description
-// //           `)
-// //      .bind(
-// //     id,
-// //     // productData.shop,
-// //     shortDescription,
-// //     detailedDescription
-// //   )
-// //   .run();
-// //  }
-//       // for(const res of results){
-//       //   await env.DB.prepare(`
-//       //     INSERT INTO descreption (id, short_description, detailed_description)
-//       //     VALUES (?, ?, ?)
-//       //     ON CONFLICT(id) DO UPDATE SET
-//       //       short_description = excluded.short_description,
-//       //       detailed_description = excluded.detailed_description
-//       //   `)
-//       //     .bind(
-//       //       res.id,
-//       //       // productData.shop,
-//       //       res.shortDescription,
-//       //       res.detailedDescription
-//       //     )
-//       //     .run();
-//       // }
-//       if (results?.length) {
-//         await Promise.all(
-//           results.map(({ id, shortDescription, detailedDescription }) =>
-//             env.DB.prepare(`
-//               INSERT INTO descreption (id, short_description, detailed_description)
-//               VALUES (?, ?, ?)
-//               ON CONFLICT(id) DO UPDATE SET
-//                 short_description = excluded.short_description,
-//                 detailed_description = excluded.detailed_description
-//             `)
-//             .bind(
-//               id,
-//               shortDescription ?? "",
-//               detailedDescription ?? ""
-//             )
-//             .run()
-//           )
-//         );
-//       }
-      
-     
-//     }
-
-//     message.ack(); // ✅ IMPORTANT
-//   } catch (err) {
-//     console.error("Queue error:", err);
-//     message.retry(); // better than throw
-//   }
-// }
-     
-//     }
+    
 
 await Promise.all(
   batch.messages.map((message) =>
@@ -152,47 +76,96 @@ await Promise.all(
         shop,
         env.SHOPIFY_API_TOKEN_PALITINUMSHOP
       );
-const reverse=`#graphql
-query GetProductReviewSchema($id: ID!) {
-  product(id: $id) {
-    metafield(namespace: "alireviews", key: "seo_rating_review_key_script") {
-      key 
-      value
-      type
-      namespace
-      jsonValue
-      id
-      compareDigest
-    }
-  }
-}
-`
-      const result=await admin.graphql(reverse,{variables:{id:products[0].id}})
-      let res=await result.json()
-      const data=res?.data?.product?.metafield
-      console.log(data)
-      const getAliRating = (value:string) => {
-        if (!value) return null;
-      
-        try {
-          return JSON.parse(`{${value.replace(/,$/, "")}}`).aggregateRating;
-        } catch {
-          return null;
+      const reverse=`#graphql
+      query GetProductReviewSchema($id: ID!) {
+        product(id: $id) {
+          metafield(namespace: "alireviews", key: "seo_rating_review_key_script") {
+            key 
+            value
+            type
+            namespace
+            jsonValue
+            id
+            compareDigest
+            createdAt
+            updatedAt
+            reference{
+              Article{
+                author{name} 
+                body
+                createdAt
+                defaultCursor
+                handle
+                id
+                isPublished
+                publishedAt
+                summary
+                tags
+                templateSuffix
+                title
+                updatedAt
+                }
+            }
+          }
         }
-      };
-      
-      const aggregateRating = getAliRating(data?.value);
-      console.log(aggregateRating)
-      // try {
-      //   // 3️⃣ Process products safely
-      //   await processProducts(products, admin, env);
+      }
+      `
+            const result=await admin.graphql(reverse,{variables:{id:products[0].id}})
+            let res=await result.json()
+            const data=res?.data?.product?.metafield.value
+            console.log(res?.data?.product?.metafield)
+            // const getAliRating = (value:string) => {
+            //   if (!value) return null;
+            
+            //   try {
+            //     return JSON.parse(`{${value.replace(/,$/, "")}}`).aggregateRating;
+            //   } catch {
+            //     return null;
+            //   }
+            // };
+            
+            // const aggregateRating = getAliRating(data?.value);
+            // console.log(aggregateRating)
 
-      //   // 4️⃣ Acknowledge the message
-      //   message.ack();
-      // } catch (err) {
-      //   console.error("Queue processing failed for message", message.id, err);
-      //   message.retry();
-      // }
+            interface AliReview {
+              aggregateRating?: {
+                ratingValue: number;
+                reviewCount: number;
+                bestRating?: number;
+                worstRating?: number;
+              };
+              reviews?: Array<{
+                author: string;
+                date: string;
+                content: string;
+                rating: number;
+              }>;
+            }
+
+          const aggregateRating:AliReview | null = data
+            ? (() => {
+                try {
+                  return JSON.parse(`{${data.replace(/,$/, "")}}`).aggregateRating;
+                } catch (err) {
+                  console.error("Failed to parse metafield JSON:", err);
+                  return null;
+                }
+              })()
+            : null;
+
+console.log('ssssssssssssssss',aggregateRating)
+return
+
+      try {
+        // 3️⃣ Process products safely
+        await processProducts(products, admin, env);
+
+        // 4️⃣ Acknowledge the message
+        message.ack();
+      } catch (err) {
+        console.error("Queue processing failed for message", message.id, err);
+        message.retry();
+      }
     })
   )
 );
@@ -334,7 +307,86 @@ async function processSingleProduct(
     const maxPrice = OLD_DESC.priceRangeV2?.maxVariantPrice?.amount
       ? parseFloat(OLD_DESC.priceRangeV2.maxVariantPrice.amount).toFixed(2)
       : minPrice;
-    
+      const reverse=`#graphql
+      query GetProductReviewSchema($id: ID!) {
+        product(id: $id) {
+          metafield(namespace: "alireviews", key: "seo_rating_review_key_script") {
+            key 
+            value
+            type
+            namespace
+            jsonValue
+            id
+            compareDigest
+            createdAt
+            updatedAt
+            reference{
+              Article{
+                author{name} 
+                body
+                createdAt
+                defaultCursor
+                handle
+                id
+                isPublished
+                publishedAt
+                summary
+                tags
+                templateSuffix
+                title
+                updatedAt
+                }
+            }
+          }
+        }
+      }
+      `
+            const result=await admin.graphql(reverse,{variables:{id:OLD_DESC.id}})
+            let res=await result.json()
+            const data=res?.data?.product?.metafield.value
+            console.log(res?.data?.product?.metafield)
+            // const getAliRating = (value:string) => {
+            //   if (!value) return null;
+            
+            //   try {
+            //     return JSON.parse(`{${value.replace(/,$/, "")}}`).aggregateRating;
+            //   } catch {
+            //     return null;
+            //   }
+            // };
+            
+            // const aggregateRating = getAliRating(data?.value);
+            // console.log(aggregateRating)
+
+            interface AliReview {
+              aggregateRating?: {
+                ratingValue: number;
+                reviewCount: number;
+                bestRating?: number;
+                worstRating?: number;
+              };
+              reviews?: Array<{
+                author: string;
+                date: string;
+                content: string;
+                rating: number;
+              }>;
+            }
+
+          const aggregateRating:AliReview | null = data
+            ? (() => {
+                try {
+                  return JSON.parse(`{${data.replace(/,$/, "")}}`).aggregateRating;
+                } catch (err) {
+                  console.error("Failed to parse metafield JSON:", err);
+                  return null;
+                }
+              })()
+            : null;
+
+console.log('ssssssssssssssss',aggregateRating)
+
+
     const offers = {
       "@type": "AggregateOffer",
       "priceCurrency": "EUR",
@@ -343,7 +395,33 @@ async function processSingleProduct(
       "offerCount": OLD_DESC.variants?.length || 1,
       "url": `https://platinumshop.it/products/${SEO.handle}`
     };
-      const productSchema = {
+   
+    const aggregateRating__ = aggregateRating?.aggregateRating
+  ? {
+      "@type": "AggregateRating",
+      "ratingValue": aggregateRating.aggregateRating.ratingValue || "0",
+      "reviewCount": aggregateRating.aggregateRating.reviewCount || "0",
+      "bestRating": aggregateRating.aggregateRating.bestRating || 5,
+      "worstRating": aggregateRating.aggregateRating.worstRating || 1
+    }
+  : undefined; // Will be skipped if missing
+
+  const review = Array.isArray(aggregateRating?.reviews) && aggregateRating.reviews.length
+  ? aggregateRating.reviews.map((rev: any) => ({
+      "@type": "Review",
+      "author": { "@type": "Person", "name": rev.author || "Anonymous" },
+      "datePublished": rev.date || new Date().toISOString(),
+      "reviewBody": rev.content || "",
+      "reviewRating": {
+        "@type": "Rating",
+        "ratingValue": rev.rating || 0,
+        "bestRating": 5,
+        "worstRating": 1
+      }
+    }))
+  : undefined; // Will be skipped if missing
+
+    const productSchema = {
         "@context": "https://schema.org/",
 
         "@graph": [
@@ -383,16 +461,16 @@ async function processSingleProduct(
           },
           {
             "@type": "Product",
-            "@id": `https://platinumshop.it/products/${seo.handle}#product`,
+            "@id": `https://platinumshop.it/products/${SEO.handle}#breadcrumb`,
 
               "name": SEO?.schemaOrg.name || SEO.seoTitle,
               "description": SEO.seoDescription || OLD_DESC.title,
-              "image": OLD_DESC.images.map((e:any)=>({id:e.node.id,image:e.node.url})),
+              "image": OLD_DESC.images.map((e:any) => e.node.url) ,
               "sku": OLD_DESC.sku || OLD_DESC.id?.split('/').pop() || '',
               "mpn": OLD_DESC.barcode || OLD_DESC.id?.split('/').pop() || '',
               "brand": { "@type": "Brand", "name": SEO?.schemaOrg.brand || "PlatiNum" },
           
-          "offers": {
+             "offers": {
             "@type": "Offer",
             "url": `https://platinumshop.it/products/${SEO.handle}`,
             // "priceCurrency": OLD_DESC.priceRangeV2.maxVariantPrice.currencyCode,
@@ -405,13 +483,17 @@ async function processSingleProduct(
                     "@id": "https://platinumshop.it/#organization"
                   }
                 },
-                // "aggregateRating": reviews?.rating
-                // ? {
-                //     "@type": "AggregateRating",
-                //     "ratingValue": reviews.rating,
-                //     "reviewCount": reviews.count
-                //   }
-                // : undefined
+                ...(aggregateRating && { aggregateRating__ }),
+
+                ...(review && { review }),
+
+                "hasMerchantReturnPolicy": {
+                  "@type": "MerchantReturnPolicy",
+                  "returnPolicyCategory": "https://schema.org/ReturnFeesCustomerResponsibility",
+                  "merchantReturnDays": 14,
+                  "returnMethod": "https://schema.org/ReturnByMail",
+                  "inStoreReturnsOffered": true
+                }
           },
           
         ],
