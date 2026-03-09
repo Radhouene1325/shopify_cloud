@@ -76,85 +76,7 @@ await Promise.all(
         shop,
         env.SHOPIFY_API_TOKEN_PALITINUMSHOP
       );
-      const reverse=`#graphql
-      query GetProductReviewSchema($id: ID!) {
-        product(id: $id) {
-          metafield(namespace: "alireviews", key: "seo_rating_review_key_script") {
-            key 
-            value
-            type
-            namespace
-            jsonValue
-            id
-            compareDigest
-            createdAt
-            updatedAt
-             reference{
-              Article{
-                author{name} 
-                body
-                createdAt
-                defaultCursor
-                handle
-                id
-                isPublished
-                publishedAt
-                summary
-                tags
-                templateSuffix
-                title
-                updatedAt
-                }
-            }
-          }
-        }
-      }
-      `
-            const result=await admin.graphql(reverse,{variables:{id:products[0].id}})
-            let res=await result.json()
-            const data=res?.data?.product?.metafield
-            console.log("hello", res?.data?.product)
-            // const getAliRating = (value:string) => {
-            //   if (!value) return null;
-            
-            //   try {
-            //     return JSON.parse(`{${value.replace(/,$/, "")}}`).aggregateRating;
-            //   } catch {
-            //     return null;
-            //   }
-            // };
-            
-            // const aggregateRating = getAliRating(data?.value);
-            // console.log(aggregateRating)
-
-            interface AliReview {
-              aggregateRating?: {
-                ratingValue: number;
-                reviewCount: number;
-                bestRating?: number;
-                worstRating?: number;
-              };
-              reviews?: Array<{
-                author: string;
-                date: string;
-                content: string;
-                rating: number;
-              }>;
-            }
-
-          const aggregateRating:AliReview | null = data
-            ? (() => {
-                try {
-                  return JSON.parse(`{${data.value.replace(/,$/, "")}}`).aggregateRating;
-                } catch (err) {
-                  console.error("Failed to parse metafield JSON:", err);
-                  return null;
-                }
-              })()
-            : null;
-
-console.log('ssssssssssssssss',aggregateRating)
-
+    
 
       // try {
       //   // 3️⃣ Process products safely
@@ -174,27 +96,27 @@ console.log('ssssssssssssssss',aggregateRating)
 await queue.onIdle();
 
 
-// await Promise.all(
-//   batch.messages.map(async(message)=>{
-//     const payload = decompressPayload(message.body.body as string);
+await Promise.all(
+  batch.messages.map(async(message)=>{
+    const payload = decompressPayload(message.body.body as string);
 
-//     const {shop,products,accessToken}=payload
-//     console.log('messager is her for see the data',message)
-//     console.log('api token is her hello ',env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
-//     const admin= createShopifyAdmin(shop,env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
-//     console.log(admin)
-//             try {
-//               await processProducts(products, admin,env);
+    const {shop,products,accessToken}=payload
+    console.log('messager is her for see the data',message)
+    console.log('api token is her hello ',env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
+    const admin= createShopifyAdmin(shop,env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
+    console.log(admin)
+            try {
+              await processProducts(products, admin,env);
     
-//               message.ack();
-//             }catch(err){
-//               console.error("Queue processing failed", err);
+              message.ack();
+            }catch(err){
+              console.error("Queue processing failed", err);
     
-//               message.retry();
+              message.retry();
       
-//             }
-//   })
-// )
+            }
+  })
+)
 
 
 
@@ -405,7 +327,6 @@ console.log('ssssssssssssssss',aggregateRating)
       "worstRating": aggregateRating.aggregateRating.worstRating || 1
     }
   : undefined; // Will be skipped if missing
-
   const review = Array.isArray(aggregateRating?.reviews) && aggregateRating.reviews.length
   ? aggregateRating.reviews.map((rev: any) => ({
       "@type": "Review",
@@ -420,6 +341,9 @@ console.log('ssssssssssssssss',aggregateRating)
       }
     }))
   : undefined; // Will be skipped if missing
+
+  console.log('aggreagation is her',aggregateRating__)
+console.log('revieeeessssssssss',review)
 
     const productSchema = {
         "@context": "https://schema.org/",
@@ -606,7 +530,7 @@ console.log('ssssssssssssssss',aggregateRating)
       //     ]
       //   };
       // };
-    
+    console.log("productSchema is secces",productSchema)
       updateProducts.push({
         id: OLD_DESC.id,
         descriptionHtml: DESC_AI.detailedDescription,
@@ -621,11 +545,11 @@ console.log('ssssssssssssssss',aggregateRating)
           { namespace: "custom", key: "seo_descreption", type: "json", value: JSON.stringify(SEO.seoDescription) },
           { namespace: "seo", key: "schema_org", type: "json", value: JSON.stringify(productSchema) },
         
-          { namespace: "custom", key: "facebookTitle", type: "json", value: JSON.stringify(SEO?.socialOptimization.facebookTitle) },
-          { namespace: "custom", key: "facebookDescription", type: "json", value: JSON.stringify(SEO?.socialOptimization.facebookDescription) },
-          { namespace: "custom", key: "tiktokTitle", type: "json", value: JSON.stringify(SEO?.socialOptimization.tiktokTitle) },
-          { namespace: "custom", key: "pinterestTitle", type: "json", value: JSON.stringify(SEO?.socialOptimization.pinterestTitle) },
-          { namespace: "custom", key: "pinterestDescription", type: "json", value: JSON.stringify(SEO?.socialOptimization.pinterestDescription) },
+          { namespace: "custom", key: "facebookTitle", type: "json", value:SEO?.socialOptimization.facebookTitle },
+          { namespace: "custom", key: "facebookDescription", type: "json", value:SEO?.socialOptimization.facebookDescription },
+          { namespace: "custom", key: "tiktokTitle", type: "json", value:SEO?.socialOptimization.tiktokTitle },
+          { namespace: "custom", key: "pinterestTitle", type: "json", value:SEO?.socialOptimization.pinterestTitle },
+          { namespace: "custom", key: "pinterestDescription", type: "json", value:SEO?.socialOptimization.pinterestDescription },
 
         
         ]
