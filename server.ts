@@ -114,46 +114,46 @@ await Promise.all(
             let res=await result.json()
             const data=res?.data?.product?.metafield.value
             console.log(res?.data?.product?.metafield)
-            const getAliRating = (value:string) => {
-              if (!value) return null;
+            // const getAliRating = (value:string) => {
+            //   if (!value) return null;
             
-              try {
-                return JSON.parse(`{${value.replace(/,$/, "")}}`).aggregateRating;
-              } catch {
-                return null;
-              }
-            };
+            //   try {
+            //     return JSON.parse(`{${value.replace(/,$/, "")}}`).aggregateRating;
+            //   } catch {
+            //     return null;
+            //   }
+            // };
             
-            const aggregateRating = getAliRating(data?.value);
-            console.log(aggregateRating)
+            // const aggregateRating = getAliRating(data?.value);
+            // console.log(aggregateRating)
 
-//             interface AliReview {
-//               aggregateRating?: {
-//                 ratingValue: number;
-//                 reviewCount: number;
-//                 bestRating?: number;
-//                 worstRating?: number;
-//               };
-//               reviews?: Array<{
-//                 author: string;
-//                 date: string;
-//                 content: string;
-//                 rating: number;
-//               }>;
-//             }
+            interface AliReview {
+              aggregateRating?: {
+                ratingValue: number;
+                reviewCount: number;
+                bestRating?: number;
+                worstRating?: number;
+              };
+              reviews?: Array<{
+                author: string;
+                date: string;
+                content: string;
+                rating: number;
+              }>;
+            }
 
-//           const aggregateRating:AliReview | null = data
-//             ? (() => {
-//                 try {
-//                   return JSON.parse(`{${data.replace(/,$/, "")}}`).aggregateRating;
-//                 } catch (err) {
-//                   console.error("Failed to parse metafield JSON:", err);
-//                   return null;
-//                 }
-//               })()
-//             : null;
+          const aggregateRating:AliReview | null = data
+            ? (() => {
+                try {
+                  return JSON.parse(`{${data.replace(/,$/, "")}}`).aggregateRating;
+                } catch (err) {
+                  console.error("Failed to parse metafield JSON:", err);
+                  return null;
+                }
+              })()
+            : null;
 
-// console.log('ssssssssssssssss',aggregateRating)
+console.log('ssssssssssssssss',aggregateRating)
 
 
       // try {
