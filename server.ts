@@ -291,10 +291,12 @@ console.log('ssssssssssssssss',aggregateRating)
     const offers = {
       "@type": "AggregateOffer",
       "priceCurrency": OLD_DESC.currencyCode,
-      "lowPrice": minPrice,
-      "highPrice": maxPrice,
+      "lowPrice": Number(minPrice).toFixed(2),
+      "highPrice": Number(maxPrice).toFixed(2),
       "offerCount": OLD_DESC.variants?.length || 1,
-      "url": `https://platinumshop.it/products/${SEO.handle}`
+      "url": `https://platinumshop.it/products/${SEO.handle}`,
+      "availability": "https://schema.org/InStock"
+
     };
    
     const aggregateRating__ = aggregateRating
@@ -341,7 +343,7 @@ console.log('ssssssssssssssss',aggregateRating)
           },
           {
             "@type": "BreadcrumbList",
-            "@id": `https://platinumshop.it/products/${SEO.handle}/#product`,
+            "@id": `https://platinumshop.it/products/${SEO.handle}/#breadcrumb`,
             "itemListElement": [
               {
                 "@type": "ListItem",
@@ -364,7 +366,7 @@ console.log('ssssssssssssssss',aggregateRating)
           },
           {
             "@type": "Product",
-            "@id": `https://platinumshop.it/products/${SEO.handle}#breadcrumb`,
+            "@id": `https://platinumshop.it/products/${SEO.handle}#product`,
 
               "name": SEO?.schemaOrg.name || SEO.seoTitle,
               "description": SEO.seoDescription || OLD_DESC.title,

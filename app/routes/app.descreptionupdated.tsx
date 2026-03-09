@@ -1472,6 +1472,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                 variants(first: 10) {
                   edges {
                     node {
+                      sku
                       id
                       title
                       selectedOptions{
