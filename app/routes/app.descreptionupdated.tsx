@@ -845,16 +845,17 @@ interface Variant {
      }
 
   },
-  media?:{
-      edges?:{
-          node?:{
-              id?:string
-              image?:{
-                url:string
-              }
-          }
-      }
-  }
+  images?:string[],
+  // images?:{
+     
+  //         node?:{
+  //             id?:string
+  //             image?:{
+  //               url:string
+  //             }
+  //         }
+      
+  // }
 }
 
 interface PageInfo {
@@ -876,7 +877,7 @@ interface SelectedVariant {
   tags: string[];
   handel: string;       // Note: matches your spelling
   vendor: string;
-  images: [];
+  images: string[];
   productType: string;
 }
 
@@ -941,7 +942,7 @@ console.log("fetch is her succes",fetcher)
         tags: v.tags || [],
         handel: v.handle,
         vendor: v.vendor,
-        images: v?.media?.edges || "",
+        images: v?.images || "",
         productType: v.productType,
         title:v.title,
         totalInventory:v?.totalInventory,
@@ -970,7 +971,7 @@ console.log("fetch is her succes",fetcher)
           tags: variant.tags || [],
           handel: variant.handle,
           vendor: variant.vendor,
-          image: variant.featuredMedia?.image?.url || "",
+          images: variant?.images || "",
           productType: variant.productType,
           title:variant.title,
           totalInventory:variant?.totalInventory,
