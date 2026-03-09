@@ -265,12 +265,12 @@ async function processSingleProduct(
             // console.log(aggregateRating)
 
             interface AliReview {
-              aggregateRating?: {
+             
                 ratingValue: number;
                 reviewCount: number;
                 bestRating?: number;
                 worstRating?: number;
-              };
+              
               
             }
 
