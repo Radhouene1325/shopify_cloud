@@ -89,31 +89,31 @@ await Promise.all(
             compareDigest
             createdAt
             updatedAt
-            # reference{
-            #   Article{
-            #     author{name} 
-            #     body
-            #     createdAt
-            #     defaultCursor
-            #     handle
-            #     id
-            #     isPublished
-            #     publishedAt
-            #     summary
-            #     tags
-            #     templateSuffix
-            #     title
-            #     updatedAt
-            #     }
-            # }
+             reference{
+              Article{
+                author{name} 
+                body
+                createdAt
+                defaultCursor
+                handle
+                id
+                isPublished
+                publishedAt
+                summary
+                tags
+                templateSuffix
+                title
+                updatedAt
+                }
+            }
           }
         }
       }
       `
             const result=await admin.graphql(reverse,{variables:{id:products[0].id}})
             let res=await result.json()
-            const data=res?.data?.product?.metafield.value
-            console.log(res?.data?.product?.metafield)
+            const data=res?.data?.product?.metafield
+            console.log(res?.data?.product?.metafield.reference?.Article)
             // const getAliRating = (value:string) => {
             //   if (!value) return null;
             
@@ -145,7 +145,7 @@ await Promise.all(
           const aggregateRating:AliReview | null = data
             ? (() => {
                 try {
-                  return JSON.parse(`{${data.replace(/,$/, "")}}`).aggregateRating;
+                  return JSON.parse(`{${data.value.replace(/,$/, "")}}`).aggregateRating;
                 } catch (err) {
                   console.error("Failed to parse metafield JSON:", err);
                   return null;
