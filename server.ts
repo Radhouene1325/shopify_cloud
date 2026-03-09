@@ -297,7 +297,7 @@ console.log('ssssssssssssssss',aggregateRating)
       "url": `https://platinumshop.it/products/${SEO.handle}`
     };
    
-    const aggregateRating__ = aggregateRating?.aggregateRating
+    const aggregateRating__ = aggregateRating
   ? {
       "@type": "AggregateRating",
       "ratingValue":aggregateRating?.ratingValue || "0",
