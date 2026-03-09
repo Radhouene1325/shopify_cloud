@@ -167,9 +167,11 @@ query GetProductReviewSchema($id: ID!) {
   }
 }
 `
-      const data=await admin.graphql(reverse,{variables:{id:products[0].id}})
-      console.log(await data.json())
-
+      const result=await admin.graphql(reverse,{variables:{id:products[0].id}})
+      console.log(await result.json())
+      let res=await result.json()
+      const data=res?.data?.product?.metafield
+      console.log(data)
       // try {
       //   // 3️⃣ Process products safely
       //   await processProducts(products, admin, env);
