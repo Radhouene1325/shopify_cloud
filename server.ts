@@ -242,23 +242,7 @@ async function processSingleProduct(
             compareDigest
             createdAt
             updatedAt
-            reference{
-              Article{
-                author{name} 
-                body
-                createdAt
-                defaultCursor
-                handle
-                id
-                isPublished
-                publishedAt
-                summary
-                tags
-                templateSuffix
-                title
-                updatedAt
-                }
-            }
+            
           }
         }
       }
