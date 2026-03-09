@@ -1475,6 +1475,15 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                       sku
                       id
                       title
+                      price
+                      barcode
+                      compareAtPrice
+                      inventoryPolicy
+                      unitPrice{
+                        amount
+                        currencyCode
+                      }
+                     
                       selectedOptions{
                         name
                         value
