@@ -369,7 +369,7 @@ console.log('ssssssssssssssss',aggregateRating)
               "name": SEO?.schemaOrg.name || SEO.seoTitle,
               "description": SEO.seoDescription || OLD_DESC.title,
               "image": OLD_DESC.images.map((e:any) => e.node.image.url) ,
-              "sku": OLD_DESC.sku || OLD_DESC.id?.split('/').pop() || '',
+              "sku": OLD_DESC.sku.map((e)=>e.node.inventoryItem.sku) || OLD_DESC.id?.split('/').pop() || '',
               "mpn": OLD_DESC.barcode || OLD_DESC.id?.split('/').pop() || '',
               "brand": { "@type": "Brand", "name": SEO?.schemaOrg.brand || "PlatiNum" },
           

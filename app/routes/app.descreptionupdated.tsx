@@ -845,9 +845,12 @@ interface Variant {
      }
 
   }
-  variants?:{
+  media?:{
     edges?:string[]
   };
+  variants?:{
+    edges?:string[]
+  }
 }
 
 interface PageInfo {
@@ -936,14 +939,15 @@ console.log("fetch is her succes",fetcher)
         handel: v.handle,
         vendor: v.vendor,
         image: v.featuredMedia?.image?.url || "",
-        images:v?.variants?.edges,
+        images:v?.media?.edges,
         productType: v.productType,
         title:v.title,
         totalInventory:v?.totalInventory,
         tracksInventory:v?.tracksInventory,
         max_amount:v?.priceRangeV2?.maxVariantPrice?.amount,
         currencyCode:v?.priceRangeV2?.maxVariantPrice?.currencyCode,
-        min_amount:v.priceRangeV2?.minVariantPrice?.amount
+        min_amount:v.priceRangeV2?.minVariantPrice?.amount,
+        sku:v?.variants?.edges
 
        
 
@@ -966,14 +970,15 @@ console.log("fetch is her succes",fetcher)
           handel: variant.handle,
           vendor: variant.vendor,
           image: variant.featuredMedia?.image?.url || "",
-          images:variant?.variants?.edges,
+          images:variant?.media?.edges,
           productType: variant.productType,
           title:variant.title,
           totalInventory:variant?.totalInventory,
           tracksInventory:variant?.tracksInventory,
           max_amount:variant?.priceRangeV2?.maxVariantPrice?.amount,
           currencyCode:variant?.priceRangeV2?.maxVariantPrice?.currencyCode,
-          min_amount:variant.priceRangeV2?.minVariantPrice?.amount
+          min_amount:variant.priceRangeV2?.minVariantPrice?.amount,
+          sku:variant?.variants?.edges
   
          
         },
