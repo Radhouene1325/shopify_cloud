@@ -152,17 +152,34 @@ await Promise.all(
         shop,
         env.SHOPIFY_API_TOKEN_PALITINUMSHOP
       );
+const reverse=`#graphql
+query GetProductReviewSchema($id: ID!) {
+  product(id: $id) {
+    metafield(namespace: "alireviews", key: "seo_rating_review_key_script") {
+      key 
+      value
+      type
+      namespace
+      jsonValue
+      id
+      compareDigest
+    }
+  }
+}
+`
+      const data=await admin.graphql(reverse,{variables:{id:products[0].id}})
+      console.log(await data.json())
 
-      try {
-        // 3️⃣ Process products safely
-        await processProducts(products, admin, env);
+      // try {
+      //   // 3️⃣ Process products safely
+      //   await processProducts(products, admin, env);
 
-        // 4️⃣ Acknowledge the message
-        message.ack();
-      } catch (err) {
-        console.error("Queue processing failed for message", message.id, err);
-        message.retry();
-      }
+      //   // 4️⃣ Acknowledge the message
+      //   message.ack();
+      // } catch (err) {
+      //   console.error("Queue processing failed for message", message.id, err);
+      //   message.retry();
+      // }
     })
   )
 );
@@ -296,26 +313,204 @@ async function processSingleProduct(
         SEO.category?.name || [],
         "DESC_AI"
       ].filter(Boolean);
+
+      const minPrice = OLD_DESC.priceRangeV2?.minVariantPrice?.amount
+      ? parseFloat(OLD_DESC.priceRangeV2.minVariantPrice.amount).toFixed(2)
+      : "0.00";
     
+    const maxPrice = OLD_DESC.priceRangeV2?.maxVariantPrice?.amount
+      ? parseFloat(OLD_DESC.priceRangeV2.maxVariantPrice.amount).toFixed(2)
+      : minPrice;
+    
+    const offers = {
+      "@type": "AggregateOffer",
+      "priceCurrency": "EUR",
+      "lowPrice": minPrice,
+      "highPrice": maxPrice,
+      "offerCount": OLD_DESC.variants?.length || 1,
+      "url": `https://platinumshop.it/products/${SEO.handle}`
+    };
       const productSchema = {
         "@context": "https://schema.org/",
-        "@type": "Product",
-        "name": SEO?.schemaOrg.name || SEO.seoTitle,
-        "description": SEO.seoDescription || OLD_DESC.title,
-        "image": OLD_DESC.image,
-        "sku": OLD_DESC.sku || OLD_DESC.id?.split('/').pop() || '',
-        "mpn": OLD_DESC.barcode || OLD_DESC.id?.split('/').pop() || '',
-        "brand": { "@type": "Brand", "name": SEO.schemaOrg.brand || "PlatiNum" },
-        "offers": {
-          "@type": "Offer",
-          "url": `https://platinumshop.it/products/${SEO.handle}`,
-          "priceCurrency": "EUR",
-          "price": OLD_DESC.price ? parseFloat(OLD_DESC.price.toString()).toFixed(2) : "0.00",
-          "priceValidUntil": new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          "itemCondition": "https://schema.org/NewCondition",
-          "seller": { "@type": "Organization", "name": "PlatiNum" }
-        }
+
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://platinumshop.it/#organization",
+            "name": "PlatiNum",
+            "url": "https://platinumshop.it",
+            "logo": "https://platinumshop.it/logo.png",
+            "sameAs": [
+              "https://facebook.com/platinumshop",
+              "https://instagram.com/platinumshop"
+            ]
+          },
+          {
+            "@type": "BreadcrumbList",
+            "@id": `https://platinumshop.it/products/${SEO.handle}/#product`,
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://platinumshop.it"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": SEO.category?.name || "Products",
+                "item": `https://platinumshop.it/collections/${SEO?.handle}`
+              },
+              {
+                "@type": "ListItem",
+                "position": 3,
+                "name": SEO.schemaOrg?.name || SEO.seoTitle
+              }
+            ]
+          },
+          {
+            "@type": "Product",
+            "@id": `https://platinumshop.it/products/${seo.handle}#product`,
+
+              "name": SEO?.schemaOrg.name || SEO.seoTitle,
+              "description": SEO.seoDescription || OLD_DESC.title,
+              "image": OLD_DESC.images.map((e:any)=>({id:e.node.id,image:e.node.url})),
+              "sku": OLD_DESC.sku || OLD_DESC.id?.split('/').pop() || '',
+              "mpn": OLD_DESC.barcode || OLD_DESC.id?.split('/').pop() || '',
+              "brand": { "@type": "Brand", "name": SEO?.schemaOrg.brand || "PlatiNum" },
+          
+          "offers": {
+            "@type": "Offer",
+            "url": `https://platinumshop.it/products/${SEO.handle}`,
+            // "priceCurrency": OLD_DESC.priceRangeV2.maxVariantPrice.currencyCode,
+            "price": offers?offers: "0.00",
+            "priceValidUntil": new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            "itemCondition": "https://schema.org/NewCondition",
+             "availability": "https://schema.org/InStock",
+  
+            "seller": {
+                    "@id": "https://platinumshop.it/#organization"
+                  }
+                },
+                // "aggregateRating": reviews?.rating
+                // ? {
+                //     "@type": "AggregateRating",
+                //     "ratingValue": reviews.rating,
+                //     "reviewCount": reviews.count
+                //   }
+                // : undefined
+          },
+          
+        ],
+
+
+
+        // "@type": "Product",
+        // "name": SEO?.schemaOrg.name || SEO.seoTitle,
+        // "description": SEO.seoDescription || OLD_DESC.title,
+        // "image": OLD_DESC.images.map((e:any)=>({id:e.id,image:e.url})),
+        // "sku": OLD_DESC.sku || OLD_DESC.id?.split('/').pop() || '',
+        // "mpn": OLD_DESC.barcode || OLD_DESC.id?.split('/').pop() || '',
+        // "brand": { "@type": "Brand", "name": SEO?.schemaOrg.brand || "PlatiNum" },
+        // "offers": {
+        //   "@type": "Offer",
+        //   "url": `https://platinumshop.it/products/${SEO.handle}`,
+        //   "priceCurrency": OLD_DESC.priceRangeV2.maxVariantPrice.currencyCode,
+        //   "price": OLD_DESC.priceRangeV2.maxVariantPrice ? parseFloat(OLD_DESC.priceRangeV2.maxVariantPrice.amount.toString()).toFixed(2) : "0.00",
+        //   "priceValidUntil": new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        //   "itemCondition": "https://schema.org/NewCondition",
+        //    "availability": "https://schema.org/InStock",
+
+        //   "seller": {
+        //           "@id": "https://platinumshop.it/#organization"
+        //         }
+        // }
       };
+//// thes seo generation using reviuses
+      // const generateProductSchema = ({ product, seo, reviews }) => {
+
+      //   const productId = product.id?.split('/').pop();
+      
+      //   return {
+      //     "@context": "https://schema.org",
+      //     "@graph": [
+      
+      //       {
+      //         "@type": "Organization",
+      //         "@id": "https://platinumshop.it/#organization",
+      //         "name": "PlatiNum",
+      //         "url": "https://platinumshop.it",
+      //         "logo": "https://platinumshop.it/logo.png",
+      //         "sameAs": [
+      //           "https://facebook.com/platinumshop",
+      //           "https://instagram.com/platinumshop"
+      //         ]
+      //       },
+      
+      //       {
+      //         "@type": "BreadcrumbList",
+      //         "@id": `https://platinumshop.it/products/${seo.handle}#breadcrumb`,
+      //         "itemListElement": [
+      //           {
+      //             "@type": "ListItem",
+      //             "position": 1,
+      //             "name": "Home",
+      //             "item": "https://platinumshop.it"
+      //           },
+      //           {
+      //             "@type": "ListItem",
+      //             "position": 2,
+      //             "name": seo.category?.name || "Products",
+      //             "item": `https://platinumshop.it/collections/${seo.category?.handle}`
+      //           },
+      //           {
+      //             "@type": "ListItem",
+      //             "position": 3,
+      //             "name": seo.schemaOrg?.name || seo.seoTitle
+      //           }
+      //         ]
+      //       },
+      
+      //       {
+      //         "@type": "Product",
+      //         "@id": `https://platinumshop.it/products/${seo.handle}#product`,
+      //         "name": seo.schemaOrg?.name || seo.seoTitle,
+      //         "description": seo.seoDescription,
+      //         "sku": product.sku || productId,
+      //         "mpn": product.barcode || productId,
+      //         "image": product.image,
+      //         "brand": {
+      //           "@type": "Brand",
+      //           "name": seo.schemaOrg?.brand || "PlatiNum"
+      //         },
+      
+      //         "offers": {
+      //           "@type": "Offer",
+      //           "url": `https://platinumshop.it/products/${seo.handle}`,
+      //           "priceCurrency": "EUR",
+      //           "price": parseFloat(product.price).toFixed(2),
+      //           "priceValidUntil": new Date(
+      //             Date.now() + 365 * 24 * 60 * 60 * 1000
+      //           ).toISOString().split("T")[0],
+      //           "availability": "https://schema.org/InStock",
+      //           "itemCondition": "https://schema.org/NewCondition",
+      //           "seller": {
+      //             "@id": "https://platinumshop.it/#organization"
+      //           }
+      //         },
+      
+      //         "aggregateRating": reviews?.rating
+      //           ? {
+      //               "@type": "AggregateRating",
+      //               "ratingValue": reviews.rating,
+      //               "reviewCount": reviews.count
+      //             }
+      //           : undefined
+      //       }
+      
+      //     ]
+      //   };
+      // };
     
       updateProducts.push({
         id: OLD_DESC.id,

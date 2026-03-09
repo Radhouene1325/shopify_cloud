@@ -844,6 +844,16 @@ interface Variant {
       currencyCode:string
      }
 
+  },
+  media?:{
+      edges?:{
+          node?:{
+              id?:string
+              image?:{
+                url:string
+              }
+          }
+      }
   }
 }
 
@@ -866,7 +876,7 @@ interface SelectedVariant {
   tags: string[];
   handel: string;       // Note: matches your spelling
   vendor: string;
-  image: string;
+  images: [];
   productType: string;
 }
 
@@ -931,7 +941,7 @@ console.log("fetch is her succes",fetcher)
         tags: v.tags || [],
         handel: v.handle,
         vendor: v.vendor,
-        image: v.featuredMedia?.image?.url || "",
+        images: v?.media?.edges || "",
         productType: v.productType,
         title:v.title,
         totalInventory:v?.totalInventory,
