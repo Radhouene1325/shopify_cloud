@@ -113,7 +113,7 @@ await Promise.all(
             const result=await admin.graphql(reverse,{variables:{id:products[0].id}})
             let res=await result.json()
             const data=res?.data?.product?.metafield
-            console.log(res?.data?.product?.metafield.reference?.Article)
+            console.log(res?.data?.product)
             // const getAliRating = (value:string) => {
             //   if (!value) return null;
             
