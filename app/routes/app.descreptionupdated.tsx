@@ -844,18 +844,10 @@ interface Variant {
       currencyCode:string
      }
 
-  },
-  images?:string[],
-  // images?:{
-     
-  //         node?:{
-  //             id?:string
-  //             image?:{
-  //               url:string
-  //             }
-  //         }
-      
-  // }
+  }
+  variants?:{
+    edges?:string[]
+  };
 }
 
 interface PageInfo {
@@ -877,8 +869,9 @@ interface SelectedVariant {
   tags: string[];
   handel: string;       // Note: matches your spelling
   vendor: string;
-  images: string[];
+  image: string;
   productType: string;
+  
 }
 
 // Loader & Action
@@ -942,7 +935,8 @@ console.log("fetch is her succes",fetcher)
         tags: v.tags || [],
         handel: v.handle,
         vendor: v.vendor,
-        images: v?.images || "",
+        image: v.featuredMedia?.image?.url || "",
+        images:v?.variants?.edges,
         productType: v.productType,
         title:v.title,
         totalInventory:v?.totalInventory,
@@ -971,7 +965,8 @@ console.log("fetch is her succes",fetcher)
           tags: variant.tags || [],
           handel: variant.handle,
           vendor: variant.vendor,
-          images: variant?.images || "",
+          image: variant.featuredMedia?.image?.url || "",
+          images:variant?.variants?.edges,
           productType: variant.productType,
           title:variant.title,
           totalInventory:variant?.totalInventory,
