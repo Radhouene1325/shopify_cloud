@@ -300,12 +300,12 @@ async function processSingleProduct(
       const productSchema = {
         "@context": "https://schema.org/",
         "@type": "Product",
-        "name": SEO.seoTitle || OLD_DESC.title,
+        "name": SEO?.schemaOrg.name || SEO.seoTitle,
         "description": SEO.seoDescription || OLD_DESC.title,
         "image": OLD_DESC.image,
         "sku": OLD_DESC.sku || OLD_DESC.id?.split('/').pop() || '',
         "mpn": OLD_DESC.barcode || OLD_DESC.id?.split('/').pop() || '',
-        "brand": { "@type": "Brand", "name": OLD_DESC.vendor || "PlatiNum" },
+        "brand": { "@type": "Brand", "name": SEO.schemaOrg.brand || "PlatiNum" },
         "offers": {
           "@type": "Offer",
           "url": `https://platinumshop.it/products/${SEO.handle}`,
@@ -329,7 +329,15 @@ async function processSingleProduct(
           { namespace: "custom", key: "descriptionsai", type: "json", value: JSON.stringify(DESC_AI.shortDescription) },
           { namespace: "custom", key: "seo_title", type: "json", value: JSON.stringify(SEO.seoTitle) },
           { namespace: "custom", key: "seo_descreption", type: "json", value: JSON.stringify(SEO.seoDescription) },
-           { namespace: "seo", key: "schema_org", type: "json", value: JSON.stringify(productSchema) }
+          { namespace: "seo", key: "schema_org", type: "json", value: JSON.stringify(productSchema) },
+        
+          { namespace: "custom", key: "facebookTitle", type: "json", value: JSON.stringify(SEO?.socialOptimization.facebookTitle) },
+          { namespace: "custom", key: "facebookDescription", type: "json", value: JSON.stringify(SEO?.socialOptimization.facebookDescription) },
+          { namespace: "custom", key: "tiktokTitle", type: "json", value: JSON.stringify(SEO?.socialOptimization.tiktokTitle) },
+          { namespace: "custom", key: "pinterestTitle", type: "json", value: JSON.stringify(SEO?.socialOptimization.pinterestTitle) },
+          { namespace: "custom", key: "pinterestDescription", type: "json", value: JSON.stringify(SEO?.socialOptimization.pinterestDescription) },
+
+        
         ]
       });
     }

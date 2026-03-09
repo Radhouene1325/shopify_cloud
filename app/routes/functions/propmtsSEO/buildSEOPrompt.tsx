@@ -37,6 +37,8 @@ export async function generateSeoMetadata(
           }
         });
   console.log('resulted is her hello',seoResults)
+  console.log('resulted is her hello',seoResults.map(e=>e?.schemaOrg.offers))
+
         return seoResults;
       } catch (err) {
         console.error(`Error processing SEO chunk ${idx + 1}:`, err);
