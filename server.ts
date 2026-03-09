@@ -171,6 +171,18 @@ query GetProductReviewSchema($id: ID!) {
       let res=await result.json()
       const data=res?.data?.product?.metafield
       console.log(data)
+      const getAliRating = (value:string) => {
+        if (!value) return null;
+      
+        try {
+          return JSON.parse(`{${value.replace(/,$/, "")}}`).aggregateRating;
+        } catch {
+          return null;
+        }
+      };
+      
+      const aggregateRating = getAliRating(data?.value);
+      console.log(aggregateRating)
       // try {
       //   // 3️⃣ Process products safely
       //   await processProducts(products, admin, env);
