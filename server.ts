@@ -535,11 +535,11 @@ console.log('ssssssssssssssss',aggregateRating)
           { namespace: "custom", key: "seo_descreption", type: "json", value: JSON.stringify(SEO.seoDescription) },
           { namespace: "seo", key: "schema_org", type: "json", value: JSON.stringify(productSchema) },
         
-          // { namespace: "custom", key: "facebookTitle", type: "json", value:SEO?.socialOptimization.facebookTitle },
-          // { namespace: "custom", key: "facebookDescription", type: "json", value:SEO?.socialOptimization.facebookDescription },
-          // { namespace: "custom", key: "tiktokTitle", type: "json", value:SEO?.socialOptimization.tiktokTitle },
-          // { namespace: "custom", key: "pinterestTitle", type: "json", value:SEO?.socialOptimization.pinterestTitle },
-          // { namespace: "custom", key: "pinterestDescription", type: "json", value:SEO?.socialOptimization.pinterestDescription },
+          { namespace: "custom", key: "facebookTitle", type: "json", value:JSON.stringify(   SEO?.socialOptimization.facebookTitle) },
+          { namespace: "custom", key: "facebookDescription", type: "json", value: JSON.stringify( SEO?.socialOptimization.facebookDescription ) },
+          { namespace: "custom", key: "tiktokTitle", type: "json", value:JSON.stringify(   SEO?.socialOptimization.tiktokTitle) },
+          { namespace: "custom", key: "pinterestTitle", type: "json", value:JSON.stringify(  SEO?.socialOptimization.pinterestTitle) },
+          { namespace: "custom", key: "pinterestDescription", type: "json", value:JSON.stringify(SEO?.socialOptimization.pinterestDescription)    },
 
         
         ]
