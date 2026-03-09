@@ -1333,7 +1333,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                 isLeaf
                 name
                 parentId
-                attributes(first:30){
+                attributes(first:25){
                   edges{
                     node{
                     ... on  TaxonomyAttribute{
@@ -1393,7 +1393,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
               }
               productType
 
-              options(first: 10) {
+              options(first: 8) {
                 id
                 name
                 linkedMetafield{
@@ -1530,7 +1530,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
                           }
                         }
 
-                        countryHarmonizedSystemCodes(first: 10) {
+                        countryHarmonizedSystemCodes(first:5) {
                           edges {
                             node {
                               countryCode
