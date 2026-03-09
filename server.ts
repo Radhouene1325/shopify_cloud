@@ -222,12 +222,12 @@ async function processSingleProduct(
         "DESC_AI"
       ].filter(Boolean);
 
-      const minPrice = OLD_DESC.priceRangeV2?.minVariantPrice?.amount
-      ? parseFloat(OLD_DESC.priceRangeV2.minVariantPrice.amount).toFixed(2)
+      const minPrice = OLD_DESC.min_amount
+      ? parseFloat(OLD_DESC.min_amount).toFixed(2)
       : "0.00";
     
-    const maxPrice = OLD_DESC.priceRangeV2?.maxVariantPrice?.amount
-      ? parseFloat(OLD_DESC.priceRangeV2.maxVariantPrice.amount).toFixed(2)
+    const maxPrice = OLD_DESC.max_amount
+      ? parseFloat(OLD_DESC.max_amount).toFixed(2)
       : minPrice;
       const reverse=`#graphql
       query GetProductReviewSchema($id: ID!) {
@@ -290,7 +290,7 @@ console.log('ssssssssssssssss',aggregateRating)
 
     const offers = {
       "@type": "AggregateOffer",
-      "priceCurrency": "EUR",
+      "priceCurrency": OLD_DESC.currencyCode,
       "lowPrice": minPrice,
       "highPrice": maxPrice,
       "offerCount": OLD_DESC.variants?.length || 1,
