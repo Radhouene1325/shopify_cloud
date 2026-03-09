@@ -168,7 +168,6 @@ query GetProductReviewSchema($id: ID!) {
 }
 `
       const result=await admin.graphql(reverse,{variables:{id:products[0].id}})
-      console.log(await result.json())
       let res=await result.json()
       const data=res?.data?.product?.metafield
       console.log(data)
