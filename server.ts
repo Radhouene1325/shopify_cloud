@@ -379,7 +379,7 @@ console.log('ssssssssssssssss',aggregateRating)
                      "sku": v.node.inventoryItem.sku,
                      "offers": {
                      "@type": "Offer",
-                     "price": Number(v.node.price.price) .toFixed(2) ,
+                     "price": Number(v.node.price) .toFixed(2) ,
                      "priceCurrency": OLD_DESC.currencyCode
                    }
                  })),
