@@ -71,7 +71,7 @@ await Promise.all(
       console.log('message her from queue',message.body)
       const payload=ultraDecompress(message.body.body as string)
       const { shop, products } = payload;
-
+      console.log('products is her decopressed',products)
       const admin = createShopifyAdmin(
         shop,
         env.SHOPIFY_API_TOKEN_PALITINUMSHOP

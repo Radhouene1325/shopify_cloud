@@ -16,7 +16,9 @@ function minimizeProducts(products: any[]) {
       min: p.min_amount,
       max: p.max_amount,
       c: p.currencyCode,
-      tg: p.tags
+      tg: p.tags,
+      sk:p.sku,
+      imgs:p.images
     }));
   }
 export function ultraCompress(payload: any): string {
@@ -63,7 +65,9 @@ function restoreProducts(products: any[]) {
     min_amount: p.min,
     max_amount: p.max,
     currencyCode: p.c,
-    tags: p.tg
+    tags: p.tg,
+    sku:p.sk,
+    images:p.imgs
   }));
 }
 
