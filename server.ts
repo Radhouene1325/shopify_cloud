@@ -322,7 +322,7 @@ console.log('ssssssssssssssss',aggregateRating)
   // : undefined; // Will be skipped if missing
 
   console.log('aggreagation is her',aggregateRating__)
-// console.log('revieeeessssssssss',review)
+ console.log('revieeeessssssssss',OLD_DESC)
 
     const productSchema = {
         "@context": "https://schema.org/",
