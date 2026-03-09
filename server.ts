@@ -271,12 +271,7 @@ async function processSingleProduct(
                 bestRating?: number;
                 worstRating?: number;
               };
-              reviews?: Array<{
-                author: string;
-                date: string;
-                content: string;
-                rating: number;
-              }>;
+              
             }
 
           const aggregateRating:AliReview | null = data
@@ -305,29 +300,29 @@ console.log('ssssssssssssssss',aggregateRating)
     const aggregateRating__ = aggregateRating?.aggregateRating
   ? {
       "@type": "AggregateRating",
-      "ratingValue": aggregateRating.aggregateRating.ratingValue || "0",
-      "reviewCount": aggregateRating.aggregateRating.reviewCount || "0",
-      "bestRating": aggregateRating.aggregateRating.bestRating || 5,
-      "worstRating": aggregateRating.aggregateRating.worstRating || 1
+      "ratingValue":aggregateRating?.ratingValue || "0",
+      "reviewCount":aggregateRating?.reviewCount || "0",
+      "bestRating": aggregateRating?.bestRating || 5,
+      "worstRating": aggregateRating?.worstRating || 1
     }
   : undefined; // Will be skipped if missing
-  const review = Array.isArray(aggregateRating?.reviews) && aggregateRating.reviews.length
-  ? aggregateRating.reviews.map((rev: any) => ({
-      "@type": "Review",
-      "author": { "@type": "Person", "name": rev.author || "Anonymous" },
-      "datePublished": rev.date || new Date().toISOString(),
-      "reviewBody": rev.content || "",
-      "reviewRating": {
-        "@type": "Rating",
-        "ratingValue": rev.rating || 0,
-        "bestRating": 5,
-        "worstRating": 1
-      }
-    }))
-  : undefined; // Will be skipped if missing
+  // const review = Array.isArray(aggregateRating?.reviews) && aggregateRating.reviews.length
+  // ? aggregateRating.reviews.map((rev: any) => ({
+  //     "@type": "Review",
+  //     "author": { "@type": "Person", "name": rev.author || "Anonymous" },
+  //     "datePublished": rev.date || new Date().toISOString(),
+  //     "reviewBody": rev.content || "",
+  //     "reviewRating": {
+  //       "@type": "Rating",
+  //       "ratingValue": rev.rating || 0,
+  //       "bestRating": 5,
+  //       "worstRating": 1
+  //     }
+  //   }))
+  // : undefined; // Will be skipped if missing
 
   console.log('aggreagation is her',aggregateRating__)
-console.log('revieeeessssssssss',review)
+// console.log('revieeeessssssssss',review)
 
     const productSchema = {
         "@context": "https://schema.org/",
@@ -393,7 +388,7 @@ console.log('revieeeessssssssss',review)
                 },
                 ...(aggregateRating && { aggregateRating__ }),
 
-                ...(review && { review }),
+                // ...(review && { review }),
 
                 "hasMerchantReturnPolicy": {
                   "@type": "MerchantReturnPolicy",
@@ -405,7 +400,6 @@ console.log('revieeeessssssssss',review)
           },
           
         ],
-
 
 
         // "@type": "Product",
@@ -429,6 +423,8 @@ console.log('revieeeessssssssss',review)
         //         }
         // }
       };
+      console.log('ddndndnd',productSchema)
+
 //// thes seo generation using reviuses
       // const generateProductSchema = ({ product, seo, reviews }) => {
 
