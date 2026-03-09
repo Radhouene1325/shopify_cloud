@@ -371,10 +371,18 @@ console.log('ssssssssssssssss',aggregateRating)
               "name": SEO?.schemaOrg.name || SEO.seoTitle,
               "description": SEO.seoDescription || OLD_DESC.title,
               "image": OLD_DESC.images.map((e:any) => e.node.image.url) ,
-              "sku": OLD_DESC.sku.map((e)=>e.node.inventoryItem.sku) || OLD_DESC.id?.split('/').pop() || '',
-              "mpn": OLD_DESC.barcode || OLD_DESC.id?.split('/').pop() || '',
+              "sku": OLD_DESC?.title || OLD_DESC.id?.split('/').pop() || '',
+              "mpn": OLD_DESC?.barcode || OLD_DESC.id?.split('/').pop() || '',
               "brand": { "@type": "Brand", "name": SEO?.schemaOrg.brand || "PlatiNum" },
-          
+              "hasVariant": OLD_DESC.sku.map((v:any) => ({
+                     "@type": "Product",
+                     "sku": v.node.inventoryItem.sku,
+                     "offers": {
+                     "@type": "Offer",
+                     "price": Number(v.node.price.price) .toFixed(2) ,
+                     "priceCurrency": OLD_DESC.currencyCode
+                   }
+                 })),
              "offers": {
             "@type": "Offer",
             "url": `https://platinumshop.it/products/${SEO.handle}`,
