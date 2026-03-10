@@ -95,7 +95,7 @@ await Promise.all(
       );
       const response = await admin.graphql(query, {
         variables: {
-          first: 10,
+          first: 250,
          
         },
       });
