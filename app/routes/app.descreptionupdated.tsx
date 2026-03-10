@@ -1304,7 +1304,7 @@ console.log('rows is seccesfuly her ',rows)
               onClick={handleSubmit}
               loading={isSubmitting}
             >
-              Update {selected.length} Descriptions
+              Update {selected?.length} Descriptions
             </Button>
           </Box>
         )}
