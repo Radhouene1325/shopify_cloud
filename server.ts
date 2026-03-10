@@ -75,7 +75,7 @@ await Promise.all(
       let cursor=10
       const query = `#graphql
       query GetCollectionsByProduct($first: Int!) {
-        collections(first: $first, query: $productQuery) {
+        collections(first: $first, query:"product_id:products[0].id") {
           edges {
             
             node {
@@ -96,7 +96,7 @@ await Promise.all(
       const response = await admin.graphql(query, {
         variables: {
           first: 10,
-          productQuery,
+         
         },
       });
       
