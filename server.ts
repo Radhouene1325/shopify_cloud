@@ -74,15 +74,15 @@ await Promise.all(
       console.log('products is her decopressed',products)
       let cursor=10
       const query = `#graphql
-      query GetCollectionsByProduct($first: Int!) {
-        collections(first: $first, query: "product_id:${products[0].id}") {
-          edges {
-            cursor
-            node {
-              id
-              title
-              handle
-            }
+      query ProductMetafields($ownerId: ID!) {
+        product(id:$ownerId) {
+          collections(first:10,query:"product_id:${products[0].id}"){
+              edges{
+                node{
+                  handle
+                }
+              }
+
           }
         }
       }
@@ -95,8 +95,8 @@ await Promise.all(
       );
       const response = await admin.graphql(query, {
         variables: {
-          first: 10,
           
+          ownerId:products[0].id
         },
       });
       
