@@ -77,7 +77,7 @@ await Promise.all(
         env.SHOPIFY_API_TOKEN_PALITINUMSHOP
       );
       const response = await admin.graphql(
-        `query($query: String!) {
+        `query {
           collections(first: 10, query: "product_id:${products[0].id}") {
             edges {
               node {
