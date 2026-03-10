@@ -75,7 +75,7 @@ await Promise.all(
       let cursor=10
       const query = `#graphql
       query GetCollectionsByProduct($first: Int!) {
-        collections(first: $first, query:"product_id:gid://shopify/Product/10456985305429") {
+        collections(first: $first, query:"product_id:10456985305429") {
           edges {
             
             node {
