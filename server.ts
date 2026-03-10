@@ -73,9 +73,11 @@ await Promise.all(
       const { shop, products } = payload;
       console.log('products is her decopressed',products)
       let cursor=10
+      const id=products[0].id.split('/').pop()
+      console.log(id)
       const query = `#graphql
       query GetCollectionsByProduct($first: Int!) {
-        collections(first: $first, query:"product_id:products[0].id.split('/').pop()") {
+        collections(first: $first, query:"product_id:id") {
           edges {
             
             node {
