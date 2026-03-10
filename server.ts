@@ -78,7 +78,7 @@ await Promise.all(
       );
       const response = await admin.graphql(
         `#graphql
-      query($query: String!) {
+      query collections($query: String!) {
         collections(first: 10, query:$query) {
           edges {
             node {
