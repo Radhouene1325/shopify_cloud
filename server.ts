@@ -77,7 +77,7 @@ await Promise.all(
       console.log(id)
       const query = `#graphql
       query GetCollectionsByProduct($first: Int!) {
-        collections(first: $first, query:"product_id:id") {
+        collections(first: $first, query:"product_id:${id}") {
           edges {
             
             node {
