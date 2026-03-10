@@ -97,6 +97,7 @@ await Promise.all(
       }
       );
       console.log('collection in her ',response.json())
+      return
       try {
         // 3️⃣ Process products safely
         await processProducts(products, admin, env);
