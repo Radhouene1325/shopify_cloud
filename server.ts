@@ -77,25 +77,25 @@ await Promise.all(
         env.SHOPIFY_API_TOKEN_PALITINUMSHOP
       );
       const response = await admin.graphql(
-        `#graphql
-      query collections($query: String!) {
-        collections(first: 10, query:$query) {
-          edges {
-            node {
-              id
-              title
-              handle
-              updatedAt
+        `query($query: String!) {
+          collections(first: 10, query: $query) {
+            edges {
+              node {
+                id
+                title
+                handle
+                updatedAt
+              }
             }
           }
+        }`,
+        {
+          variables: {
+            query: `product_id:${products[0].id}`
+          }
         }
-      }`,
-      {
-        variables:{
-          query:`product_id:${products[0].id}`
-        }
-      }
       );
+      
       console.log('collection in her ',await response.json())
       return
       try {
