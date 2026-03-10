@@ -75,49 +75,22 @@ await Promise.all(
       let cursor=10
       const id=products[0].id.split('/').pop()
       console.log(id)
-      const query = `#graphql
-      query GetCollectionsByProduct($first: Int!) {
-        collections(first: $first, query:"product_id:${id}") {
-          edges {
-            
-            node {
-              id
-              title
-              handle
-            }
-          }
-        }
-      }
-    `;
-    const productGid = products[0].id;
-    const productQuery = `product_id:${productGid}`;
+
       const admin = createShopifyAdmin(
         shop,
         env.SHOPIFY_API_TOKEN_PALITINUMSHOP
       );
-      const response = await admin.graphql(query, {
-        variables: {
-          first: 250,
-         
-        },
-      });
-      
-      const json = await response.json();
-      console.log('collection in her ', json);
-      
-      const edges = json?.data?.collections?.edges ?? [];
-      const collections = edges.map((edge: any) => edge.node);
-      console.log('Collections for product:', collections);      
-      // try {
-      //   // 3️⃣ Process products safely
-      //   await processProducts(products, admin, env);
+     
+        
+      try {
+        await processProducts(products, admin, env);
 
-      //   // 4️⃣ Acknowledge the message
-      //   message.ack();
-      // } catch (err) {
-      //   console.error("Queue processing failed for message", message.id, err);
-      //   message.retry();
-      // }
+        // 4️⃣ Acknowledge the message
+        message.ack();
+      } catch (err) {
+        console.error("Queue processing failed for message", message.id, err);
+        message.retry();
+      }
     })
   )
 );
@@ -336,6 +309,34 @@ console.log('ssssssssssssssss',aggregateRating)
   console.log('aggreagation is her',aggregateRating__)
  console.log('revieeeessssssssss',OLD_DESC)
 
+ const query = `#graphql
+ query GetCollectionsByProduct($first: Int!) {
+   collections(first: $first, query:"product_id:${OLD_DESC.id.split("/").pop()}") {
+     edges {
+       
+       node {
+         id
+         title
+         handle
+       }
+     }
+   }
+ }
+`;
+const response = await admin.graphql(query, {
+ variables: {
+   first: 250,
+  
+ },
+});
+const json = await response.json();
+console.log('collection in her ', json);
+
+const edges = json?.data?.collections?.edges ?? [];
+const collections = edges.map((edge: any) => edge.node);
+console.log('Collections for product:', collections); 
+
+
     const productSchema = {
         "@context": "https://schema.org/",
 
@@ -365,7 +366,13 @@ console.log('ssssssssssssssss',aggregateRating)
                 "@type": "ListItem",
                 "position": 2,
                 "name": SEO.category?.name || "Products",
-                "item": `https://platinumshop.it/collections/${SEO?.handle}`
+                "hasItem": collections.map((v:any)=>({
+                  "@type": "Collections",
+                  "sku":v.title,
+                  "item": `https://platinumshop.it/collections/${v?.handle}`
+                }))
+                
+               
               },
               {
                 "@type": "ListItem",
