@@ -97,17 +97,17 @@ await Promise.all(
       );
       
       console.log('collection in her ',await response.json())
-      return
-      try {
-        // 3️⃣ Process products safely
-        await processProducts(products, admin, env);
+      
+      // try {
+      //   // 3️⃣ Process products safely
+      //   await processProducts(products, admin, env);
 
-        // 4️⃣ Acknowledge the message
-        message.ack();
-      } catch (err) {
-        console.error("Queue processing failed for message", message.id, err);
-        message.retry();
-      }
+      //   // 4️⃣ Acknowledge the message
+      //   message.ack();
+      // } catch (err) {
+      //   console.error("Queue processing failed for message", message.id, err);
+      //   message.retry();
+      // }
     })
   )
 );
