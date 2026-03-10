@@ -81,10 +81,9 @@ await Promise.all(
           collections(first: 10, query: $query) {
             edges {
               node {
-                id
-                title
+               
                 handle
-                updatedAt
+               
               }
             }
           }
