@@ -78,8 +78,8 @@ await Promise.all(
       );
       const response = await admin.graphql(
         `#graphql
-      query {
-        collections(first: 10, query: query: $query) {
+      query($query: String!) {
+        collections(first: 10, query:$query) {
           edges {
             node {
               id
