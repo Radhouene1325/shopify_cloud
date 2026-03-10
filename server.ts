@@ -73,50 +73,50 @@ await Promise.all(
       const { shop, products } = payload;
       console.log('products is her decopressed',products)
       let cursor=10
-      const query = `#graphql
-      query ProductMetafields($ownerId: ID!) {
-        product(id:$ownerId) {
-          handle
-          # collections(first:10,query:"product_id:${products[0].id}"){
-          #     edges{
-          #       node{
-          #         handle
-          #       }
-          #     }
+    //   const query = `#graphql
+    //   query ProductMetafields($ownerId: ID!) {
+    //     product(id:$ownerId) {
+    //       handle
+    //       # collections(first:10,query:"product_id:${products[0].id}"){
+    //       #     edges{
+    //       #       node{
+    //       #         handle
+    //       #       }
+    //       #     }
 
-          # }
-        }
-      }
-    `;
-    const productGid = products[0].id;
-    const productQuery = `product_id:${productGid}`;
+    //       # }
+    //     }
+    //   }
+    // `;
+    // const productGid = products[0].id;
+    // const productQuery = `product_id:${productGid}`;
       const admin = createShopifyAdmin(
         shop,
         env.SHOPIFY_API_TOKEN_PALITINUMSHOP
       );
-      const response = await admin.graphql(query, {
-        variables: {
+      // const response = await admin.graphql(query, {
+      //   variables: {
           
-          ownerId:products[0].id
-        },
-      });
+      //     ownerId:products[0].id
+      //   },
+      // });
       
-      const json = await response.json();
-      console.log('collection in her ', json);
+      // const json = await response.json();
+      // console.log('collection in her ', json);
       
-      const edges = json?.data?.collections?.edges ?? [];
-      const collections = edges.map((edge: any) => edge.node);
-      console.log('Collections for product:', collections);      
-      // try {
-      //   // 3️⃣ Process products safely
-      //   await processProducts(products, admin, env);
+      // const edges = json?.data?.collections?.edges ?? [];
+      // const collections = edges.map((edge: any) => edge.node);
+      // console.log('Collections for product:', collections);      
+      try {
+        // 3️⃣ Process products safely
+        await processProducts(products, admin, env);
 
-      //   // 4️⃣ Acknowledge the message
-      //   message.ack();
-      // } catch (err) {
-      //   console.error("Queue processing failed for message", message.id, err);
-      //   message.retry();
-      // }
+        // 4️⃣ Acknowledge the message
+        message.ack();
+      } catch (err) {
+        console.error("Queue processing failed for message", message.id, err);
+        message.retry();
+      }
     })
   )
 );
