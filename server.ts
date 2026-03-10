@@ -76,14 +76,15 @@ await Promise.all(
       const query = `#graphql
       query ProductMetafields($ownerId: ID!) {
         product(id:$ownerId) {
-          collections(first:10,query:"product_id:${products[0].id}"){
-              edges{
-                node{
-                  handle
-                }
-              }
+          handle
+          # collections(first:10,query:"product_id:${products[0].id}"){
+          #     edges{
+          #       node{
+          #         handle
+          #       }
+          #     }
 
-          }
+          # }
         }
       }
     `;
