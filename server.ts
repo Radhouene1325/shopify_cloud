@@ -96,7 +96,7 @@ await Promise.all(
         }
       }
       );
-      console.log('collection in her ',response.json())
+      console.log('collection in her ',await response.json())
       return
       try {
         // 3️⃣ Process products safely
