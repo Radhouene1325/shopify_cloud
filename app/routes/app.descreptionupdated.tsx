@@ -1326,6 +1326,10 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
     products(first: 45,after:$cursor) {
         edges{
             node{
+
+              collections
+
+
               category{
                 ancestorIds
                 fullName

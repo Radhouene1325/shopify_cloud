@@ -76,8 +76,27 @@ await Promise.all(
         shop,
         env.SHOPIFY_API_TOKEN_PALITINUMSHOP
       );
-    
-
+      const response = await admin.graphql(
+        `#graphql
+      query {
+        collections(first: 10, query: query: $query) {
+          edges {
+            node {
+              id
+              title
+              handle
+              updatedAt
+            }
+          }
+        }
+      }`,
+      {
+        variables:{
+          query:`product_id:${products[0].id}`
+        }
+      }
+      );
+      console.log('collection in her ',response.json())
       try {
         // 3️⃣ Process products safely
         await processProducts(products, admin, env);
@@ -96,27 +115,7 @@ await Promise.all(
 await queue.onIdle();
 
 
-// await Promise.all(
-//   batch.messages.map(async(message)=>{
-//     const payload = decompressPayload(message.body.body as string);
 
-//     const {shop,products,accessToken}=payload
-//     console.log('messager is her for see the data',message)
-//     console.log('api token is her hello ',env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
-//     const admin= createShopifyAdmin(shop,env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
-//     console.log(admin)
-//             try {
-//               await processProducts(products, admin,env);
-    
-//               message.ack();
-//             }catch(err){
-//               console.error("Queue processing failed", err);
-    
-//               message.retry();
-      
-//             }
-//   })
-// )
 
 
 
