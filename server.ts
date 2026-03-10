@@ -72,13 +72,11 @@ await Promise.all(
       const payload=ultraDecompress(message.body.body as string)
       const { shop, products } = payload;
       console.log('products is her decopressed',products)
-      const admin = createShopifyAdmin(
-        shop,
-        env.SHOPIFY_API_TOKEN_PALITINUMSHOP
-      );
-      const response = await admin.graphql(
-        `query {
-          collections(first: 10, query: "product_id:${products[0].id}") {
+      let cursor=10
+      const query=
+      `#graphql
+      query Get_collection($cursor:String){
+          collections(first: cursor, query: "product_id:${products[0].id}") {
             edges {
               node {
                
@@ -87,9 +85,18 @@ await Promise.all(
               }
             }
           }
-        }`,
-      
+        }
+      `
+      const admin = createShopifyAdmin(
+        shop,
+        env.SHOPIFY_API_TOKEN_PALITINUMSHOP
       );
+      const response = await admin.graphql(
+        query,
+        {
+          variables:{cursor:cursor}
+        }
+        );
       
       console.log('collection in her ',await response.json())
       
