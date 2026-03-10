@@ -78,7 +78,7 @@ await Promise.all(
       );
       const response = await admin.graphql(
         `query($query: String!) {
-          collections(first: 10, query: $query) {
+          collections(first: 10, query: "product_id:${products[0].id}") {
             edges {
               node {
                
@@ -88,11 +88,7 @@ await Promise.all(
             }
           }
         }`,
-        {
-          variables: {
-            query: `product_id:${products[0].id}`
-          }
-        }
+      
       );
       
       console.log('collection in her ',await response.json())
