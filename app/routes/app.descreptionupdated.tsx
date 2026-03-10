@@ -1327,7 +1327,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
         edges{
             node{
 
-              collections
+              
 
 
               category{
