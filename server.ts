@@ -73,33 +73,39 @@ await Promise.all(
       const { shop, products } = payload;
       console.log('products is her decopressed',products)
       let cursor=10
-      const query=
-      `#graphql
-      query Get_collection($cursor:String){
-          collections(first: cursor, query: "product_id:${products[0].id}") {
-            edges {
-              node {
-               
-                handle
-               
-              }
+      const query = `#graphql
+      query GetCollectionsByProduct($first: Int!, $productQuery: String!) {
+        collections(first: $first, query: $productQuery) {
+          edges {
+            cursor
+            node {
+              id
+              title
+              handle
             }
           }
         }
-      `
+      }
+    `;
+    const productGid = products[0].id;
+    const productQuery = `product_id:${productGid}`;
       const admin = createShopifyAdmin(
         shop,
         env.SHOPIFY_API_TOKEN_PALITINUMSHOP
       );
-      const response = await admin.graphql(
-        query,
-        {
-          variables:{cursor:cursor}
-        }
-        );
+      const response = await admin.graphql(query, {
+        variables: {
+          first: 10,
+          productQuery,
+        },
+      });
       
-      console.log('collection in her ',await response.json())
+      const json = await response.json();
+      console.log('collection in her ', json);
       
+      const edges = json?.data?.collections?.edges ?? [];
+      const collections = edges.map((edge: any) => edge.node);
+      console.log('Collections for product:', collections);      
       // try {
       //   // 3️⃣ Process products safely
       //   await processProducts(products, admin, env);
