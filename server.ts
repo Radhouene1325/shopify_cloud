@@ -76,7 +76,7 @@ await Promise.all(
       const id=products[0].id.split('/').pop()
       console.log(id)
       const rating = await fetch(
-        `${env.URL_REVIEWS}/public/reviews?limit=2&sort=by_date&direction=asc&product_id=${id}`,
+        `${env.URL_REVIEWS}/public/reviews?sort=by_date&direction=asc&product_id=${id}`,
         {
           method: "GET",
           headers: {
