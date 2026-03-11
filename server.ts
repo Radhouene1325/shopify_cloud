@@ -106,14 +106,19 @@ await Promise.all(
             "bestRating": 5,
             "worstRating": 1
           },
-          "media":rev.media.filter((media:any)=>media!==null).flatMap((e)=>e).map((e)=>({
+          "media":Array.isArray(rev.media)
+          ?
+          rev.media
+          .filter((media:any)=>media!==null)
+          .flat()
+          .map((e:any)=>({
             "@type":"photo",
             "id":e.id,
             "product_id":e.product_id,
             "comment_id":e.comment_id,
             "type":e.type,
             "url":e.url
-          }))
+          })):undefined
         }))
       : undefined;
       console.log('reviews after fetch ',review)
