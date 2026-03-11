@@ -106,8 +106,8 @@ await Promise.all(
             "bestRating": 5,
             "worstRating": 1
           },
-          "media":rev.media.flatMap((e)=>e).filter((media:any)=>media!==null).map((e:any)=>({
-"@type":"photo",
+          "media":rev.media.filter((media:any)=>media!==null).flatMap((e)=>e).map((e)=>({
+            "@type":"photo",
             "id":e.id,
             "product_id":e.product_id,
             "comment_id":e.comment_id,
@@ -117,7 +117,12 @@ await Promise.all(
         }))
       : undefined;
       console.log('reviews after fetch ',review)
-
+// "@type":"photo",
+//             "id":e.id,
+//             "product_id":e.product_id,
+//             "comment_id":e.comment_id,
+//             "type":e.type,
+//             "url":e.url
       return
       const admin = createShopifyAdmin(
         shop,
