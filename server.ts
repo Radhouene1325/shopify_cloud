@@ -88,7 +88,7 @@ await Promise.all(
       
       const other_reviews = await rating.json();
       
-      console.log("rrrrrrrrrrrrrrrrrr",other_reviews?.data?.reviews?.map(((e:any)=>e.media.map((e:any)=>e.url)    )));
+      console.log("rrrrrrrrrrrrrrrrrr",other_reviews?.data?.reviews);
 
       const admin = createShopifyAdmin(
         shop,
