@@ -270,6 +270,21 @@ async function processSingleProduct(
 
 console.log('ssssssssssssssss',aggregateRating)
 
+const rating = await fetch(
+  `${env.URL_REVIEWS}/public/reviews?limit=2&sort=by_date&direction=asc&product_id=${OLD_DESC.id.split('/').pop()}`,
+  {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${env.REVIEWS_API_KEY}`
+    }
+  }
+);
+
+const other_reviews = await rating.json();
+
+console.log(other_reviews);
+
 
     const offers = {
       "@type": "AggregateOffer",
@@ -304,7 +319,7 @@ console.log('ssssssssssssssss',aggregateRating)
   //       "worstRating": 1
   //     }
   //   }))
-  // : undefined; // Will be skipped if missing
+  // : undefined; // Will be skipped if missiaggregateRating__ng
 
   console.log('aggreagation is her',aggregateRating__)
  console.log('revieeeessssssssss',OLD_DESC)
@@ -427,28 +442,6 @@ console.log('Collections for product:', collections);
           },
           
         ],
-
-
-        // "@type": "Product",
-        // "name": SEO?.schemaOrg.name || SEO.seoTitle,
-        // "description": SEO.seoDescription || OLD_DESC.title,
-        // "image": OLD_DESC.images.map((e:any)=>({id:e.id,image:e.url})),
-        // "sku": OLD_DESC.sku || OLD_DESC.id?.split('/').pop() || '',
-        // "mpn": OLD_DESC.barcode || OLD_DESC.id?.split('/').pop() || '',
-        // "brand": { "@type": "Brand", "name": SEO?.schemaOrg.brand || "PlatiNum" },
-        // "offers": {
-        //   "@type": "Offer",
-        //   "url": `https://platinumshop.it/products/${SEO.handle}`,
-        //   "priceCurrency": OLD_DESC.priceRangeV2.maxVariantPrice.currencyCode,
-        //   "price": OLD_DESC.priceRangeV2.maxVariantPrice ? parseFloat(OLD_DESC.priceRangeV2.maxVariantPrice.amount.toString()).toFixed(2) : "0.00",
-        //   "priceValidUntil": new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        //   "itemCondition": "https://schema.org/NewCondition",
-        //    "availability": "https://schema.org/InStock",
-
-        //   "seller": {
-        //           "@id": "https://platinumshop.it/#organization"
-        //         }
-        // }
       };
       console.log('ddndndnd',productSchema)
 
