@@ -276,7 +276,7 @@ const rating = await fetch(
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${env.REVIEWS_API_KEY}`
+      "Authorization": `Bearer ${env.REVIEWS_API_KEY_PLATINUM}`
     }
   }
 );
