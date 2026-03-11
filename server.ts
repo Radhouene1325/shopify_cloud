@@ -75,6 +75,10 @@ await Promise.all(
       let cursor=10
       const id=products[0].id.split('/').pop()
       console.log(id)
+      let index=products.map((e)=>e).some((v)=>v.tags.includes('DESC_AI'))
+
+      console.log("index verify is her ",index)
+      return
       // const rating = await fetch(
       //   `${env.URL_REVIEWS}/public/reviews?sort=by_date&direction=asc&product_id=${id}`,
       //   {
@@ -179,7 +183,7 @@ async function processSingleProduct(
     );
 
   } catch {
-
+   
     optimizedHtml = await generateSeoHtml(
       products,
       env.DEEP_SEEK_API_KEY
