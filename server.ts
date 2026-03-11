@@ -326,7 +326,7 @@ console.log("other",other_reviews?.data?.reviews);
   ? other_reviews?.data?.reviews.map((rev: any) => ({
       "@type": "Review",
       "author": { "@type": "Person", "name": rev.author || "Anonymous" },
-      "datePublished": rev.created_at || new Date().toISOString(),
+      "datePublished": rev.creviewreated_at || new Date().toISOString(),
       "reviewBody": rev.content || "",
       "shop_id":rev.shop_id,
       "country":rev.country,
@@ -349,6 +349,7 @@ console.log("other",other_reviews?.data?.reviews);
       })))
     }))
   : undefined;
+  console.log('reviews after fetch ',review)
   //  // Will be skipped if missiaggregateRating__ng
 
   console.log('aggreagation is her',aggregateRating__)
