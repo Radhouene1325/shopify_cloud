@@ -75,28 +75,28 @@ await Promise.all(
       let cursor=10
       const id=products[0].id.split('/').pop()
       console.log(id)
-      const rating = await fetch(
-        `${env.URL_REVIEWS}/public/reviews?sort=by_date&direction=asc&product_id=${id}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${env.REVIEWS_API_KEY_PLATINUM}`
-          }
-        }
-      );
+      // const rating = await fetch(
+      //   `${env.URL_REVIEWS}/public/reviews?sort=by_date&direction=asc&product_id=${id}`,
+      //   {
+      //     method: "GET",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       "Authorization": `Bearer ${env.REVIEWS_API_KEY_PLATINUM}`
+      //     }
+      //   }
+      // );
       
-      const other_reviews = await rating.json();
+      // const other_reviews = await rating.json();
       
-      console.log("rrrrrrrrrrrrrrrrrr",other_reviews?.data?.reviews.map((e:any)=>e.media).filter((media:any)=>media!==null).flatMap((e)=>e));
-      console.log("other",other_reviews?.data?.reviews);
+      // console.log("rrrrrrrrrrrrrrrrrr",other_reviews?.data?.reviews.map((e:any)=>e.media).filter((media:any)=>media!==null).flatMap((e)=>e));
+      // console.log("other",other_reviews?.data?.reviews);
 
       const admin = createShopifyAdmin(
         shop,
         env.SHOPIFY_API_TOKEN_PALITINUMSHOP
       );
      
-        return
+        
       try {
         await processProducts(products, admin, env);
 
@@ -284,7 +284,21 @@ async function processSingleProduct(
             : null;
 
 console.log('ssssssssssssssss',aggregateRating)
+const rating = await fetch(
+  `${env.URL_REVIEWS}/public/reviews?sort=by_date&direction=asc&product_id=${OLD_DESC.id.split('/').pop()}`,
+  {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${env.REVIEWS_API_KEY_PLATINUM}`
+    }
+  }
+);
 
+const other_reviews = await rating.json();
+
+console.log("rrrrrrrrrrrrrrrrrr",other_reviews?.data?.reviews.map((e:any)=>e.media).filter((media:any)=>media!==null).flatMap((e)=>e));
+console.log("other",other_reviews?.data?.reviews);
 
 
 
@@ -308,20 +322,34 @@ console.log('ssssssssssssssss',aggregateRating)
       "worstRating": aggregateRating?.worstRating || 1
     }
   : undefined; // Will be skipped if missing
-  // const review = Array.isArray(aggregateRating?.reviews) && aggregateRating.reviews.length
-  // ? aggregateRating.reviews.map((rev: any) => ({
-  //     "@type": "Review",
-  //     "author": { "@type": "Person", "name": rev.author || "Anonymous" },
-  //     "datePublished": rev.date || new Date().toISOString(),
-  //     "reviewBody": rev.content || "",
-  //     "reviewRating": {
-  //       "@type": "Rating",
-  //       "ratingValue": rev.rating || 0,
-  //       "bestRating": 5,
-  //       "worstRating": 1
-  //     }
-  //   }))
-  // : undefined; // Will be skipped if missiaggregateRating__ng
+  const review = Array.isArray(other_reviews?.data?.reviews) && other_reviews?.data?.reviews.length
+  ? other_reviews?.data?.reviews.map((rev: any) => ({
+      "@type": "Review",
+      "author": { "@type": "Person", "name": rev.author || "Anonymous" },
+      "datePublished": rev.created_at || new Date().toISOString(),
+      "reviewBody": rev.content || "",
+      "shop_id":rev.shop_id,
+      "country":rev.country,
+      "product_id":rev.product_id,
+      "id":rev.id,
+      "reviewRating": {
+        "@type": "Rating",
+        "ratingValue": rev.star || 0,
+        "bestRating": 5,
+        "worstRating": 1
+      },
+      "media":rev.filter(e=>e.media!==null).map(e=>e.map((e)=>({
+        "@type":"photo",
+        "id":e.id,
+        "product_id":e.product_id,
+        "comment_id":e.comment_id,
+        "type":e.type,
+        "url":e.url
+
+      })))
+    }))
+  : undefined;
+  //  // Will be skipped if missiaggregateRating__ng
 
   console.log('aggreagation is her',aggregateRating__)
  console.log('revieeeessssssssss',OLD_DESC)
@@ -432,7 +460,7 @@ console.log('Collections for product:', collections);
                 },
                ... (aggregateRating && { aggregateRating__ }),
 
-                // ...(review && { review }),
+                ...(review && { review }),
 
                 "hasMerchantReturnPolicy": {
                   "@type": "MerchantReturnPolicy",
