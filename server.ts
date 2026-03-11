@@ -71,7 +71,7 @@ await Promise.all(
       console.log('message her from queue',message.body)
       const payload=ultraDecompress(message.body.body as string)
       const { shop, products } = payload;
-      console.log('products is her decopressed',products)
+      // console.log('products is her decopressed',products)
       let cursor=10
       const id=products[0].id.split('/').pop()
       console.log(id)
