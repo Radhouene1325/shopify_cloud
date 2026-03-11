@@ -75,6 +75,20 @@ await Promise.all(
       let cursor=10
       const id=products[0].id.split('/').pop()
       console.log(id)
+      const rating = await fetch(
+        `${env.URL_REVIEWS}/public/reviews?limit=2&sort=by_date&direction=asc&product_id=${id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${env.REVIEWS_API_KEY_PLATINUM}`
+          }
+        }
+      );
+      
+      const other_reviews = await rating.json();
+      
+      console.log("rrrrrrrrrrrrrrrrrr",other_reviews?.data?.reviews);
 
       const admin = createShopifyAdmin(
         shop,
@@ -270,20 +284,7 @@ async function processSingleProduct(
 
 console.log('ssssssssssssssss',aggregateRating)
 
-const rating = await fetch(
-  `${env.URL_REVIEWS}/public/reviews?limit=2&sort=by_date&direction=asc&product_id=${OLD_DESC.id.split('/').pop()}`,
-  {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${env.REVIEWS_API_KEY_PLATINUM}`
-    }
-  }
-);
 
-const other_reviews = await rating.json();
-
-console.log(other_reviews);
 
 
     const offers = {
