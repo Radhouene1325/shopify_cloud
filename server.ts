@@ -75,7 +75,7 @@ await Promise.all(
       let cursor=10
       const id=products[0].id.split('/').pop()
       console.log(id)
-      let index=products.map((e)=>e.tags.includes("DESC_AI"))
+      let index=products.some((e)=>e.tags.includes("DESC_AI"))
 
       console.log("index verify is her ",index)
       return
