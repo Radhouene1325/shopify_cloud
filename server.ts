@@ -106,7 +106,7 @@ await Promise.all(
             "bestRating": 5,
             "worstRating": 1
           },
-          "media":rev.filter(e=>e.media!==null).map(e=>e.map((e)=>({
+          "media":rev.filter((media:any)=>media!==null).map(e=>e.map((e)=>({
             "@type":"photo",
             "id":e.id,
             "product_id":e.product_id,
