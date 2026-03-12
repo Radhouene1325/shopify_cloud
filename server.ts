@@ -210,7 +210,17 @@ async function processSingleProduct(
     //  console.log('SEO_OPTIMISE_TITLE_DECPRETION_HANDEL ',seotitle_descreption_handel)
     const seoMap = new Map(seo.map(s => [s.id, s]));
 let DESC_AI=new Map(optimizedHtml.map(s=>[s.id,s]))
-console.log(DESC_AI)
+console.log("ssssssssssssssssssssssssssssssssssssssssssssssssssssss",DESC_AI)
+      for(const test of products){
+        console.log('dddddddddddddddddddddddddddaaa')
+        console.log(DESC_AI.get(test.id))
+        console.log(DESC_AI.get(test.seoTitle))
+        console.log(DESC_AI.get(test.seoDescription))
+        console.log(DESC_AI.get(test.category))
+        console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+      }
+
+
     const updateProducts = []; 
 
     for (const DESC_AI of optimizedHtml) {
