@@ -166,6 +166,7 @@ async function processSingleProduct(
   categoryCache: Map<string,string>,
   oldDescreptionsMap:any
 ) {
+  let verify= products.every((e)=>e.tags.includes('DESC_AI'))
 
   let optimizedHtml;
   let seo;
@@ -183,12 +184,15 @@ async function processSingleProduct(
     );
 
   } catch {
-   let verify= products.every((e)=>e.tags.includes('DESC_AI'))
-  
+  if (verify===false){
     optimizedHtml = await generateSeoHtml(
       products,
       env.DEEP_SEEK_API_KEY
     )
+  }else{
+    optimizedHtml=products
+  }
+    
    
     categoryCache.set("categoryCache",optimizedHtml)
 
@@ -209,18 +213,6 @@ async function processSingleProduct(
 
     //  console.log('SEO_OPTIMISE_TITLE_DECPRETION_HANDEL ',seotitle_descreption_handel)
     const seoMap = new Map(seo.map(s => [s.id, s]));
-let DESC_AI=new Map(optimizedHtml.map(s=>[s.id,s]))
-console.log("ssssssssssssssssssssssssssssssssssssssssssssssssssssss",DESC_AI)
-      for(const test of products){
-        console.log('dddddddddddddddddddddddddddaaa')
-        let data=DESC_AI.get(test.id)
-        console.log(data.id)
-        let x=DESC_AI.get(test.seoTitle)
-        console.log("seo title is her",x.seoTitle)
-        // console.log(data.socialOptimization)
-    
-        console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-      }
 
 
     const updateProducts = []; 
@@ -363,7 +355,7 @@ console.log('reviews after fetch ',review)
       "lowPrice": Number(minPrice).toFixed(2),
       "highPrice": Number(maxPrice).toFixed(2),
       "offerCount": OLD_DESC.variants?.length || 1,
-      "url": `https://platinumshop.it/products/${SEO.handle}`,
+      "url": `https://platinumshop.it/products/${OLD_DESC.handle}`,
       "availability": "https://schema.org/InStock"
 
     };
@@ -419,14 +411,14 @@ console.log('Collections for product:', collections);
       
       updateProducts.push({
         id: OLD_DESC.id,
-        descriptionHtml: DESC_AI.detailedDescription,
+        descriptionHtml: DESC_AI.detailedDescription ||DESC_AI.descreption,
         tags: mergedTags,
         category: SEO.category?.id,
         handle: OLD_DESC.handle,
         productType: SEO.productType,
         seo: { description: SEO.seoDescription, title: SEO.seoTitle },
         metafields: [
-          { namespace: "custom", key: "descriptionsai", type: "json", value: JSON.stringify(DESC_AI.shortDescription) },
+          verify===false &&{ namespace: "custom", key: "descriptionsai", type: "json", value: JSON.stringify(DESC_AI.shortDescription) },
           { namespace: "custom", key: "seo_title", type: "json", value: JSON.stringify(SEO.seoTitle) },
           { namespace: "custom", key: "seo_descreption", type: "json", value: JSON.stringify(SEO.seoDescription) },
           { namespace: "seo", key: "schema_org", type: "json", value: JSON.stringify(productSchema(SEO,collections,OLD_DESC,offers,aggregateRating__,aggregateRating,review)) },
@@ -441,6 +433,8 @@ console.log('Collections for product:', collections);
         ]
       });
     }
+    verify
+
     async function throttledUpdates(products, batchSize = 20, delayMs = 500) {
       for (let i = 0; i < products.length; i += batchSize) {
         const batch = products.slice(i, i + batchSize);
