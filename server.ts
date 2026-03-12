@@ -183,12 +183,12 @@ async function processSingleProduct(
 
   } catch {
    let verify= products.every((e)=>e.tags.includes('DESC_AI'))
-   if(!verify===true){
+  
     optimizedHtml = await generateSeoHtml(
       products,
       env.DEEP_SEEK_API_KEY
     )
-   }
+   
 
 
     seo = await generateSeoMetadata(
@@ -347,7 +347,7 @@ console.log('reviews after fetch ',review)
       "lowPrice": Number(minPrice).toFixed(2),
       "highPrice": Number(maxPrice).toFixed(2),
       "offerCount": OLD_DESC.variants?.length || 1,
-      "url": `https://platinumshop.it/products/${SEO.handle}`,
+      "url": `https://platinumshop.it/products/${SEO.handle.trim()}`,
       "availability": "https://schema.org/InStock"
 
     };
@@ -412,7 +412,7 @@ console.log('Collections for product:', collections);
           },
           {
             "@type": "BreadcrumbList",
-            "@id": `https://platinumshop.it/products/${SEO.handle}/#breadcrumb`,
+            "@id": `https://platinumshop.it/products/${SEO.handle.trim()}/#breadcrumb`,
             "itemListElement": [
               {
                 "@type": "ListItem",
@@ -427,7 +427,7 @@ console.log('Collections for product:', collections);
                 "hasItem": collections.map((v:any)=>({
                   "@type": "Collections",
                   "sku":v.title,
-                  "item": `https://platinumshop.it/collections/${v?.handle}`
+                  "item": `https://platinumshop.it/collections/${v?.handle.trim()}`
                 }))
                 
                
@@ -441,7 +441,7 @@ console.log('Collections for product:', collections);
           },
           {
             "@type": "Product",
-            "@id": `https://platinumshop.it/products/${SEO.handle}#product`,
+            "@id": `https://platinumshop.it/products/${SEO.handle.trim()}#product`,
 
               "name": SEO?.schemaOrg.name || SEO.seoTitle,
               "description": SEO.seoDescription || OLD_DESC.title,
@@ -460,7 +460,7 @@ console.log('Collections for product:', collections);
                  })),
              "offers": {
             "@type": "Offer",
-            "url": `https://platinumshop.it/products/${SEO.handle}`,
+            "url": `https://platinumshop.it/products/${SEO.handle.trim()}`,
             // "priceCurrency": OLD_DESC.priceRangeV2.maxVariantPrice.currencyCode,
             "price": offers?offers: "0.00",
             "priceValidUntil": new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -488,92 +488,8 @@ console.log('Collections for product:', collections);
       };
       console.log('ddndndnd',productSchema)
 
-//// thes seo generation using reviuses
-      // const generateProductSchema = ({ product, seo, reviews }) => {
-
-      //   const productId = product.id?.split('/').pop();
-      
-      //   return {
-      //     "@context": "https://schema.org",
-      //     "@graph": [
-      
-      //       {
-      //         "@type": "Organization",
-      //         "@id": "https://platinumshop.it/#organization",
-      //         "name": "PlatiNum",
-      //         "url": "https://platinumshop.it",
-      //         "logo": "https://platinumshop.it/logo.png",
-      //         "sameAs": [
-      //           "https://facebook.com/platinumshop",
-      //           "https://instagram.com/platinumshop"
-      //         ]
-      //       },
-      
-      //       {
-      //         "@type": "BreadcrumbList",
-      //         "@id": `https://platinumshop.it/products/${seo.handle}#breadcrumb`,
-      //         "itemListElement": [
-      //           {
-      //             "@type": "ListItem",
-      //             "position": 1,
-      //             "name": "Home",
-      //             "item": "https://platinumshop.it"
-      //           },
-      //           {
-      //             "@type": "ListItem",
-      //             "position": 2,
-      //             "name": seo.category?.name || "Products",
-      //             "item": `https://platinumshop.it/collections/${seo.category?.handle}`
-      //           },
-      //           {
-      //             "@type": "ListItem",
-      //             "position": 3,
-      //             "name": seo.schemaOrg?.name || seo.seoTitle
-      //           }
-      //         ]
-      //       },
-      
-      //       {
-      //         "@type": "Product",
-      //         "@id": `https://platinumshop.it/products/${seo.handle}#product`,
-      //         "name": seo.schemaOrg?.name || seo.seoTitle,
-      //         "description": seo.seoDescription,
-      //         "sku": product.sku || productId,
-      //         "mpn": product.barcode || productId,
-      //         "image": product.image,
-      //         "brand": {
-      //           "@type": "Brand",
-      //           "name": seo.schemaOrg?.brand || "PlatiNum"
-      //         },
-      
-      //         "offers": {
-      //           "@type": "Offer",
-      //           "url": `https://platinumshop.it/products/${seo.handle}`,
-      //           "priceCurrency": "EUR",
-      //           "price": parseFloat(product.price).toFixed(2),
-      //           "priceValidUntil": new Date(
-      //             Date.now() + 365 * 24 * 60 * 60 * 1000
-      //           ).toISOString().split("T")[0],
-      //           "availability": "https://schema.org/InStock",
-      //           "itemCondition": "https://schema.org/NewCondition",
-      //           "seller": {
-      //             "@id": "https://platinumshop.it/#organization"
-      //           }
-      //         },
-      
-      //         "aggregateRating": reviews?.rating
-      //           ? {
-      //               "@type": "AggregateRating",
-      //               "ratingValue": reviews.rating,
-      //               "reviewCount": reviews.count
-      //             }
-      //           : undefined
-      //       }
-      
-      //     ]
-      //   };
-      // };
-    console.log("productSchema is secces",productSchema)
+  
+      console.log("productSchema is secces",productSchema)
       updateProducts.push({
         id: OLD_DESC.id,
         descriptionHtml: DESC_AI.detailedDescription,
@@ -622,123 +538,6 @@ console.log('Collections for product:', collections);
     await throttledUpdates(updateProducts, 2, 500);
 
 
-// for( const DESC_AI of optimizedHtml){
-//     if (!DESC_AI.id|| !DESC_AI.detailedDescription || !DESC_AI.shortDescription) {
-//         console.error("AI returned empty fields", optimizedHtml);
-//         return Response.json({ error: "Empty content from AI" }, { status: 500 });
-//       }
-//   // for (const OLD_DESC of updatedDescreptionAI ){
-//       const OLD_DESC=oldDescreptionsMap.get(DESC_AI.id)
-//       console.log(OLD_DESC.id)
-//       const SEO=seoMap.get(DESC_AI.id)
-//       if (!OLD_DESC)continue;
-//       if (!seo)return
-//       // for (const SEO of seo){
-
-//          if(DESC_AI.id===OLD_DESC.id && SEO?.id===OLD_DESC.id){
-//         // console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
-//         // console.log('is true is very nice ')
-//         // Merge tags: preserve existing + add DESC_AI (productUpdate overwrites, so we must include all)
-//                    console.log('seo is activated her ',SEO?.category.id)
-//                   console.log('seo is activated her ',SEO?.category.name)
-//                     console.log('seo is activated her ',SEO)
-// //         const CATEGORY_TAMMOXY_ID=await getTaxonomyIdForCategory(admin,SEO.category.name)
-// // console.log('her is the value of tamoxy',CATEGORY_TAMMOXY_ID)
-//                const productSchema = {
-//   "@context": "https://schema.org/",
-//   "@type": "Product",
-//   "name": SEO?.seoTitle || OLD_DESC.title, // ✅ REQUIRED
-//   "description": SEO?.seoDescription || OLD_DESC.title,
-//   "image":OLD_DESC.image,
-//   "sku": OLD_DESC.sku || OLD_DESC.id?.split('/').pop() || '',
-//   "mpn": OLD_DESC.barcode || OLD_DESC.id?.split('/').pop() || '',
-//   "brand": {
-//     "@type": "Brand",
-//     "name": OLD_DESC.vendor || "PlatiNum"
-//   },
-//   "offers": {
-//     "@type": "Offer",
-//     "url": `https://platinumshop.it/products/${SEO.handle}`,
-//     "priceCurrency": "EUR",
-//     "price": OLD_DESC.price ? parseFloat(OLD_DESC.price.toString()).toFixed(2) : "0.00",
-//     // "availability": OLD_DESC.available 
-//     //   ? "https://schema.org/InStock" 
-//     //   : "https://schema.org/OutOfStock",
-//     "priceValidUntil": new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-//     "itemCondition": "https://schema.org/NewCondition",
-//     "seller": {
-//       "@type": "Organization",
-//       "name": "PlatiNum"
-//     }
-//   }
-//                   };
-
-
-
-
-
-//         const mergedTags = [...new Set([
-//           ...(OLD_DESC.tags || []),
-//           (SEO?.category?.name|| []),
-//           "DESC_AI"])];
-//         // const response = 
-//         await admin.graphql(productsupdated, {
-//           variables: {
-//             product: {
-//               id: OLD_DESC.id,
-//               descriptionHtml: DESC_AI.detailedDescription,
-//               tags: mergedTags,
-//               category:SEO?.category?.id,
-//               handle:SEO?.handle,
-//               productType:SEO?.productType,
-//               seo:{
-//                 description:SEO?.seoDescription,
-//                 title:SEO?.seoTitle
-//               },
-//               metafields: [
-//                 {
-//                   namespace: "custom",
-//                   key: "descriptionsai",
-//                   type: "json",
-//                   value: JSON.stringify(DESC_AI.shortDescription)
-//                 },
-//                 {
-//                   namespace: "custom",
-//                   key: "seo_title",
-//                   type: "json",
-//                   value: JSON.stringify(SEO?.seoTitle)
-//                 },
-//                 {
-//                   namespace: "custom",
-//                   key: "seo_descreption",
-//                   type: "json",
-//                   value: JSON.stringify(SEO?.seoDescription)
-//                 },
-//                 {
-//                   namespace: "seo",
-//                   key: "schema_org",
-//                   type: "json",
-//                   value: JSON.stringify(productSchema)
-//                 }
-//               ]
-//             }
-//           }
-//         });
-             
-          
-  
-         
-      
-      
-       
-//         }
-      
-
-   
-
-   
-
-// }
 
 
 
