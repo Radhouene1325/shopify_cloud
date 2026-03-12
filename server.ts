@@ -409,7 +409,7 @@ console.log('Collections for product:', collections);
       // console.log('ddndndnd',productSchema)
 
   
-      console.log("ssssjjjsproductSchema is secces",SEO.category?.id)
+      console.log("ssssj::jjsproductSchema is secces",SEO.category?.id)
       console.log("productSchema is secces",SEO)
 
       
