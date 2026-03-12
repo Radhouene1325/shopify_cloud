@@ -69,7 +69,7 @@ await Promise.all(
   batch.messages.map((message) =>
     queue.add(async () => {
       // const payload = decompressPayload(message.body.body as string);
-      console.log('message her from queue',message.body)
+      // console.log('message her from queue',message.body)
       const payload=ultraDecompress(message.body.body as string)
       const { shop, products } = payload;
       // console.log('products is her decopressed',products)
@@ -213,10 +213,11 @@ let DESC_AI=new Map(optimizedHtml.map(s=>[s.id,s]))
 console.log("ssssssssssssssssssssssssssssssssssssssssssssssssssssss",DESC_AI)
       for(const test of products){
         console.log('dddddddddddddddddddddddddddaaa')
-        console.log(DESC_AI.get(test.id))
-        console.log(DESC_AI.get(test.seoTitle))
-        console.log(DESC_AI.get(test.seoDescription))
-        console.log(DESC_AI.get(test.category))
+        let data=DESC_AI.get(test.id)
+        console.log(data.id)
+        console.log(data.seoTitle)
+        console.log(data.category)
+    
         console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
       }
 
