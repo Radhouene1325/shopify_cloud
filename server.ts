@@ -215,8 +215,9 @@ console.log("ssssssssssssssssssssssssssssssssssssssssssssssssssssss",DESC_AI)
         console.log('dddddddddddddddddddddddddddaaa')
         let data=DESC_AI.get(test.id)
         console.log(data.id)
-        console.log(data.seoTitle)
-        console.log(data.socialOptimization)
+        let x=DESC_AI.get(test.seoTitle)
+        console.log("seo title is her",x.seoTitle)
+        // console.log(data.socialOptimization)
     
         console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
       }
