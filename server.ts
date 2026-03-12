@@ -351,7 +351,7 @@ console.log('reviews after fetch ',review)
       "lowPrice": Number(minPrice).toFixed(2),
       "highPrice": Number(maxPrice).toFixed(2),
       "offerCount": OLD_DESC.variants?.length || 1,
-      "url": `https://platinumshop.it/products/${SEO.handle.trim()}`,
+      "url": `https://platinumshop.it/products/${SEO.handle}`,
       "availability": "https://schema.org/InStock"
 
     };
@@ -410,7 +410,7 @@ console.log('Collections for product:', collections);
         descriptionHtml: DESC_AI.detailedDescription,
         tags: mergedTags,
         category: SEO.category?.id,
-        handle: OLD_DESC.handle.trim(),
+        handle: OLD_DESC.handle,
         productType: SEO.productType,
         seo: { description: SEO.seoDescription, title: SEO.seoTitle },
         metafields: [
