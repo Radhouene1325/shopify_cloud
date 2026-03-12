@@ -185,11 +185,13 @@ async function processSingleProduct(
 
   } catch {
   if (verify===false){
+    console.log('hello im from depseek and veriify case false ')
     optimizedHtml = await generateSeoHtml(
       products,
       env.DEEP_SEEK_API_KEY
     )
   }else{
+    console.log('im from other case verify the case true ')
     optimizedHtml=products
   }
     
