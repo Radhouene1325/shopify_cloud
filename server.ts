@@ -78,7 +78,6 @@ await Promise.all(
       let index=products.every((e)=>e.tags.includes("DESC_AI"))
 
       console.log("index verify is her ",index)
-      return
       // const rating = await fetch(
       //   `${env.URL_REVIEWS}/public/reviews?sort=by_date&direction=asc&product_id=${id}`,
       //   {
