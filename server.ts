@@ -301,7 +301,7 @@ async function processSingleProduct(
               })()
             : null;
 
-console.log('ssssssssssssssss',aggregateRating)
+// console.log('ssssssssssssssss',aggregateRating)
 const rating = await fetch(
   `${env.URL_REVIEWS}/public/reviews?sort=by_date&direction=asc&product_id=${OLD_DESC.id.split('/').pop()}`,
   {
@@ -315,8 +315,8 @@ const rating = await fetch(
 
 const other_reviews = await rating.json();
 
-console.log("rrrrrrrrrrrrrrrrrr",other_reviews?.data?.reviews.map((e:any)=>e.media).filter((media:any)=>media!==null).flatMap((e)=>e));
-console.log("other",other_reviews?.data?.reviews);
+// console.log("rrrrrrrrrrrrrrrrrr",other_reviews?.data?.reviews.map((e:any)=>e.media).filter((media:any)=>media!==null).flatMap((e)=>e));
+// console.log("other",other_reviews?.data?.reviews);
 const review = Array.isArray(other_reviews?.data?.reviews) && other_reviews?.data?.reviews.length
 ? other_reviews?.data?.reviews.map((rev: any) => ({
     "@type": "Review",
@@ -348,7 +348,7 @@ const review = Array.isArray(other_reviews?.data?.reviews) && other_reviews?.dat
     })):undefined
   }))
 : undefined;
-console.log('reviews after fetch ',review)
+// console.log('reviews after fetch ',review)
 
 
     const offers = {
@@ -374,8 +374,8 @@ console.log('reviews after fetch ',review)
 
   //  // Will be skipped if missiaggregateRating__ng
 
-  console.log('aggreagation is her',aggregateRating__)
- console.log('revieeeessssssssss',OLD_DESC)
+//   console.log('aggreagation is her',aggregateRating__)
+//  console.log('revieeeessssssssss',OLD_DESC)
 
  const query = `#graphql
  query GetCollectionsByProduct($first: Int!) {
@@ -398,7 +398,7 @@ const response = await admin.graphql(query, {
  },
 });
 const json = await response.json();
-console.log('collection in her ', json);
+// console.log('collection in her ', json);
 
 const edges = json?.data?.collections?.edges ?? [];
 const collections = edges.map((edge: any) => edge.node);
@@ -409,8 +409,8 @@ console.log('Collections for product:', collections);
       // console.log('ddndndnd',productSchema)
 
   
-      console.log("ssssjhhw::jjsproxxxxductSchema is secces",SEO.category?.id)
-      console.log("productSchema is secces",SEO)
+      // console.log("ssssjhhw::jjsproxxxxductSchema is secces",SEO.category?.id)
+      // console.log("productSchema is secces",SEO)
 
       
       updateProducts.push({

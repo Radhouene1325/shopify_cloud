@@ -36,8 +36,8 @@ export async function generateSeoMetadata(
             console.warn(`⚠️ Invalid handle format for ${item.id}: ${item.handle}`);
           }
         });
-  console.log('resulted is her hello',seoResults)
-  console.log('resulted is her hello',seoResults.map(e=>e?.schemaOrg.offers))
+  // console.log('resulted is her hello',seoResults)
+  // console.log('resulted is her hello',seoResults.map(e=>e?.schemaOrg.offers))
 
         return seoResults;
       } catch (err) {
