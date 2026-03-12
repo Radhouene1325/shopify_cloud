@@ -312,7 +312,7 @@ async function processSingleProduct(
     })()
   : null;
 
-// console.log('ssssssssssssssss',aggregateRating)
+ console.log('ssssssssssssssss',aggregateRating)
 const rating = await fetch(
   `${env.URL_REVIEWS}/public/reviews?sort=by_date&direction=asc&product_id=${OLD_DESC.id.split('/').pop()}`,
   {
