@@ -9,6 +9,7 @@ import { productsupdated } from "@/routes/functions/query/updateprooductquery";
 import { decompressPayload } from "@/routes/functions/uint8ToBase64/uint8ToBase64";
 import PQueue from "p-queue";
 import { ultraDecompress } from "@/routes/functions/uint8ToBase64/brotliCompressSync";
+import { productSchema } from "@/routes/functions/schemasSEO/SEO";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const handleRemixRequest = createRequestHandler(build as any as ServerBuild);
@@ -189,6 +190,8 @@ async function processSingleProduct(
       env.DEEP_SEEK_API_KEY
     )
    
+    categoryCache.set("categoryCache",optimizedHtml)
+
 
 
     seo = await generateSeoMetadata(
@@ -206,15 +209,16 @@ async function processSingleProduct(
 
     //  console.log('SEO_OPTIMISE_TITLE_DECPRETION_HANDEL ',seotitle_descreption_handel)
     const seoMap = new Map(seo.map(s => [s.id, s]));
-
-    const updateProducts = [];
+let DESC_AI=new Map(optimizedHtml.map(s=>[s.id,s]))
+console.log(DESC_AI)
+    const updateProducts = []; 
 
     for (const DESC_AI of optimizedHtml) {
     
-      if (!DESC_AI.id || !DESC_AI.detailedDescription || !DESC_AI.shortDescription) {
-        console.error("AI returned empty fields", DESC_AI);
-        continue;
-      }
+      // if (!DESC_AI.id || !DESC_AI.detailedDescription || !DESC_AI.shortDescription) {
+      //   console.error("AI returned empty fields", DESC_AI);
+      //   continue;
+      // }
     
       const OLD_DESC = oldDescreptionsMap.get(DESC_AI.id);
       if (!OLD_DESC) continue;
@@ -395,114 +399,25 @@ const collections = edges.map((edge: any) => edge.node);
 console.log('Collections for product:', collections); 
 
 
-    const productSchema = {
-        "@context": "https://schema.org/",
-
-        "@graph": [
-          {
-            "@type": "Organization",
-            "@id": "https://platinumshop.it/#organization",
-            "name": "PlatiNum",
-            "url": "https://platinumshop.it",
-            "logo": "https://platinumshop.it/logo.png",
-            "sameAs": [
-              "https://facebook.com/platinumshop",
-              "https://instagram.com/platinumshop"
-            ]
-          },
-          {
-            "@type": "BreadcrumbList",
-            "@id": `https://platinumshop.it/products/${SEO.handle.trim()}/#breadcrumb`,
-            "itemListElement": [
-              {
-                "@type": "ListItem",
-                "position": 1,
-                "name": "Home",
-                "item": "https://platinumshop.it"
-              },
-              {
-                "@type": "ListItem",
-                "position": 2,
-                "name": SEO.category?.name || "Products",
-                "hasItem": collections.map((v:any)=>({
-                  "@type": "Collections",
-                  "sku":v.title,
-                  "item": `https://platinumshop.it/collections/${v?.handle.trim()}`
-                }))
-                
-               
-              },
-              {
-                "@type": "ListItem",
-                "position": 3,
-                "name": SEO.schemaOrg?.name || SEO.seoTitle
-              }
-            ]
-          },
-          {
-            "@type": "Product",
-            "@id": `https://platinumshop.it/products/${SEO.handle.trim()}#product`,
-
-              "name": SEO?.schemaOrg.name || SEO.seoTitle,
-              "description": SEO.seoDescription || OLD_DESC.title,
-              "image": OLD_DESC.images.map((e:any) => e.node.image.url) ,
-              "sku": OLD_DESC?.title || OLD_DESC.id?.split('/').pop() || '',
-              "mpn": OLD_DESC?.barcode || OLD_DESC.id?.split('/').pop() || '',
-              "brand": { "@type": "Brand", "name": SEO?.schemaOrg.brand || "PlatiNum" },
-              "hasVariant": OLD_DESC.sku.map((v:any) => ({
-                     "@type": "Product",
-                     "sku": v.node.inventoryItem.sku,
-                     "offers": {
-                     "@type": "Offer",
-                     "price": Number(v.node.price) .toFixed(2) ,
-                     "priceCurrency": OLD_DESC.currencyCode
-                   }
-                 })),
-             "offers": {
-            "@type": "Offer",
-            "url": `https://platinumshop.it/products/${SEO.handle.trim()}`,
-            // "priceCurrency": OLD_DESC.priceRangeV2.maxVariantPrice.currencyCode,
-            "price": offers?offers: "0.00",
-            "priceValidUntil": new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            "itemCondition": "https://schema.org/NewCondition",
-             "availability": "https://schema.org/InStock",
-  
-            "seller": {
-                    "@id": "https://platinumshop.it/#organization"
-                  }
-                },
-               ... (aggregateRating && { aggregateRating__ }),
-
-                ...(review && { review }),
-
-                "hasMerchantReturnPolicy": {
-                  "@type": "MerchantReturnPolicy",
-                  "returnPolicyCategory": "https://schema.org/ReturnFeesCustomerResponsibility",
-                  "merchantReturnDays": 14,
-                  "returnMethod": "https://schema.org/ReturnByMail",
-                  "inStoreReturnsOffered": true
-                }
-          },
-          
-        ],
-      };
+   
       console.log('ddndndnd',productSchema)
 
   
       console.log("productSchema is secces",productSchema)
+      
       updateProducts.push({
         id: OLD_DESC.id,
         descriptionHtml: DESC_AI.detailedDescription,
         tags: mergedTags,
         category: SEO.category?.id,
-        handle: SEO.handle,
+        handle: OLD_DESC.handle.trim(),
         productType: SEO.productType,
         seo: { description: SEO.seoDescription, title: SEO.seoTitle },
         metafields: [
           { namespace: "custom", key: "descriptionsai", type: "json", value: JSON.stringify(DESC_AI.shortDescription) },
           { namespace: "custom", key: "seo_title", type: "json", value: JSON.stringify(SEO.seoTitle) },
           { namespace: "custom", key: "seo_descreption", type: "json", value: JSON.stringify(SEO.seoDescription) },
-          { namespace: "seo", key: "schema_org", type: "json", value: JSON.stringify(productSchema) },
+          { namespace: "seo", key: "schema_org", type: "json", value: JSON.stringify(productSchema(SEO,collections,OLD_DESC,offers,aggregateRating__,aggregateRating,review)) },
         
           { namespace: "custom", key: "facebookTitle", type: "json", value:JSON.stringify(   SEO?.socialOptimization.facebookTitle) },
           { namespace: "custom", key: "facebookDescription", type: "json", value: JSON.stringify( SEO?.socialOptimization.facebookDescription ) },
