@@ -169,7 +169,7 @@ async function processSingleProduct(
 
   let optimizedHtml;
   let seo;
-  let verify= products.every((e)=>e.tags.includes('DESC_AI'))
+
   try {
   
     optimizedHtml = await generateSeoHtmlgimini(
@@ -183,7 +183,7 @@ async function processSingleProduct(
     );
 
   } catch {
-   
+   let verify= products.every((e)=>e.tags.includes('DESC_AI'))
    if(!verify===true){
     optimizedHtml = await generateSeoHtml(
       products,
@@ -207,25 +207,21 @@ async function processSingleProduct(
 
     //  console.log('SEO_OPTIMISE_TITLE_DECPRETION_HANDEL ',seotitle_descreption_handel)
     const seoMap = new Map(seo.map(s => [s.id, s]));
-    const DESC_AI=new Map(optimizedHtml.map(s=>[s.id,s]))
-    const OLD_DESC = oldDescreptionsMap.get(DESC_AI.id);
+
     const updateProducts = [];
 
-   
+    for (const DESC_AI of optimizedHtml) {
     
-      // if (!DESC_AI?.id || !DESC_AI?.detailedDescription || !DESC_AI?.shortDescription) {
-      //   console.error("AI returned empty fields", DESC_AI);
-      //   return;
-      // }
+      if (!DESC_AI.id || !DESC_AI.detailedDescription || !DESC_AI.shortDescription) {
+        console.error("AI returned empty fields", DESC_AI);
+        continue;
+      }
     
-      
-      if (!OLD_DESC) return;
-      
-      
-      
+      const OLD_DESC = oldDescreptionsMap.get(DESC_AI.id);
+      if (!OLD_DESC) continue;
     
-      const SEO = seoMap.get(DESC_AI.id ||  OLD_DESC.id);
-      if (!SEO) return;
+      const SEO = seoMap.get(DESC_AI.id);
+      if (!SEO) continue;
     
       const mergedTags = [
         ...(OLD_DESC.tags || []),
@@ -237,7 +233,7 @@ async function processSingleProduct(
       ? parseFloat(OLD_DESC.min_amount).toFixed(2)
       : "0.00";
     
-       const maxPrice = OLD_DESC.max_amount
+    const maxPrice = OLD_DESC.max_amount
       ? parseFloat(OLD_DESC.max_amount).toFixed(2)
       : minPrice;
       const reverse=`#graphql
@@ -296,8 +292,8 @@ async function processSingleProduct(
               })()
             : null;
 
-             console.log('ssssssssssssssss',aggregateRating)
-                const rating = await fetch(
+console.log('ssssssssssssssss',aggregateRating)
+const rating = await fetch(
   `${env.URL_REVIEWS}/public/reviews?sort=by_date&direction=asc&product_id=${OLD_DESC.id.split('/').pop()}`,
   {
     method: "GET",
@@ -306,7 +302,7 @@ async function processSingleProduct(
       "Authorization": `Bearer ${env.REVIEWS_API_KEY_PLATINUM}`
     }
   }
-                     );
+);
 
 const other_reviews = await rating.json();
 
@@ -352,7 +348,7 @@ console.log('reviews after fetch ',review)
       "lowPrice": Number(minPrice).toFixed(2),
       "highPrice": Number(maxPrice).toFixed(2),
       "offerCount": OLD_DESC.variants?.length || 1,
-      "url": `https://platinumshop.it/products/${OLD_DESC.handle}`,
+      "url": `https://platinumshop.it/products/${SEO.handle}`,
       "availability": "https://schema.org/InStock"
 
     };
@@ -365,7 +361,7 @@ console.log('reviews after fetch ',review)
       "bestRating": aggregateRating?.bestRating || 5,
       "worstRating": aggregateRating?.worstRating || 1
     }
-  : undefined; // Will be skipped if missing/*  */
+  : undefined; // Will be skipped if missing
 
   //  // Will be skipped if missiaggregateRating__ng
 
@@ -417,7 +413,7 @@ console.log('Collections for product:', collections);
           },
           {
             "@type": "BreadcrumbList",
-            "@id": `https://platinumshop.it/products/${OLD_DESC.handle}/#breadcrumb`,
+            "@id": `https://platinumshop.it/products/${SEO.handle}/#breadcrumb`,
             "itemListElement": [
               {
                 "@type": "ListItem",
@@ -446,10 +442,10 @@ console.log('Collections for product:', collections);
           },
           {
             "@type": "Product",
-            "@id": `https://platinumshop.it/products/${OLD_DESC.handle}#product`,
+            "@id": `https://platinumshop.it/products/${SEO.handle}#product`,
 
               "name": SEO?.schemaOrg.name || SEO.seoTitle,
-              "description": SEO.seoDescription || OLD_DESC.descreption,
+              "description": SEO.seoDescription || OLD_DESC.title,
               "image": OLD_DESC.images.map((e:any) => e.node.image.url) ,
               "sku": OLD_DESC?.title || OLD_DESC.id?.split('/').pop() || '',
               "mpn": OLD_DESC?.barcode || OLD_DESC.id?.split('/').pop() || '',
@@ -465,7 +461,7 @@ console.log('Collections for product:', collections);
                  })),
              "offers": {
             "@type": "Offer",
-            "url": `https://platinumshop.it/products/${OLD_DESC.handle}`,
+            "url": `https://platinumshop.it/products/${SEO.handle}`,
             // "priceCurrency": OLD_DESC.priceRangeV2.maxVariantPrice.currencyCode,
             "price": offers?offers: "0.00",
             "priceValidUntil": new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -581,14 +577,14 @@ console.log('Collections for product:', collections);
     console.log("productSchema is secces",productSchema)
       updateProducts.push({
         id: OLD_DESC.id,
-        descriptionHtml: DESC_AI.detailedDescription ||OLD_DESC.descreption,
+        descriptionHtml: DESC_AI.detailedDescription,
         tags: mergedTags,
         category: SEO.category?.id,
-        handle: OLD_DESC.handle,
+        handle: SEO.handle,
         productType: SEO.productType,
         seo: { description: SEO.seoDescription, title: SEO.seoTitle },
         metafields: [
-          verify===false && { namespace: "custom", key: "descriptionsai", type: "json", value: JSON.stringify(DESC_AI.shortDescription) },
+          { namespace: "custom", key: "descriptionsai", type: "json", value: JSON.stringify(DESC_AI.shortDescription) },
           { namespace: "custom", key: "seo_title", type: "json", value: JSON.stringify(SEO.seoTitle) },
           { namespace: "custom", key: "seo_descreption", type: "json", value: JSON.stringify(SEO.seoDescription) },
           { namespace: "seo", key: "schema_org", type: "json", value: JSON.stringify(productSchema) },
@@ -602,7 +598,7 @@ console.log('Collections for product:', collections);
         
         ]
       });
-    
+    }
     async function throttledUpdates(products, batchSize = 20, delayMs = 500) {
       for (let i = 0; i < products.length; i += batchSize) {
         const batch = products.slice(i, i + batchSize);
@@ -761,6 +757,100 @@ console.log('Collections for product:', collections);
 
 
 
+  // const DESC_AI = optimizedHtml[0];
+  // const SEO = seo[0];
+
+  // if (!DESC_AI || !SEO) return;
+
+  // let taxonomyId = categoryCache.get(SEO.category);
+
+  // if (!taxonomyId) {
+  //   taxonomyId = await getTaxonomyIdForCategory(admin, SEO.category);
+  //   categoryCache.set(SEO.category, taxonomyId);
+  // }
+
+  // const mergedTags = [
+  //   ...new Set([
+  //     ...(OLD_DESC.tags || []),
+  //     SEO.category,
+  //     "DESC_AI"
+  //   ])
+  // ];
+
+  // const productSchema = {
+  //   "@context": "https://schema.org/",
+  //   "@type": "Product",
+  //   name: SEO.seoTitle || OLD_DESC.title,
+  //   description: SEO.seoDescription || OLD_DESC.title,
+  //   image: OLD_DESC.image,
+  //   sku: OLD_DESC.sku || OLD_DESC.id?.split("/").pop(),
+  //   mpn: OLD_DESC.barcode || OLD_DESC.id?.split("/").pop(),
+  //   brand: {
+  //     "@type": "Brand",
+  //     name: OLD_DESC.vendor || "PlatiNum"
+  //   },
+  //   offers: {
+  //     "@type": "Offer",
+  //     url: `https://platinumshop.it/products/${SEO.handle}`,
+  //     priceCurrency: "EUR",
+  //     price: OLD_DESC.price
+  //       ? parseFloat(OLD_DESC.price).toFixed(2)
+  //       : "0.00",
+  //     priceValidUntil: new Date(
+  //       Date.now() + 365 * 24 * 60 * 60 * 1000
+  //     )
+  //       .toISOString()
+  //       .split("T")[0],
+  //     itemCondition: "https://schema.org/NewCondition",
+  //     seller: {
+  //       "@type": "Organization",
+  //       name: "PlatiNum"
+  //     }
+  //   }
+  // };
+
+  // await admin.graphql(productsupdated, {
+  //   variables: {
+  //     product: {
+  //       id: OLD_DESC.id,
+  //       descriptionHtml: DESC_AI.detailedDescription,
+  //       tags: mergedTags,
+  //       category: taxonomyId,
+  //       handle: SEO.handle,
+  //       productType: SEO.productType,
+  //       seo: {
+  //         title: SEO.seoTitle,
+  //         description: SEO.seoDescription
+  //       },
+  //       metafields: [
+  //         {
+  //           namespace: "custom",
+  //           key: "descriptionsai",
+  //           type: "json",
+  //           value: JSON.stringify(DESC_AI.shortDescription)
+  //         },
+  //         {
+  //           namespace: "custom",
+  //           key: "seo_title",
+  //           type: "json",
+  //           value: JSON.stringify(SEO.seoTitle)
+  //         },
+  //         {
+  //           namespace: "custom",
+  //           key: "seo_descreption",
+  //           type: "json",
+  //           value: JSON.stringify(SEO.seoDescription)
+  //         },
+  //         {
+  //           namespace: "seo",
+  //           key: "schema_org",
+  //           type: "json",
+  //           value: JSON.stringify(productSchema)
+  //         }
+  //       ]
+  //     }
+  //   }
+  // });
 
 }
 
