@@ -265,7 +265,7 @@ async function processSingleProduct(
       `
             const result=await admin.graphql(reverse,{variables:{id:OLD_DESC.id}})
             let res=await result.json()
-            const data=res?.data?.product?.metafield.value
+            const data=res?.data?.product?.metafield?.value??null
             console.log(res?.data?.product?.metafield)
             // const getAliRating = (value:string) => {
             //   if (!value) return null;
@@ -290,16 +290,27 @@ async function processSingleProduct(
               
             }
 
-          const aggregateRating:AliReview | null = data
-            ? (() => {
-                try {
-                  return JSON.parse(`{${data.replace(/,$/, "")}}`).aggregateRating;
-                } catch (err) {
-                  console.error("Failed to parse metafield JSON:", err);
-                  return null;
-                }
-              })()
-            : null;
+          // const aggregateRating:AliReview | null = data
+          //   ? (() => {
+          //       try {
+          //         return JSON.parse(`{${data.replace(/,$/, "")}}`).aggregateRating;
+          //       } catch (err) {
+          //         console.error("Failed to parse metafield JSON:", err);
+          //         return null;
+          //       }
+          //     })()
+          //   : null;
+          const aggregateRating: AliReview | null = data
+  ? (() => {
+      try {
+        const parsed = JSON.parse(`{${data.replace(/,$/, "")}}`);
+        return parsed?.aggregateRating ?? null;
+      } catch (err) {
+        console.error("Failed to parse metafield JSON:", err);
+        return null;
+      }
+    })()
+  : null;
 
 // console.log('ssssssssssssssss',aggregateRating)
 const rating = await fetch(
