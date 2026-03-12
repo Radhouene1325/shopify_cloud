@@ -435,7 +435,7 @@ console.log('Collections for product:', collections);
         ]
       });
     }
-    verify
+    
 
     async function throttledUpdates(products, batchSize = 20, delayMs = 500) {
       for (let i = 0; i < products.length; i += batchSize) {
