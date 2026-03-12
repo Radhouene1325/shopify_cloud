@@ -409,14 +409,16 @@ console.log('Collections for product:', collections);
       console.log('ddndndnd',productSchema)
 
   
-      console.log("productSchema is secces",productSchema)
+      console.log("productSchema is secces",SEO.category?.id)
+      console.log("productSchema is secces",SEO)
+
       
       updateProducts.push({
         id: OLD_DESC.id,
         descriptionHtml: DESC_AI.detailedDescription ||DESC_AI.descreption,
         tags: mergedTags,
         category: SEO.category?.id,
-        handle: OLD_DESC.handle,
+        handle: OLD_DESC.handle || OLD_DESC.handel,
         productType: SEO.productType,
         seo: { description: SEO.seoDescription, title: SEO.seoTitle },
         metafields: [
