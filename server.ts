@@ -422,7 +422,7 @@ console.log('Collections for product:', collections);
         productType: SEO.productType,
         seo: { description: SEO.seoDescription, title: SEO.seoTitle },
         metafields: [
-          verify===false &&{ namespace: "custom", key: "descriptionsai", type: "json", value: JSON.stringify(DESC_AI.shortDescription) },
+          verify===false?{ namespace: "custom", key: "descriptionsai", type: "json", value: JSON.stringify(DESC_AI.shortDescription) }:null,
           { namespace: "custom", key: "seo_title", type: "json", value: JSON.stringify(SEO.seoTitle) },
           { namespace: "custom", key: "seo_descreption", type: "json", value: JSON.stringify(SEO.seoDescription) },
           { namespace: "seo", key: "schema_org", type: "json", value: JSON.stringify(productSchema(SEO,collections,OLD_DESC,offers,aggregateRating__,aggregateRating,review)) },
