@@ -216,7 +216,7 @@ console.log("ssssssssssssssssssssssssssssssssssssssssssssssssssssss",DESC_AI)
         let data=DESC_AI.get(test.id)
         console.log(data.id)
         console.log(data.seoTitle)
-        console.log(data.category)
+        console.log(data.socialOptimization)
     
         console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
       }
