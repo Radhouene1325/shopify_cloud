@@ -196,7 +196,7 @@ async function processSingleProduct(
 
   } catch (err) {
 
-      throw err(err)
+      throw err
 
   }
 
