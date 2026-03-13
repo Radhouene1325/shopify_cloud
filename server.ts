@@ -442,13 +442,23 @@ console.log('Collections for product:', collections);
     }
     
 
-    async function throttledUpdates(products, batchSize = 20, delayMs = 500) {
+    async function throttledUpdates(products, batchSize = 100, delayMs = 500) {
       for (let i = 0; i < products.length; i += batchSize) {
         const batch = products.slice(i, i + batchSize);
     
-        const results = await Promise.allSettled(batch.map(prod =>
-          admin.graphql(productsupdated, { variables: { product: prod } })
-        ));
+        const results = await Promise.allSettled(
+          batch.map(async(prod) =>{
+           const response=await  admin.graphql(productsupdated, { variables: { product: prod } })
+
+           const json=await response.json()
+           if(json.error){
+            throw new Error(JSON.stringify(json.errors))
+           } 
+           return json
+          }
+         
+        )
+      );
     
         results.forEach((res, idx) => {
           if (res.status === "rejected") {
@@ -457,7 +467,7 @@ console.log('Collections for product:', collections);
         });
     
         if (i + batchSize < products.length) {
-          await delay(delayMs);
+          await new Promise(r => setTimeout(r, delayMs));
         }
       }
     }
@@ -482,101 +492,6 @@ console.log('Collections for product:', collections);
 
 
 
-
-  // const DESC_AI = optimizedHtml[0];
-  // const SEO = seo[0];
-
-  // if (!DESC_AI || !SEO) return;
-
-  // let taxonomyId = categoryCache.get(SEO.category);
-
-  // if (!taxonomyId) {
-  //   taxonomyId = await getTaxonomyIdForCategory(admin, SEO.category);
-  //   categoryCache.set(SEO.category, taxonomyId);
-  // }
-
-  // const mergedTags = [
-  //   ...new Set([
-  //     ...(OLD_DESC.tags || []),
-  //     SEO.category,
-  //     "DESC_AI"
-  //   ])
-  // ];
-
-  // const productSchema = {
-  //   "@context": "https://schema.org/",
-  //   "@type": "Product",
-  //   name: SEO.seoTitle || OLD_DESC.title,
-  //   description: SEO.seoDescription || OLD_DESC.title,
-  //   image: OLD_DESC.image,
-  //   sku: OLD_DESC.sku || OLD_DESC.id?.split("/").pop(),
-  //   mpn: OLD_DESC.barcode || OLD_DESC.id?.split("/").pop(),
-  //   brand: {
-  //     "@type": "Brand",
-  //     name: OLD_DESC.vendor || "PlatiNum"
-  //   },
-  //   offers: {
-  //     "@type": "Offer",
-  //     url: `https://platinumshop.it/products/${SEO.handle}`,
-  //     priceCurrency: "EUR",
-  //     price: OLD_DESC.price
-  //       ? parseFloat(OLD_DESC.price).toFixed(2)
-  //       : "0.00",
-  //     priceValidUntil: new Date(
-  //       Date.now() + 365 * 24 * 60 * 60 * 1000
-  //     )
-  //       .toISOString()
-  //       .split("T")[0],
-  //     itemCondition: "https://schema.org/NewCondition",
-  //     seller: {
-  //       "@type": "Organization",
-  //       name: "PlatiNum"
-  //     }
-  //   }
-  // };
-
-  // await admin.graphql(productsupdated, {
-  //   variables: {
-  //     product: {
-  //       id: OLD_DESC.id,
-  //       descriptionHtml: DESC_AI.detailedDescription,
-  //       tags: mergedTags,
-  //       category: taxonomyId,
-  //       handle: SEO.handle,
-  //       productType: SEO.productType,
-  //       seo: {
-  //         title: SEO.seoTitle,
-  //         description: SEO.seoDescription
-  //       },
-  //       metafields: [
-  //         {
-  //           namespace: "custom",
-  //           key: "descriptionsai",
-  //           type: "json",
-  //           value: JSON.stringify(DESC_AI.shortDescription)
-  //         },
-  //         {
-  //           namespace: "custom",
-  //           key: "seo_title",
-  //           type: "json",
-  //           value: JSON.stringify(SEO.seoTitle)
-  //         },
-  //         {
-  //           namespace: "custom",
-  //           key: "seo_descreption",
-  //           type: "json",
-  //           value: JSON.stringify(SEO.seoDescription)
-  //         },
-  //         {
-  //           namespace: "seo",
-  //           key: "schema_org",
-  //           type: "json",
-  //           value: JSON.stringify(productSchema)
-  //         }
-  //       ]
-  //     }
-  //   }
-  // });
 
 }
 
