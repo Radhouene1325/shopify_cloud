@@ -173,38 +173,30 @@ async function processSingleProduct(
 
   try {
   
-    optimizedHtml = await generateSeoHtmlgimini(
-      env.GEMINI_API_KEY,
-      products
-    );
+    if (verify===false){
+      console.log('hello im from depseek and veriify case false ')
+      optimizedHtml = await generateSeoHtml(
+        products,
+        env.DEEP_SEEK_API_KEY
+      )
+    }else{
+      console.log('im from other case verify the case true ')
+      optimizedHtml=products
+    }
+      
+     
+      categoryCache.set("categoryCache",optimizedHtml)
+  
+  
+  
+      seo = await generateSeoMetadata(
+        products,
+        env.DEEP_SEEK_API_KEY
+      );
 
-    seo = await generateSeoMetadata(
-      products,
-      env.GEMINI_API_KEY
-    );
+  } catch (err) {
 
-  } catch {
-  if (verify===false){
-    console.log('hello im from depseek and veriify case false ')
-    optimizedHtml = await generateSeoHtml(
-      products,
-      env.DEEP_SEEK_API_KEY
-    )
-  }else{
-    console.log('im from other case verify the case true ')
-    optimizedHtml=products
-  }
-    
-   
-    categoryCache.set("categoryCache",optimizedHtml)
-
-
-
-    seo = await generateSeoMetadata(
-      products,
-      env.DEEP_SEEK_API_KEY
-    );
-
+      throw err(err)
 
   }
 
