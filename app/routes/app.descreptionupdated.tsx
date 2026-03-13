@@ -432,180 +432,180 @@ return Response.json({
   total:updatedDescreptionAI.length
 })
 
-    const API_KEY_DEEP_SEEK=context.cloudflare?.envariant?.DEEP_SEEK_API_KEY
-    // console.log('api key is her ',API_KEY_DEEP_SEEK)
+//     const API_KEY_DEEP_SEEK=context.cloudflare?.envariant?.DEEP_SEEK_API_KEY
+//     // console.log('api key is her ',API_KEY_DEEP_SEEK)
 
-    const API_KEY_GEMINI_GEMINI=context.cloudflare?.envariant?.GEMINI_API_KEY
-    // console.log('api key is her ',API_KEY_GEMINI_GEMINI)
-    // console.log('hello UPDATE_PRODUCT',UPDATE_PRODUCT?.loc?.source.body)
+//     const API_KEY_GEMINI_GEMINI=context.cloudflare?.envariant?.GEMINI_API_KEY
+//     // console.log('api key is her ',API_KEY_GEMINI_GEMINI)
+//     // console.log('hello UPDATE_PRODUCT',UPDATE_PRODUCT?.loc?.source.body)
 
 
-  if (!updatedDescreptionAI) {
-    return Response.json({ error: "Please provide a description" }, { status: 400 });
-  }
+//   if (!updatedDescreptionAI) {
+//     return Response.json({ error: "Please provide a description" }, { status: 400 });
+//   }
 
-  // Cloudflare Workers limit: 50 subrequests per request (free tier).
-  // Each product: 1–2 AI fetches + 1 GraphQL update. Limit to 15 products to stay under 50.
-  const MAX_PRODUCTS_PER_REQUEST = 15;
-  if (updatedDescreptionAI.length > MAX_PRODUCTS_PER_REQUEST) {
-    return Response.json(
-      {
-        error: `Too many products. Please select up to ${MAX_PRODUCTS_PER_REQUEST} products at a time. (Cloudflare subrequest limit)`,
-        code: "TOO_MANY_SUBREQUESTS"
-      },
-      { status: 400 }
-    );
-  }
-  let optimizedHtml
-  let seotitle_descreption_handel
-  try {
-    try{
-      console.log('thes from gimini')
-      const optimizedHtml_gimini = await generateSeoHtmlgimini(API_KEY_GEMINI_GEMINI as string,updatedDescreptionAI,)
-      const seo= await generateSeoMetadata(updatedDescreptionAI,API_KEY_GEMINI_GEMINI as string)
-      seotitle_descreption_handel=seo
-      optimizedHtml=optimizedHtml_gimini
-    }
-    catch{
-      console.log('thes from deepseek')
-      const optimizedHtml_deep_seek =  await generateSeoHtml(updatedDescreptionAI,API_KEY_DEEP_SEEK);
-      const seo= await generateSeoMetadata(updatedDescreptionAI,API_KEY_DEEP_SEEK as string)
-      seotitle_descreption_handel=seo
-      optimizedHtml=optimizedHtml_deep_seek
-    }
+//   // Cloudflare Workers limit: 50 subrequests per request (free tier).
+//   // Each product: 1–2 AI fetches + 1 GraphQL update. Limit to 15 products to stay under 50.
+//   const MAX_PRODUCTS_PER_REQUEST = 15;
+//   if (updatedDescreptionAI.length > MAX_PRODUCTS_PER_REQUEST) {
+//     return Response.json(
+//       {
+//         error: `Too many products. Please select up to ${MAX_PRODUCTS_PER_REQUEST} products at a time. (Cloudflare subrequest limit)`,
+//         code: "TOO_MANY_SUBREQUESTS"
+//       },
+//       { status: 400 }
+//     );
+//   }
+//   let optimizedHtml
+//   let seotitle_descreption_handel
+//   try {
+//     try{
+//       console.log('thes from gimini')
+//       const optimizedHtml_gimini = await generateSeoHtmlgimini(API_KEY_GEMINI_GEMINI as string,updatedDescreptionAI,)
+//       const seo= await generateSeoMetadata(updatedDescreptionAI,API_KEY_GEMINI_GEMINI as string)
+//       seotitle_descreption_handel=seo
+//       optimizedHtml=optimizedHtml_gimini
+//     }
+//     catch{
+//       console.log('thes from deepseek')
+//       const optimizedHtml_deep_seek =  await generateSeoHtml(updatedDescreptionAI,API_KEY_DEEP_SEEK);
+//       const seo= await generateSeoMetadata(updatedDescreptionAI,API_KEY_DEEP_SEEK as string)
+//       seotitle_descreption_handel=seo
+//       optimizedHtml=optimizedHtml_deep_seek
+//     }
  
-    //  console.log('SEO_OPTIMISE_TITLE_DECPRETION_HANDEL ',seotitle_descreption_handel)
+//     //  console.log('SEO_OPTIMISE_TITLE_DECPRETION_HANDEL ',seotitle_descreption_handel)
 
-let responses
+// let responses
 
-const oldDescreptionsMap=new Map(updatedDescreptionAI.map(item=>[item.id,item]))
+// const oldDescreptionsMap=new Map(updatedDescreptionAI.map(item=>[item.id,item]))
 
-for( const DESC_AI of optimizedHtml){
-    if (!DESC_AI.id|| !DESC_AI.detailedDescription || !DESC_AI.shortDescription) {
-        console.error("AI returned empty fields", optimizedHtml);
-        return Response.json({ error: "Empty content from AI" }, { status: 500 });
-      }
-  // for (const OLD_DESC of updatedDescreptionAI ){
-      const OLD_DESC=oldDescreptionsMap.get(DESC_AI.id)
-      console.log(OLD_DESC.id)
-      if (!OLD_DESC)continue;
-      if (!seotitle_descreption_handel)return
-      for (const SEO of seotitle_descreption_handel){
+// for( const DESC_AI of optimizedHtml){
+//     if (!DESC_AI.id|| !DESC_AI.detailedDescription || !DESC_AI.shortDescription) {
+//         console.error("AI returned empty fields", optimizedHtml);
+//         return Response.json({ error: "Empty content from AI" }, { status: 500 });
+//       }
+//   // for (const OLD_DESC of updatedDescreptionAI ){
+//       const OLD_DESC=oldDescreptionsMap.get(DESC_AI.id)
+//       console.log(OLD_DESC.id)
+//       if (!OLD_DESC)continue;
+//       if (!seotitle_descreption_handel)return
+//       for (const SEO of seotitle_descreption_handel){
 
-         if(DESC_AI.id===OLD_DESC.id && SEO.id===OLD_DESC.id){
-        // console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
-        // console.log('is true is very nice ')
-        // Merge tags: preserve existing + add DESC_AI (productUpdate overwrites, so we must include all)
-      const CATEGORY_TAMMOXY_ID=await getTaxonomyIdForCategory(admin,SEO.category)
-console.log('her is the value of tamoxy',CATEGORY_TAMMOXY_ID)
-const productSchema = {
-  "@context": "https://schema.org/",
-  "@type": "Product",
-  "name": SEO.seoTitle || OLD_DESC.title, // ✅ REQUIRED
-  "description": SEO.seoDescription || OLD_DESC.title,
-  "image":OLD_DESC.image,
-  "sku": OLD_DESC.sku || OLD_DESC.id?.split('/').pop() || '',
-  "mpn": OLD_DESC.barcode || OLD_DESC.id?.split('/').pop() || '',
-  "brand": {
-    "@type": "Brand",
-    "name": OLD_DESC.vendor || "PlatiNum"
-  },
-  "offers": {
-    "@type": "Offer",
-    "url": `https://platinumshop.it/products/${SEO.handle}`,
-    "priceCurrency": "EUR",
-    "price": OLD_DESC.price ? parseFloat(OLD_DESC.price.toString()).toFixed(2) : "0.00",
-    // "availability": OLD_DESC.available 
-    //   ? "https://schema.org/InStock" 
-    //   : "https://schema.org/OutOfStock",
-    "priceValidUntil": new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    "itemCondition": "https://schema.org/NewCondition",
-    "seller": {
-      "@type": "Organization",
-      "name": "PlatiNum"
-    }
-  }
-};
-
-
+//          if(DESC_AI.id===OLD_DESC.id && SEO.id===OLD_DESC.id){
+//         // console.log("VERIFU IS TESTED",DESC_AI.id===OLD_DESC.id)
+//         // console.log('is true is very nice ')
+//         // Merge tags: preserve existing + add DESC_AI (productUpdate overwrites, so we must include all)
+//       const CATEGORY_TAMMOXY_ID=await getTaxonomyIdForCategory(admin,SEO.category)
+// console.log('her is the value of tamoxy',CATEGORY_TAMMOXY_ID)
+// const productSchema = {
+//   "@context": "https://schema.org/",
+//   "@type": "Product",
+//   "name": SEO.seoTitle || OLD_DESC.title, // ✅ REQUIRED
+//   "description": SEO.seoDescription || OLD_DESC.title,
+//   "image":OLD_DESC.image,
+//   "sku": OLD_DESC.sku || OLD_DESC.id?.split('/').pop() || '',
+//   "mpn": OLD_DESC.barcode || OLD_DESC.id?.split('/').pop() || '',
+//   "brand": {
+//     "@type": "Brand",
+//     "name": OLD_DESC.vendor || "PlatiNum"
+//   },
+//   "offers": {
+//     "@type": "Offer",
+//     "url": `https://platinumshop.it/products/${SEO.handle}`,
+//     "priceCurrency": "EUR",
+//     "price": OLD_DESC.price ? parseFloat(OLD_DESC.price.toString()).toFixed(2) : "0.00",
+//     // "availability": OLD_DESC.available 
+//     //   ? "https://schema.org/InStock" 
+//     //   : "https://schema.org/OutOfStock",
+//     "priceValidUntil": new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+//     "itemCondition": "https://schema.org/NewCondition",
+//     "seller": {
+//       "@type": "Organization",
+//       "name": "PlatiNum"
+//     }
+//   }
+// };
 
 
 
-        const mergedTags = [...new Set([
-          ...(OLD_DESC.tags || []),
-          (SEO.category|| []),
-          "DESC_AI"])];
-        // const response = 
-        await admin.graphql(productsupdated, {
-          variables: {
-            product: {
-              id: OLD_DESC.id,
-              descriptionHtml: DESC_AI.detailedDescription,
-              tags: mergedTags,
-              category:CATEGORY_TAMMOXY_ID,
-              handle:SEO.handle,
-              productType:SEO.productType,
-              seo:{
-                description:SEO.seoDescription,
-                title:SEO.seoTitle
-              },
-              metafields: [
-                {
-                  namespace: "custom",
-                  key: "descriptionsai",
-                  type: "json",
-                  value: JSON.stringify(DESC_AI.shortDescription)
-                },
-                {
-                  namespace: "custom",
-                  key: "seo_title",
-                  type: "json",
-                  value: JSON.stringify(SEO.seoTitle)
-                },
-                {
-                  namespace: "custom",
-                  key: "seo_descreption",
-                  type: "json",
-                  value: JSON.stringify(SEO.seoDescription)
-                },
-                {
-                  namespace: "seo",
-                  key: "schema_org",
-                  type: "json",
-                  value: JSON.stringify(productSchema)
-                }
-              ]
-            }
-          }
-        });
+
+
+//         const mergedTags = [...new Set([
+//           ...(OLD_DESC.tags || []),
+//           (SEO.category|| []),
+//           "DESC_AI"])];
+//         // const response = 
+//         await admin.graphql(productsupdated, {
+//           variables: {
+//             product: {
+//               id: OLD_DESC.id,
+//               descriptionHtml: DESC_AI.detailedDescription,
+//               tags: mergedTags,
+//               category:CATEGORY_TAMMOXY_ID,
+//               handle:SEO.handle,
+//               productType:SEO.productType,
+//               seo:{
+//                 description:SEO.seoDescription,
+//                 title:SEO.seoTitle
+//               },
+//               metafields: [
+//                 {
+//                   namespace: "custom",
+//                   key: "descriptionsai",
+//                   type: "json",
+//                   value: JSON.stringify(DESC_AI.shortDescription)
+//                 },
+//                 {
+//                   namespace: "custom",
+//                   key: "seo_title",
+//                   type: "json",
+//                   value: JSON.stringify(SEO.seoTitle)
+//                 },
+//                 {
+//                   namespace: "custom",
+//                   key: "seo_descreption",
+//                   type: "json",
+//                   value: JSON.stringify(SEO.seoDescription)
+//                 },
+//                 {
+//                   namespace: "seo",
+//                   key: "schema_org",
+//                   type: "json",
+//                   value: JSON.stringify(productSchema)
+//                 }
+//               ]
+//             }
+//           }
+//         });
              
           
   
-          // responses=response
+//           // responses=response
       
       
        
-        }
-      }
+//         }
+//       }
 
    
 
    
 
-}
+// }
 
 
 
 
 
 
-    return Response.json(optimizedHtml,  {headers: {
-      "Cache-Control": "public, max-age=60, s-maxage=300"
-    }});
-  } catch (error) {
-    console.error(error);
-    return Response.json({ error: "Failed to generate content" }, { status: 500 });
-  }
+//     return Response.json(optimizedHtml,  {headers: {
+//       "Cache-Control": "public, max-age=60, s-maxage=300"
+//     }});
+//   } catch (error) {
+//     console.error(error);
+//     return Response.json({ error: "Failed to generate content" }, { status: 500 });
+//   }
 
 }
 
