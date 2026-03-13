@@ -185,7 +185,7 @@ async function processSingleProduct(
     }
       
      
-      categoryCache.set("categoryCache",optimizedHtml)
+      categoryCache.set("cxategoryCache",optimizedHtml)
   
   
   
