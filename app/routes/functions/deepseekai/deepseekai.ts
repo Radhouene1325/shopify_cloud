@@ -1,10 +1,7 @@
 import { parserData } from "@/parser/parser_data";
 import JSON5 from "json5";
 
-import retry from 'async-retry';
-const API_TIMEOUT = 30000;          // 30 seconds per API call
 
-const MAX_RETRIES = 3;
 
 
 interface DeepSeekResponse {

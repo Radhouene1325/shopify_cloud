@@ -1,25 +1,14 @@
 
 
-import JSON5 from "json5";
 
 import {type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
 import { useActionData, Form, useNavigation, useLoaderData, useFetcher, useSubmit } from "@remix-run/react";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { shopify } from "../shopify.server";
 import { Badge, Banner, BlockStack, Box, Button, Card, Checkbox, DataTable, Divider, EmptyState, InlineStack, Page, Pagination, Spinner, Tag, Text, Thumbnail, Tooltip, useBreakpoints } from "@shopify/polaris";
 import { useCallback, useEffect, useMemo, useState } from "react";
   // sk-c8552ae161ed4db684bb1268bf4ba758
-  import { Deepseek } from 'node-deepseek';
-import pako from "pako"
   
-import  { generateSeoHtmlGemini } from "./functions/parser";
-import { productsupdated } from "./functions/query/updateprooductquery";
-import { generateSeoMetadata, getTaxonomyIdForCategory } from "./functions/propmtsSEO/buildSEOPrompt";
-import { uint8ToBase64 } from "./functions/uint8ToBase64/uint8ToBase64";
 import { sendPrompt } from "./functions/deepseekai/deepseekai";
-import pLimit from 'p-limit';
-import { parserData } from "@/parser/parser_data";
-import { processStream } from "./functions/chunkprocess/chunk";
 import { buildPrompt } from "./functions/propmtsSEO/propmts_descreption";
 import { ultraCompress } from "./functions/uint8ToBase64/brotliCompressSync";
   interface DESCREPTION{
@@ -27,14 +16,7 @@ import { ultraCompress } from "./functions/uint8ToBase64/brotliCompressSync";
     id:string,
     tags:string[]
   }
-  interface DeepSeekResponse {
-    choices?: Array<{
-      message?: {
-        content?: string;
-      };
-      finish_reason?: string;
-    }>;
-  }
+ 
  export  interface VARIBALES {
     handle: string;
     id: string;
@@ -55,170 +37,8 @@ import { ultraCompress } from "./functions/uint8ToBase64/brotliCompressSync";
     }
     return chunks;
   }
-  // export async function sendPrompt(prompt: string, API_KEY_GEMINI: string) {
-  //   try {
-  //     const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         'Authorization': `Bearer ${API_KEY_GEMINI}`
-  //       },
-  //       body: JSON.stringify({
-  //         model: 'deepseek-chat',
-  //         messages: [  {
-  //           role: "system",
-  //           content:
-  //             "You are a strict JSON generator. Return ONLY valid JSON. No markdown. No explanation. No code fences. CRITICAL: All quotes inside string values MUST be escaped with backslashes (\\\"). All HTML content must have properly escaped quotes. Ensure the JSON is complete and valid.",
-  //         },{ role: 'user', content: prompt }],
-  //         temperature: 0.7,
-  //         max_tokens: 8192
-  //       })
-  //     });
-      
-  
-  //     if (!response.ok) {
-  //       const errorText = await response.text();
-  //       console.error('DeepSeek API error:', response.status, errorText);
-  //       throw new Error(`API error: ${response.status} - ${errorText}`);
-  //     }
-  
-  //     const data = await response.json() as DeepSeekResponse;
-  //     const choice = data?.choices?.[0];
-  //     let resulter = choice?.message?.content;
-  //     if (choice?.finish_reason === 'length') {
-  //       throw new Error('Response truncated: Output hit token limit. Try processing fewer products or shortening product descriptions.');
-  //     }
-  //     if (!resulter) {
-  //       throw new Error('No content in API response');
-  //     }
-  //     // Only pass a string to the cleaning function if it's defined
-  //     // let tested = typeof resulter === 'string' ? strongCleanObjectArray([resulter]) : [];
-  //     // console.log("tes the function is ok hello ", tested);
-      
-  //     // Clean the response - remove markdown code fences if present
-  //     if (typeof resulter === 'string') {
-  //       // Remove markdown code fences (```json ... ``` or ``` ... ```)
-  //       resulter = resulter.trim();
-  //       resulter = resulter.replace(/^```(?:json)?\s*/i, ''); // Remove opening fence
-  //       resulter = resulter.replace(/\s*```$/i, ''); // Remove closing fence
-  //       resulter = resulter.trim();
-  //     }
-      
-  //     // Try multiple parsing strategies
-  //     let parsed: any = null;
-      
-  //     // Strategy 1: Try standard JSON.parse
-  //     // try {
-  //     //   parsed = JSON.parse(resulter);
-  //     //   console.log('Successfully parsed with JSON.parse');
-  //     // } catch (jsonError) {
-  //     //   console.warn('JSON.parse failed, trying JSON5:', jsonError);
-        
-  //     //   // Strategy 2: Try JSON5 (more lenient parser)
-  //     //   try {
-  //     //     parsed = JSON5.parse(resulter);
-  //     //     console.log('Successfully parsed with JSON5');
-  //     //   } catch (json5Error) {
-  //     //     console.warn('JSON5.parse failed, trying to extract and repair JSON:', json5Error);
-          
-  //     //     // Strategy 3: Extract JSON array and try to repair common issues
-  //     //     const jsonMatch = resulter.match(/\[[\s\S]*\]/);
-  //     //     if (jsonMatch) {
-  //     //       let jsonText = jsonMatch[0];
-            
-  //     //       // Try to fix common issues: unescaped quotes in HTML strings
-  //     //       // This is a simple fix - replace unescaped quotes inside string values
-  //     //       // Note: This is a heuristic and may not work for all cases
-  //     //       try {
-  //     //         // First try JSON5 on the extracted text
-  //     //         parsed = JSON5.parse(jsonText);
-  //     //         console.log('Successfully parsed extracted JSON with JSON5');
-  //     //       } catch (e) {
-  //     //         console.warn('JSON5 on extracted text failed, trying manual repair:', e);
-              
-  //     //         // Try to repair by finding and fixing unescaped quotes in HTML content
-  //     //         // This is a more aggressive approach
-  //     //         try {
-  //     //           let repaired = jsonText;
-                
-  //     //           // Strategy: Fix common HTML attribute patterns that break JSON
-  //     //           // Replace single quotes in HTML attributes with escaped double quotes
-  //     //           repaired = repaired.replace(/style='([^']*)'/g, (match, content) => {
-  //     //             return `style="${content.replace(/"/g, '\\"')}"`;
-  //     //           });
-                
-  //     //           // Fix other common HTML attribute patterns
-  //     //           repaired = repaired.replace(/(\w+)='([^']*)'/g, (match, attr, content) => {
-  //     //             // Only fix if it's inside a string value (has quotes around)
-  //     //             return `${attr}="${content.replace(/"/g, '\\"')}"`;
-  //     //           });
-                
-  //     //           // Try JSON5 again with repaired text
-  //     //           parsed = JSON5.parse(repaired);
-  //     //           console.log('Successfully parsed after manual repair');
-  //     //         } catch (repairError) {
-  //     //           console.error('All parsing strategies failed:', repairError);
-  //     //           console.error('Response length:', resulter.length);
-  //     //           console.error('First 500 chars:', resulter.substring(0, 500));
-  //     //           console.error('Last 500 chars:', resulter.substring(Math.max(0, resulter.length - 500)));
-                
-  //     //           // Check if response appears truncated (ends abruptly without closing brackets)
-  //     //           const trimmed = resulter.trim();
-  //     //           const lastChar = trimmed[trimmed.length - 1];
-  //     //           const bracketCount = (trimmed.match(/\[/g) || []).length - (trimmed.match(/\]/g) || []).length;
-  //     //           const braceCount = (trimmed.match(/\{/g) || []).length - (trimmed.match(/\}/g) || []).length;
-                
-  //     //           if (lastChar !== ']' && lastChar !== '}' || bracketCount > 0 || braceCount > 0) {
-  //     //             console.warn('Response appears to be truncated. JSON is incomplete.');
-  //     //             throw new Error('Response truncated: JSON is incomplete. Try processing fewer products at once.');
-  //     //           }
-                
-  //     //           // Last resort: try to parse just the structure and return partial data
-  //     //           throw new Error(`Failed to parse JSON: ${repairError instanceof Error ? repairError.message : 'Unknown error'}`);
-  //     //         }
-  //     //       }
-  //     //     } else {
-  //     //       throw new Error('Could not find JSON array in response');
-  //     //     }
-  //     //   }
-  //     // }
-  //     const res=parserData(resulter,parsed,JSON5)
-  //     parsed=res
-  //     // Ensure it's an array
-  //     if (Array.isArray(parsed)) {
-  //       // console.log(`Successfully parsed ${parsed.length} items`);
-  //       return parsed;
-  //     } else if (parsed && typeof parsed === 'object') {
-  //       // If it's an object, wrap it in an array
-  //       // console.log('Wrapped single object in array');
-  //       return [parsed];
-  //     } else {
-  //       throw new Error('Parsed result is not a valid object or array');
-  //     }
-          
-   
-      
-  //   } catch (error) {
-  //     console.error('Error calling DeepSeek:', error);
-  //     throw error;
-  //   }
-  // }
-  // async function sendPrompt(prompt: string,deepseek:any) {
-  //   try {
-  //     const response = await deepseek.chat.createCompletion({
-  //       messages: [{ role: 'user', content: prompt }],
-  //       model: 'deepseek-chat',
-  //       temperature:0.7,
-  //       max_tokens:4000
-  //     });
-  //     return response.choices;
-  //   } catch (error) {
-  //     console.error('Error:', error);
-  //     throw error;
-  //   }
-  // }
+ 
 
-// 1. Logic to call Gemini
 export  async function generateSeoHtml(updatedDescreptionAI:any,DEEP_SEEK_API_KEY:string) {
 
   
