@@ -60,7 +60,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,DEEP_SEEK_API_KE
       // Call 1: shortDescription only (keeps output under token limit)
       const shortPrompt = buildPrompt(chunk as VARIBALES[], 'shortDescription');
       // Call 2: detailedDescription only
-      const detailedPrompt = buildPrompt(chunk as VARIBALES[], 'detailedDescription');
+      const detailedPrompt = q(chunk as VARIBALES[], 'detailedDescription');
 
       let shortResults: { id: string; shortDescription?: string }[] = [];
       let detailedResults: { id: string; detailedDescription?: string }[] = [];

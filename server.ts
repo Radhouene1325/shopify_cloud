@@ -3,13 +3,14 @@ import { createRequestHandler, type ServerBuild } from "@remix-run/cloudflare";
 // @ts-ignore This file won’t exist if it hasn’t yet been built
 import * as build from "./build/server"; // eslint-disable-line import/no-unresolved
 import { getLoadContext } from "./load-context";
-import { generateSeoHtml, generateSeoHtmlgimini } from "@/routes/app.descreptionupdated";
+// import { generateSeoHtml, generateSeoHtmlgimini } from "@/routes/app.descreptionupdated";
 import { generateSeoMetadata, getTaxonomyIdForCategory } from "@/routes/functions/propmtsSEO/buildSEOPrompt";
 import { productsupdated } from "@/routes/functions/query/updateprooductquery";
 import { decompressPayload } from "@/routes/functions/uint8ToBase64/uint8ToBase64";
 import PQueue from "p-queue";
 import { ultraDecompress } from "@/routes/functions/uint8ToBase64/brotliCompressSync";
 import { productSchema } from "@/routes/functions/schemasSEO/SEO";
+import { generateSeoHtml } from "@/test/test";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const handleRemixRequest = createRequestHandler(build as any as ServerBuild);
