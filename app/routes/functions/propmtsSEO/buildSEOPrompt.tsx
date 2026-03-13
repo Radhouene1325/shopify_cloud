@@ -5,7 +5,7 @@ export async function generateSeoMetadata(
     products: { id: string; title: string; description: string; handle?: string; vendor?: string,image?:string,productType?:string }[],
     apiKey: string
   ): Promise<{ id: string; seoTitle: string; seoDescription: string; handle: string,image:string,productType?:string,category:string,categoryId:string }[]> {
-    const CHUNK_SIZE = 1;
+    const CHUNK_SIZE = 10;
     const chunks = [];
     
     for (let i = 0; i < products.length; i += CHUNK_SIZE) {
