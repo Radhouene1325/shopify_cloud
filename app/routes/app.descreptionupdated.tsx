@@ -233,92 +233,6 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,DEEP_SEEK_API_KE
 
 
 
-//  async function sendPrompt(prompt: string, DEEP_SEEK_API_KEY: string) {
-//   // const controller = new AbortController(); // ✅ create controller
-//   // const timeout = setTimeout(() => {
-//   //     controller.abort();
-//   //   }, 30000); // 30s timeout
-  
-//   try {
-//       const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-//         method: 'POST',
-//         headers: {
-//           'Content-Type': 'application/json',
-//           'Authorization': `Bearer ${DEEP_SEEK_API_KEY}`
-//         },
-//         body: JSON.stringify({
-//           model: 'deepseek-chat',
-//           messages: [  {
-//             role: "system",
-//             content:
-//               "You are a strict JSON generator. Return ONLY valid JSON. No markdown. No explanation. No code fences. CRITICAL: All quotes inside string values MUST be escaped with backslashes (\\\"). All HTML content must have properly escaped quotes. Ensure the JSON is complete and valid.",
-//           },{ role: 'user', content: prompt }],
-//           temperature: 0.7,
-//           max_tokens: 8192
-//         }),
-//       //   signal:controller.signal
-//       });
-      
-//       // clearTimeout(timeout);
-
-//       if (!response.ok) {
-//         const errorText = await response.text();
-//         console.error('DeepSeek API error:', response.status, errorText);
-//         throw new Error(`API error: ${response.status} - ${errorText}`);
-//       }
-  
-//       const data = await response.json() as DeepSeekResponse;
-//       // console.log('data from dess seek is arrived ',data)
-//       const choice = data?.choices?.[0];
-//       // console.log('chois is oky',choice)
-//       let resulter = choice?.message?.content;
-//       // console.log("result is oky",resulter)
-//       if (choice?.finish_reason === 'length') {
-//         throw new Error('Response truncated: Output hit token limit. Try processing fewer products or shortening product descriptions.');
-//       }
-//       if (!resulter) {
-//         throw new Error('No content in API response');
-//       }
-     
-//       if (typeof resulter === 'string') {
-//         // Remove markdown code fences (```json ... ``` or ``` ... ```)
-//         resulter = resulter.trim();
-//         resulter = resulter.replace(/^```(?:json)?\s*/i, ''); // Remove opening fence
-//         resulter = resulter.replace(/\s*```$/i, ''); // Remove closing fence
-//         resulter = resulter.trim();
-//       }
-      
-//       // Try multiple parsing strategies
-//       let parsed: any = null;
-      
-
-//       const res=parserData(resulter,parsed,JSON5)
-//       parsed=res
-//       // Ensure it's an array
-//       if (Array.isArray(parsed)) {
-//         // console.log(`Successfully parsed ${parsed.length} items`);
-//         return parsed;
-//       } else if (parsed && typeof parsed === 'object') {
-//         // If it's an object, wrap it in an array
-//         // console.log('Wrapped single object in array');
-//         return [parsed];
-//       } else {
-//         throw new Error('Parsed result is not a valid object or array');
-//       }
-          
-   
-      
-//     } catch (error:any) {
-//       if (error.name === 'AbortError') throw new Error('Request timeout');
-//       throw error;
-//     }
-
- 
-// }
-
-
-
-
 
     const chunkPromises = chunks.map(async (chunk, idx) => {
       // console.log(`Processing chunk ${idx + 1}/${chunks.length} (${chunk.length} products) - split into 2 API calls`);
@@ -1601,7 +1515,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
 
 
 
-export async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description:DESCREPTION) {
+ async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description:DESCREPTION) {
   const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
   
   // Using Gemini 3 Flash for speed and intelligence
