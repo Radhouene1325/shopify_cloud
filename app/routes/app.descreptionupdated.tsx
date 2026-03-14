@@ -40,7 +40,7 @@ import { ultraCompress } from "./functions/uint8ToBase64/brotliCompressSync";
  
 
 export  async function generateSeoHtml(updatedDescreptionAI:any,DEEP_SEEK_API_KEY:string) {
-
+console.log("prodycts pronti in updatedDescreptionAI",updatedDescreptionAI)
   
   const BATCH_SIZE = 2;
   
@@ -60,7 +60,7 @@ export  async function generateSeoHtml(updatedDescreptionAI:any,DEEP_SEEK_API_KE
       // Call 1: shortDescription only (keeps output under token limit)
       const shortPrompt = buildPrompt(chunk as VARIBALES[], 'shortDescription');
       // Call 2: detailedDescription only
-      const detailedPrompt = q(chunk as VARIBALES[], 'detailedDescription');
+      const detailedPrompt = buildPrompt(chunk as VARIBALES[], 'detailedDescription');
 
       let shortResults: { id: string; shortDescription?: string }[] = [];
       let detailedResults: { id: string; detailedDescription?: string }[] = [];
