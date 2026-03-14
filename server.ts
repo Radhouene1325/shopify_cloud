@@ -178,7 +178,12 @@ async function processSingleProduct(
       console.log('hello im from depseek and veriify case false ')
       optimizedHtml = await generateSeoHtml(
         products,
-        env.DEEP_SEEK_API_KEY
+        env.DEEP_SEEK_API_KEY, {
+          batchSize: 1,
+          sequential: true,
+          delayBetweenChunks: 1000,  // Adjust based on your needs
+          delayBetweenCalls: 500
+        }
       )
     }else{
       console.log('im from other case verify the case true ')
