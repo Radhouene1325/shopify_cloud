@@ -10,7 +10,7 @@ import { decompressPayload } from "@/routes/functions/uint8ToBase64/uint8ToBase6
 import PQueue from "p-queue";
 import { ultraDecompress } from "@/routes/functions/uint8ToBase64/brotliCompressSync";
 import { productSchema } from "@/routes/functions/schemasSEO/SEO";
-import { generateSeoHtml } from "@/test/test";
+import { generateSeoHtml } from "@/routes/app.descreptionupdated";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const handleRemixRequest = createRequestHandler(build as any as ServerBuild);
@@ -178,12 +178,7 @@ async function processSingleProduct(
       console.log('hello im from depseek and veriify case false ')
       optimizedHtml = await generateSeoHtml(
         products,
-        env.DEEP_SEEK_API_KEY, {
-          batchSize: 1,
-          sequential: true,
-          delayBetweenChunks: 1000,  // Adjust based on your needs
-          delayBetweenCalls: 500
-        }
+        env.DEEP_SEEK_API_KEY
       )
     }else{
       console.log('im from other case verify the case true ')
