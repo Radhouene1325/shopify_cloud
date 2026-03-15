@@ -42,7 +42,7 @@ import { ultraCompress } from "./functions/uint8ToBase64/brotliCompressSync";
 export  async function generateSeoHtml(updatedDescreptionAI:any,DEEP_SEEK_API_KEY:string) {
 // console.log("prodycts pronti in updatedDescreptionAI",updatedDescreptionAI)
   
-  const BATCH_SIZE = 2;
+  const BATCH_SIZE = 1;
   
 
 
