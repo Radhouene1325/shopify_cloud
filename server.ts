@@ -259,7 +259,7 @@ async function processSingleProduct(
             const result=await admin.graphql(reverse,{variables:{id:OLD_DESC.id}})
             let res=await result.json()
             const data=res?.data?.product?.metafield?.value??null
-            console.log(res?.data?.product?.metafield)
+            // console.log(res?.data?.product?.metafield)
             // const getAliRating = (value:string) => {
             //   if (!value) return null;
             
@@ -305,7 +305,7 @@ async function processSingleProduct(
     })()
   : null;
 
- console.log('ssssssssssssssss',aggregateRating)
+//  console.log('ssssssssssssssss',aggregateRating)
 const rating = await fetch(
   `${env.URL_REVIEWS}/public/reviews?sort=by_date&direction=asc&product_id=${OLD_DESC.id.split('/').pop()}`,
   {
@@ -406,7 +406,7 @@ const json = await response.json();
 
 const edges = json?.data?.collections?.edges ?? [];
 const collections = edges.map((edge: any) => edge.node);
-console.log('Collections for product:', collections); 
+// console.log('Collections for product:', collections); 
 
 
    

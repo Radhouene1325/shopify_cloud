@@ -40,7 +40,7 @@ import { ultraCompress } from "./functions/uint8ToBase64/brotliCompressSync";
  
 
 export  async function generateSeoHtml(updatedDescreptionAI:any,DEEP_SEEK_API_KEY:string) {
-console.log("prodycts pronti in updatedDescreptionAI",updatedDescreptionAI)
+// console.log("prodycts pronti in updatedDescreptionAI",updatedDescreptionAI)
   
   const BATCH_SIZE = 2;
   
@@ -235,9 +235,9 @@ export default function DescriptionManager() {
   const [cursorStack, setCursorStack] = useState<string[]>([]);
   const [selected, setSelected] = useState<SelectedVariant[]>([]);
   const [isSelectAllIndeterminate, setIsSelectAllIndeterminate] = useState(false);
-console.log("rows is her see",rows)
-console.log('intital data is her ',initial)
-console.log("fetch is her succes",fetcher)
+// console.log("rows is her see",rows)
+// console.log('intital data is her ',initial)
+// console.log("fetch is her succes",fetcher)
   const isLoading = fetcher.state === "loading";
   const isSubmitting = navigation.state === "submitting";
 
@@ -411,7 +411,7 @@ console.log('selected is her ',selected)
     "Tags",
     "Handle",
   ];
-console.log('rows is seccesfuly her ',rows)
+// console.log('rows is seccesfuly her ',rows)
   // Table rows
   const rowsData = useMemo(() => {
     return rows.map((variant) => [
