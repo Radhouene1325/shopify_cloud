@@ -104,7 +104,7 @@ await Promise.all(
       );
      
         console.log("ACCESS TOKEN",env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
-        return
+        
       try {
         await processProducts(products, admin, env);
 
