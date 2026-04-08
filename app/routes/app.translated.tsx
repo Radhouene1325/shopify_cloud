@@ -18,7 +18,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
  let {session}=await shopify(context).authenticate.admin(request)
  
  let formData=await request.formData()
- const updatedDescreptionAI:DESCREPTION = JSON.parse(formData.get('descreptionAI') as string);
+ const updatedDescreptionAI = JSON.parse(formData.get('descreptionAI') as string);
  if (!Array.isArray(updatedDescreptionAI)) {
    console.error("Invalid or missing 'descreptionAI' data");
    return Response.json({ error: "Invalid or missing 'descreptionAI' data" }, { status: 400 });
