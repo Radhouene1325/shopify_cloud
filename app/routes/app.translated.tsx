@@ -7,6 +7,7 @@ import { shopify } from "../shopify.server";
 import { Badge, Banner, BlockStack, Box, Button, Card, Checkbox, DataTable, Divider, EmptyState, InlineStack, Page, Pagination, Spinner, Tag, Text, Thumbnail, Tooltip, useBreakpoints } from "@shopify/polaris";
 import { useCallback, useEffect, useMemo, useState } from "react";
   // sk-c8552ae161ed4db684bb1268bf4ba758
+import * as cheerio from "cheerio";
 
 
 // app/utils/translate.server.js
@@ -37,7 +38,47 @@ console.log(' data is her ',data)
     throw new Error("Translation error");
   }
 }
+// app/utils/translateHtml.server.js
 
+async function translateText(text) {
+  const response = await fetch("https://libretranslate.de/translate", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      q: text,
+      source: "auto",
+      target: "it",
+      format: "text",
+    }),
+  });
+
+  const data = await response.json();
+  return data.translatedText;
+}
+
+ async function translateHtmlToItalian(html) {
+  const $ = cheerio.load(html);
+
+  const textNodes = $("p, span, h1, h2, h3, div")
+    .contents()
+    .filter(function () {
+      return this.type === "text" && $(this).text().trim().length > 0;
+    });
+
+  for (const node of textNodes.toArray()) {
+    const originalText = $(node).text().trim();
+
+    if (!originalText) continue;
+
+    const translated = await translateText(originalText);
+
+    $(node).replaceWith(translated);
+  }
+
+  return $.html();
+}
 
 
 export async function action({context ,request }: ActionFunctionArgs) {
@@ -52,7 +93,7 @@ export async function action({context ,request }: ActionFunctionArgs) {
  }
 
 console.log('updatedDescreptionAI is her ',updatedDescreptionAI[0].descreption)
-const translatedText = await translateToItalian(updatedDescreptionAI[0].descreption);
+const translatedText = await translateHtmlToItalian(updatedDescreptionAI[0].descreption);
 console.log("Translated Text:", translatedText);
 // const queue =context.cloudflare.env.SEO_QUEUE
 
