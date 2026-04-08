@@ -26,7 +26,7 @@ export default function App() {
         </Link>
         <Link to="/app/discounts">Additional page</Link>
         <Link to="/app/descreptionupdated">descreption updated page</Link>
-        <Link to="/app/fabric">fabric page</Link>
+        <Link to="/app/translated">translated descreption</Link>
 
        
       </NavMenu>
