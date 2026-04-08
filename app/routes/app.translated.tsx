@@ -9,7 +9,34 @@ import { useCallback, useEffect, useMemo, useState } from "react";
   // sk-c8552ae161ed4db684bb1268bf4ba758
 
 
+// app/utils/translate.server.js
+async function translateToItalian(descriptionHtml) {
+  try {
+    const response = await fetch("https://libretranslate.de/translate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        q: descriptionHtml,
+        source: "auto",
+        target: "it",
+        format: "html",
+      }),
+    });
 
+    if (!response.ok) {
+      throw new Error(`HTTP error ${response.status}`);
+    }
+
+    const data = await response.json();
+console.log(' data is her ',data)
+    return data.translatedText;
+  } catch (error) {
+    console.error("HTML translation failed:", error);
+    throw new Error("Translation error");
+  }
+}
 
 
 
@@ -24,8 +51,9 @@ export async function action({context ,request }: ActionFunctionArgs) {
    return Response.json({ error: "Invalid or missing 'descreptionAI' data" }, { status: 400 });
  }
 
-console.log('updatedDescreptionAI is her ',updatedDescreptionAI)
-
+console.log('updatedDescreptionAI is her ',updatedDescreptionAI[0].descreption)
+const translatedText = await translateToItalian(updatedDescreptionAI[0].descreption);
+console.log("Translated Text:", translatedText);
 // const queue =context.cloudflare.env.SEO_QUEUE
 
 // const payload = {
