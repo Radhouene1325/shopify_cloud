@@ -11,105 +11,38 @@ import * as cheerio from "cheerio";
 
 
 // app/utils/translate.server.js
-async function translateText(text, retries = 3) {
-  // Skip non-translatable content
-  if (shouldSkipTranslation(text)) {
-    return text;
-  }
-
-  for (let i = 0; i < retries; i++) {
-    try {
-      // Add delay to avoid rate limiting (increase if needed)
-      if (i > 0) {
-        await new Promise(resolve => setTimeout(resolve, 1000 * i));
-      }
-
-      const response = await fetch("https://libretranslate.de/translate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          q: text,
-          source: "auto",
-          target: "it",
-          format: "text",
-        }),
-      });
-
-      // Log the actual error for debugging
-      if (!response.ok) {
-        const errorHtml = await response.text();
-        console.error(`HTTP ${response.status} Error:`, errorHtml.substring(0, 200));
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data.translatedText;
-      
-    } catch (error) {
-      console.error(`Translation attempt ${i + 1} failed for "${text}":`, error.message);
-      if (i === retries - 1) {
-        // Return original text if all retries fail
-        console.warn(`Returning untranslated text: "${text}"`);
-        return text;
-      }
-    }
-  }
-}
-
-// Skip translating numbers, codes, and very short strings
-function shouldSkipTranslation(text) {
-  const skipPatterns = [
-    /^[A-Z0-9]+$/i,           // Model numbers like J201026, SS2021
-    /^\d+(\s*(kg|g|cm|m|ml|l))?$/i,  // Measurements like "1 kg"
-    /^[A-Z]{2,}\(?.*\)?$/,    // Codes like "CN(Origin)"
-    /^(Yes|No|NONE)$/i,       // Boolean values
-    /^[A-Z][a-z]+$/           // Single capitalized words (Brand names)
-  ];
+async function translateHtmlDeepL(html,DEEPL_API_KEY) {
+  const authKey = DEEPL_API_KEY;
   
-  return skipPatterns.some(pattern => pattern.test(text.trim()));
-}
+  // Free tier uses api-free.deepl.com, paid uses api.deepl.com
+  const baseUrl = authKey?.endsWith(':fx') 
+    ? 'https://api-free.deepl.com/v2/translate'
+    : 'https://api.deepl.com/v2/translate';
 
-// Optimized version that batches text instead of word-by-word
-async function translateHtmlToItalian(html) {
-  const $ = cheerio.load(html);
-  
-  // Collect text nodes with their elements
-  const textNodes = [];
-  
-  $("p, span, h1, h2, h3, div, strong, br").each(function() {
-    const $el = $(this);
-    const text = $el.text().trim();
-    
-    if (text && text.length > 0 && !shouldSkipTranslation(text)) {
-      textNodes.push({ element: this, originalText: text });
-    }
+  const params = new URLSearchParams({
+    text: html,
+    target_lang: 'IT',
+    source_lang: 'EN', // or auto-detect with omit
+    tag_handling: 'html',  // Critical: preserves HTML tags!
+    ignore_tags: 'code,img', // Don't translate image URLs/codes
   });
 
-  console.log(`Found ${textNodes.length} translatable segments`);
+  const response = await fetch(baseUrl, {
+    method: 'POST',
+    headers: {
+      'Authorization': `DeepL-Auth-Key ${authKey}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: params
+  });
 
-  // Process in batches with delays (process 3 at a time)
-  const batchSize = 3;
-  for (let i = 0; i < textNodes.length; i += batchSize) {
-    const batch = textNodes.slice(i, i + batchSize);
-    
-    await Promise.all(batch.map(async ({ element, originalText }) => {
-      try {
-        const translated = await translateText(originalText);
-        $(element).text(translated);
-      } catch (error) {
-        console.error(`Failed to translate "${originalText}", keeping original`);
-      }
-    }));
-
-    // Delay between batches to avoid rate limiting
-    if (i + batchSize < textNodes.length) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`DeepL Error: ${error}`);
   }
 
-  return $.html();
+  const data = await response.json();
+  return data.translations[0].text;
 }
 
 
@@ -123,9 +56,10 @@ export async function action({context ,request }: ActionFunctionArgs) {
    console.error("Invalid or missing 'descreptionAI' data");
    return Response.json({ error: "Invalid or missing 'descreptionAI' data" }, { status: 400 });
  }
+ let apikey=context.cloudflare.env.DEEPL_API_KEY
 
 console.log('updatedDescreptionAI is her ',updatedDescreptionAI[0].descreption)
-const translatedText = await translateHtmlToItalian(updatedDescreptionAI[0].descreption);
+const translatedText = await translateHtmlDeepL(updatedDescreptionAI[0].descreption,apikey);
 console.log("Translated Text:", translatedText);
 // const queue =context.cloudflare.env.SEO_QUEUE
 
