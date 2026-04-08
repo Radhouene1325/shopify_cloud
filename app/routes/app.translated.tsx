@@ -11,87 +11,101 @@ import * as cheerio from "cheerio";
 
 
 // app/utils/translate.server.js
-async function translateToItalian(descriptionHtml) {
-  try {
-    const response = await fetch("https://libretranslate.de/translate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        q: descriptionHtml,
-        source: "auto",
-        target: "it",
-        format: "html",
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`HTTP error ${response.status}: ${errorText.substring(0, 100)}`);
-      return descriptionHtml; // Fallback to original html
-    }
-
-    const contentType = response.headers.get("content-type");
-    if (!contentType || !contentType.includes("application/json")) {
-      console.error("Response was not JSON.");
-      return descriptionHtml;
-    }
-
-    const data = await response.json();
-    console.log(' data is her ',data)
-    return data.translatedText;
-  } catch (error) {
-    console.error("HTML translation failed:", error);
-    return descriptionHtml; // Fallback to original html
-  }
-}
-// app/utils/translateHtml.server.js
-
-async function translateText(text) {
-  const response = await fetch("https://libretranslate.de/translate", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      q: text,
-      source: "auto",
-      target: "it",
-      format: "text",
-    }),
-  });
-
-  // ❌ Missing: Check if response is OK
-  if (!response.ok) {
-    const errorText = await response.text(); // Read as text to see the HTML error
-    throw new Error(`HTTP ${response.status}: ${errorText.slice(0, 100)}`);
+async function translateText(text, retries = 3) {
+  // Skip non-translatable content
+  if (shouldSkipTranslation(text)) {
+    return text;
   }
 
-  const data = await response.json();
-  return data.translatedText;
-}
-
-async function translateHtmlToItalian(html) {
-  const $ = cheerio.load(html);
-  const textNodes = $("p, span, h1, h2, h3, div")
-    .contents()
-    .filter(function () {
-      return this.type === "text" && $(this).text().trim().length > 0;
-    });
-console.log('textNodes is her ',textNodes)
-  for (const node of textNodes.toArray()) {
-    const originalText = $(node).text().trim();
-    if (!originalText) continue;
-
+  for (let i = 0; i < retries; i++) {
     try {
-      const translated = await translateText(originalText);
-      $(node).replaceWith(translated);
-      
-      // Add delay to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
+      // Add delay to avoid rate limiting (increase if needed)
+      if (i > 0) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * i));
+      }
+
+      const response = await fetch("https://libretranslate.de/translate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          q: text,
+          source: "auto",
+          target: "it",
+          format: "text",
+        }),
+      });
+
+      // Log the actual error for debugging
+      if (!response.ok) {
+        const errorHtml = await response.text();
+        console.error(`HTTP ${response.status} Error:`, errorHtml.substring(0, 200));
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.translatedText;
       
     } catch (error) {
-      console.error(`Failed to translate: "${originalText}"`, error.message);
-      // Keep original text on error
+      console.error(`Translation attempt ${i + 1} failed for "${text}":`, error.message);
+      if (i === retries - 1) {
+        // Return original text if all retries fail
+        console.warn(`Returning untranslated text: "${text}"`);
+        return text;
+      }
+    }
+  }
+}
+
+// Skip translating numbers, codes, and very short strings
+function shouldSkipTranslation(text) {
+  const skipPatterns = [
+    /^[A-Z0-9]+$/i,           // Model numbers like J201026, SS2021
+    /^\d+(\s*(kg|g|cm|m|ml|l))?$/i,  // Measurements like "1 kg"
+    /^[A-Z]{2,}\(?.*\)?$/,    // Codes like "CN(Origin)"
+    /^(Yes|No|NONE)$/i,       // Boolean values
+    /^[A-Z][a-z]+$/           // Single capitalized words (Brand names)
+  ];
+  
+  return skipPatterns.some(pattern => pattern.test(text.trim()));
+}
+
+// Optimized version that batches text instead of word-by-word
+async function translateHtmlToItalian(html) {
+  const $ = cheerio.load(html);
+  
+  // Collect text nodes with their elements
+  const textNodes = [];
+  
+  $("p, span, h1, h2, h3, div, strong, br").each(function() {
+    const $el = $(this);
+    const text = $el.text().trim();
+    
+    if (text && text.length > 0 && !shouldSkipTranslation(text)) {
+      textNodes.push({ element: this, originalText: text });
+    }
+  });
+
+  console.log(`Found ${textNodes.length} translatable segments`);
+
+  // Process in batches with delays (process 3 at a time)
+  const batchSize = 3;
+  for (let i = 0; i < textNodes.length; i += batchSize) {
+    const batch = textNodes.slice(i, i + batchSize);
+    
+    await Promise.all(batch.map(async ({ element, originalText }) => {
+      try {
+        const translated = await translateText(originalText);
+        $(element).text(translated);
+      } catch (error) {
+        console.error(`Failed to translate "${originalText}", keeping original`);
+      }
+    }));
+
+    // Delay between batches to avoid rate limiting
+    if (i + batchSize < textNodes.length) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
   }
 
