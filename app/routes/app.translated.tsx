@@ -59,8 +59,73 @@ export async function action({context ,request }: ActionFunctionArgs) {
  let apikey=context.cloudflare.env.DEEPL_API_KEY
 
 console.log('updatedDescreptionAI is her ',updatedDescreptionAI[0].descreption)
-const translatedText = await translateHtmlDeepL(updatedDescreptionAI[0].descreption,apikey);
-console.log("Translated Text:", translatedText);
+for (const DESC of updatedDescreptionAI){
+  const translatedText = await translateHtmlDeepL(DESC.descreption,apikey);
+  console.log("Translated Text:", translatedText);
+// let updateProducts=[]
+
+//     updateProducts.push({
+//         id: OLD_DESC.id,
+//         descriptionHtml: DESC_AI.detailedDescription ||DESC_AI.descreption,
+//         tags: mergedTags,
+//         category: SEO.category?.id,
+//         handle: OLD_DESC.handle || OLD_DESC.handel,
+//         productType: SEO.productType,
+//         seo: { description: SEO.seoDescription, title: SEO.seoTitle },
+//         metafields: [
+//           verify===false?{ namespace: "custom", key: "descriptionsai", type: "json", value: JSON.stringify(DESC_AI.shortDescription) }:null,
+//           { namespace: "custom", key: "seo_title", type: "json", value: JSON.stringify(SEO.seoTitle) },
+//           { namespace: "custom", key: "seo_descreption", type: "json", value: JSON.stringify(SEO.seoDescription) },
+//           { namespace: "seo", key: "schema_org", type: "json", value: JSON.stringify(productSchema(SEO,collections,OLD_DESC,offers,aggregateRating__,aggregateRating,review)) },
+        
+//           { namespace: "custom", key: "facebookTitle", type: "json", value:JSON.stringify(   SEO?.socialOptimization.facebookTitle) },
+//           { namespace: "custom", key: "facebookDescription", type: "json", value: JSON.stringify( SEO?.socialOptimization.facebookDescription ) },
+//           { namespace: "custom", key: "tiktokTitle", type: "json", value:JSON.stringify(   SEO?.socialOptimization.tiktokTitle) },
+//           { namespace: "custom", key: "pinterestTitle", type: "json", value:JSON.stringify(  SEO?.socialOptimization.pinterestTitle) },
+//           { namespace: "custom", key: "pinterestDescription", type: "json", value:JSON.stringify(SEO?.socialOptimization.pinterestDescription)    },
+
+        
+//         ]
+//       });
+//     }
+    
+
+//     async function throttledUpdates(products, batchSize = 100, delayMs = 500) {
+//       for (let i = 0; i < products.length; i += batchSize) {
+//         const batch = products.slice(i, i + batchSize);
+    
+//         const results = await Promise.allSettled(
+//           batch.map(async(prod) =>{
+//            const response=await  admin.graphql(productsupdated, { variables: { product: prod } })
+
+//            const json=await response.json()
+//            if(json.error){
+//             throw new Error(JSON.stringify(json.errors))
+//            } 
+//            return json
+//           }
+         
+//         )
+//       );
+    
+//         results.forEach((res, idx) => {
+//           if (res.status === "rejected") {
+//             console.error(`Update failed for product ${batch[idx].id}`, res.reason);
+//           }
+//         });
+    
+//         if (i + batchSize < products.length) {
+//           await new Promise(r => setTimeout(r, delayMs));
+//         }
+//       }
+//     }
+    
+//     // 4️⃣ Run throttled updates
+//     await throttledUpdates(updateProducts, 2, 500);
+
+
+}
+
 // const queue =context.cloudflare.env.SEO_QUEUE
 
 // const payload = {
