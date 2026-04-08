@@ -27,35 +27,60 @@ async function translateToItalian(descriptionHtml) {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error ${response.status}`);
+      const errorText = await response.text();
+      console.error(`HTTP error ${response.status}: ${errorText.substring(0, 100)}`);
+      return descriptionHtml; // Fallback to original html
+    }
+
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      console.error("Response was not JSON.");
+      return descriptionHtml;
     }
 
     const data = await response.json();
-console.log(' data is her ',data)
+    console.log(' data is her ',data)
     return data.translatedText;
   } catch (error) {
     console.error("HTML translation failed:", error);
-    throw new Error("Translation error");
+    return descriptionHtml; // Fallback to original html
   }
 }
 // app/utils/translateHtml.server.js
 
 async function translateText(text) {
-  const response = await fetch("https://libretranslate.de/translate", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      q: text,
-      source: "auto",
-      target: "it",
-      format: "text",
-    }),
-  });
+  try {
+    const response = await fetch("https://libretranslate.de/translate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        q: text,
+        source: "auto",
+        target: "it",
+        format: "text",
+      }),
+    });
 
-  const data = await response.json();
-  return data.translatedText;
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`HTTP error ${response.status}: ${errorText.substring(0, 100)}`);
+      return text; // Fallback to original text
+    }
+
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      console.error("Response was not JSON.");
+      return text;
+    }
+
+    const data = await response.json();
+    return data.translatedText || text;
+  } catch (error) {
+    console.error("Translation request failed:", error);
+    return text; // Fallback to original text
+  }
 }
 
  async function translateHtmlToItalian(html) {
