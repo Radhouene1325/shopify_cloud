@@ -24,8 +24,8 @@ export async function action({context ,request }: ActionFunctionArgs) {
    return Response.json({ error: "Invalid or missing 'descreptionAI' data" }, { status: 400 });
  }
 
+console.log('updatedDescreptionAI is her ',updatedDescreptionAI)
 
- 
 // const queue =context.cloudflare.env.SEO_QUEUE
 
 // const payload = {
