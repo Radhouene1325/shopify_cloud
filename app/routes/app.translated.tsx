@@ -49,57 +49,50 @@ async function translateToItalian(descriptionHtml) {
 // app/utils/translateHtml.server.js
 
 async function translateText(text) {
-  try {
-    const response = await fetch("https://libretranslate.de/translate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        q: text,
-        source: "auto",
-        target: "it",
-        format: "text",
-      }),
-    });
+  const response = await fetch("https://libretranslate.de/translate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      q: text,
+      source: "auto",
+      target: "it",
+      format: "text",
+    }),
+  });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`HTTP error ${response.status}: ${errorText.substring(0, 100)}`);
-      return text; // Fallback to original text
-    }
-
-    const contentType = response.headers.get("content-type");
-    if (!contentType || !contentType.includes("application/json")) {
-      console.error("Response was not JSON.");
-      return text;
-    }
-
-    const data = await response.json();
-    return data.translatedText || text;
-  } catch (error) {
-    console.error("Translation request failed:", error);
-    return text; // Fallback to original text
+  // ❌ Missing: Check if response is OK
+  if (!response.ok) {
+    const errorText = await response.text(); // Read as text to see the HTML error
+    throw new Error(`HTTP ${response.status}: ${errorText.slice(0, 100)}`);
   }
+
+  const data = await response.json();
+  return data.translatedText;
 }
 
- async function translateHtmlToItalian(html) {
+async function translateHtmlToItalian(html) {
   const $ = cheerio.load(html);
-
   const textNodes = $("p, span, h1, h2, h3, div")
     .contents()
     .filter(function () {
       return this.type === "text" && $(this).text().trim().length > 0;
     });
-
+console.log('textNodes is her ',textNodes)
   for (const node of textNodes.toArray()) {
     const originalText = $(node).text().trim();
-
     if (!originalText) continue;
 
-    const translated = await translateText(originalText);
-
-    $(node).replaceWith(translated);
+    try {
+      const translated = await translateText(originalText);
+      $(node).replaceWith(translated);
+      
+      // Add delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
+      
+    } catch (error) {
+      console.error(`Failed to translate: "${originalText}"`, error.message);
+      // Keep original text on error
+    }
   }
 
   return $.html();
