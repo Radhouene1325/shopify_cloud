@@ -28,7 +28,7 @@ console.log('lang is her1 ',lang1)
 const lang2=detect(html.descreption)
 console.log('lang is her2 ',lang2)
 
-
+if (lang2==='it')return
 
 // params.append('text', html.title);
 params.append('text', html.descreption);
@@ -76,7 +76,7 @@ export async function action({ context, request }: ActionFunctionArgs) {
   }
   let apikey = context.cloudflare.env.DEEPL_API_KEY
   let updateProducts = []
-  console.log('updatedDescreptionAI is her ', updatedDescreptionAI)
+  // console.log('updatedDescreptionAI is her ', updatedDescreptionAI)
   for (const OLD_DESC of updatedDescreptionAI) {
     const data = {
       id: OLD_DESC.id,
@@ -85,11 +85,11 @@ export async function action({ context, request }: ActionFunctionArgs) {
 
     }
     const translatedText = await translateHtmlDeepL(data, apikey);
-    console.log("Translated Text:", translatedText);
+    // console.log("Translated Text:", translatedText);
 
 
     updateProducts.push({
-      id: translatedText.id,
+      id: translatedText?.id,
       descriptionHtml: translatedText?.translatedText,
       // tags: mergedTags,
       // category: SEO.category?.id,
@@ -113,38 +113,38 @@ export async function action({ context, request }: ActionFunctionArgs) {
     });
   }
 
-  // async function throttledUpdates(products, batchSize = 100, delayMs = 500) {
-  //   for (let i = 0; i < products.length; i += batchSize) {
-  //     const batch = products.slice(i, i + batchSize);
+  async function throttledUpdates(products, batchSize = 100, delayMs = 500) {
+    for (let i = 0; i < products.length; i += batchSize) {
+      const batch = products.slice(i, i + batchSize);
 
-  //     const results = await Promise.allSettled(
-  //       batch.map(async (prod) => {
-  //         const response = await admin.graphql(productsupdated, { variables: { product: prod } })
+      const results = await Promise.allSettled(
+        batch.map(async (prod) => {
+          const response = await admin.graphql(productsupdated, { variables: { product: prod } })
 
-  //         const json = await response.json()
-  //         if (json.error) {
-  //           throw new Error(JSON.stringify(json.errors))
-  //         }
-  //         return json
-  //       }
+          const json = await response.json()
+          if (json.error) {
+            throw new Error(JSON.stringify(json.errors))
+          }
+          return json
+        }
 
-  //       )
-  //     );
+        )
+      );
 
-  //     results.forEach((res, idx) => {
-  //       if (res.status === "rejected") {
-  //         console.error(`Update failed for product ${batch[idx].id}`, res.reason);
-  //       }
-  //     });
+      results.forEach((res, idx) => {
+        if (res.status === "rejected") {
+          console.error(`Update failed for product ${batch[idx].id}`, res.reason);
+        }
+      });
 
-  //     if (i + batchSize < products.length) {
-  //       await new Promise(r => setTimeout(r, delayMs));
-  //     }
-  //   }
-  // }
+      if (i + batchSize < products.length) {
+        await new Promise(r => setTimeout(r, delayMs));
+      }
+    }
+  }
 
-  // // 4️⃣ Run throttled updates
-  // await throttledUpdates(updateProducts, 2, 500);
+  // 4️⃣ Run throttled updates
+  await throttledUpdates(updateProducts, 2, 500);
 
   // const queue =context.cloudflare.env.SEO_QUEUE
 
@@ -164,6 +164,10 @@ export async function action({ context, request }: ActionFunctionArgs) {
   //  await queue.send({
   //   body: compressedBase64 // body must be a string according to queue type
   // });
+  
+  
+  
+  
   return Response.json({
     status: "queued",
     total: updatedDescreptionAI.length
