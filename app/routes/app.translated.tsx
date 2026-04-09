@@ -1,22 +1,22 @@
 
 
 
-import {type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
+import { type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
 import { useActionData, Form, useNavigation, useLoaderData, useFetcher, useSubmit } from "@remix-run/react";
 import { shopify } from "../shopify.server";
 import { Badge, Banner, BlockStack, Box, Button, Card, Checkbox, DataTable, Divider, EmptyState, InlineStack, Page, Pagination, Spinner, Tag, Text, Thumbnail, Tooltip, useBreakpoints } from "@shopify/polaris";
 import { useCallback, useEffect, useMemo, useState } from "react";
-  // sk-c8552ae161ed4db684bb1268bf4ba758
+// sk-c8552ae161ed4db684bb1268bf4ba758
 import * as cheerio from "cheerio";
 import { productsupdated } from "./functions/query/updateprooductquery";
 
 
 // app/utils/translate.server.js
-async function translateHtmlDeepL(html,DEEPL_API_KEY) {
+async function translateHtmlDeepL(html, DEEPL_API_KEY) {
   const authKey = DEEPL_API_KEY;
-  
+
   // Free tier uses api-free.deepl.com, paid uses api.deepl.com
-  const baseUrl = authKey?.endsWith(':fx') 
+  const baseUrl = authKey?.endsWith(':fx')
     ? 'https://api-free.deepl.com/v2/translate'
     : 'https://api.deepl.com/v2/translate';
 
@@ -44,129 +44,125 @@ async function translateHtmlDeepL(html,DEEPL_API_KEY) {
 
   const data = await response.json();
   return {
-     id:html.id,
-    translatedText:data?.translations[0]?.text,
-   
+    id: html.id,
+    translatedText: data?.translations[0]?.text,
+
   };
 }
 
 
-export async function action({context ,request }: ActionFunctionArgs) {
- let {admin}=await shopify(context).authenticate.admin(request)
- let {session}=await shopify(context).authenticate.admin(request)
- 
- let formData=await request.formData()
- const updatedDescreptionAI = JSON.parse(formData.get('descreptionAI') as string);
- if (!Array.isArray(updatedDescreptionAI)) {
-   console.error("Invalid or missing 'descreptionAI' data");
-   return Response.json({ error: "Invalid or missing 'descreptionAI' data" }, { status: 400 });
- }
- let apikey=context.cloudflare.env.DEEPL_API_KEY
-let updateProducts=[]
-console.log('updatedDescreptionAI is her ',updatedDescreptionAI[0].descreption)
-for (const OLD_DESC of updatedDescreptionAI){
-  const data={
-    id:OLD_DESC.id,
-    descreption:OLD_DESC.descreption,
-    
+export async function action({ context, request }: ActionFunctionArgs) {
+  let { admin } = await shopify(context).authenticate.admin(request)
+  let { session } = await shopify(context).authenticate.admin(request)
+
+  let formData = await request.formData()
+  const updatedDescreptionAI = JSON.parse(formData.get('descreptionAI') as string);
+  if (!Array.isArray(updatedDescreptionAI)) {
+    console.error("Invalid or missing 'descreptionAI' data");
+    return Response.json({ error: "Invalid or missing 'descreptionAI' data" }, { status: 400 });
   }
-  const translatedText = await translateHtmlDeepL(data,apikey);
-  console.log("Translated Text:", translatedText);
+  let apikey = context.cloudflare.env.DEEPL_API_KEY
+  let updateProducts = []
+  console.log('updatedDescreptionAI is her ', updatedDescreptionAI[0].descreption)
+  for (const OLD_DESC of updatedDescreptionAI) {
+    const data = {
+      id: OLD_DESC.id,
+      descreption: OLD_DESC.descreption,
+
+    }
+    const translatedText = await translateHtmlDeepL(data, apikey);
+    console.log("Translated Text:", translatedText);
 
 
     updateProducts.push({
-        id: translatedText.id,
-        descriptionHtml: translatedText?.translatedText,
-        // tags: mergedTags,
-        // category: SEO.category?.id,
-        // handle: OLD_DESC.handle || OLD_DESC.handel,
-        // productType: SEO.productType,
-        // seo: { description: SEO.seoDescription, title: SEO.seoTitle },
-        // metafields: [
-        // //  { namespace: "custom", key: "descriptionsai", type: "json", value: JSON.stringify(DESC_AI.shortDescription) },
-        // //   { namespace: "custom", key: "seo_title", type: "json", value: JSON.stringify(SEO.seoTitle) },
-        // //   { namespace: "custom", key: "seo_descreption", type: "json", value: JSON.stringify(SEO.seoDescription) },
-        //   // { namespace: "seo", key: "schema_org", type: "json", value: JSON.stringify(productSchema(SEO,collections,OLD_DESC,offers,aggregateRating__,aggregateRating,review)) },
-        
-        //   // { namespace: "custom", key: "facebookTitle", type: "json", value:JSON.stringify(   SEO?.socialOptimization.facebookTitle) },
-        //   // { namespace: "custom", key: "facebookDescription", type: "json", value: JSON.stringify( SEO?.socialOptimization.facebookDescription ) },
-        //   // { namespace: "custom", key: "tiktokTitle", type: "json", value:JSON.stringify(   SEO?.socialOptimization.tiktokTitle) },
-        //   // { namespace: "custom", key: "pinterestTitle", type: "json", value:JSON.stringify(  SEO?.socialOptimization.pinterestTitle) },
-        //   // { namespace: "custom", key: "pinterestDescription", type: "json", value:JSON.stringify(SEO?.socialOptimization.pinterestDescription)    },
+      id: translatedText.id,
+      descriptionHtml: translatedText?.translatedText,
+      // tags: mergedTags,
+      // category: SEO.category?.id,
+      // handle: OLD_DESC.handle || OLD_DESC.handel,
+      // productType: SEO.productType,
+      // seo: { description: SEO.seoDescription, title: SEO.seoTitle },
+      // metafields: [
+      // //  { namespace: "custom", key: "descriptionsai", type: "json", value: JSON.stringify(DESC_AI.shortDescription) },
+      // //   { namespace: "custom", key: "seo_title", type: "json", value: JSON.stringify(SEO.seoTitle) },
+      // //   { namespace: "custom", key: "seo_descreption", type: "json", value: JSON.stringify(SEO.seoDescription) },
+      //   // { namespace: "seo", key: "schema_org", type: "json", value: JSON.stringify(productSchema(SEO,collections,OLD_DESC,offers,aggregateRating__,aggregateRating,review)) },
 
-        
-        // ]
-      });
-    }
-    
+      //   // { namespace: "custom", key: "facebookTitle", type: "json", value:JSON.stringify(   SEO?.socialOptimization.facebookTitle) },
+      //   // { namespace: "custom", key: "facebookDescription", type: "json", value: JSON.stringify( SEO?.socialOptimization.facebookDescription ) },
+      //   // { namespace: "custom", key: "tiktokTitle", type: "json", value:JSON.stringify(   SEO?.socialOptimization.tiktokTitle) },
+      //   // { namespace: "custom", key: "pinterestTitle", type: "json", value:JSON.stringify(  SEO?.socialOptimization.pinterestTitle) },
+      //   // { namespace: "custom", key: "pinterestDescription", type: "json", value:JSON.stringify(SEO?.socialOptimization.pinterestDescription)    },
 
-    async function throttledUpdates(products, batchSize = 100, delayMs = 500) {
-      for (let i = 0; i < products.length; i += batchSize) {
-        const batch = products.slice(i, i + batchSize);
-    
-        const results = await Promise.allSettled(
-          batch.map(async(prod) =>{
-           const response=await  admin.graphql(productsupdated, { variables: { product: prod } })
 
-           const json=await response.json()
-           if(json.error){
+      // ]
+    });
+  }
+
+  async function throttledUpdates(products, batchSize = 100, delayMs = 500) {
+    for (let i = 0; i < products.length; i += batchSize) {
+      const batch = products.slice(i, i + batchSize);
+
+      const results = await Promise.allSettled(
+        batch.map(async (prod) => {
+          const response = await admin.graphql(productsupdated, { variables: { product: prod } })
+
+          const json = await response.json()
+          if (json.error) {
             throw new Error(JSON.stringify(json.errors))
-           } 
-           return json
           }
-         
+          return json
+        }
+
         )
       );
-    
-        results.forEach((res, idx) => {
-          if (res.status === "rejected") {
-            console.error(`Update failed for product ${batch[idx].id}`, res.reason);
-          }
-        });
-    
-        if (i + batchSize < products.length) {
-          await new Promise(r => setTimeout(r, delayMs));
+
+      results.forEach((res, idx) => {
+        if (res.status === "rejected") {
+          console.error(`Update failed for product ${batch[idx].id}`, res.reason);
         }
+      });
+
+      if (i + batchSize < products.length) {
+        await new Promise(r => setTimeout(r, delayMs));
       }
     }
-    
-    // 4️⃣ Run throttled updates
-    await throttledUpdates(updateProducts, 2, 500);
+  }
+
+  // 4️⃣ Run throttled updates
+  await throttledUpdates(updateProducts, 2, 500);
+
+  // const queue =context.cloudflare.env.SEO_QUEUE
+
+  // const payload = {
+  //   shop: session.shop,
+  //   sessionId: session.id,
+  //   accessToken: session.accessToken,
+  //   products: updatedDescreptionAI
+  // };
+  // const compressedBase64 = ultraCompress(payload);
+
+  // await queue.send({
+  //   body: compressedBase64
+  // });
+  // const compressed = pako.gzip(JSON.stringify(payload));
+  //  const compressedBase64 = uint8ToBase64(compressed);
+  //  await queue.send({
+  //   body: compressedBase64 // body must be a string according to queue type
+  // });
+  return Response.json({
+    status: "queued",
+    total: updatedDescreptionAI.length
+  })
+
 
 
 }
 
-// const queue =context.cloudflare.env.SEO_QUEUE
-
-// const payload = {
-//   shop: session.shop,
-//   sessionId: session.id,
-//   accessToken: session.accessToken,
-//   products: updatedDescreptionAI
-// };
-// const compressedBase64 = ultraCompress(payload);
-
-// await queue.send({
-//   body: compressedBase64
-// });
-// const compressed = pako.gzip(JSON.stringify(payload));
-//  const compressedBase64 = uint8ToBase64(compressed);
-//  await queue.send({
-//   body: compressedBase64 // body must be a string according to queue type
-// });
-return Response.json({
-  status:"queued",
-  total:updatedDescreptionAI.length
-})
-
-
-
-}
 
 
 
 
-  
 interface Variant {
   id: string;
   title: string;
@@ -177,31 +173,31 @@ interface Variant {
   productType: string;
   inventoryQuantity?: number;
   inventoryPolicy?: string;
-  totalInventory?:number
-  tracksInventory?:boolean
+  totalInventory?: number
+  tracksInventory?: boolean
   featuredMedia?: {
     image?: {
       url: string;
       altText?: string;
     };
   };
-  priceRangeV2?:{
-    maxVariantPrice?:{
-      amount:string
-      currencyCode:string
+  priceRangeV2?: {
+    maxVariantPrice?: {
+      amount: string
+      currencyCode: string
     }
 
-    minVariantPrice?:{
-      amount:string
-      currencyCode:string
-     }
+    minVariantPrice?: {
+      amount: string
+      currencyCode: string
+    }
 
   }
-  media?:{
-    edges?:string[]
+  media?: {
+    edges?: string[]
   };
-  variants?:{
-    edges?:string[]
+  variants?: {
+    edges?: string[]
   }
 }
 
@@ -226,7 +222,7 @@ interface SelectedVariant {
   vendor: string;
   image: string;
   productType: string;
-  
+
 }
 
 // Loader & Action
@@ -247,9 +243,9 @@ export default function DescriptionManager() {
   const [cursorStack, setCursorStack] = useState<string[]>([]);
   const [selected, setSelected] = useState<SelectedVariant[]>([]);
   const [isSelectAllIndeterminate, setIsSelectAllIndeterminate] = useState(false);
-// console.log("rows is her see",rows)
-// console.log('intital data is her ',initial)
-// console.log("fetch is her succes",fetcher)
+  // console.log("rows is her see",rows)
+  // console.log('intital data is her ',initial)
+  // console.log("fetch is her succes",fetcher)
   const isLoading = fetcher.state === "loading";
   const isSubmitting = navigation.state === "submitting";
 
@@ -259,7 +255,7 @@ export default function DescriptionManager() {
       setRows(fetcher.data.variants);
       setPageInfo(fetcher.data.pageInfo);
       // Keep existing selections that are still in new rows, remove others
-      setSelected((prev) => 
+      setSelected((prev) =>
         prev.filter((s) => fetcher?.data?.variants.some((v: Variant) => v.id === s.id))
       );
     }
@@ -291,17 +287,17 @@ export default function DescriptionManager() {
         handel: v.handle,
         vendor: v.vendor,
         image: v.featuredMedia?.image?.url || "",
-        images:v?.media?.edges,
+        images: v?.media?.edges,
         productType: v.productType,
-        title:v.title,
-        totalInventory:v?.totalInventory,
-        tracksInventory:v?.tracksInventory,
-        max_amount:v?.priceRangeV2?.maxVariantPrice?.amount,
-        currencyCode:v?.priceRangeV2?.maxVariantPrice?.currencyCode,
-        min_amount:v.priceRangeV2?.minVariantPrice?.amount,
-        sku:v?.variants?.edges
+        title: v.title,
+        totalInventory: v?.totalInventory,
+        tracksInventory: v?.tracksInventory,
+        max_amount: v?.priceRangeV2?.maxVariantPrice?.amount,
+        currencyCode: v?.priceRangeV2?.maxVariantPrice?.currencyCode,
+        min_amount: v.priceRangeV2?.minVariantPrice?.amount,
+        sku: v?.variants?.edges
 
-       
+
 
       }));
       setSelected(allSelected);
@@ -322,17 +318,17 @@ export default function DescriptionManager() {
           handel: variant.handle,
           vendor: variant.vendor,
           image: variant.featuredMedia?.image?.url || "",
-          images:variant?.media?.edges,
+          images: variant?.media?.edges,
           productType: variant.productType,
-          title:variant.title,
-          totalInventory:variant?.totalInventory,
-          tracksInventory:variant?.tracksInventory,
-          max_amount:variant?.priceRangeV2?.maxVariantPrice?.amount,
-          currencyCode:variant?.priceRangeV2?.maxVariantPrice?.currencyCode,
-          min_amount:variant.priceRangeV2?.minVariantPrice?.amount,
-          sku:variant?.variants?.edges
-  
-         
+          title: variant.title,
+          totalInventory: variant?.totalInventory,
+          tracksInventory: variant?.tracksInventory,
+          max_amount: variant?.priceRangeV2?.maxVariantPrice?.amount,
+          currencyCode: variant?.priceRangeV2?.maxVariantPrice?.currencyCode,
+          min_amount: variant.priceRangeV2?.minVariantPrice?.amount,
+          sku: variant?.variants?.edges
+
+
         },
       ]);
     } else {
@@ -399,13 +395,13 @@ export default function DescriptionManager() {
 
     const formData = new FormData();
     formData.append("descreptionAI", JSON.stringify(selected));
-    
+
     submit(formData, {
       method: "post",
       encType: "application/x-www-form-urlencoded",
     });
   }, [selected, submit]);
-console.log('selected is her ',selected)
+  console.log('selected is her ', selected)
   // Table headings with Select All checkbox
   const headings = [
     <Checkbox
@@ -423,7 +419,7 @@ console.log('selected is her ',selected)
     "Tags",
     "Handle",
   ];
-// console.log('rows is seccesfuly her ',rows)
+  // console.log('rows is seccesfuly her ',rows)
   // Table rows
   const rowsData = useMemo(() => {
     return rows.map((variant) => [
@@ -529,7 +525,7 @@ console.log('selected is her ',selected)
       <BlockStack gap="400">
         {/* Status Banners */}
         {actionData?.success && (
-          <Banner title="Success" tone="success" onDismiss={() => {}}>
+          <Banner title="Success" tone="success" onDismiss={() => { }}>
             <p>Successfully updated {selected.length} product descriptions.</p>
           </Banner>
         )}
@@ -568,7 +564,7 @@ console.log('selected is her ',selected)
                 </Text>
               </Box>
             </InlineStack>
-            
+
             <Tooltip content="Select variants without DESC_AI tag">
               <Button
                 size="slim"
@@ -604,7 +600,7 @@ console.log('selected is her ',selected)
                 hoverable
                 truncate={false}
               />
-              
+
               {/* Pagination */}
               <Divider />
               <Box padding="400">
@@ -668,12 +664,12 @@ console.log('selected is her ',selected)
 
 
 
-export const loader = async ({request,context}:LoaderFunctionArgs) => {
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const { admin } = await shopify(context).authenticate.admin(request);
-  const url=new URL(request.url)
-  const cursor=url.searchParams.get('cursor')
-  console.log('cursor her ',cursor)
-  let query=    `#graphql
+  const url = new URL(request.url)
+  const cursor = url.searchParams.get('cursor')
+  console.log('cursor her ', cursor)
+  let query = `#graphql
   query GetProducts($cursor:String) {
     products(first: 15,after:$cursor,query:"tag_not:DESC_AI") {
         edges{
@@ -932,13 +928,13 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
   
   }
   `
-  const response = await admin.graphql(query,{variables:{cursor}});
+  const response = await admin.graphql(query, { variables: { cursor } });
   const res = await response.json();
   // console.log('res is her ',res.data)
-  const productsdescreption={
+  const productsdescreption = {
     variants: res?.data.products.edges.map((e: any) => e.node),
-        pageInfo: res?.data.products.pageInfo,
-        category: res?.data.products.nodes.map((e: any) => e.category)
+    pageInfo: res?.data.products.pageInfo,
+    category: res?.data.products.nodes.map((e: any) => e.category)
   }
   return new Response(JSON.stringify(productsdescreption), {
     status: 200,
@@ -948,5 +944,5 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
       "Cache-Control": "public, max-age=60, s-maxage=300",
     },
   });
-//   return json.data;
+  //   return json.data;
 }
