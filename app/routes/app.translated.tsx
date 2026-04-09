@@ -21,7 +21,7 @@ async function translateHtmlDeepL(html,DEEPL_API_KEY) {
     : 'https://api.deepl.com/v2/translate';
 
   const params = new URLSearchParams({
-    text: html,
+    text: html.descreption,
     target_lang: 'IT',
     source_lang: 'EN', // or auto-detect with omit
     tag_handling: 'html',  // Critical: preserves HTML tags!
@@ -43,7 +43,11 @@ async function translateHtmlDeepL(html,DEEPL_API_KEY) {
   }
 
   const data = await response.json();
-  return data.translations[0].text;
+  return {
+     id:html.id,
+    translatedText:data?.translations[0]?.text,
+   
+  };
 }
 
 
@@ -70,64 +74,64 @@ for (const OLD_DESC of updatedDescreptionAI){
   console.log("Translated Text:", translatedText);
 
 
-    // updateProducts.push({
-    //     id: OLD_DESC.id,
-    //     descriptionHtml: OLD_DESC.detailedDescription ||OLD_DESC.descreption,
-    //     // tags: mergedTags,
-    //     // category: SEO.category?.id,
-    //     // handle: OLD_DESC.handle || OLD_DESC.handel,
-    //     // productType: SEO.productType,
-    //     // seo: { description: SEO.seoDescription, title: SEO.seoTitle },
-    //     metafields: [
-    //      { namespace: "custom", key: "descriptionsai", type: "json", value: JSON.stringify(DESC_AI.shortDescription) },
-    //       { namespace: "custom", key: "seo_title", type: "json", value: JSON.stringify(SEO.seoTitle) },
-    //       { namespace: "custom", key: "seo_descreption", type: "json", value: JSON.stringify(SEO.seoDescription) },
-    //       // { namespace: "seo", key: "schema_org", type: "json", value: JSON.stringify(productSchema(SEO,collections,OLD_DESC,offers,aggregateRating__,aggregateRating,review)) },
+    updateProducts.push({
+        id: translatedText.id,
+        descriptionHtml: translatedText?.translatedText,
+        // tags: mergedTags,
+        // category: SEO.category?.id,
+        // handle: OLD_DESC.handle || OLD_DESC.handel,
+        // productType: SEO.productType,
+        // seo: { description: SEO.seoDescription, title: SEO.seoTitle },
+        // metafields: [
+        // //  { namespace: "custom", key: "descriptionsai", type: "json", value: JSON.stringify(DESC_AI.shortDescription) },
+        // //   { namespace: "custom", key: "seo_title", type: "json", value: JSON.stringify(SEO.seoTitle) },
+        // //   { namespace: "custom", key: "seo_descreption", type: "json", value: JSON.stringify(SEO.seoDescription) },
+        //   // { namespace: "seo", key: "schema_org", type: "json", value: JSON.stringify(productSchema(SEO,collections,OLD_DESC,offers,aggregateRating__,aggregateRating,review)) },
         
-    //       // { namespace: "custom", key: "facebookTitle", type: "json", value:JSON.stringify(   SEO?.socialOptimization.facebookTitle) },
-    //       // { namespace: "custom", key: "facebookDescription", type: "json", value: JSON.stringify( SEO?.socialOptimization.facebookDescription ) },
-    //       // { namespace: "custom", key: "tiktokTitle", type: "json", value:JSON.stringify(   SEO?.socialOptimization.tiktokTitle) },
-    //       // { namespace: "custom", key: "pinterestTitle", type: "json", value:JSON.stringify(  SEO?.socialOptimization.pinterestTitle) },
-    //       // { namespace: "custom", key: "pinterestDescription", type: "json", value:JSON.stringify(SEO?.socialOptimization.pinterestDescription)    },
+        //   // { namespace: "custom", key: "facebookTitle", type: "json", value:JSON.stringify(   SEO?.socialOptimization.facebookTitle) },
+        //   // { namespace: "custom", key: "facebookDescription", type: "json", value: JSON.stringify( SEO?.socialOptimization.facebookDescription ) },
+        //   // { namespace: "custom", key: "tiktokTitle", type: "json", value:JSON.stringify(   SEO?.socialOptimization.tiktokTitle) },
+        //   // { namespace: "custom", key: "pinterestTitle", type: "json", value:JSON.stringify(  SEO?.socialOptimization.pinterestTitle) },
+        //   // { namespace: "custom", key: "pinterestDescription", type: "json", value:JSON.stringify(SEO?.socialOptimization.pinterestDescription)    },
 
         
-    //     ]
-    //   });
-    // }
+        // ]
+      });
+    }
     
 
-    // async function throttledUpdates(products, batchSize = 100, delayMs = 500) {
-    //   for (let i = 0; i < products.length; i += batchSize) {
-    //     const batch = products.slice(i, i + batchSize);
+    async function throttledUpdates(products, batchSize = 100, delayMs = 500) {
+      for (let i = 0; i < products.length; i += batchSize) {
+        const batch = products.slice(i, i + batchSize);
     
-    //     const results = await Promise.allSettled(
-    //       batch.map(async(prod) =>{
-    //        const response=await  admin.graphql(productsupdated, { variables: { product: prod } })
+        const results = await Promise.allSettled(
+          batch.map(async(prod) =>{
+           const response=await  admin.graphql(productsupdated, { variables: { product: prod } })
 
-    //        const json=await response.json()
-    //        if(json.error){
-    //         throw new Error(JSON.stringify(json.errors))
-    //        } 
-    //        return json
-    //       }
+           const json=await response.json()
+           if(json.error){
+            throw new Error(JSON.stringify(json.errors))
+           } 
+           return json
+          }
          
-    //     )
-    //   );
+        )
+      );
     
-    //     results.forEach((res, idx) => {
-    //       if (res.status === "rejected") {
-    //         console.error(`Update failed for product ${batch[idx].id}`, res.reason);
-    //       }
-    //     });
+        results.forEach((res, idx) => {
+          if (res.status === "rejected") {
+            console.error(`Update failed for product ${batch[idx].id}`, res.reason);
+          }
+        });
     
-    //     if (i + batchSize < products.length) {
-    //       await new Promise(r => setTimeout(r, delayMs));
-    //     }
-    //   }
-    // }
+        if (i + batchSize < products.length) {
+          await new Promise(r => setTimeout(r, delayMs));
+        }
+      }
+    }
     
-    // // 4️⃣ Run throttled updates
-    // await throttledUpdates(updateProducts, 2, 500);
+    // 4️⃣ Run throttled updates
+    await throttledUpdates(updateProducts, 2, 500);
 
 
 }
