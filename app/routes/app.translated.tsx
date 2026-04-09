@@ -29,7 +29,7 @@ const lang2=detect(html.descreption)
 console.log('lang is her2 ',lang2)
 
 if (lang2==='it')return
-
+console.log('is oky verivied ok')
 // params.append('text', html.title);
 params.append('text', html.descreption);
 
