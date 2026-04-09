@@ -20,13 +20,15 @@ async function translateHtmlDeepL(html, DEEPL_API_KEY) {
     ? 'https://api-free.deepl.com/v2/translate'
     : 'https://api.deepl.com/v2/translate';
 
-  const params = new URLSearchParams({
-    text: JSON.stringify({ title: html.title, description: html.descreption }),
-    target_lang: 'IT',
-    source_lang: 'EN', // or auto-detect with omit
-    tag_handling: 'html',  // Critical: preserves HTML tags!
-    ignore_tags: 'code,img', // Don't translate image URLs/codes
-  });
+const params = new URLSearchParams();
+
+params.append('text', html.title);
+params.append('text', html.descreption);
+
+params.append('target_lang', 'IT');
+params.append('source_lang', 'EN');
+params.append('tag_handling', 'html');
+params.append('ignore_tags', 'code,img');
 
   const response = await fetch(baseUrl, {
     method: 'POST',
