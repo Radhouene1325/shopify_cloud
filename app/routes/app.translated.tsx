@@ -23,9 +23,9 @@ async function translateHtmlDeepL(html, DEEPL_API_KEY) {
 const params = new URLSearchParams();
 
 const lang1=franc(html.title)
-console.log('lang is her ',lang1)
+console.log('lang is her1 ',lang1)
 const lang2=franc(html.descreption)
-console.log('lang is her ',lang2)
+console.log('lang is her2 ',lang2)
 
 
 
