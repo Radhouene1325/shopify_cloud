@@ -9,7 +9,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 // sk-c8552ae161ed4db684bb1268bf4ba758
 import * as cheerio from "cheerio";
 import { productsupdated } from "./functions/query/updateprooductquery";
-
+import {franc} from 'franc'
 
 // app/utils/translate.server.js
 async function translateHtmlDeepL(html, DEEPL_API_KEY) {
@@ -22,7 +22,14 @@ async function translateHtmlDeepL(html, DEEPL_API_KEY) {
 
 const params = new URLSearchParams();
 
-params.append('text', html.title);
+const lang1=franc(html.title)
+console.log('lang is her ',lang1)
+const lang2=franc(html.descreption)
+console.log('lang is her ',lang2)
+
+
+
+// params.append('text', html.title);
 params.append('text', html.descreption);
 
 params.append('target_lang', 'IT');
@@ -49,7 +56,7 @@ params.append('ignore_tags', 'code,img');
   return {
     id: html.id,
     translatedText: data?.translations[0]?.text,
-    translatedTitle: data?.translations[1]?.text,
+    // translatedTitle: data?.translations[1]?.text,
 
 
   };
