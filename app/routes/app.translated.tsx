@@ -34,7 +34,7 @@ async function translateHtmlDeepL(html, DEEPL_API_KEY) {
   params.append('text', html.descreption);
 
   params.append('target_lang', 'IT');
-  params.append('source_lang', 'EN');
+  // params.append('source_lang', 'EN');
   params.append('tag_handling', 'html');
   params.append('ignore_tags', 'code,img');
 
