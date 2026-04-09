@@ -689,7 +689,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   console.log('cursor her ', cursor)
   let query = `#graphql
   query GetProducts($cursor:String) {
-    products(first: 100,after:$cursor,query:"tag_not:DESC_AI",sortKey: CREATED_AT
+    products(first: 100,after:$cursor,query:"tag_not:DESC_AI,vendor:PlatiNum",sortKey: CREATED_AT
   reverse: true) {
         edges{
             node{
