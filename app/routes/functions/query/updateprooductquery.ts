@@ -1,5 +1,5 @@
 
-export const productsupdated=`
+export const productsupdated = `
 mutation UpdateProductDescription($product: ProductUpdateInput!) {
   productUpdate(product: $product) {
     product {

@@ -9,7 +9,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 // sk-c8552ae161ed4db684bb1268bf4ba758
 import * as cheerio from "cheerio";
 import { productsupdated } from "./functions/query/updateprooductquery";
-import {franc} from 'franc'
+import { franc } from 'franc'
 import { detect, detectAll } from 'tinyld';
 
 // app/utils/translate.server.js
@@ -21,22 +21,22 @@ async function translateHtmlDeepL(html, DEEPL_API_KEY) {
     ? 'https://api-free.deepl.com/v2/translate'
     : 'https://api.deepl.com/v2/translate';
 
-const params = new URLSearchParams();
+  const params = new URLSearchParams();
 
-const lang1=detect(html.title)
-console.log('lang is her1 ',lang1)
-const lang2=detect(html.descreption)
-console.log('lang is her2 ',lang2)
+  const lang1 = detect(html.title)
+  console.log('lang is her1 ', lang1)
+  const lang2 = detect(html.descreption)
+  console.log('lang is her2 ', lang2)
 
-if (lang2==='it')return
-console.log('is oky verivied ok')
-// params.append('text', html.title);
-params.append('text', html.descreption);
+  if (lang2 === 'it') return
+  console.log('is oky verivied ok')
+  // params.append('text', html.title);
+  params.append('text', html.descreption);
 
-params.append('target_lang', 'IT');
-params.append('source_lang', 'EN');
-params.append('tag_handling', 'html');
-params.append('ignore_tags', 'code,img');
+  params.append('target_lang', 'IT');
+  params.append('source_lang', 'EN');
+  params.append('tag_handling', 'html');
+  params.append('ignore_tags', 'code,img');
 
   const response = await fetch(baseUrl, {
     method: 'POST',
@@ -164,10 +164,10 @@ export async function action({ context, request }: ActionFunctionArgs) {
   //  await queue.send({
   //   body: compressedBase64 // body must be a string according to queue type
   // });
-  
-  
-  
-  
+
+
+
+
   return Response.json({
     status: "queued",
     total: updatedDescreptionAI.length
@@ -689,7 +689,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   console.log('cursor her ', cursor)
   let query = `#graphql
   query GetProducts($cursor:String) {
-    products(first: 65,after:$cursor,query:"tag_not:DESC_AI",sortKey: CREATED_AT
+    products(first: 100,after:$cursor,query:"tag_not:DESC_AI",sortKey: CREATED_AT
   reverse: true) {
         edges{
             node{
@@ -704,7 +704,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
                 isLeaf
                 name
                 parentId
-                attributes(first:25){
+                attributes(first:1){
                   edges{
                     node{
                     ... on  TaxonomyAttribute{
@@ -764,7 +764,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
               }
               productType
 
-              options(first: 8) {
+              options(first: 1) {
                 id
                 name
                 linkedMetafield{
@@ -792,7 +792,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
                   
                   
                 }
-              }
+               }
                 title
                 id
                 descriptionHtml
@@ -800,47 +800,18 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
                 handle
                 vendor
                 featuredMedia {
-          ... on MediaImage {
-            id
-            image {
-              url
-              altText
-              width
-              height
-            }
-          }
-        }
-                media(first: 10) {
-                  edges{
-                    node{
-                      ... on MediaImage {
-                id
-                image {
-                  url
-                  altText
-                  width
-                  height
-                }
-              }
-                      # alt
-                      # id
-                      # preview{
-                      #   image{
-                      #     id
-                      #     altText
-                      #     thumbhash
-                      #     # url{
-                      #     #   transform{
-                      #     #     scale
-                      #     #   }
-                      #     # }
-
-                      #   }
-                      # }
+                    ... on MediaImage {
+                    id
+                    image {
+                      url
+                      altText
+                      width
+                      height
                     }
                   }
                 }
-                variants(first: 10) {
+              
+                variants(first: 1) {
                   edges {
                     node {
                       sku
@@ -876,51 +847,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
                           }
                         }
                       }
-                      inventoryItem{
-                        countryCodeOfOrigin
-                   
-                        inventoryLevels(first: 10) {
-                          edges {
-                            node {
-                              location{
-                                id
-                                activatable
-                                address{
-                                  address1
-                                  address2
-                                  city
-                                  country
-                                  countryCode
-                                  formatted
-                                  province
-                                  
-                                  zip
-                                }
-                              }
-                            }
-                          }
-                        }
-
-                        countryHarmonizedSystemCodes(first:5) {
-                          edges {
-                            node {
-                              countryCode
-                              harmonizedSystemCode
-                            }
-                          }
-                        }
-
-                        sku
-                        provinceCodeOfOrigin
-                        requiresShipping
-                        trackedEditable{
-                          locked
-                          reason
-                        }
-                        
-                        tracked
-                        
-                      }
+                 
                     }
                   }
                 }

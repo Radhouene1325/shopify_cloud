@@ -31,7 +31,7 @@ export default {
             ctx: {
               waitUntil: ctx.waitUntil.bind(ctx),
               passThroughOnException: ctx.passThroughOnException.bind(ctx),
-              props:{}
+              props: {}
             },
             caches,
             env,
@@ -57,69 +57,69 @@ export default {
   async queue(batch: MessageBatch<any>, env: Env, ctx: ExecutionContext) {
     console.log("QUEUE HANDLER ACTIVE");
 
-    const queue=new PQueue({
-      concurrency:2,
-      interval:1000,
-      intervalCap:1
+    const queue = new PQueue({
+      concurrency: 2,
+      interval: 1000,
+      intervalCap: 1
     })
 
 
-    
 
-await Promise.all(
-  batch.messages.map((message) =>
-    queue.add(async () => {
-      // const payload = decompressPayload(message.body.body as string);
-      // console.log('message her from queue',message.body)
-      const payload=ultraDecompress(message.body.body as string)
-      const { shop, products } = payload;
-      // console.log('products is her decopressed',products)
-      let cursor=10
-      const id=products[0].id.split('/').pop()
-      console.log(id)
-      let index=products.every((e)=>e.tags.includes("DESC_AI"))
 
-      console.log("index verify is her ",index)
-      // const rating = await fetch(
-      //   `${env.URL_REVIEWS}/public/reviews?sort=by_date&direction=asc&product_id=${id}`,
-      //   {
-      //     method: "GET",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       "Authorization": `Bearer ${env.REVIEWS_API_KEY_PLATINUM}`
-      //     }
-      //   }
-      // );
-      
-      // const other_reviews = await rating.json();
-      
-      // console.log("rrrrrrrrrrrrrrrrrr",other_reviews?.data?.reviews.map((e:any)=>e.media).filter((media:any)=>media!==null).flatMap((e)=>e));
-      // console.log("other",other_reviews?.data?.reviews);
-    
+    await Promise.all(
+      batch.messages.map((message) =>
+        queue.add(async () => {
+          // const payload = decompressPayload(message.body.body as string);
+          // console.log('message her from queue',message.body)
+          const payload = ultraDecompress(message.body.body as string)
+          const { shop, products } = payload;
+          // console.log('products is her decopressed',products)
+          let cursor = 10
+          const id = products[0].id.split('/').pop()
+          console.log(id)
+          let index = products.every((e) => e.tags.includes("DESC_AI"))
 
-      
-      const admin = createShopifyAdmin(
-        shop,
-        env.SHOPIFY_API_TOKEN_PALITINUMSHOP
-      );
-     
-        console.log("ACCESS TOKEN",env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
-        
-      try {
-        await processProducts(products, admin, env);
+          console.log("index verify is her ", index)
+          // const rating = await fetch(
+          //   `${env.URL_REVIEWS}/public/reviews?sort=by_date&direction=asc&product_id=${id}`,
+          //   {
+          //     method: "GET",
+          //     headers: {
+          //       "Content-Type": "application/json",
+          //       "Authorization": `Bearer ${env.REVIEWS_API_KEY_PLATINUM}`
+          //     }
+          //   }
+          // );
 
-        // 4️⃣ Acknowledge the message
-        message.ack();
-      } catch (err) {
-        console.error("Queue processing failed for message", message.id, err);
-        message.retry();
-      }
-    })
-  )
-);
+          // const other_reviews = await rating.json();
 
-// 5️⃣ Wait until all tasks are finished
-await queue.onIdle();
+          // console.log("rrrrrrrrrrrrrrrrrr",other_reviews?.data?.reviews.map((e:any)=>e.media).filter((media:any)=>media!==null).flatMap((e)=>e));
+          // console.log("other",other_reviews?.data?.reviews);
+
+
+
+          const admin = createShopifyAdmin(
+            shop,
+            env.SHOPIFY_API_TOKEN_PALITINUMSHOP
+          );
+
+          console.log("ACCESS TOKEN", env.SHOPIFY_API_TOKEN_PALITINUMSHOP)
+
+          try {
+            await processProducts(products, admin, env);
+
+            // 4️⃣ Acknowledge the message
+            message.ack();
+          } catch (err) {
+            console.error("Queue processing failed for message", message.id, err);
+            message.retry();
+          }
+        })
+      )
+    );
+
+    // 5️⃣ Wait until all tasks are finished
+    await queue.onIdle();
 
 
 
@@ -133,7 +133,7 @@ await queue.onIdle();
 
 
 
-async function processProducts(products: any[],admin:any, env: any) {
+async function processProducts(products: any[], admin: any, env: any) {
 
 
   const categoryCache = new Map();
@@ -141,19 +141,19 @@ async function processProducts(products: any[],admin:any, env: any) {
   const concurrency = 15;
   const pool: Promise<any>[] = [];
 
-  const oldDescreptionsMap=new Map(products.map(item=>[item.id,item]))
+  const oldDescreptionsMap = new Map(products.map(item => [item.id, item]))
 
 
   // for (const product of products) {
 
-    const task = processSingleProduct(products, admin, env, categoryCache,oldDescreptionsMap);
+  const task = processSingleProduct(products, admin, env, categoryCache, oldDescreptionsMap);
 
-    pool.push(task);
+  pool.push(task);
 
-    if (pool.length >= concurrency) {
-      await Promise.all(pool);
-      pool.length = 0;
-    }
+  if (pool.length >= concurrency) {
+    await Promise.all(pool);
+    pool.length = 0;
+  }
 
   // }
 
@@ -165,67 +165,67 @@ async function processSingleProduct(
   products: any,
   admin: any,
   env: any,
-  categoryCache: Map<string,string>,
-  oldDescreptionsMap:any
+  categoryCache: Map<string, string>,
+  oldDescreptionsMap: any
 ) {
-  let verify= products.every((e)=>e.tags.includes('DESC_AI'))
+  let verify = products.every((e) => e.tags.includes('DESC_AI'))
 
   let optimizedHtml;
   let seo;
 
   try {
-  
-    if (verify===false){
+
+    if (verify === false) {
       console.log('hello im from depseek and veriify case false ')
       optimizedHtml = await generateSeoHtml(
         products,
         env.DEEP_SEEK_API_KEY
       )
-    }else{
+    } else {
       console.log('im from other case verify the case true ')
-      optimizedHtml=products
+      optimizedHtml = products
     }
-      
-     
-      categoryCache.set("cxategoryCache",optimizedHtml)
-  
-  
-  
-      seo = await generateSeoMetadata(
-        products,
-        env.DEEP_SEEK_API_KEY
-      );
+
+
+    categoryCache.set("cxategoryCache", optimizedHtml)
+
+
+
+    seo = await generateSeoMetadata(
+      products,
+      env.DEEP_SEEK_API_KEY
+    );
 
   } catch (err) {
 
-      throw err
+    throw err
 
   }
 
 
   try {
-    
-    const delay = (ms:any) => new Promise(resolve => setTimeout(resolve, ms));
+
+    const delay = (ms: any) => new Promise(resolve => setTimeout(resolve, ms));
 
     //  console.log('SEO_OPTIMISE_TITLE_DECPRETION_HANDEL ',seotitle_descreption_handel)
     const seoMap = new Map(seo.map(s => [s.id, s]));
 
 
-    const updateProducts = []; 
+    const updateProducts = [];
 
     for (const DESC_AI of optimizedHtml) {
-    
+
       // if (!DESC_AI.id || !DESC_AI.detailedDescription || !DESC_AI.shortDescription) {
       //   console.error("AI returned empty fields", DESC_AI);
       //   continue;
       // }
-    
+
       const OLD_DESC = oldDescreptionsMap.get(DESC_AI.id);
       if (!OLD_DESC) continue;
-    
+
       const SEO = seoMap.get(DESC_AI.id);
       if (!SEO) continue;
-    
+
       const mergedTags = [
         ...(OLD_DESC.tags || []),
         SEO.category?.name || [],
@@ -233,13 +233,13 @@ async function processSingleProduct(
       ].filter(Boolean);
 
       const minPrice = OLD_DESC.min_amount
-      ? parseFloat(OLD_DESC.min_amount).toFixed(2)
-      : "0.00";
-    
-    const maxPrice = OLD_DESC.max_amount
-      ? parseFloat(OLD_DESC.max_amount).toFixed(2)
-      : minPrice;
-      const reverse=`#graphql
+        ? parseFloat(OLD_DESC.min_amount).toFixed(2)
+        : "0.00";
+
+      const maxPrice = OLD_DESC.max_amount
+        ? parseFloat(OLD_DESC.max_amount).toFixed(2)
+        : minPrice;
+      const reverse = `#graphql
       query GetProductReviewSchema($id: ID!) {
         product(id: $id) {
           metafield(namespace: "alireviews", key: "seo_rating_review_key_script") {
@@ -257,132 +257,132 @@ async function processSingleProduct(
         }
       }
       `
-            const result=await admin.graphql(reverse,{variables:{id:OLD_DESC.id}})
-            let res=await result.json()
-            const data=res?.data?.product?.metafield?.value??null
-            // console.log(res?.data?.product?.metafield)
-            // const getAliRating = (value:string) => {
-            //   if (!value) return null;
-            
-            //   try {
-            //     return JSON.parse(`{${value.replace(/,$/, "")}}`).aggregateRating;
-            //   } catch {
-            //     return null;
-            //   }
-            // };
-            
-            // const aggregateRating = getAliRating(data?.value);
-            // console.log(aggregateRating)
+      const result = await admin.graphql(reverse, { variables: { id: OLD_DESC.id } })
+      let res = await result.json()
+      const data = res?.data?.product?.metafield?.value ?? null
+      // console.log(res?.data?.product?.metafield)
+      // const getAliRating = (value:string) => {
+      //   if (!value) return null;
 
-            interface AliReview {
-             
-                ratingValue: number;
-                reviewCount: number;
-                bestRating?: number;
-                worstRating?: number;
-              
-              
-            }
+      //   try {
+      //     return JSON.parse(`{${value.replace(/,$/, "")}}`).aggregateRating;
+      //   } catch {
+      //     return null;
+      //   }
+      // };
 
-          // const aggregateRating:AliReview | null = data
-          //   ? (() => {
-          //       try {
-          //         return JSON.parse(`{${data.replace(/,$/, "")}}`).aggregateRating;
-          //       } catch (err) {
-          //         console.error("Failed to parse metafield JSON:", err);
-          //         return null;
-          //       }
-          //     })()
-          //   : null;
-          const aggregateRating: AliReview | null = data
-  ? (() => {
-      try {
-        const parsed = JSON.parse(`{${data.replace(/,$/, "")}}`);
-        return parsed?.aggregateRating ?? null;
-      } catch (err) {
-        console.error("Failed to parse metafield JSON:", err);
-        return null;
+      // const aggregateRating = getAliRating(data?.value);
+      // console.log(aggregateRating)
+
+      interface AliReview {
+
+        ratingValue: number;
+        reviewCount: number;
+        bestRating?: number;
+        worstRating?: number;
+
+
       }
-    })()
-  : null;
 
-//  console.log('ssssssssssssssss',aggregateRating)
-const rating = await fetch(
-  `${env.URL_REVIEWS}/public/reviews?sort=by_date&direction=asc&product_id=${OLD_DESC.id.split('/').pop()}`,
-  {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${env.REVIEWS_API_KEY_PLATINUM}`
-    }
-  }
-);
+      // const aggregateRating:AliReview | null = data
+      //   ? (() => {
+      //       try {
+      //         return JSON.parse(`{${data.replace(/,$/, "")}}`).aggregateRating;
+      //       } catch (err) {
+      //         console.error("Failed to parse metafield JSON:", err);
+      //         return null;
+      //       }
+      //     })()
+      //   : null;
+      const aggregateRating: AliReview | null = data
+        ? (() => {
+          try {
+            const parsed = JSON.parse(`{${data.replace(/,$/, "")}}`);
+            return parsed?.aggregateRating ?? null;
+          } catch (err) {
+            console.error("Failed to parse metafield JSON:", err);
+            return null;
+          }
+        })()
+        : null;
 
-const other_reviews = await rating.json();
+      //  console.log('ssssssssssssssss',aggregateRating)
+      const rating = await fetch(
+        `${env.URL_REVIEWS}/public/reviews?sort=by_date&direction=asc&product_id=${OLD_DESC.id.split('/').pop()}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${env.REVIEWS_API_KEY_PLATINUM}`
+          }
+        }
+      );
 
-// console.log("rrrrrrrrrrrrrrrrrr",other_reviews?.data?.reviews.map((e:any)=>e.media).filter((media:any)=>media!==null).flatMap((e)=>e));
-// console.log("other",other_reviews?.data?.reviews);
-const review = Array.isArray(other_reviews?.data?.reviews) && other_reviews?.data?.reviews.length
-? other_reviews?.data?.reviews.map((rev: any) => ({
-    "@type": "Review",
-    "author": { "@type": "Person", "name": rev.author || "Anonymous" },
-    "datePublished": rev.creviewreated_at || new Date().toISOString(),
-    "reviewBody": rev.content || "",
-    "shop_id":rev.shop_id,
-    "country":rev.country,
-    "product_id":rev.product_id,
-    "id":rev.id,
-    "reviewRating": {
-      "@type": "Rating",
-      "ratingValue": rev.star || 0,
-      "bestRating": 5,
-      "worstRating": 1
-    },
-    "media":Array.isArray(rev.media)
-    ?
-    rev.media
-    .filter((media:any)=>media!==null)
-    .flat()
-    .map((e:any)=>({
-      "@type":"photo",
-      "id":e.id,
-      "product_id":e.product_id,
-      "comment_id":e.comment_id,
-      "type":e.type,
-      "url":e.url
-    })):undefined
-  }))
-: undefined;
-// console.log('reviews after fetch ',review)
+      const other_reviews = await rating.json();
+
+      // console.log("rrrrrrrrrrrrrrrrrr",other_reviews?.data?.reviews.map((e:any)=>e.media).filter((media:any)=>media!==null).flatMap((e)=>e));
+      // console.log("other",other_reviews?.data?.reviews);
+      const review = Array.isArray(other_reviews?.data?.reviews) && other_reviews?.data?.reviews.length
+        ? other_reviews?.data?.reviews.map((rev: any) => ({
+          "@type": "Review",
+          "author": { "@type": "Person", "name": rev.author || "Anonymous" },
+          "datePublished": rev.creviewreated_at || new Date().toISOString(),
+          "reviewBody": rev.content || "",
+          "shop_id": rev.shop_id,
+          "country": rev.country,
+          "product_id": rev.product_id,
+          "id": rev.id,
+          "reviewRating": {
+            "@type": "Rating",
+            "ratingValue": rev.star || 0,
+            "bestRating": 5,
+            "worstRating": 1
+          },
+          "media": Array.isArray(rev.media)
+            ?
+            rev.media
+              .filter((media: any) => media !== null)
+              .flat()
+              .map((e: any) => ({
+                "@type": "photo",
+                "id": e.id,
+                "product_id": e.product_id,
+                "comment_id": e.comment_id,
+                "type": e.type,
+                "url": e.url
+              })) : undefined
+        }))
+        : undefined;
+      // console.log('reviews after fetch ',review)
 
 
-    const offers = {
-      "@type": "AggregateOffer",
-      "priceCurrency": OLD_DESC.currencyCode,
-      "lowPrice": Number(minPrice).toFixed(2),
-      "highPrice": Number(maxPrice).toFixed(2),
-      "offerCount": OLD_DESC.variants?.length || 1,
-      "url": `https://platinumshop.it/products/${OLD_DESC.handle}`,
-      "availability": "https://schema.org/InStock"
+      const offers = {
+        "@type": "AggregateOffer",
+        "priceCurrency": OLD_DESC.currencyCode,
+        "lowPrice": Number(minPrice).toFixed(2),
+        "highPrice": Number(maxPrice).toFixed(2),
+        "offerCount": OLD_DESC.variants?.length || 1,
+        "url": `https://platinumshop.it/products/${OLD_DESC.handle}`,
+        "availability": "https://schema.org/InStock"
 
-    };
-   
-    const aggregateRating__ = aggregateRating
-  ? {
-      "@type": "AggregateRating",
-      "ratingValue":aggregateRating?.ratingValue || "0",
-      "reviewCount":aggregateRating?.reviewCount || "0",
-      "bestRating": aggregateRating?.bestRating || 5,
-      "worstRating": aggregateRating?.worstRating || 1
-    }
-  : undefined; // Will be skipped if missing
+      };
 
-  //  // Will be skipped if missiaggregateRating__ng
+      const aggregateRating__ = aggregateRating
+        ? {
+          "@type": "AggregateRating",
+          "ratingValue": aggregateRating?.ratingValue || "0",
+          "reviewCount": aggregateRating?.reviewCount || "0",
+          "bestRating": aggregateRating?.bestRating || 5,
+          "worstRating": aggregateRating?.worstRating || 1
+        }
+        : undefined; // Will be skipped if missing
 
-//   console.log('aggreagation is her',aggregateRating__)
-//  console.log('revieeeessssssssss',OLD_DESC)
+      //  // Will be skipped if missiaggregateRating__ng
 
- const query = `#graphql
+      //   console.log('aggreagation is her',aggregateRating__)
+      //  console.log('revieeeessssssssss',OLD_DESC)
+
+      const query = `#graphql
  query GetCollectionsByProduct($first: Int!) {
    collections(first: $first, query:"product_id:${OLD_DESC.id.split("/").pop()}") {
      edges {
@@ -396,84 +396,84 @@ const review = Array.isArray(other_reviews?.data?.reviews) && other_reviews?.dat
    }
  }
 `;
-const response = await admin.graphql(query, {
- variables: {
-   first: 250,
-  
- },
-});
-const json = await response.json();
-// console.log('collection in her ', json);
+      const response = await admin.graphql(query, {
+        variables: {
+          first: 250,
 
-const edges = json?.data?.collections?.edges ?? [];
-const collections = edges.map((edge: any) => edge.node);
-// console.log('Collections for product:', collections); 
+        },
+      });
+      const json = await response.json();
+      // console.log('collection in her ', json);
+
+      const edges = json?.data?.collections?.edges ?? [];
+      const collections = edges.map((edge: any) => edge.node);
+      // console.log('Collections for product:', collections); 
 
 
-   
+
       // console.log('ddndndnd',productSchema)
 
-  
+
       // console.log("ssssjhhw::jjsproxxxxductSchema is secces",SEO.category?.id)
       // console.log("productSchema is secces",SEO)
 
-      
+
       updateProducts.push({
         id: OLD_DESC.id,
-        descriptionHtml: DESC_AI.detailedDescription ||DESC_AI.descreption,
+        descriptionHtml: DESC_AI.detailedDescription || DESC_AI.descreption,
         tags: mergedTags,
         category: SEO.category?.id,
         handle: OLD_DESC.handle || OLD_DESC.handel,
         productType: SEO.productType,
         seo: { description: SEO.seoDescription, title: SEO.seoTitle },
         metafields: [
-          verify===false?{ namespace: "custom", key: "descriptionsai", type: "json", value: JSON.stringify(DESC_AI.shortDescription) }:null,
+          verify === false ? { namespace: "custom", key: "descriptionsai", type: "json", value: JSON.stringify(DESC_AI.shortDescription) } : null,
           { namespace: "custom", key: "seo_title", type: "json", value: JSON.stringify(SEO.seoTitle) },
           { namespace: "custom", key: "seo_descreption", type: "json", value: JSON.stringify(SEO.seoDescription) },
-          { namespace: "seo", key: "schema_org", type: "json", value: JSON.stringify(productSchema(SEO,collections,OLD_DESC,offers,aggregateRating__,aggregateRating,review)) },
-        
-          { namespace: "custom", key: "facebookTitle", type: "json", value:JSON.stringify(   SEO?.socialOptimization.facebookTitle) },
-          { namespace: "custom", key: "facebookDescription", type: "json", value: JSON.stringify( SEO?.socialOptimization.facebookDescription ) },
-          { namespace: "custom", key: "tiktokTitle", type: "json", value:JSON.stringify(   SEO?.socialOptimization.tiktokTitle) },
-          { namespace: "custom", key: "pinterestTitle", type: "json", value:JSON.stringify(  SEO?.socialOptimization.pinterestTitle) },
-          { namespace: "custom", key: "pinterestDescription", type: "json", value:JSON.stringify(SEO?.socialOptimization.pinterestDescription)    },
+          { namespace: "seo", key: "schema_org", type: "json", value: JSON.stringify(productSchema(SEO, collections, OLD_DESC, offers, aggregateRating__, aggregateRating, review)) },
 
-        
+          { namespace: "custom", key: "facebookTitle", type: "json", value: JSON.stringify(SEO?.socialOptimization.facebookTitle) },
+          { namespace: "custom", key: "facebookDescription", type: "json", value: JSON.stringify(SEO?.socialOptimization.facebookDescription) },
+          { namespace: "custom", key: "tiktokTitle", type: "json", value: JSON.stringify(SEO?.socialOptimization.tiktokTitle) },
+          { namespace: "custom", key: "pinterestTitle", type: "json", value: JSON.stringify(SEO?.socialOptimization.pinterestTitle) },
+          { namespace: "custom", key: "pinterestDescription", type: "json", value: JSON.stringify(SEO?.socialOptimization.pinterestDescription) },
+
+
         ]
       });
     }
-    
+
 
     async function throttledUpdates(products, batchSize = 100, delayMs = 500) {
       for (let i = 0; i < products.length; i += batchSize) {
         const batch = products.slice(i, i + batchSize);
-    
-        const results = await Promise.allSettled(
-          batch.map(async(prod) =>{
-           const response=await  admin.graphql(productsupdated, { variables: { product: prod } })
 
-           const json=await response.json()
-           if(json.error){
-            throw new Error(JSON.stringify(json.errors))
-           } 
-           return json
+        const results = await Promise.allSettled(
+          batch.map(async (prod) => {
+            const response = await admin.graphql(productsupdated, { variables: { product: prod } })
+
+            const json = await response.json()
+            if (json.error) {
+              throw new Error(JSON.stringify(json.errors))
+            }
+            return json
           }
-         
-        )
-      );
-    
+
+          )
+        );
+
         results.forEach((res, idx) => {
           if (res.status === "rejected") {
             console.error(`Update failed for product ${batch[idx].id}`, res.reason);
           }
         });
-    
+
         if (i + batchSize < products.length) {
           await new Promise(r => setTimeout(r, delayMs));
         }
       }
     }
-    
+
     // 4️⃣ Run throttled updates
     await throttledUpdates(updateProducts, 2, 500);
 
@@ -484,9 +484,11 @@ const collections = edges.map((edge: any) => edge.node);
 
 
 
-    return Response.json(optimizedHtml,  {headers: {
-      "Cache-Control": "public, max-age=60, s-maxage=300"
-    }});
+    return Response.json(optimizedHtml, {
+      headers: {
+        "Cache-Control": "public, max-age=60, s-maxage=300"
+      }
+    });
   } catch (error) {
     console.error(error);
     return Response.json({ error: "Failed to generate content" }, { status: 500 });
