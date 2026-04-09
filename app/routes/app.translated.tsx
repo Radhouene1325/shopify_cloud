@@ -53,7 +53,7 @@ async function translateHtmlDeepL(html, DEEPL_API_KEY) {
   }
 
   const data = await response.json();
-  console.log('data is her ', data.translations)
+  // console.log('data is her ', data.translations)
   return {
     id: html.id,
     translatedText: data?.translations[0]?.text,
