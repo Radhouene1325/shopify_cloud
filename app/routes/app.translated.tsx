@@ -21,7 +21,7 @@ async function translateHtmlDeepL(html, DEEPL_API_KEY) {
     : 'https://api.deepl.com/v2/translate';
 
   const params = new URLSearchParams({
-    text: html.descreption,
+    text: JSON.stringify({ title: html.title, description: html.descreption }),
     target_lang: 'IT',
     source_lang: 'EN', // or auto-detect with omit
     tag_handling: 'html',  // Critical: preserves HTML tags!
@@ -43,6 +43,7 @@ async function translateHtmlDeepL(html, DEEPL_API_KEY) {
   }
 
   const data = await response.json();
+  console.log('data is her ', data.translations)
   return {
     id: html.id,
     translatedText: data?.translations[0]?.text,
@@ -68,6 +69,7 @@ export async function action({ context, request }: ActionFunctionArgs) {
     const data = {
       id: OLD_DESC.id,
       descreption: OLD_DESC.descreption,
+      title: OLD_DESC.title,
 
     }
     const translatedText = await translateHtmlDeepL(data, apikey);
