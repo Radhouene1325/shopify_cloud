@@ -47,6 +47,8 @@ async function translateHtmlDeepL(html, DEEPL_API_KEY) {
   return {
     id: html.id,
     translatedText: data?.translations[0]?.text,
+    translatedTitle: data?.translations[1]?.text,
+
 
   };
 }
@@ -101,38 +103,38 @@ export async function action({ context, request }: ActionFunctionArgs) {
     });
   }
 
-  async function throttledUpdates(products, batchSize = 100, delayMs = 500) {
-    for (let i = 0; i < products.length; i += batchSize) {
-      const batch = products.slice(i, i + batchSize);
+  // async function throttledUpdates(products, batchSize = 100, delayMs = 500) {
+  //   for (let i = 0; i < products.length; i += batchSize) {
+  //     const batch = products.slice(i, i + batchSize);
 
-      const results = await Promise.allSettled(
-        batch.map(async (prod) => {
-          const response = await admin.graphql(productsupdated, { variables: { product: prod } })
+  //     const results = await Promise.allSettled(
+  //       batch.map(async (prod) => {
+  //         const response = await admin.graphql(productsupdated, { variables: { product: prod } })
 
-          const json = await response.json()
-          if (json.error) {
-            throw new Error(JSON.stringify(json.errors))
-          }
-          return json
-        }
+  //         const json = await response.json()
+  //         if (json.error) {
+  //           throw new Error(JSON.stringify(json.errors))
+  //         }
+  //         return json
+  //       }
 
-        )
-      );
+  //       )
+  //     );
 
-      results.forEach((res, idx) => {
-        if (res.status === "rejected") {
-          console.error(`Update failed for product ${batch[idx].id}`, res.reason);
-        }
-      });
+  //     results.forEach((res, idx) => {
+  //       if (res.status === "rejected") {
+  //         console.error(`Update failed for product ${batch[idx].id}`, res.reason);
+  //       }
+  //     });
 
-      if (i + batchSize < products.length) {
-        await new Promise(r => setTimeout(r, delayMs));
-      }
-    }
-  }
+  //     if (i + batchSize < products.length) {
+  //       await new Promise(r => setTimeout(r, delayMs));
+  //     }
+  //   }
+  // }
 
-  // 4️⃣ Run throttled updates
-  await throttledUpdates(updateProducts, 2, 500);
+  // // 4️⃣ Run throttled updates
+  // await throttledUpdates(updateProducts, 2, 500);
 
   // const queue =context.cloudflare.env.SEO_QUEUE
 
