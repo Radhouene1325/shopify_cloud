@@ -63,7 +63,7 @@ export async function action({ context, request }: ActionFunctionArgs) {
   }
   let apikey = context.cloudflare.env.DEEPL_API_KEY
   let updateProducts = []
-  console.log('updatedDescreptionAI is her ', updatedDescreptionAI[0].descreption)
+  console.log('updatedDescreptionAI is her ', updatedDescreptionAI)
   for (const OLD_DESC of updatedDescreptionAI) {
     const data = {
       id: OLD_DESC.id,
