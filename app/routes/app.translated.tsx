@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import * as cheerio from "cheerio";
 import { productsupdated } from "./functions/query/updateprooductquery";
 import {franc} from 'franc'
+import { detect, detectAll } from 'tinyld';
 
 // app/utils/translate.server.js
 async function translateHtmlDeepL(html, DEEPL_API_KEY) {
@@ -22,9 +23,9 @@ async function translateHtmlDeepL(html, DEEPL_API_KEY) {
 
 const params = new URLSearchParams();
 
-const lang1=franc(html.title)
+const lang1=detect(html.title)
 console.log('lang is her1 ',lang1)
-const lang2=franc(html.descreption)
+const lang2=detect(html.descreption)
 console.log('lang is her2 ',lang2)
 
 
