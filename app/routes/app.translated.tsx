@@ -439,99 +439,121 @@ export default function DescriptionManager() {
   ];
   // console.log('rows is seccesfuly her ',rows)
   // Table rows
- const stripHtml = (html = "") => {
-  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+const stripHtml = (html = "") => {
+  return html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 };
 
+// 1) Filter rows by Italian language
+const filteredRows = useMemo(() => {
+  return rows.filter((variant) => {
+    const cleanText = stripHtml(variant.descriptionHtml || "");
+
+    // Skip empty / too short descriptions
+    if (!cleanText || cleanText.length < 10) {
+      return false;
+    }
+
+    let lang = "";
+
+    try {
+      lang = String(detect(cleanText)).toLowerCase().trim();
+      console.log("Detected language:", lang, cleanText.slice(0, 80));
+    } catch (error) {
+      console.error("Language detection error:", error);
+      return false;
+    }
+
+    return ["it", "ita", "italian"].includes(lang);
+  });
+}, [rows]);
+
+// 2) Build DataTable rows
 const rowsData = useMemo(() => {
-  return rows
-    .filter((variant) => {
-      const cleanText = stripHtml(variant.descriptionHtml || "");
-      console.log('cleanText is her ',detect(cleanText))
-      return detect(cleanText) === "it";
-    })
-    .map((variant) => [
-      <Checkbox
-        key={`checkbox-${variant.id}`}
-        label={`Select ${variant.title}`}
-        labelHidden
-        checked={isSelected(variant.id)}
-        onChange={(checked) => handleSelectRow(variant, checked)}
-      />,
+  return filteredRows.map((variant) => [
+    <Checkbox
+      key={`checkbox-${variant.id}`}
+      label={`Select ${variant.title}`}
+      labelHidden
+      checked={isSelected(variant.id)}
+      onChange={(checked) => handleSelectRow(variant, checked)}
+    />,
 
-      <Thumbnail
-        key={`thumb-${variant.id}`}
-        source={variant.featuredMedia?.image?.url || ""}
-        alt={variant.featuredMedia?.image?.altText || variant.title}
-        size="medium"
-      />,
+    <Thumbnail
+      key={`thumb-${variant.id}`}
+      source={variant.featuredMedia?.image?.url || ""}
+      alt={variant.featuredMedia?.image?.altText || variant.title}
+      size="medium"
+    />,
 
-      <BlockStack key={`details-${variant.id}`} gap="100">
-        <Text as="span" variant="bodyMd" fontWeight="semibold">
-          {variant.title}
-        </Text>
-        <Text as="span" variant="bodySm" tone="subdued">
-          {variant.vendor} • {variant.productType}
-        </Text>
-        <Text
-          as="span"
-          variant="bodySm"
-          fontWeight="medium"
-          fontFamily="monospace"
-        >
-          ID: {variant.id.split("/").pop()}
-        </Text>
-      </BlockStack>,
-
-      <Box key={`desc-${variant.id}`} maxWidth="300px">
-        <div
-          style={{
-            maxHeight: "80px",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            display: "-webkit-box",
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: "vertical",
-            fontSize: "13px",
-            lineHeight: "1.4",
-            color: variant.descriptionHtml ? "inherit" : "#999",
-          }}
-          dangerouslySetInnerHTML={{
-            __html:
-              variant.descriptionHtml ||
-              "<em>No description available</em>",
-          }}
-        />
-      </Box>,
-
-      <InlineStack key={`tags-${variant.id}`} gap="100" wrap>
-        {variant.tags?.length > 0 ? (
-          variant.tags.map((tag) => (
-            <Tag
-              key={tag}
-              tone={tag === "DESC_AI" ? "success" : "neutral"}
-            >
-              {tag}
-            </Tag>
-          ))
-        ) : (
-          <Text as="span" tone="subdued" variant="bodySm">
-            No tags
-          </Text>
-        )}
-      </InlineStack>,
-
+    <BlockStack key={`details-${variant.id}`} gap="100">
+      <Text as="span" variant="bodyMd" fontWeight="semibold">
+        {variant.title}
+      </Text>
+      <Text as="span" variant="bodySm" tone="subdued">
+        {variant.vendor} • {variant.productType}
+      </Text>
       <Text
-        key={`handle-${variant.id}`}
         as="span"
         variant="bodySm"
-        tone="subdued"
-        breakWord
+        fontWeight="medium"
+        fontFamily="monospace"
       >
-        /{variant.handle}
-      </Text>,
-    ]);
-}, [rows, isSelected, handleSelectRow]);
+        ID: {variant.id.split("/").pop()}
+      </Text>
+    </BlockStack>,
+
+    <Box key={`desc-${variant.id}`} maxWidth="300px">
+      <div
+        style={{
+          maxHeight: "80px",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          display: "-webkit-box",
+          WebkitLineClamp: 3,
+          WebkitBoxOrient: "vertical",
+          fontSize: "13px",
+          lineHeight: "1.4",
+          color: variant.descriptionHtml ? "inherit" : "#999",
+        }}
+        dangerouslySetInnerHTML={{
+          __html:
+            variant.descriptionHtml ||
+            "<em>No description available</em>",
+        }}
+      />
+    </Box>,
+
+    <InlineStack key={`tags-${variant.id}`} gap="100" wrap>
+      {variant.tags?.length > 0 ? (
+        variant.tags.map((tag) => (
+          <Tag
+            key={tag}
+            tone={tag === "DESC_AI" ? "success" : "neutral"}
+          >
+            {tag}
+          </Tag>
+        ))
+      ) : (
+        <Text as="span" tone="subdued" variant="bodySm">
+          No tags
+        </Text>
+      )}
+    </InlineStack>,
+
+    <Text
+      key={`handle-${variant.id}`}
+      as="span"
+      variant="bodySm"
+      tone="subdued"
+      breakWord
+    >
+      /{variant.handle}
+    </Text>,
+  ]);
+}, [filteredRows, isSelected, handleSelectRow]);
   // Empty state
   if (rows.length === 0 && !isLoading) {
     return (
