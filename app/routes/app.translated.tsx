@@ -447,6 +447,7 @@ const rowsData = useMemo(() => {
   return rows
     .filter((variant) => {
       const cleanText = stripHtml(variant.descriptionHtml || "");
+      console.log('cleanText is her ',detect(cleanText))
       return detect(cleanText) === "it";
     })
     .map((variant) => [
