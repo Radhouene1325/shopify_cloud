@@ -466,7 +466,7 @@ const filteredRows = useMemo(() => {
       return false;
     }
 
-    return ["it", "ita", "italian"].includes(lang);
+    return !["it", "ita", "italian"].includes(lang);
   });
 }, [rows]);
 
