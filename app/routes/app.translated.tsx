@@ -517,31 +517,17 @@ const filteredRows = useMemo(() => {
   return rows.filter((variant) => {
     const cleanText = stripHtml(variant.descriptionHtml || "");
 
-    // If empty, keep visible
-    if (!cleanText) {
+    // keep empty descriptions visible
+    if (!cleanText || cleanText.length < 20) {
       return true;
     }
 
-    let lang = "";
+    const lang = franc(cleanText);
 
-    try {
-      lang = String(detect(cleanText)).toLowerCase().trim();
-    } catch (e) {
-      console.error("detect error", e);
-      return true;
-    }
+    console.log("detected:", lang, variant.title);
 
-    console.log("TITLE:", variant.title);
-    console.log("LANG:", lang);
-    console.log("TEXT:", cleanText.slice(0, 120));
-
-    // hide only italian
-    const isItalian =
-      lang.includes("it") ||
-      lang.includes("ita") ||
-      lang.includes("italian");
-
-    return !isItalian;
+    // hide Italian descriptions
+    return lang !== "ita";
   });
 }, [rows]);
 
