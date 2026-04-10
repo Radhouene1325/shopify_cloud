@@ -508,31 +508,40 @@ export default function DescriptionManager() {
 const stripHtml = (html = "") => {
   return html
     .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 };
 
-// Show ONLY non-Italian descriptions
 const filteredRows = useMemo(() => {
   return rows.filter((variant) => {
     const cleanText = stripHtml(variant.descriptionHtml || "");
 
-    if (!cleanText || cleanText.length < 10) {
-      return true; // show empty descriptions
+    // If empty, keep visible
+    if (!cleanText) {
+      return true;
     }
 
     let lang = "";
 
     try {
       lang = String(detect(cleanText)).toLowerCase().trim();
-      console.log("Detected language:", lang);
-    } catch (error) {
-      console.error("Language detection error:", error);
-      return true; // show if detection fails
+    } catch (e) {
+      console.error("detect error", e);
+      return true;
     }
 
-    // HIDE Italian, SHOW all others
-    return !["it", "ita", "italian"].includes(lang);
+    console.log("TITLE:", variant.title);
+    console.log("LANG:", lang);
+    console.log("TEXT:", cleanText.slice(0, 120));
+
+    // hide only italian
+    const isItalian =
+      lang.includes("it") ||
+      lang.includes("ita") ||
+      lang.includes("italian");
+
+    return !isItalian;
   });
 }, [rows]);
 
