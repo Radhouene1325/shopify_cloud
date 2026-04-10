@@ -439,71 +439,98 @@ export default function DescriptionManager() {
   ];
   // console.log('rows is seccesfuly her ',rows)
   // Table rows
-  const rowsData = useMemo(() => {
-    return rows
-      .filter((variant) => detect(variant.descriptionHtml || "") === 'it')
-      .map((variant) => [
-        <Checkbox
-          key={`checkbox-${variant.id}`}
-          label={`Select ${variant.title}`}
-          labelHidden
-          checked={isSelected(variant.id)}
-          onChange={(checked) => handleSelectRow(variant, checked)}
-        />,
-        <Thumbnail
-          key={`thumb-${variant.id}`}
-          source={variant.featuredMedia?.image?.url || ""}
-          alt={variant.featuredMedia?.image?.altText || variant.title}
-          size="medium"
-        />,
-        <BlockStack key={`details-${variant.id}`} gap="100">
-          <Text as="span" variant="bodyMd" fontWeight="semibold">
-            {variant.title}
-          </Text>
-          <Text as="span" variant="bodySm" tone="subdued">
-            {variant.vendor} • {variant.productType}
-          </Text>
-          <Text as="span" variant="bodySm" fontWeight="medium" fontFamily="monospace">
-            ID: {variant.id.split("/").pop()}
-          </Text>
-        </BlockStack>,
-        <Box key={`desc-${variant.id}`} maxWidth="300px">
-          <div
-            style={{
-              maxHeight: "80px",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              display: "-webkit-box",
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: "vertical",
-              fontSize: "13px",
-              lineHeight: "1.4",
-              color: variant.descriptionHtml ? "inherit" : "#999",
-            }}
-            dangerouslySetInnerHTML={{
-              __html: variant.descriptionHtml || "<em>No description available</em>",
-            }}
-          />
-        </Box>,
-        <InlineStack key={`tags-${variant.id}`} gap="100" wrap>
-          {variant.tags?.length > 0 ? (
-            variant.tags.map((tag) => (
-              <Tag key={tag} tone={tag === "DESC_AI" ? "success" : "neutral"}>
-                {tag}
-              </Tag>
-            ))
-          ) : (
-            <Text as="span" tone="subdued" variant="bodySm">
-              No tags
-            </Text>
-          )}
-        </InlineStack>,
-        <Text key={`handle-${variant.id}`} as="span" variant="bodySm" tone="subdued" breakWord>
-          /{variant.handle}
-        </Text>
-      ]);
-  }, [rows, isSelected, handleSelectRow]);
+ const stripHtml = (html = "") => {
+  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+};
 
+const rowsData = useMemo(() => {
+  return rows
+    .filter((variant) => {
+      const cleanText = stripHtml(variant.descriptionHtml || "");
+      return detect(cleanText) === "it";
+    })
+    .map((variant) => [
+      <Checkbox
+        key={`checkbox-${variant.id}`}
+        label={`Select ${variant.title}`}
+        labelHidden
+        checked={isSelected(variant.id)}
+        onChange={(checked) => handleSelectRow(variant, checked)}
+      />,
+
+      <Thumbnail
+        key={`thumb-${variant.id}`}
+        source={variant.featuredMedia?.image?.url || ""}
+        alt={variant.featuredMedia?.image?.altText || variant.title}
+        size="medium"
+      />,
+
+      <BlockStack key={`details-${variant.id}`} gap="100">
+        <Text as="span" variant="bodyMd" fontWeight="semibold">
+          {variant.title}
+        </Text>
+        <Text as="span" variant="bodySm" tone="subdued">
+          {variant.vendor} • {variant.productType}
+        </Text>
+        <Text
+          as="span"
+          variant="bodySm"
+          fontWeight="medium"
+          fontFamily="monospace"
+        >
+          ID: {variant.id.split("/").pop()}
+        </Text>
+      </BlockStack>,
+
+      <Box key={`desc-${variant.id}`} maxWidth="300px">
+        <div
+          style={{
+            maxHeight: "80px",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical",
+            fontSize: "13px",
+            lineHeight: "1.4",
+            color: variant.descriptionHtml ? "inherit" : "#999",
+          }}
+          dangerouslySetInnerHTML={{
+            __html:
+              variant.descriptionHtml ||
+              "<em>No description available</em>",
+          }}
+        />
+      </Box>,
+
+      <InlineStack key={`tags-${variant.id}`} gap="100" wrap>
+        {variant.tags?.length > 0 ? (
+          variant.tags.map((tag) => (
+            <Tag
+              key={tag}
+              tone={tag === "DESC_AI" ? "success" : "neutral"}
+            >
+              {tag}
+            </Tag>
+          ))
+        ) : (
+          <Text as="span" tone="subdued" variant="bodySm">
+            No tags
+          </Text>
+        )}
+      </InlineStack>,
+
+      <Text
+        key={`handle-${variant.id}`}
+        as="span"
+        variant="bodySm"
+        tone="subdued"
+        breakWord
+      >
+        /{variant.handle}
+      </Text>,
+    ]);
+}, [rows, isSelected, handleSelectRow]);
   // Empty state
   if (rows.length === 0 && !isLoading) {
     return (
