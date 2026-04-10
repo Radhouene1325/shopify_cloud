@@ -877,7 +877,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const response = await admin.graphql(query, { variables: { cursor } });
   const res = await response.json();
   // console.log('res is her ',res.data)
-  console.log('res is her ',res.data.products.edges.map((e: any) => e.node))
+  console.log('res is her ',res.data.products.edges[0].node.variants)
   const productsdescreption = {
     variants: res?.data.products.edges.map((e: any) => e.node),
     pageInfo: res?.data.products.pageInfo,
