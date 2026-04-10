@@ -74,7 +74,7 @@ export async function action({ context, request }: ActionFunctionArgs) {
     console.error("Invalid or missing 'descreptionAI' data");
     return Response.json({ error: "Invalid or missing 'descreptionAI' data" }, { status: 400 });
   }
-  let apikey = context.cloudflare.env.DEEPL_API_KEY_PRO
+  let apikey = context.cloudflare.env.DEEPL_API_KEY
   let updateProducts = []
   // console.log('updatedDescreptionAI is her ', updatedDescreptionAI)
   for (const OLD_DESC of updatedDescreptionAI) {
