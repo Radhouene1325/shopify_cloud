@@ -310,7 +310,7 @@ export default function DescriptionManager() {
         title: v.title,
         totalInventory: v?.totalInventory,
         tracksInventory: v?.tracksInventory,
-        max_amount: v?.priceRangeV2?.maxVariantPrice?.amount
+        max_amount: v?.priceRangeV2?.maxVariantPrice?.amount,
         currencyCode: v?.priceRangeV2?.maxVariantPrice?.currencyCode,
         min_amount: v.priceRangeV2?.minVariantPrice?.amount,
         sku: v?.variants?.edges
