@@ -280,6 +280,7 @@ export function buildPrompt(
   
   CRITICAL: 
   - Escape all quotes in HTML: \\"
+  - language in italien 
   - Return ONLY the JSON array
   - NO markdown code blocks
   - NO explanatory text
