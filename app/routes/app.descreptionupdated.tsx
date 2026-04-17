@@ -663,12 +663,10 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
   console.log('cursor her ',cursor)
   let query=    `#graphql
   query GetProducts($cursor:String) {
-    products(first: 15,after:$cursor,query:"tag_not:DESC_AI") {
+    products(first: 15,after:$cursor,query:"tag_not:DESC_AI",sortKey: CREATED_AT) {
         edges{
             node{
-
               
-
 
               category{
                 ancestorIds
