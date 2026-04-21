@@ -1,28 +1,20 @@
-// app/utils/compress.server.js
-import { ImagePool } from "@squoosh/lib";
+import { encode } from '@jsquash/webp';
 
-export async function compressToWeb(imageUrl) {
+export async function compressToWebP(imageUrl, quality = 85) {
   const res = await fetch(imageUrl);
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch image");
+  }
+
   const arrayBuffer = await res.arrayBuffer();
+  const input = new Uint8Array(arrayBuffer);
 
-  const imagePool = new ImagePool(1);
-  const image = imagePool.ingestImage(arrayBuffer);
-
-  await image.decoded; // Wait for decode
-
-  await image.encode({
-    webp: {
-      quality: 90,
-      lossless: 0,
-      method: 4,
-    },
-  });
-
-  const { binary } = await image.encodedWith.webp;
-  await imagePool.close();
+  // ✅ encode to webp
+  const output = await encode(input, { quality });
 
   return {
-    inputBuffer: Buffer.from(arrayBuffer),
-    compressedBuffer: Buffer.from(binary),
+    inputBuffer: input,
+    compressedBuffer: output,
   };
 }

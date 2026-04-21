@@ -2,7 +2,7 @@ import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-r
 import { useLoaderData, useSubmit, useActionData } from "@remix-run/react";
 import { shopify } from "../shopify.server";
 import { useState } from "react";
-import { compressToWeb } from "@/utils/compress.server";
+import { compressToWebP } from "@/utils/compress.server";
 
 // ─── HELPERS ───────────────────────────────────────────────────────────────
 
@@ -71,25 +71,15 @@ async function fetchAllProducts(admin) {
 
 // ─── Compress image with Sharp ─────────────────────────────────────────────
 
-async function compressToWebP(imageUrl, quality = 90) {
-  const res = await fetch(imageUrl);
-  const arrayBuffer = await res.arrayBuffer();
-  const inputBuffer = Buffer.from(arrayBuffer);
 
-  const compressedBuffer = await compressToWeb(inputBuffer)
-    .webp({ quality, effort: 6, lossless: false })
-    .toBuffer();
-
-  return { inputBuffer, compressedBuffer };
-}
 
 // ─── Staged Upload to Shopify CDN ──────────────────────────────────────────
 
 async function uploadToShopifyCDN(admin, compressedBuffer) {
   const filename = `optimized-${Date.now()}.webp`;
 
+  // ✅ 1. Create staged upload
   const stagedRes = await admin.graphql(`
-    #graphql
     mutation stagedUploadsCreate($input: [StagedUploadInput!]!) {
       stagedUploadsCreate(input: $input) {
         stagedTargets {
@@ -100,7 +90,10 @@ async function uploadToShopifyCDN(admin, compressedBuffer) {
             value
           }
         }
-        userErrors { field message }
+        userErrors {
+          field
+          message
+        }
       }
     }
   `, {
@@ -109,25 +102,47 @@ async function uploadToShopifyCDN(admin, compressedBuffer) {
         filename,
         mimeType: "image/webp",
         resource: "IMAGE",
-        fileSize: String(compressedBuffer.length),
+        fileSize: String(compressedBuffer.byteLength), // ✅ FIX (important)
+        httpMethod: "POST"
       }],
     },
   });
 
   const stagedData = await stagedRes.json();
+
+  // ✅ 2. Handle errors (important for production)
+  const errors = stagedData?.data?.stagedUploadsCreate?.userErrors;
+  if (errors?.length) {
+    throw new Error(errors.map(e => e.message).join(", "));
+  }
+
   const target = stagedData.data.stagedUploadsCreate.stagedTargets[0];
 
-  // Upload buffer to CDN
-  const uploadForm = new FormData();
-  target.parameters.forEach(({ name, value }) => uploadForm.append(name, value));
-  uploadForm.append(
-    "file",
-    new Blob([compressedBuffer], { type: "image/webp" }),
-    filename
-  );
+  // ✅ 3. Build form data (Cloudflare-safe)
+  const formData = new FormData();
 
-  await fetch(target.url, { method: "POST", body: uploadForm });
+  target.parameters.forEach(({ name, value }) => {
+    formData.append(name, value);
+  });
 
+  // ✅ 4. Use Blob (perfect for Workers)
+  const file = new Blob([compressedBuffer], {
+    type: "image/webp"
+  });
+
+  formData.append("file", file, filename);
+
+  // ✅ 5. Upload to Shopify storage
+  const uploadRes = await fetch(target.url, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!uploadRes.ok) {
+    throw new Error("Upload to Shopify CDN failed");
+  }
+
+  // ✅ 6. Return CDN URL
   return target.resourceUrl;
 }
 
