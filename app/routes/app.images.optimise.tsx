@@ -2,7 +2,7 @@ import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-r
 import { useLoaderData, useSubmit, useActionData } from "@remix-run/react";
 import { shopify } from "../shopify.server";
 import { useState } from "react";
-import sharp from "sharp";
+import { compressToWeb } from "@/utils/compress.server";
 
 // ─── HELPERS ───────────────────────────────────────────────────────────────
 
@@ -76,7 +76,7 @@ async function compressToWebP(imageUrl, quality = 90) {
   const arrayBuffer = await res.arrayBuffer();
   const inputBuffer = Buffer.from(arrayBuffer);
 
-  const compressedBuffer = await sharp(inputBuffer)
+  const compressedBuffer = await compressToWeb(inputBuffer)
     .webp({ quality, effort: 6, lossless: false })
     .toBuffer();
 
