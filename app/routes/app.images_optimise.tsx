@@ -262,7 +262,9 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
   const intent   = formData.get("intent") as string;
   const imageUrl = formData.get("imageUrl") as string;
   const altText  = (formData.get("altText") as string) || "";
-
+console.log("intent is here ",intent)
+console.log("imageUrl is here ",imageUrl)
+console.log("altText is here ",altText) 
   // 🚀 STEP 1: Get optimized CDN URL (Cloudflare WebP)
   const { optimizedUrl } = await compressToWebP(imageUrl);
 console.log("optimiseUrlis her ",optimizedUrl)
