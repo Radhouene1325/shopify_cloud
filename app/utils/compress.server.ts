@@ -48,11 +48,13 @@ export async function compressToWebP(imageUrl: string, quality = 85) {
       },
     },
   } as any);
-
+console.log("res is here ",res)
   if (!res.ok) {
     // Fallback: return original
     const fallback = await fetch(imageUrl);
     const buffer = Buffer.from(await fallback.arrayBuffer());
+    console.log("buffer is here ",buffer)
+    console.log("fallback",fallback)
     return {
       compressedBuffer: buffer,
       inputBuffer: buffer,
@@ -65,7 +67,8 @@ export async function compressToWebP(imageUrl: string, quality = 85) {
   // Also get original size for comparison
   const originalRes    = await fetch(imageUrl);
   const inputBuffer    = Buffer.from(await originalRes.arrayBuffer());
-
+console.log("compressedBuffer",compressedBuffer)
+console.log("inputBuffer",inputBuffer)
   return {
     compressedBuffer,   // ✅ real compressed binary
     inputBuffer,        // original for size comparison
