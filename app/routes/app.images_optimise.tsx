@@ -465,7 +465,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
     const imageId   = formData.get("imageId") as string;
 
     const res = await admin.graphql(`
-      mutation productUpdateMedia($productId: ID!, $media: [UpdateMediaInput!]!) {
+      mutation productUpdateMedia($productId: ID!, $media: [CreateMediaInput!]!) {
         productUpdateMedia(productId: $productId, media: $media) {
           media {
             id
