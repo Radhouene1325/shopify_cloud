@@ -15,7 +15,7 @@ async function fetchAllProducts(admin) {
     const response = await admin.graphql(`
       #graphql
       query GetProductsWithImages($cursor: String) {
-        products(first: 50, after: $cursor) {
+        products(first: 10, after: $cursor) {
           pageInfo {
             hasNextPage
             endCursor
