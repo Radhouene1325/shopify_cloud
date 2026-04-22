@@ -23,7 +23,7 @@ const Menu = React.memo(() => (
         <Link to="/app/discounts" prefetch="intent">Additional page</Link>
         <Link to="/app/descreptionupdated" prefetch="intent">descreption updated page</Link>
         <Link to="/app/translated" prefetch="intent">translated descreption</Link>
-        <Link to="/app/images/optimise" prefetch="intent">images optimise</Link>
+        <Link to="/app/images_optimise" prefetch="intent">images optimise</Link>
       </NavMenu>
 ));
   return (
