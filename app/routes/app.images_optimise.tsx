@@ -185,79 +185,163 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
 
 // ─── ACTION ────────────────────────────────────────────────────────────────
 
-export const action = async ({ request, context }: ActionFunctionArgs) => {
+// export const action = async ({ request, context }: ActionFunctionArgs) => {
+//   const { admin } = await shopify(context).authenticate.admin(request);
+//   const formData = await request.formData();
+
+//   const intent = formData.get("intent"); // "product_image" | "variant_image"
+//   const imageUrl = formData.get("imageUrl");
+//   const altText = formData.get("altText") || "";
+
+//   // Compress
+//   const { inputBuffer, compressedBuffer } = await compressToWebP(imageUrl);
+
+//   // Upload to CDN
+//   const resourceUrl = await uploadToShopifyCDN(admin, compressedBuffer);
+
+//   const savings = `${(
+//     ((inputBuffer.length - compressedBuffer.length) / inputBuffer.length) * 100
+//   ).toFixed(1)}%`;
+
+//   // ── Case 1: Product image update ──────────────────────────────────────
+//   if (intent === "product_image") {
+//     const productId = formData.get("productId");
+//     const imageId = formData.get("imageId");
+
+//     const updateRes = await admin.graphql(`
+//       #graphql
+//       mutation productImageUpdate($productId: ID!, $image: ImageInput!) {
+//         productImageUpdate(productId: $productId, image: $image) {
+//           image {
+//             id
+//             url
+//             altText
+//           }
+//           userErrors { field message }
+//         }
+//       }
+//     `, {
+//       variables: {
+//         productId,
+//         image: { id: imageId, src: resourceUrl, altText },
+//       },
+//     });
+
+//     const updateData = await updateRes.json();
+//     const errors = updateData.data.productImageUpdate.userErrors;
+
+//     if (errors.length > 0) return json({ success: false, errors });
+
+//     return json({
+//       success: true,
+//       type: "product_image",
+//       image: updateData.data.productImageUpdate.image,
+//       savings,
+//       originalSize: `${(inputBuffer.length / 1024).toFixed(1)} KB`,
+//       compressedSize: `${(compressedBuffer.length / 1024).toFixed(1)} KB`,
+//     });
+//   }
+
+//   // ── Case 2: Variant image update ──────────────────────────────────────
+//   if (intent === "variant_image") {
+//     const variantId = formData.get("variantId");
+
+//     const updateRes = await admin.graphql(`
+//       #graphql
+//       mutation productVariantUpdate($input: ProductVariantInput!) {
+//         productVariantUpdate(input: $input) {
+//           productVariant {
+//             id
+//             title
+//             image {
+//               id
+//               url
+//               altText
+//             }
+//           }
+//           userErrors { field message }
+//         }
+//       }
+//     `, {
+//       variables: {
+//         input: {
+//           id: variantId,
+//           imageSrc: resourceUrl,
+//         },
+//       },
+//     });
+
+//     const updateData = await updateRes.json();
+//     const errors = updateData.data.productVariantUpdate.userErrors;
+
+//     if (errors.length > 0) return json({ success: false, errors });
+
+//     return json({
+//       success: true,
+//       type: "variant_image",
+//       variant: updateData.data.productVariantUpdate.productVariant,
+//       savings,
+//       originalSize: `${(inputBuffer.length / 1024).toFixed(1)} KB`,
+//       compressedSize: `${(compressedBuffer.length / 1024).toFixed(1)} KB`,
+//     });
+//   }
+
+//   return json({ success: false, errors: [{ message: "Unknown intent" }] });
+// };
+export const action = async ({ request, context }:ActionFunctionArgs) => {
   const { admin } = await shopify(context).authenticate.admin(request);
   const formData = await request.formData();
 
-  const intent = formData.get("intent"); // "product_image" | "variant_image"
+  const intent = formData.get("intent");
   const imageUrl = formData.get("imageUrl");
   const altText = formData.get("altText") || "";
 
-  // Compress
-  const { inputBuffer, compressedBuffer } = await compressToWebP(imageUrl);
+  // 🚀 STEP 1: get optimized URL (no compression)
+  const { optimizedUrl } = await compressToWebP(imageUrl);
 
-  // Upload to CDN
-  const resourceUrl = await uploadToShopifyCDN(admin, compressedBuffer);
-
-  const savings = `${(
-    ((inputBuffer.length - compressedBuffer.length) / inputBuffer.length) * 100
-  ).toFixed(1)}%`;
-
-  // ── Case 1: Product image update ──────────────────────────────────────
+  // ── PRODUCT IMAGE ─────────────────────────────
   if (intent === "product_image") {
     const productId = formData.get("productId");
     const imageId = formData.get("imageId");
 
-    const updateRes = await admin.graphql(`
-      #graphql
+    const res = await admin.graphql(`
       mutation productImageUpdate($productId: ID!, $image: ImageInput!) {
         productImageUpdate(productId: $productId, image: $image) {
-          image {
-            id
-            url
-            altText
-          }
+          image { id url altText }
           userErrors { field message }
         }
       }
     `, {
       variables: {
         productId,
-        image: { id: imageId, src: resourceUrl, altText },
+        image: {
+          id: imageId,
+          src: optimizedUrl, // 🚀 use CDN optimized URL
+          altText,
+        },
       },
     });
 
-    const updateData = await updateRes.json();
-    const errors = updateData.data.productImageUpdate.userErrors;
-
-    if (errors.length > 0) return json({ success: false, errors });
+    const data = await res.json();
 
     return json({
       success: true,
       type: "product_image",
-      image: updateData.data.productImageUpdate.image,
-      savings,
-      originalSize: `${(inputBuffer.length / 1024).toFixed(1)} KB`,
-      compressedSize: `${(compressedBuffer.length / 1024).toFixed(1)} KB`,
+      image: data.data.productImageUpdate.image,
+      optimization: "CDN (WebP + Quality 85)",
     });
   }
 
-  // ── Case 2: Variant image update ──────────────────────────────────────
+  // ── VARIANT IMAGE ─────────────────────────────
   if (intent === "variant_image") {
     const variantId = formData.get("variantId");
 
-    const updateRes = await admin.graphql(`
-      #graphql
+    const res = await admin.graphql(`
       mutation productVariantUpdate($input: ProductVariantInput!) {
         productVariantUpdate(input: $input) {
           productVariant {
             id
-            title
-            image {
-              id
-              url
-              altText
-            }
+            image { url }
           }
           userErrors { field message }
         }
@@ -266,29 +350,23 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
       variables: {
         input: {
           id: variantId,
-          imageSrc: resourceUrl,
+          imageSrc: optimizedUrl, // 🚀 same here
         },
       },
     });
 
-    const updateData = await updateRes.json();
-    const errors = updateData.data.productVariantUpdate.userErrors;
-
-    if (errors.length > 0) return json({ success: false, errors });
+    const data = await res.json();
 
     return json({
       success: true,
       type: "variant_image",
-      variant: updateData.data.productVariantUpdate.productVariant,
-      savings,
-      originalSize: `${(inputBuffer.length / 1024).toFixed(1)} KB`,
-      compressedSize: `${(compressedBuffer.length / 1024).toFixed(1)} KB`,
+      variant: data.data.productVariantUpdate.productVariant,
+      optimization: "CDN (WebP + Quality 85)",
     });
   }
 
-  return json({ success: false, errors: [{ message: "Unknown intent" }] });
+  return json({ success: false });
 };
-
 // ─── UI ────────────────────────────────────────────────────────────────────
 
 export default function ImageOptimizer() {
