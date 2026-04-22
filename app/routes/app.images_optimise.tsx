@@ -265,7 +265,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
 
   // 🚀 STEP 1: Get optimized CDN URL (Cloudflare WebP)
   const { optimizedUrl } = await compressToWebP(imageUrl);
-
+console.log("optimiseUrlis her ",optimizedUrl)
   // ── PRODUCT IMAGE ─────────────────────────────────────────────────────
 if (intent === "product_image") {
   const productId = formData.get("productId") as string;
