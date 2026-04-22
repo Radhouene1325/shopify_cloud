@@ -1,5 +1,16 @@
 
 
+import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
+import {
+  Form,
+  useLoaderData,
+  useActionData,
+  useNavigate,
+  useNavigation,
+  useRevalidator,
+} from "@remix-run/react";
+import { useEffect, useState } from "react";
+import { shopify } from "../shopify.server";
 
 
 
@@ -163,7 +174,7 @@ export async function uploadToShopifyCDN(
     formData.append(param.name, param.value);
   });
 
-  const blob = new Blob([compressedBuffer], { type: "image/webp" });
+  const blob = new Blob([compressedBuffer as any], { type: "image/webp" });
   formData.append("file", blob, name);
 
   const uploadRes = await fetch(target.url, {
@@ -185,19 +196,6 @@ export async function uploadToShopifyCDN(
 
 
 
-import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
-import {
-  Form,
-  useLoaderData,
-  useActionData,
-  useNavigate,
-  useNavigation,
-  useRevalidator,
-} from "@remix-run/react";
-import { useEffect, useState } from "react";
-import { shopify } from "../shopify.server";
-import { safeGraphql } from "~/utils/shopify-graphql.server";
-import { compressToWebP, uploadToShopifyCDN, detectImageFormat } from "~/utils/image.server";
 
 const PAGE_SIZE = 10;
 
