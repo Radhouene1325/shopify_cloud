@@ -17,19 +17,21 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
 
 export default function App() {
   const { apiKey } = useLoaderData<typeof loader>();
-
+const Menu = React.memo(() => (
+ <NavMenu>
+        <Link to="/app" rel="home" prefetch="intent">Home</Link>
+        <Link to="/app/discounts" prefetch="intent">Additional page</Link>
+        <Link to="/app/descreptionupdated" prefetch="intent">descreption updated page</Link>
+        <Link to="/app/translated" prefetch="intent">translated descreption</Link>
+        <Link to="/app/images/optimise" prefetch="render">images optimise</Link>
+      </NavMenu>
+));
   return (
     <AppProvider isEmbeddedApp apiKey={apiKey}>
-      <NavMenu>
-        <Link to="/app" rel="home">
-          Home
-        </Link>
-        <Link to="/app/discounts">Additional page</Link>
-        <Link to="/app/descreptionupdated">descreption updated page</Link>
-        <Link to="/app/translated">translated descreption</Link>
-
+     
+       <Menu/>
        
-      </NavMenu>
+     
       <Outlet />
     </AppProvider>
   );
