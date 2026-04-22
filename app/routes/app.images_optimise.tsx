@@ -691,11 +691,11 @@ export default function ImageOptimizer() {
       <PaginationBar />
 
       {/* ── Product Cards ── */}
-      {products.map(({ node: product }: any) => {
+      {products?.map(({ node: product }: any) => {
 
         // ✅ Filter only IMAGE type from media (fixes ProductImage GID issue)
-        const mediaImages = product.media.edges.filter(
-          ({ node: m }: any) => m.mediaContentType === "IMAGE"
+        const mediaImages = product?.media?.edges?.filter(
+          ({ node: m }: any) => m?.mediaContentType === "IMAGE"
         );
 
         return (
@@ -710,37 +710,37 @@ export default function ImageOptimizer() {
             <code style={{ fontSize: "0.7rem", color: "#aaa" }}>{product.id}</code>
 
             {/* ── Product Images (from media) ── */}
-            {mediaImages.length > 0 && (
+            {mediaImages?.length > 0 && (
               <>
                 <h3 style={{ marginTop: "1rem", fontSize: "0.9rem", color: "#333" }}>
                   📷 Product Images
                 </h3>
                 <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
                   {mediaImages.map(({ node: media }: any) => {
-                    const img       = media.image;
-                    const isLoading = loadingId === media.id;
+                    const img       = media?.image;
+                    const isLoading = loadingId === media ?.id;
 
                     return (
-                      <div key={media.id} style={{ textAlign: "center", width: "130px" }}>
+                      <div key={media?.id} style={{ textAlign: "center", width: "130px" }}>
                         <img
-                          src={img.url}
-                          alt={img.altText || ""}
+                          src={img?.url}
+                          alt={img?.altText || ""}
                           width={120}
                           height={120}
                           style={imgStyle}
                         />
                         <div style={{ fontSize: "0.68rem", color: "#888", margin: "3px 0" }}>
-                          {img.width}×{img.height}
+                          {img?.width}×{img?.height}
                         </div>
                         <button
                           disabled={isLoading}
                           style={btnStyle("#008060", isLoading)}
                           onClick={() => handleOptimize({
                             intent:    "product_image",
-                            productId: product.id,
-                            imageId:   media.id,        // ✅ gid://shopify/MediaImage/xxx
-                            imageUrl:  img.url,
-                            altText:   img.altText || "",
+                            productId: product?.id,
+                            imageId:   media?.id,        // ✅ gid://shopify/MediaImage/xxx
+                            imageUrl:  img?.url,
+                            altText:   img?.altText || "",
                           })}
                         >
                           {isLoading ? "⏳ Processing…" : "⚡ Optimize"}
@@ -753,48 +753,48 @@ export default function ImageOptimizer() {
             )}
 
             {/* ── Variant Images ── */}
-            {product.variants.edges.some(({ node: v }: any) => v.image) && (
+            {product?.variants?.edges?.some(({ node: v }: any) => v.image) && (
               <>
                 <h3 style={{ marginTop: "1rem", fontSize: "0.9rem", color: "#333" }}>
                   🎨 Variant Images
                 </h3>
                 <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-                  {product.variants.edges
+                  {product?.variants?.edges
                     .filter(({ node: v }: any) => v.image)
                     .map(({ node: variant }: any) => {
-                      const isLoading = loadingId === variant.id;
+                      const isLoading = loadingId === variant?.id;
 
                       // ✅ Convert variant image GID for fileDelete if needed
-                      const variantMediaId = variant.image.id.replace(
+                      const variantMediaId = variant?.image?.id?.replace(
                         "gid://shopify/ProductImage/",
                         "gid://shopify/MediaImage/"
                       );
 
                       return (
-                        <div key={variant.id} style={{ textAlign: "center", width: "130px" }}>
+                        <div key={variant?.id} style={{ textAlign: "center", width: "130px" }}>
                           <p style={{ fontSize: "0.75rem", margin: "0 0 4px", fontWeight: 600 }}>
-                            {variant.title}
+                            {variant?.title}
                           </p>
                           <img
-                            src={variant.image.url}
-                            alt={variant.image.altText || ""}
+                            src={variant?.image?.url}
+                            alt={variant?.image?.altText || ""}
                             width={110}
                             height={110}
                             style={imgStyle}
                           />
                           <div style={{ fontSize: "0.68rem", color: "#888", margin: "3px 0" }}>
-                            {variant.image.width}×{variant.image.height}
+                            {variant?.image?.width}×{variant?.image?.height}
                           </div>
                           <button
                             disabled={isLoading}
                             style={btnStyle("#5c6ac4", isLoading)}
                             onClick={() => handleOptimize({
                               intent:    "variant_image",
-                              productId: product.id,     // ✅ required for bulk mutation
-                              variantId: variant.id,
+                              productId: product?.id,     // ✅ required for bulk mutation
+                              variantId: variant?.id,
                               imageId:   variantMediaId, // ✅ converted MediaImage GID
-                              imageUrl:  variant.image.url,
-                              altText:   variant.image.altText || "",
+                              imageUrl:  variant?.image?.url,
+                              altText:   variant?.image?.altText || "",
                             })}
                           >
                             {isLoading ? "⏳ Processing…" : "⚡ Optimize"}
