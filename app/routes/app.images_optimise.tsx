@@ -1,8 +1,9 @@
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
-import { useLoaderData, useSubmit, useActionData } from "@remix-run/react";
+import { useLoaderData, useSubmit, useActionData, useNavigate } from "@remix-run/react";
 import { shopify } from "../shopify.server";
 import { useState } from "react";
 import { compressToWebP } from "@/utils/compress.server";
+const PAGE_SIZE = 10;
 
 // ─── HELPERS ───────────────────────────────────────────────────────────────
 async function safeGraphql(admin, query, variables = {}, retries = 5) {
@@ -104,83 +105,38 @@ async function fetchAllProducts(admin) {
 
 // ─── Staged Upload to Shopify CDN ──────────────────────────────────────────
 
-async function uploadToShopifyCDN(admin, compressedBuffer) {
-  const filename = `optimized-${Date.now()}.webp`;
 
-  // ✅ 1. Create staged upload
-  const stagedRes = await admin.graphql(`
-    mutation stagedUploadsCreate($input: [StagedUploadInput!]!) {
-      stagedUploadsCreate(input: $input) {
-        stagedTargets {
-          url
-          resourceUrl
-          parameters {
-            name
-            value
-          }
-        }
-        userErrors {
-          field
-          message
-        }
-      }
-    }
-  `, {
-    variables: {
-      input: [{
-        filename,
-        mimeType: "image/webp",
-        resource: "IMAGE",
-        fileSize: String(compressedBuffer.byteLength), // ✅ FIX (important)
-        httpMethod: "POST"
-      }],
-    },
-  });
-
-  const stagedData = await stagedRes.json();
-
-  // ✅ 2. Handle errors (important for production)
-  const errors = stagedData?.data?.stagedUploadsCreate?.userErrors;
-  if (errors?.length) {
-    throw new Error(errors.map(e => e.message).join(", "));
-  }
-
-  const target = stagedData.data.stagedUploadsCreate.stagedTargets[0];
-
-  // ✅ 3. Build form data (Cloudflare-safe)
-  const formData = new FormData();
-
-  target.parameters.forEach(({ name, value }) => {
-    formData.append(name, value);
-  });
-
-  // ✅ 4. Use Blob (perfect for Workers)
-  const file = new Blob([compressedBuffer], {
-    type: "image/webp"
-  });
-
-  formData.append("file", file, filename);
-
-  // ✅ 5. Upload to Shopify storage
-  const uploadRes = await fetch(target.url, {
-    method: "POST",
-    body: formData,
-  });
-
-  if (!uploadRes.ok) {
-    throw new Error("Upload to Shopify CDN failed");
-  }
-
-  // ✅ 6. Return CDN URL
-  return target.resourceUrl;
-}
 
 // ─── LOADER ────────────────────────────────────────────────────────────────
 
-export const loader = async ({ request, context }: LoaderFunctionArgs) => {
+export const loader = async ({ request,context }:LoaderFunctionArgs) => {
   const { admin } = await shopify(context).authenticate.admin(request);
-  const products = await fetchAllProducts(admin);
-  return json({ products });
+
+  const url    = new URL(request.url);
+  const cursor = url.searchParams.get("cursor") || null;
+  const dir    = url.searchParams.get("dir") || "next"; // "next" | "prev"
+
+  // For "previous" page we use `last` + `before` — Shopify pagination standard
+  let variables;
+  if (dir === "prev" && cursor) {
+    variables = { last: PAGE_SIZE, before: cursor };
+  } else {
+    variables = { first: PAGE_SIZE, after: cursor };
+  }
+
+  // Use a unified query that supports both directions
+  const query = dir === "prev"
+    ? PRODUCTS_QUERY
+    : PRODUCTS_QUERY;
+
+  const data = await safeGraphql(admin, query, variables);
+  const { edges, pageInfo } = data.data.products;
+
+  return json({
+    products:    edges,
+    pageInfo,
+    currentDir:  dir,
+  });
 };
 
 // ─── ACTION ────────────────────────────────────────────────────────────────
@@ -288,60 +244,61 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
 
 //   return json({ success: false, errors: [{ message: "Unknown intent" }] });
 // };
-export const action = async ({ request, context }:ActionFunctionArgs) => {
+export const action = async ({ request, context }: ActionFunctionArgs) => {
   const { admin } = await shopify(context).authenticate.admin(request);
   const formData = await request.formData();
 
-  const intent = formData.get("intent");
-  const imageUrl = formData.get("imageUrl");
-  const altText = formData.get("altText") || "";
+  const intent   = formData.get("intent") as string;
+  const imageUrl = formData.get("imageUrl") as string;
+  const altText  = (formData.get("altText") as string) || "";
 
-  // 🚀 STEP 1: get optimized URL (no compression)
+  // 🚀 STEP 1: Get optimized CDN URL (Cloudflare WebP)
   const { optimizedUrl } = await compressToWebP(imageUrl);
 
-  // ── PRODUCT IMAGE ─────────────────────────────
+  // ── PRODUCT IMAGE ─────────────────────────────────────────────────────
   if (intent === "product_image") {
-    const productId = formData.get("productId");
-    const imageId = formData.get("imageId");
+    const productId = formData.get("productId") as string;
+    const imageId   = formData.get("imageId") as string;
 
-    const res = await admin.graphql(`
-      mutation productImageUpdate($productId: ID!, $image: ImageInput!) {
-        productImageUpdate(productId: $productId, image: $image) {
-          image { id url altText }
+    // Step 1: Delete old image
+    const deleteRes = await admin.graphql(`
+      #graphql
+      mutation productDeleteImages($id: ID!, $imageIds: [ID!]!) {
+        productDeleteImages(id: $id, imageIds: $imageIds) {
+          deletedImageIds
           userErrors { field message }
         }
       }
     `, {
       variables: {
-        productId,
-        image: {
-          id: imageId,
-          src: optimizedUrl, // 🚀 use CDN optimized URL
-          altText,
-        },
+        id: productId,
+        imageIds: [imageId],
       },
     });
 
-    const data = await res.json();
+    const deleteData = await deleteRes.json();
+    const deleteErrors = deleteData.data.productDeleteImages.userErrors;
 
-    return json({
-      success: true,
-      type: "product_image",
-      image: data.data.productImageUpdate.image,
-      optimization: "CDN (WebP + Quality 85)",
-    });
-  }
+    if (deleteErrors.length > 0) {
+      return json({ success: false, errors: deleteErrors });
+    }
 
-  // ── VARIANT IMAGE ─────────────────────────────
-  if (intent === "variant_image") {
-    const variantId = formData.get("variantId");
-
-    const res = await admin.graphql(`
-      mutation productVariantUpdate($input: ProductVariantInput!) {
-        productVariantUpdate(input: $input) {
-          productVariant {
+    // Step 2: Add new optimized image
+    const addRes = await admin.graphql(`
+      #graphql
+      mutation productUpdate($input: ProductInput!) {
+        productUpdate(input: $input) {
+          product {
             id
-            image { url }
+            images(first: 5) {
+              edges {
+                node {
+                  id
+                  url
+                  altText
+                }
+              }
+            }
           }
           userErrors { field message }
         }
@@ -349,119 +306,231 @@ export const action = async ({ request, context }:ActionFunctionArgs) => {
     `, {
       variables: {
         input: {
-          id: variantId,
-          imageSrc: optimizedUrl, // 🚀 same here
+          id: productId,
+          images: [
+            {
+              src: optimizedUrl,
+              altText,
+            },
+          ],
         },
       },
     });
 
+    const addData = await addRes.json();
+    const addErrors = addData.data.productUpdate.userErrors;
+
+    if (addErrors.length > 0) {
+      return json({ success: false, errors: addErrors });
+    }
+
+    return json({
+      success: true,
+      type: "product_image",
+      image: addData.data.productUpdate.product,
+      optimization: "CDN (WebP + Quality 90)",
+    });
+  }
+
+  // ── VARIANT IMAGE ─────────────────────────────────────────────────────
+  if (intent === "variant_image") {
+    const variantId = formData.get("variantId") as string;
+    const productId = formData.get("productId") as string; // ⚠️ required
+
+    const res = await admin.graphql(`
+      #graphql
+      mutation productVariantsBulkUpdate(
+        $productId: ID!
+        $variants: [ProductVariantsBulkInput!]!
+      ) {
+        productVariantsBulkUpdate(productId: $productId, variants: $variants) {
+          productVariants {
+            id
+            title
+            image {
+              id
+              url
+              altText
+            }
+          }
+          userErrors { field message }
+        }
+      }
+    `, {
+      variables: {
+        productId,
+        variants: [
+          {
+            id: variantId,
+            mediaSrc: [optimizedUrl], // ✅ 2026-01 correct field
+          },
+        ],
+      },
+    });
+
     const data = await res.json();
+    const errors = data.data.productVariantsBulkUpdate.userErrors;
+
+    if (errors.length > 0) {
+      return json({ success: false, errors });
+    }
 
     return json({
       success: true,
       type: "variant_image",
-      variant: data.data.productVariantUpdate.productVariant,
-      optimization: "CDN (WebP + Quality 85)",
+      variant: data.data.productVariantsBulkUpdate.productVariants,
+      optimization: "CDN (WebP + Quality 90)",
     });
   }
 
   return json({ success: false });
 };
+
 // ─── UI ────────────────────────────────────────────────────────────────────
 
 export default function ImageOptimizer() {
-  const { products } = useLoaderData();
-  const actionData = useActionData();
-  const submit = useSubmit();
+  const { products, pageInfo } = useLoaderData();
+  const actionData             = useActionData();
+  const submit                 = useSubmit();
+  const navigate               = useNavigate();
   const [loadingId, setLoadingId] = useState(null);
 
-  const handleOptimize = (fields) => {
-    setLoadingId(fields.imageId || fields.variantId);
-    const formData = new FormData();
-    Object.entries(fields).forEach(([k, v]) => formData.append(k, v));
-    submit(formData, { method: "post" });
+  // ── Pagination handlers ───────────────────────────────────────────────
+  const goNext = () => {
+    if (!pageInfo.hasNextPage) return;
+    navigate(`?cursor=${pageInfo.endCursor}&dir=next`);
   };
 
+  const goPrev = () => {
+    if (!pageInfo.hasPreviousPage) return;
+    navigate(`?cursor=${pageInfo.startCursor}&dir=prev`);
+  };
+
+  // ── Optimize handler ──────────────────────────────────────────────────
+  const handleOptimize = (fields) => {
+    setLoadingId(fields.imageId || fields.variantId);
+    const fd = new FormData();
+    Object.entries(fields).forEach(([k, v]) => fd.append(k, v));
+    submit(fd, { method: "post" });
+  };
+
+  // ── Pagination bar ────────────────────────────────────────────────────
+  const PaginationBar = () => (
+    <div style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: "1rem",
+      margin: "1.5rem 0",
+    }}>
+      <button
+        onClick={goPrev}
+        disabled={!pageInfo.hasPreviousPage}
+        style={paginationBtn(!pageInfo.hasPreviousPage)}
+      >
+        ← Previous
+      </button>
+
+      <span style={{ fontSize: "0.85rem", color: "#666" }}>
+        {products.length} products per page
+      </span>
+
+      <button
+        onClick={goNext}
+        disabled={!pageInfo.hasNextPage}
+        style={paginationBtn(!pageInfo.hasNextPage)}
+      >
+        Next →
+      </button>
+    </div>
+  );
+
   return (
-    <div style={{ padding: "2rem", fontFamily: "Inter, sans-serif", maxWidth: "1100px", margin: "0 auto" }}>
-      <h1 style={{ fontSize: "1.6rem" }}>🖼️ Bulk Image Optimizer</h1>
-      <p style={{ color: "#555" }}>
-        Fetches <strong>all products</strong> (paginated), compresses images to{" "}
-        <strong>WebP quality 90</strong>, and saves via Shopify mutation.
+    <div style={{
+      padding: "2rem",
+      fontFamily: "Inter, sans-serif",
+      maxWidth: "1100px",
+      margin: "0 auto",
+    }}>
+
+      {/* ── Header ── */}
+      <h1 style={{ fontSize: "1.6rem", marginBottom: "0.25rem" }}>
+        🖼️ Bulk Image Optimizer
+      </h1>
+      <p style={{ color: "#555", marginBottom: "1rem" }}>
+        <strong>{PAGE_SIZE} products per page</strong> · Converts to{" "}
+        <strong>WebP quality 90</strong> via Cloudflare · Saves via Shopify mutation
       </p>
 
-      {/* Action Result Banner */}
+      {/* ── Result Banner ── */}
       {actionData && (
         <div style={{
-          padding: "1rem",
+          padding: "0.9rem 1.2rem",
           marginBottom: "1.5rem",
           borderRadius: "8px",
           background: actionData.success ? "#e6f4ea" : "#fce8e6",
           border: `1px solid ${actionData.success ? "#34a853" : "#ea4335"}`,
+          fontSize: "0.9rem",
         }}>
           {actionData.success ? (
-            <>
-              ✅ <strong>Optimized!</strong> &nbsp;
-              {actionData.originalSize} → {actionData.compressedSize} &nbsp;
-              <strong>({actionData.savings} saved)</strong>
-            </>
+            <>✅ <strong>Optimized!</strong> · {actionData.optimization}</>
           ) : (
-            <>❌ Error: {actionData.errors?.map(e => e.message).join(", ")}</>
+            <>❌ <strong>Error:</strong> {actionData.errors?.map(e => e.message).join(", ")}</>
           )}
         </div>
       )}
 
-      {/* Product List */}
+      {/* ── Top Pagination ── */}
+      <PaginationBar />
+
+      {/* ── Product Cards ── */}
       {products.map(({ node: product }) => (
         <div key={product.id} style={{
-          marginBottom: "2rem",
+          marginBottom: "1.5rem",
           border: "1px solid #e0e0e0",
           borderRadius: "10px",
           padding: "1.25rem",
+          background: "#fafafa",
         }}>
-          <h2 style={{ margin: "0 0 0.25rem" }}>{product.title}</h2>
-          <code style={{ fontSize: "0.75rem", color: "#888" }}>{product.id}</code>
+          <h2 style={{ margin: "0 0 2px", fontSize: "1.05rem" }}>{product.title}</h2>
+          <code style={{ fontSize: "0.7rem", color: "#aaa" }}>{product.id}</code>
 
           {/* Product Images */}
           {product.images.edges.length > 0 && (
             <>
-              <h3 style={{ marginTop: "1rem" }}>📷 Product Images</h3>
+              <h3 style={{ marginTop: "1rem", fontSize: "0.9rem", color: "#333" }}>
+                📷 Product Images
+              </h3>
               <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-                {product.images.edges.map(({ node: img }) => (
-                  <div key={img.id} style={{ textAlign: "center", width: "130px" }}>
-                    <img
-                      src={img.url}
-                      alt={img.altText || ""}
-                      width={120}
-                      height={120}
-                      style={{ objectFit: "cover", borderRadius: "6px", border: "1px solid #ddd" }}
-                    />
-                    <div style={{ fontSize: "0.7rem", color: "#666", margin: "4px 0" }}>
-                      {img.width}×{img.height}
+                {product.images.edges.map(({ node: img }) => {
+                  const isLoading = loadingId === img.id;
+                  return (
+                    <div key={img.id} style={{ textAlign: "center", width: "130px" }}>
+                      <img
+                        src={img.url}
+                        alt={img.altText || ""}
+                        width={120} height={120}
+                        style={imgStyle}
+                      />
+                      <div style={{ fontSize: "0.68rem", color: "#888", margin: "3px 0" }}>
+                        {img.width}×{img.height}
+                      </div>
+                      <button
+                        disabled={isLoading}
+                        style={btnStyle("#008060", isLoading)}
+                        onClick={() => handleOptimize({
+                          intent:    "product_image",
+                          productId: product.id,
+                          imageId:   img.id,
+                          imageUrl:  img.url,
+                          altText:   img.altText || "",
+                        })}
+                      >
+                        {isLoading ? "⏳ Processing…" : "⚡ Optimize"}
+                      </button>
                     </div>
-                    <button
-                      disabled={loadingId === img.id}
-                      onClick={() => handleOptimize({
-                        intent: "product_image",
-                        productId: product.id,
-                        imageId: img.id,
-                        imageUrl: img.url,
-                        altText: img.altText || "",
-                      })}
-                      style={{
-                        padding: "5px 10px",
-                        background: loadingId === img.id ? "#aaa" : "#008060",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "5px",
-                        cursor: loadingId === img.id ? "not-allowed" : "pointer",
-                        fontSize: "0.8rem",
-                      }}
-                    >
-                      {loadingId === img.id ? "⏳ Processing..." : "⚡ Optimize"}
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </>
           )}
@@ -469,52 +538,82 @@ export default function ImageOptimizer() {
           {/* Variant Images */}
           {product.variants.edges.some(({ node: v }) => v.image) && (
             <>
-              <h3 style={{ marginTop: "1rem" }}>🎨 Variant Images</h3>
+              <h3 style={{ marginTop: "1rem", fontSize: "0.9rem", color: "#333" }}>
+                🎨 Variant Images
+              </h3>
               <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
                 {product.variants.edges
                   .filter(({ node: v }) => v.image)
-                  .map(({ node: variant }) => (
-                    <div key={variant.id} style={{ textAlign: "center", width: "130px" }}>
-                      <p style={{ fontSize: "0.75rem", margin: "0 0 4px", fontWeight: 600 }}>
-                        {variant.title}
-                      </p>
-                      <img
-                        src={variant.image.url}
-                        alt={variant.image.altText || ""}
-                        width={110}
-                        height={110}
-                        style={{ objectFit: "cover", borderRadius: "6px", border: "1px solid #ddd" }}
-                      />
-                      <div style={{ fontSize: "0.7rem", color: "#666", margin: "4px 0" }}>
-                        {variant.image.width}×{variant.image.height}
+                  .map(({ node: variant }) => {
+                    const isLoading = loadingId === variant.id;
+                    return (
+                      <div key={variant.id} style={{ textAlign: "center", width: "130px" }}>
+                        <p style={{ fontSize: "0.75rem", margin: "0 0 4px", fontWeight: 600 }}>
+                          {variant.title}
+                        </p>
+                        <img
+                          src={variant.image.url}
+                          alt={variant.image.altText || ""}
+                          width={110} height={110}
+                          style={imgStyle}
+                        />
+                        <div style={{ fontSize: "0.68rem", color: "#888", margin: "3px 0" }}>
+                          {variant.image.width}×{variant.image.height}
+                        </div>
+                        <button
+                          disabled={isLoading}
+                          style={btnStyle("#5c6ac4", isLoading)}
+                          onClick={() => handleOptimize({
+                            intent:    "variant_image",
+                            productId: product.id,  // ✅ required for bulk mutation
+                            variantId: variant.id,
+                            imageUrl:  variant.image.url,
+                            altText:   variant.image.altText || "",
+                          })}
+                        >
+                          {isLoading ? "⏳ Processing…" : "⚡ Optimize"}
+                        </button>
                       </div>
-                      <button
-                        disabled={loadingId === variant.id}
-                        onClick={() => handleOptimize({
-                          intent: "variant_image",
-                          variantId: variant.id,
-                          imageUrl: variant.image.url,
-                          altText: variant.image.altText || "",
-                        })}
-                        style={{
-                          padding: "5px 10px",
-                          background: loadingId === variant.id ? "#aaa" : "#5c6ac4",
-                          color: "#fff",
-                          border: "none",
-                          borderRadius: "5px",
-                          cursor: loadingId === variant.id ? "not-allowed" : "pointer",
-                          fontSize: "0.8rem",
-                        }}
-                      >
-                        {loadingId === variant.id ? "⏳ Processing..." : "⚡ Optimize"}
-                      </button>
-                    </div>
-                  ))}
+                    );
+                  })}
               </div>
             </>
           )}
         </div>
       ))}
+
+      {/* ── Bottom Pagination ── */}
+      <PaginationBar />
     </div>
   );
 }
+
+const btnStyle = (bg, disabled) => ({
+  padding: "5px 12px",
+  background: disabled ? "#bbb" : bg,
+  color: "#fff",
+  border: "none",
+  borderRadius: "5px",
+  cursor: disabled ? "not-allowed" : "pointer",
+  fontSize: "0.78rem",
+  marginTop: "6px",
+  transition: "background 0.2s",
+});
+
+const imgStyle = {
+  objectFit: "cover",
+  borderRadius: "6px",
+  border: "1px solid #ddd",
+  display: "block",
+};
+
+const paginationBtn = (disabled) => ({
+  padding: "8px 20px",
+  background: disabled ? "#e0e0e0" : "#008060",
+  color: disabled ? "#999" : "#fff",
+  border: "none",
+  borderRadius: "6px",
+  cursor: disabled ? "not-allowed" : "pointer",
+  fontWeight: 600,
+  fontSize: "0.9rem",
+});
