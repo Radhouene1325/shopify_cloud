@@ -5,27 +5,46 @@ import { useState } from "react";
 import { compressToWebP } from "@/utils/compress.server";
 
 // ─── HELPERS ───────────────────────────────────────────────────────────────
+async function safeGraphql(admin, query, variables = {}, retries = 5) {
+  try {
+    const res = await admin.graphql(query, { variables });
+    const json = await res.json();
 
-async function fetchAllProducts(admin) {
-  let allProducts = [];
-  let cursor = null;
-  let hasNextPage = true;
+    if (json.errors) {
+      const isThrottled = json.errors.some(e =>
+        e.message.includes("Throttled")
+      );
 
-  while (hasNextPage) {
-    const response = await admin.graphql(`
-      #graphql
-      query GetProductsWithImages($cursor: String) {
-        products(first: 10, after: $cursor) {
-          pageInfo {
-            hasNextPage
-            endCursor
-          }
-          edges {
-            node {
-              id
-              title
-              images(first: 10) {
-                edges {
+      if (isThrottled && retries > 0) {
+        await new Promise(r => setTimeout(r, 500)); // wait 500ms
+        return safeGraphql(admin, query, variables, retries - 1);
+      }
+
+      throw new Error(JSON.stringify(json.errors));
+    }
+
+    return json;
+  } catch (err) {
+    if (retries > 0) {
+      await new Promise(r => setTimeout(r, 500));
+      return safeGraphql(admin, query, variables, retries - 1);
+    }
+    throw err;
+  }
+}
+const PRODUCTS_QUERY = `
+  query GetProductsWithImages($cursor: String) {
+    products(first: 5, after: $cursor) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      edges {
+        node {
+          id
+          title
+          images(first: 3) {
+              edges {
                   node {
                     id
                     url
@@ -34,9 +53,9 @@ async function fetchAllProducts(admin) {
                     height
                   }
                 }
-              }
-              variants(first: 10) {
-                edges {
+          }
+          variants(first: 5) {
+             edges {
                   node {
                     id
                     title
@@ -49,21 +68,31 @@ async function fetchAllProducts(admin) {
                     }
                   }
                 }
-              }
-            }
           }
         }
       }
-    `, {
-      variables: { cursor },
-    });
+    }
+  }
+`;
 
-    const data = await response.json();
-    const { edges, pageInfo } = data.data.products;
+async function fetchAllProducts(admin) {
+  let allProducts = [];
+  let cursor = null;
+  let hasNextPage = true;
 
-    allProducts = [...allProducts, ...edges];
-    hasNextPage = pageInfo.hasNextPage;
-    cursor = pageInfo.endCursor;
+  while (hasNextPage) {
+    const data = await safeGraphql(admin, PRODUCTS_QUERY, { cursor });
+
+    const products = data.data.products;
+    const edges = products.edges;
+
+    allProducts.push(...edges);
+
+    hasNextPage = products.pageInfo.hasNextPage;
+    cursor = products.pageInfo.endCursor;
+
+    // ✅ Prevent throttling
+    await new Promise(r => setTimeout(r, 200));
   }
 
   return allProducts;
