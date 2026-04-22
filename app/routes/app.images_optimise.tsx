@@ -261,24 +261,22 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
     const imageId   = formData.get("imageId") as string;
 
     // Step 1: Delete old image
-    const deleteRes = await admin.graphql(`
-      #graphql
-      mutation productDeleteImages($id: ID!, $imageIds: [ID!]!) {
-        productDeleteImages(id: $id, imageIds: $imageIds) {
-          deletedImageIds
-          userErrors { field message }
-        }
+   const deleteData = await safeGraphql(admin, `
+    #graphql
+    mutation fileDelete($fileIds: [ID!]!) {
+      fileDelete(fileIds: $fileIds) {
+        deletedFileIds
+        userErrors { field message }
       }
-    `, {
-      variables: {
-        id: productId,
-        imageIds: [imageId],
-      },
-    });
+    }
+  `, {
+    fileIds: [imageId],
+  });
 
-    const deleteData = await deleteRes.json();
-    const deleteErrors = deleteData.data.productDeleteImages.userErrors;
-
+  const deleteErrors = deleteData.data.fileDelete.userErrors;
+  if (deleteErrors.length > 0) {
+    return json({ success: false, errors: deleteErrors });
+  }
     if (deleteErrors.length > 0) {
       return json({ success: false, errors: deleteErrors });
     }
