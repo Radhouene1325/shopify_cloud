@@ -41,14 +41,18 @@ export async function compressToWebP(imageUrl: string, quality = 85) {
   // Fetch compressed binary from Cloudflare CDN
   const res = await fetch(imageUrl, {
     cf: {
-      image: {
+       image: {
         format: "webp",
         quality,
+        width: 800, // ✅ critical for real optimization
         fit: "scale-down",
       },
     },
   } as any);
-console.log("res is here ",res)
+ console.log("status:", res.status);
+  console.log("content-type:", res.headers.get("content-type"));
+  console.log("tested",res.ok)
+
   if (!res.ok) {
     // Fallback: return original
     const fallback = await fetch(imageUrl);
