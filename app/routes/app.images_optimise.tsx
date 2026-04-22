@@ -445,6 +445,7 @@ export async function uploadToShopifyCDN(admin: any, compressedBuffer: Uint8Arra
 // };
 
 
+
 export const action = async ({ request, context }: ActionFunctionArgs) => {
   const { admin } = await shopify(context).authenticate.admin(request);
   const formData = await request.formData();
@@ -453,10 +454,10 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
   const imageUrl = formData.get("imageUrl") as string;
   const altText  = (formData.get("altText") as string) || "";
 
-  // 🚀 STEP 1: compress (HD WebP)
-  const compressedBuffer = await compressToWebP(imageUrl);
+  // ✅ STEP 1: compress correctly
+  const { compressedBuffer } = await compressToWebP(imageUrl);
 
-  // 🚀 STEP 2: upload to Shopify CDN
+  // ✅ STEP 2: upload to Shopify CDN
   const resourceUrl = await uploadToShopifyCDN(admin, compressedBuffer);
 
   // ───────────────── PRODUCT IMAGE ─────────────────
@@ -465,7 +466,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
     const imageId   = formData.get("imageId") as string;
 
     const res = await admin.graphql(`
-      mutation productUpdateMedia($productId: ID!, $media: [CreateMediaInput!]!) {
+      mutation productUpdateMedia($productId: ID!, $media: [UpdateMediaInput!]!) {
         productUpdateMedia(productId: $productId, media: $media) {
           media {
             id
@@ -488,8 +489,8 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
         productId,
         media: [
           {
-            id: imageId,                // ✅ correct GID
-            originalSource: resourceUrl, // 🔥 replace image
+            id: imageId,                      // ✅ correct
+            previewImageSource: resourceUrl,  // ✅ FIXED (NOT originalSource)
             alt: altText,
           },
         ],
@@ -562,8 +563,6 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
 
   return json({ success: false, error: "Unknown intent" });
 };
-
-
 // ─── UI ────────────────────────────────────────────────────────────────────
 
 const btnStyle = (bg: string, disabled: boolean) => ({
@@ -597,7 +596,7 @@ const paginationBtn = (disabled: boolean) => ({
 });
 
 export default function ImageOptimizer() {
-  const { products, pageInfo } = useLoaderData<typeof loader>();
+  const { products, pageInfo } = useLoaderData();
   const actionData             = useActionData();
   const submit                 = useSubmit();
   const navigate               = useNavigate();

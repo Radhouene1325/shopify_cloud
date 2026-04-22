@@ -81,23 +81,53 @@
 // }
 
 
-export async function compressToWebP(imageUrl, quality = 85) {
+// export async function compressToWebP(imageUrl, quality = 85) {
+//   const res = await fetch(imageUrl, {
+//     cf: {
+//       image: {
+//         format: "webp",
+//         quality,
+//         width: 2000, // 🔥 HD (not 4K but high quality)
+//         fit: "scale-down",
+//       },
+//     },
+//   });
+
+//   if (!res.ok) {
+//     throw new Error("Cloudflare optimization failed");
+//   }
+
+//   const buffer = new Uint8Array(await res.arrayBuffer());
+
+//   return buffer;
+
+
+
+// }
+
+
+
+
+export async function compressToWebP(imageUrl: string, quality = 85) {
   const res = await fetch(imageUrl, {
     cf: {
-      image: {
+     image: {
         format: "webp",
         quality,
         width: 2000, // 🔥 HD (not 4K but high quality)
         fit: "scale-down",
       },
     },
-  });
+  } as any);
 
   if (!res.ok) {
     throw new Error("Cloudflare optimization failed");
   }
 
-  const buffer = new Uint8Array(await res.arrayBuffer());
+  const compressedBuffer = new Uint8Array(await res.arrayBuffer());
 
-  return buffer;
+  return {
+    compressedBuffer,
+  };
 }
+
