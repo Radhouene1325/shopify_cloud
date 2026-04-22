@@ -24,7 +24,7 @@ async function fetchAllProducts(admin) {
             node {
               id
               title
-              images(first: 20) {
+              images(first: 10) {
                 edges {
                   node {
                     id
@@ -35,7 +35,7 @@ async function fetchAllProducts(admin) {
                   }
                 }
               }
-              variants(first: 20) {
+              variants(first: 10) {
                 edges {
                   node {
                     id
