@@ -21,17 +21,54 @@
 
 // app/utils/compress.server.js
 
-export async function compressToWebP(imageUrl, quality = 85) {
-  // 🚀 Shopify CDN already supports transformations
-  // format=webp is automatic fallback-safe
+// export async function compressToWebP(imageUrl, quality = 85) {
+//   // 🚀 Shopify CDN already supports transformations
+//   // format=webp is automatic fallback-safe
 
-  const optimizedUrl = `${imageUrl}${
-    imageUrl.includes("?") ? "&" : "?"
-  }format=webp&quality=${quality}`;
+//   const optimizedUrl = `${imageUrl}${
+//     imageUrl.includes("?") ? "&" : "?"
+//   }format=webp&quality=${quality}`;
+
+//   return {
+//     inputBuffer: null,              // no need anymore
+//     compressedBuffer: null,         // no binary processing
+//     optimizedUrl,                   // ✅ THIS is what you use
+//   };
+// }
+
+
+export async function compressToWebP(imageUrl: string, quality = 85) {
+  // Fetch compressed binary from Cloudflare CDN
+  const res = await fetch(imageUrl, {
+    cf: {
+      image: {
+        format: "webp",
+        quality,
+        fit: "scale-down",
+      },
+    },
+  } as any);
+
+  if (!res.ok) {
+    // Fallback: return original
+    const fallback = await fetch(imageUrl);
+    const buffer = Buffer.from(await fallback.arrayBuffer());
+    return {
+      compressedBuffer: buffer,
+      inputBuffer: buffer,
+      optimizedUrl: imageUrl,
+    };
+  }
+
+  const compressedBuffer = Buffer.from(await res.arrayBuffer());
+
+  // Also get original size for comparison
+  const originalRes    = await fetch(imageUrl);
+  const inputBuffer    = Buffer.from(await originalRes.arrayBuffer());
 
   return {
-    inputBuffer: null,              // no need anymore
-    compressedBuffer: null,         // no binary processing
-    optimizedUrl,                   // ✅ THIS is what you use
+    compressedBuffer,   // ✅ real compressed binary
+    inputBuffer,        // original for size comparison
+    optimizedUrl: null, // not needed — we upload the buffer
   };
 }
