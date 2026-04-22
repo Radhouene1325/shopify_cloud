@@ -292,31 +292,34 @@ if (intent === "product_image") {
 
   // Step 2: Add optimized image
   const addData = await safeGraphql(admin, `
-    #graphql
-    mutation productUpdate($input: ProductInput!) {
-      productUpdate(input: $input) {
-        product {
-          id
-          media(first: 5) {
-            edges {
-              node {
-                id
-                ... on MediaImage {
-                  image { url altText }
-                }
-              }
-            }
+  #graphql
+  mutation productUpdateMedia($productId: ID!, $media: [UpdateMediaInput!]!) {
+    productUpdateMedia(productId: $productId, media: $media) {
+      media {
+        id
+        alt
+        status
+        ... on MediaImage {
+          image {
+            url
+            altText
           }
         }
-        userErrors { field message }
+      }
+      mediaUserErrors {
+        field
+        message
       }
     }
-  `, {
-    input: {
-      id: productId,
-      images: [{ src: optimizedUrl, altText }],
-    },
-  });
+  }
+`, {
+  productId: productId,
+  media: [{
+    id: optimizedUrl,   // ← GID del MediaImage esistente: "gid://shopify/MediaImage/xxx"
+    alt: altText,
+  }],
+});
+
 
   const addErrors = addData.data.productUpdate.userErrors;
   if (addErrors.length > 0) {
