@@ -87,28 +87,7 @@ query GetProductsWithImages($cursor: String, $first: Int!) {
 
 `;
 
-async function fetchAllProducts(admin) {
-  let allProducts = [];
-  let cursor = null;
-  let hasNextPage = true;
 
-  while (hasNextPage) {
-    const data = await safeGraphql(admin, PRODUCTS_QUERY, { cursor });
-
-    const products = data.data.products;
-    const edges = products.edges;
-
-    allProducts.push(...edges);
-
-    hasNextPage = products.pageInfo.hasNextPage;
-    cursor = products.pageInfo.endCursor;
-
-    // ✅ Prevent throttling
-    await new Promise(r => setTimeout(r, 200));
-  }
-
-  return allProducts;
-}
 
 // ─── Compress image with Sharp ─────────────────────────────────────────────
 
@@ -149,6 +128,77 @@ export const loader = async ({ request,context }:LoaderFunctionArgs) => {
     currentDir:  dir,
   });
 };
+
+// utils/upload.server.ts
+
+export async function uploadToShopifyCDN(admin: any, compressedBuffer: Uint8Array) {
+  const filename = `optimized-${Date.now()}.webp`;
+
+  // 1. Create staged upload
+  const stagedRes = await admin.graphql(`
+    mutation stagedUploadsCreate($input: [StagedUploadInput!]!) {
+      stagedUploadsCreate(input: $input) {
+        stagedTargets {
+          url
+          resourceUrl
+          parameters {
+            name
+            value
+          }
+        }
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+  `, {
+    variables: {
+      input: [{
+        filename,
+        mimeType: "image/webp",
+        resource: "IMAGE",
+        fileSize: String(compressedBuffer.byteLength),
+        httpMethod: "POST"
+      }],
+    },
+  });
+
+  const stagedData = await stagedRes.json();
+
+  const errors = stagedData?.data?.stagedUploadsCreate?.userErrors;
+  if (errors?.length) {
+    throw new Error(errors.map((e: any) => e.message).join(", "));
+  }
+
+  const target = stagedData.data.stagedUploadsCreate.stagedTargets[0];
+
+  // 2. Build FormData
+  const formData = new FormData();
+
+  target.parameters.forEach(({ name, value }: any) => {
+    formData.append(name, value);
+  });
+
+  // 3. Attach file (NO Buffer → Blob)
+  const file = new Blob([compressedBuffer as any], {
+    type: "image/webp",
+  });
+
+  formData.append("file", file, filename);
+
+  // 4. Upload
+  const uploadRes = await fetch(target.url, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!uploadRes.ok) {
+    throw new Error("Upload to Shopify CDN failed");
+  }
+
+  return target.resourceUrl;
+}
 
 // ─── ACTION ────────────────────────────────────────────────────────────────
 
@@ -255,6 +305,146 @@ export const loader = async ({ request,context }:LoaderFunctionArgs) => {
 
 //   return json({ success: false, errors: [{ message: "Unknown intent" }] });
 // };
+
+
+// export const action = async ({ request, context }: ActionFunctionArgs) => {
+//   const { admin } = await shopify(context).authenticate.admin(request);
+//   const formData = await request.formData();
+
+//   const intent   = formData.get("intent") as string;
+//   const imageUrl = formData.get("imageUrl") as string;
+//   const altText  = (formData.get("altText") as string) || "";
+// console.log("intent is here ",intent)
+// console.log("imageUrl is here ",imageUrl)
+// console.log("altText is here ",altText) 
+//   // 🚀 STEP 1: Get optimized CDN URL (Cloudflare WebP)
+// const compressedBuffer = await compressToWebP(imageUrl);
+
+// const resourceUrl = await uploadToShopifyCDN(admin, compressedBuffer);  
+// console.log("optimiseUrlis her ",resourceUrl)
+//   // ── PRODUCT IMAGE ─────────────────────────────────────────────────────
+// if (intent === "product_image") {
+//   const productId = formData.get("productId") as string;
+//   const imageId   = formData.get("imageId") as string;
+//   // imageId is now gid://shopify/MediaImage/xxx ✅ — no replace() needed
+// console.log('images id ',imageId)
+//   // Step 1: Delete via fileDelete
+//   const deleteData = await safeGraphql(admin, `
+//     #graphql
+//     mutation fileDelete($fileIds: [ID!]!) {
+//       fileDelete(fileIds: $fileIds) {
+//         deletedFileIds
+//         userErrors { field message }
+//       }
+//     }
+//   `, {
+//     fileIds: [imageId], // ✅ valid MediaImage GID
+//   });
+
+//   const deleteErrors = deleteData.data.fileDelete.userErrors;
+//   if (deleteErrors.length > 0) {
+//     return json({ success: false, errors: deleteErrors });
+//   }
+
+//   // Step 2: Add optimized image
+//   const addData = await safeGraphql(admin, `
+//   #graphql
+//   mutation productUpdateMedia($productId: ID!, $media: [UpdateMediaInput!]!) {
+//     productUpdateMedia(productId: $productId, media: $media) {
+//       media {
+//         id
+//         alt
+//         status
+//         ... on MediaImage {
+//           image {
+//             url
+//             altText
+//           }
+//         }
+//       }
+//       mediaUserErrors {
+//         field
+//         message
+//       }
+//     }
+//   }
+// `, {
+//   productId: productId,
+//   media: [{
+//     id: imageId,   // ← GID del MediaImage esistente: "gid://shopify/MediaImage/xxx"
+//     alt: altText,
+//   }],
+// });
+
+
+//   const addErrors = addData.data.productUpdate.userErrors;
+//   if (addErrors.length > 0) {
+//     return json({ success: false, errors: addErrors });
+//   }
+
+//   return json({
+//     success: true,
+//     type: "product_image",
+//     optimization: "CDN WebP · Quality 90",
+//   });
+// }
+
+
+//   // ── VARIANT IMAGE ─────────────────────────────────────────────────────
+//   if (intent === "variant_image") {
+//     const variantId = formData.get("variantId") as string;
+//     const productId = formData.get("productId") as string; // ⚠️ required
+
+//     const res = await admin.graphql(`
+//       #graphql
+//       mutation productVariantsBulkUpdate(
+//         $productId: ID!
+//         $variants: [ProductVariantsBulkInput!]!
+//       ) {
+//         productVariantsBulkUpdate(productId: $productId, variants: $variants) {
+//           productVariants {
+//             id
+//             title
+//             image {
+//               id
+//               url
+//               altText
+//             }
+//           }
+//           userErrors { field message }
+//         }
+//       }
+//     `, {
+//       variables: {
+//         productId,
+//         variants: [
+//           {
+//             id: variantId,
+//             mediaSrc: [resourceUrl], // ✅ 2026-01 correct field
+//           },
+//         ],
+//       },
+//     });
+
+//     const data = await res.json();
+//     const errors = data.data.productVariantsBulkUpdate.userErrors;
+
+//     if (errors.length > 0) {
+//       return json({ success: false, errors });
+//     }
+
+//     return json({
+//       success: true,
+//       type: "variant_image",
+//       variant: data.data.productVariantsBulkUpdate.productVariants,
+//       optimization: "CDN (WebP + Quality 90)",
+//     });
+//   }
+
+//   return json({ success: false });
+// };
+
+
 export const action = async ({ request, context }: ActionFunctionArgs) => {
   const { admin } = await shopify(context).authenticate.admin(request);
   const formData = await request.formData();
@@ -262,89 +452,72 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
   const intent   = formData.get("intent") as string;
   const imageUrl = formData.get("imageUrl") as string;
   const altText  = (formData.get("altText") as string) || "";
-console.log("intent is here ",intent)
-console.log("imageUrl is here ",imageUrl)
-console.log("altText is here ",altText) 
-  // 🚀 STEP 1: Get optimized CDN URL (Cloudflare WebP)
-  const { optimizedUrl } = await compressToWebP(imageUrl);
-console.log("optimiseUrlis her ",optimizedUrl)
-  // ── PRODUCT IMAGE ─────────────────────────────────────────────────────
-if (intent === "product_image") {
-  const productId = formData.get("productId") as string;
-  const imageId   = formData.get("imageId") as string;
-  // imageId is now gid://shopify/MediaImage/xxx ✅ — no replace() needed
 
-  // Step 1: Delete via fileDelete
-  const deleteData = await safeGraphql(admin, `
-    #graphql
-    mutation fileDelete($fileIds: [ID!]!) {
-      fileDelete(fileIds: $fileIds) {
-        deletedFileIds
-        userErrors { field message }
-      }
-    }
-  `, {
-    fileIds: [imageId], // ✅ valid MediaImage GID
-  });
+  // 🚀 STEP 1: compress (HD WebP)
+  const compressedBuffer = await compressToWebP(imageUrl);
 
-  const deleteErrors = deleteData.data.fileDelete.userErrors;
-  if (deleteErrors.length > 0) {
-    return json({ success: false, errors: deleteErrors });
-  }
+  // 🚀 STEP 2: upload to Shopify CDN
+  const resourceUrl = await uploadToShopifyCDN(admin, compressedBuffer);
 
-  // Step 2: Add optimized image
-  const addData = await safeGraphql(admin, `
-  #graphql
-  mutation productUpdateMedia($productId: ID!, $media: [UpdateMediaInput!]!) {
-    productUpdateMedia(productId: $productId, media: $media) {
-      media {
-        id
-        alt
-        status
-        ... on MediaImage {
-          image {
-            url
-            altText
+  // ───────────────── PRODUCT IMAGE ─────────────────
+  if (intent === "product_image") {
+    const productId = formData.get("productId") as string;
+    const imageId   = formData.get("imageId") as string;
+
+    const res = await admin.graphql(`
+      mutation productUpdateMedia($productId: ID!, $media: [UpdateMediaInput!]!) {
+        productUpdateMedia(productId: $productId, media: $media) {
+          media {
+            id
+            alt
+            ... on MediaImage {
+              image {
+                url
+                altText
+              }
+            }
+          }
+          mediaUserErrors {
+            field
+            message
           }
         }
       }
-      mediaUserErrors {
-        field
-        message
-      }
+    `, {
+      variables: {
+        productId,
+        media: [
+          {
+            id: imageId,                // ✅ correct GID
+            originalSource: resourceUrl, // 🔥 replace image
+            alt: altText,
+          },
+        ],
+      },
+    });
+
+    const data = await res.json();
+    const errors = data.data.productUpdateMedia.mediaUserErrors;
+
+    if (errors.length > 0) {
+      return json({ success: false, errors });
     }
-  }
-`, {
-  productId: productId,
-  media: [{
-    id: optimizedUrl,   // ← GID del MediaImage esistente: "gid://shopify/MediaImage/xxx"
-    alt: altText,
-  }],
-});
 
-
-  const addErrors = addData.data.productUpdate.userErrors;
-  if (addErrors.length > 0) {
-    return json({ success: false, errors: addErrors });
+    return json({
+      success: true,
+      type: "product_image",
+      image: data.data.productUpdateMedia.media,
+    });
   }
 
-  return json({
-    success: true,
-    type: "product_image",
-    optimization: "CDN WebP · Quality 90",
-  });
-}
-
-
-  // ── VARIANT IMAGE ─────────────────────────────────────────────────────
+  // ───────────────── VARIANT IMAGE ─────────────────
   if (intent === "variant_image") {
     const variantId = formData.get("variantId") as string;
-    const productId = formData.get("productId") as string; // ⚠️ required
+    const productId = formData.get("productId") as string;
 
     const res = await admin.graphql(`
-      #graphql
       mutation productVariantsBulkUpdate(
-        $productId: ID!
+        $productId: ID!,
         $variants: [ProductVariantsBulkInput!]!
       ) {
         productVariantsBulkUpdate(productId: $productId, variants: $variants) {
@@ -352,12 +525,13 @@ if (intent === "product_image") {
             id
             title
             image {
-              id
               url
-              altText
             }
           }
-          userErrors { field message }
+          userErrors {
+            field
+            message
+          }
         }
       }
     `, {
@@ -366,7 +540,7 @@ if (intent === "product_image") {
         variants: [
           {
             id: variantId,
-            mediaSrc: [optimizedUrl], // ✅ 2026-01 correct field
+            mediaSrc: [resourceUrl], // ✅ correct
           },
         ],
       },
@@ -383,12 +557,12 @@ if (intent === "product_image") {
       success: true,
       type: "variant_image",
       variant: data.data.productVariantsBulkUpdate.productVariants,
-      optimization: "CDN (WebP + Quality 90)",
     });
   }
 
-  return json({ success: false });
+  return json({ success: false, error: "Unknown intent" });
 };
+
 
 // ─── UI ────────────────────────────────────────────────────────────────────
 
