@@ -597,7 +597,7 @@ const paginationBtn = (disabled: boolean) => ({
 });
 
 export default function ImageOptimizer() {
-  const { products, pageInfo } = useLoaderData();
+  const { products, pageInfo } = useLoaderData<typeof loader>();
   const actionData             = useActionData();
   const submit                 = useSubmit();
   const navigate               = useNavigate();
