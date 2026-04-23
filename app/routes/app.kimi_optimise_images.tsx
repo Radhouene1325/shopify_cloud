@@ -149,7 +149,7 @@ export function calculateReduction(original: number, optimized: number): string 
 // }
 export async function compressToWebP(
     imageUrl: string,
-    quality = 85
+    quality = 100
 ): Promise<CompressionResult> {
     // Fetch original size via HEAD request
     const headRes = await fetch(imageUrl, { method: "HEAD" });
