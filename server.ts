@@ -54,6 +54,9 @@ export default {
       return new Response("An unexpected error occurred", { status: 500 });
     }
   },
+
+
+  
   async queue(batch: MessageBatch<any>, env: Env, ctx: ExecutionContext) {
     console.log("QUEUE HANDLER ACTIVE");
 

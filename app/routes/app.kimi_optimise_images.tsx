@@ -1,5 +1,3 @@
-
-
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
 import {
     Form,
@@ -107,26 +105,25 @@ export function calculateReduction(original: number, optimized: number): string 
 
 /**
  * Comprime immagine via Cloudflare Image Resizing
+ * Updated to use /cdn-cgi/image/ endpoint
  */
 export async function compressToWebP(
     imageUrl: string,
-    quality = 85
+    URL:string,
+    
 ): Promise<CompressionResult> {
-    // Fetch originale per leggere dimensione
+    // Fetch original size via HEAD request
+    let quality = 85
     const headRes = await fetch(imageUrl, { method: "HEAD" });
     const originalSize = Number(headRes.headers.get("content-length")) || 0;
 
-    const response = await fetch(imageUrl, {
-        cf: {
-            image: {
-                format: "webp",
-                quality,
-                width: 2000,
-                fit: "scale-down",
-            },
-        },
-    });
+    // Your domain with Image Resizing enabled
+    const workerDomain = URL; 
+    console.log('url is her ',URL)
+    const params = `width=2000,quality=${quality},format=webp,fit=scale-down`;
+    const resizedUrl = `${workerDomain}/cdn-cgi/image/${params}/${encodeURIComponent(imageUrl)}`;
 
+    const response = await fetch(resizedUrl);
     if (!response.ok) {
         throw new Error(`Cloudflare image optimization failed: ${response.status}`);
     }
@@ -375,7 +372,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
 export const action = async ({ request, context }: ActionFunctionArgs) => {
     const { admin } = await shopify(context).authenticate.admin(request);
     const formData = await request.formData();
-
+const URL=context.cloudflare.env.SHOPIFY_APP_URL
     const intent = formData.get("intent") as string;
     const imageUrl = formData.get("imageUrl") as string;
     const altText = (formData.get("altText") as string) || "";
@@ -391,12 +388,8 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
     }
 
     try {
-        const originalWidth = Number(formData.get("originalWidth")) || undefined;
-        const originalHeight = Number(formData.get("originalHeight")) || undefined;
-        const originalFormat = detectImageFormat(imageUrl);
-
-        // 1. Cloudflare compression
-        const { compressedBuffer, originalSize, compressedSize } = await compressToWebP(imageUrl);
+        // 1. Cloudflare compression (updated with /cdn-cgi/image/ endpoint)
+        const { compressedBuffer, originalSize, compressedSize } = await compressToWebP(imageUrl,URL);
 
         // 2. Upload Shopify CDN
         const resourceUrl = await uploadToShopifyCDN(admin, compressedBuffer);
