@@ -107,36 +107,74 @@ export function calculateReduction(original: number, optimized: number): string 
  * Comprime immagine via Cloudflare Image Resizing
  * Updated to use /cdn-cgi/image/ endpoint
  */
+// export async function compressToWebP(
+//     imageUrl: string,
+//     URL:string,
+    
+// ): Promise<CompressionResult> {
+//     // Fetch original size via HEAD request
+//     let quality = 85
+//     const headRes = await fetch(imageUrl, { method: "HEAD" });
+//     const originalSize = Number(headRes.headers.get("content-length")) || 0;
+
+//     // Your domain with Image Resizing enabled
+//     const workerDomain = URL; 
+//     console.log('url is her ',URL)
+//     const params = `width=2000,quality=${quality},format=webp,fit=scale-down`;
+//     const resizedUrl = `${workerDomain}/cdn-cgi/image/${params}/${encodeURIComponent(imageUrl)}`;
+
+//     const response = await fetch(resizedUrl);
+//     if (!response.ok) {
+//         throw new Error(`Cloudflare image optimization failed: ${response.status}`);
+//     }
+
+//     const contentType = response.headers.get("content-type") || "image/webp";
+
+//     if (!contentType.includes("webp")) {
+//         console.warn(
+//             `[Image Optimizer] ATTENZIONE: Content-Type è ${contentType}, non image/webp. ` +
+//             `Cloudflare Image Resizing potrebbe non essere attivo sul dominio.`
+//         );
+//     }
+
+//     const arrayBuffer = await response.arrayBuffer();
+//     const compressedBuffer = new Uint8Array(arrayBuffer);
+
+//     return {
+//         compressedBuffer,
+//         contentType,
+//         originalSize,
+//         compressedSize: compressedBuffer.byteLength,
+//     };
+// }
 export async function compressToWebP(
     imageUrl: string,
-    URL:string,
-    
+    quality = 85
 ): Promise<CompressionResult> {
     // Fetch original size via HEAD request
-    let quality = 85
     const headRes = await fetch(imageUrl, { method: "HEAD" });
     const originalSize = Number(headRes.headers.get("content-length")) || 0;
 
-    // Your domain with Image Resizing enabled
-    const workerDomain = URL; 
-    console.log('url is her ',URL)
-    const params = `width=2000,quality=${quality},format=webp,fit=scale-down`;
-    const resizedUrl = `${workerDomain}/cdn-cgi/image/${params}/${encodeURIComponent(imageUrl)}`;
+    // Option A: Custom domain with Cloudflare Image Resizing (RECOMMENDED)
+    // const workerDomain = "https://images.yourdomain.com";
+    
+    // Option B: Shopify native CDN optimization (FALLBACK - no WebP conversion, just resize)
+    // Shopify CDN supports: ?format=webp&width=2000&quality=85
+    
+    // For now, let's use Shopify's native params as a working solution:
+    const separator = imageUrl.includes('?') ? '&' : '?';
+    const resizedUrl = `${imageUrl}${separator}format=webp&width=2000&quality=${quality}`;
+
+    console.log("[Image Optimizer] Using Shopify CDN URL:", resizedUrl);
 
     const response = await fetch(resizedUrl);
+    
     if (!response.ok) {
-        throw new Error(`Cloudflare image optimization failed: ${response.status}`);
+        const errorText = await response.text().catch(() => "No details");
+        throw new Error(`Image optimization failed: ${response.status} - ${errorText}`);
     }
 
     const contentType = response.headers.get("content-type") || "image/webp";
-
-    if (!contentType.includes("webp")) {
-        console.warn(
-            `[Image Optimizer] ATTENZIONE: Content-Type è ${contentType}, non image/webp. ` +
-            `Cloudflare Image Resizing potrebbe non essere attivo sul dominio.`
-        );
-    }
-
     const arrayBuffer = await response.arrayBuffer();
     const compressedBuffer = new Uint8Array(arrayBuffer);
 
