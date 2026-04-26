@@ -3,11 +3,11 @@ import { json, type ActionFunctionArgs } from '@remix-run/cloudflare';
 export async function action({ request, context }: ActionFunctionArgs) {
   const formData = await request.formData();
   const intent = formData.get('intent');
-const DOMIN =context.cloudflare.env.SHOPIFY_APP_URL
+const DOMIN = (context as any).cloudflare.env.SHOPIFY_APP_URL
   // ─── WARM CACHE: Precarica i pannelli più usati ───
   if (intent === 'warm') {
     const menus = (formData.getAll('menu') as string[]) || ['main-menu'];
-    const cache = context.cloudflare.caches.default;
+    const cache = (context.cloudflare.caches as any).default;
 
     const warmJobs = menus.flatMap((menu) =>
       [0, 1, 2, 3, 4].map(async (parent) => {
@@ -20,7 +20,7 @@ const DOMIN =context.cloudflare.env.SHOPIFY_APP_URL
       })
     );
 
-    context.waitUntil(Promise.all(warmJobs));
+    (context as any).waitUntil(Promise.all(warmJobs));
     return json({ warmed: warmJobs.length });
   }
 
@@ -29,7 +29,7 @@ const DOMIN =context.cloudflare.env.SHOPIFY_APP_URL
     const categoryId = formData.get('categoryId');
     const menu = formData.get('menu');
 
-    context.waitUntil(
+    (context as any).waitUntil(
       // Sostituisci con il tuo endpoint analytics
       fetch(`https://analytics.${DOMIN}.com/track`, {
         method: 'POST',
