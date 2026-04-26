@@ -67,7 +67,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
     // ─── 1. AUTH: recupera lo shop ───
     // Se è una App Proxy (chiamata dal tema frontend):
-    const { session, admin, storefront } = await shopify(context).authenticate.public.appProxy(request);
+    const { session, admin } = await shopify(context).authenticate.admin(request);
 
     // Se invece sei in una route admin (non consigliato per proxy frontend):
     // const { session } = await shopify.authenticate.admin(request);
