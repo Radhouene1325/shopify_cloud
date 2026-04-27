@@ -9,7 +9,6 @@
 import {  type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
 import { shopify } from "../shopify.server";
 import prisma from "../db.server"; // Il tuo Prisma client
-import { verifyAppProxySignature } from "../utils/verifyAppProxy";
 
 export async function action({request,context}:ActionFunctionArgs) {
   const { admin } = await shopify(context).authenticate.admin(request);
@@ -19,22 +18,24 @@ console.log('hello admin im her bonsoir and radhoun bbbb',admin)
 
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  console.log('request url:', request.url);
-  console.log('request method:', request.method);
+  console.log('context is her')
+  console.log(JSON.stringify(context, null, 2));
+  console.log('request is her')
+  console.log('url:', request.url);
+  console.log('method:', request.method);
+  console.log('headers:', Object.fromEntries(request.headers));
+  const { session, admin, storefront } =
+  await shopify(context).authenticate.public.appProxy(request);
 
-  // ─── Verify Shopify app proxy signature using Web Crypto API ───
-  const apiSecret = (context as any).cloudflare.env.SHOPIFY_API_SECRET || "";
-  const isValid = await verifyAppProxySignature(request, apiSecret);
-
-  if (!isValid) {
-    console.warn("[proxy.istested] Invalid signature — rejecting request");
-    return Response.json({ error: "Unauthorized: invalid signature" }, { status: 401 });
-  }
+  console.log(JSON.stringify(session, null, 2));
+console.log('admin', admin);
+console.log('shop', session?.shop);
 
   const url = new URL(request.url);
+  console.log('url is her',url)
   const shop = url.searchParams.get("shop");
-  console.log('shop is her', shop);
-
+  console.log('shop is her ',shop)
+  
   if (!shop) {
     return Response.json({ error: "Shop parameter missing" }, { status: 400 });
   }
@@ -44,11 +45,10 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     where: { shop }
   });
 
-  console.log('database session:', sessionData?.shop, '| has token:', !!sessionData?.accessToken);
+  console.log('database is her embabde',sessionData)
 
   if (!sessionData || !sessionData.accessToken) {
     return Response.json({ error: "Shop not authenticated" }, { status: 401 });
-
   }
 
   // Crea un client GraphQL con l'access token
@@ -61,43 +61,43 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
 
 
-  /////////////////
-  // Use the access token from our DB session to call Admin GraphQL directly
-  const gqlResponse = await fetch(`https://${shop}/admin/api/2026-01/graphql.json`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Shopify-Access-Token': sessionData.accessToken,
-    },
-    body: JSON.stringify({
-      query: `{
-        discountNodes(query: "combines_with:product_discounts", first: 10) {
-          edges {
-            node {
-              id
-              discount {
-                ... on DiscountCodeBasic {
-                  title
-                  status
-                  codes(first: 10) { nodes { code } }
-                  combinesWith { productDiscounts }
+/////////////////
+const response = await admin?.graphql(
+  `#graphql
+query {
+  discountNodes(query: "combines_with:product_discounts", first: 10) {
+    edges {
+      node {
+        id
+        discount {
+          ... on DiscountCodeBasic {
+            title
+            status
+            codes(first: 10) {
+                  nodes {
+                    code
+                  }
                 }
-                ... on DiscountCodeFreeShipping {
-                  title
-                  status
-                  combinesWith { productDiscounts }
-                }
-              }
+            combinesWith {
+              productDiscounts
+            }
+          }
+          ... on DiscountCodeFreeShipping {
+            title
+            status
+            combinesWith {
+              productDiscounts
             }
           }
         }
-      }`
-    }),
-  });
-  const gqlJson = await gqlResponse.json();
-  console.log('discountNodes from admin graphql:', gqlJson?.data?.discountNodes);
-  ////////////////////////////
-
+      }
+    }
+  }
+}`,
+);
+const json = await response?.json();
+console.log('data base admin from query shopify is her ',json?.data?.discountNodes)
+////////////////////////////
 
 
 
