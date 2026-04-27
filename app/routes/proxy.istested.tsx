@@ -20,6 +20,8 @@ console.log('hello admin im her bonsoir and radhoun bbbb',admin)
 export async function loader({ request, context }: LoaderFunctionArgs) {
   console.log('context is her')
   console.log(JSON.stringify(context, null, 2));
+  console.log('request is her')
+  console.log(JSON.stringify(request, null, 2));
   const { session, admin, storefront } =
   await shopify(context).authenticate.public.appProxy(request);
 
