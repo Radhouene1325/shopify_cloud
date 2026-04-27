@@ -6,7 +6,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const handle = url.searchParams.get('handle');
 
   if (!handle) {
-    return json({ error: 'Missing handle' }, { status: 400 });
+    return Response.json({ error: 'Missing handle' }, { status: 400 });
   }
 
   const env = context.cloudflare.env as any;
@@ -119,7 +119,7 @@ async function refreshProduct(context: any, handle: string, env: any) {
 
     const product = await fetchShopifyProduct(storefront, handle);
 
-    await env.PRODUCT_KV.put(`product:${handle}`, JSON.stringify(product), {
+    await context.cloudflare.env.PRODUCT_KV.put(`product:${handle}`, JSON.stringify(product), {
       expirationTtl: 3600,
     });
   } catch (e) {
