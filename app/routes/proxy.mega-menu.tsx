@@ -1,4 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/cloudflare';
+import {type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
 import { shopify } from '../shopify.server';
 
 // ─── GRAPHQL STOREFFRONT (menu esiste solo qui) ───
@@ -84,7 +84,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         const cached = await cache.match(cacheKey);
         if (cached) {
             const data = await cached.json();
-            return json(data, {
+            return Response.json(data, {
                 headers: {
                     'CF-Cache-Status': 'HIT',
                     'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
@@ -105,18 +105,18 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     const storefrontRes = await admin?.graphql(MENU_QUERY, { variables: { handle: menuHandle }, cf: { cacheTtl: 3600 } } as any)
 
     if (!storefrontRes) {
-        return json({ error: 'Shopify Admin API not available' }, { status: 500 });
+        return Response.json({ error: 'Shopify Admin API not available' }, { status: 500 });
     }
 
     const { data, errors } = await storefrontRes.json();
 
     if (errors?.length) {
-        return json({ error: errors[0].message }, { status: 500 });
+        return Response.json({ error: errors[0].message }, { status: 500 });
     }
 
     const parentLink = data?.menu?.items?.[parentIndex];
     if (!parentLink) {
-        return json({ error: 'Menu not found' }, { status: 404 });
+        return Response.json({ error: 'Menu not found' }, { status: 404 });
     }
 
     // ─── 4. TRASFORMA & OTTIMIZZA ───
@@ -206,7 +206,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         );
     }
 
-    return json(payload, {
+    return Response.json(payload, {
         headers: {
             'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
             'CDN-Cache-Control': 'public, max-age=3600',

@@ -441,7 +441,7 @@ export default function DescriptionManager() {
   // Table rows
   // const rowsData = useMemo(() => {
   //   return rows.map((variant) => [
-      
+
   //     <Checkbox
   //       key={`checkbox-${variant.id}`}
   //       label={`Select ${variant.title}`}
@@ -501,115 +501,115 @@ export default function DescriptionManager() {
   //       /{variant.handle}
   //     </Text>,
 
-      
+
   //   ]
   // );
   // }, [rows, isSelected, handleSelectRow]);
-const stripHtml = (html = "") => {
-  return html
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&nbsp;/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-};
+  const stripHtml = (html = "") => {
+    return html
+      .replace(/<[^>]*>/g, " ")
+      .replace(/&nbsp;/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
 
-const filteredRows = useMemo(() => {
-  return rows.filter((variant) => {
-    const cleanText = stripHtml(variant.descriptionHtml || "");
+  const filteredRows = useMemo(() => {
+    return rows.filter((variant) => {
+      const cleanText = stripHtml(variant.descriptionHtml || "");
 
-    // keep empty descriptions visible
-    if (!cleanText || cleanText.length < 20) {
-      return true;
-    }
+      // keep empty descriptions visible
+      if (!cleanText || cleanText.length < 20) {
+        return true;
+      }
 
-    const lang = franc(cleanText);
+      const lang = franc(cleanText);
 
-    console.log("detected:", lang, variant.title);
+      console.log("detected:", lang, variant.title);
 
-    // hide Italian descriptions
-    return lang !== "ita";
-  });
-}, [rows]);
+      // hide Italian descriptions
+      return lang !== "ita";
+    });
+  }, [rows]);
 
-const rowsData = useMemo(() => {
-  return filteredRows.map((variant) => [
-    <Checkbox
-      key={`checkbox-${variant.id}`}
-      label={`Select ${variant.title}`}
-      labelHidden
-      checked={isSelected(variant.id)}
-      onChange={(checked) => handleSelectRow(variant, checked)}
-    />,
+  const rowsData = useMemo(() => {
+    return filteredRows.map((variant) => [
+      <Checkbox
+        key={`checkbox-${variant.id}`}
+        label={`Select ${variant.title}`}
+        labelHidden
+        checked={isSelected(variant.id)} 
+        onChange={(checked) => handleSelectRow(variant, checked)}
+      />,
 
-    <Thumbnail
-      key={`thumb-${variant.id}`}
-      source={variant.featuredMedia?.image?.url || ""}
-      alt={variant.featuredMedia?.image?.altText || variant.title}
-      size="medium"
-    />,
+      <Thumbnail
+        key={`thumb-${variant.id}`}
+        source={variant.featuredMedia?.image?.url || ""}
+        alt={variant.featuredMedia?.image?.altText || variant.title}
+        size="medium"
+      />,
 
-    <BlockStack key={`details-${variant.id}`} gap="100">
-      <Text as="span" variant="bodyMd" fontWeight="semibold">
-        {variant.title}
-      </Text>
-      <Text as="span" variant="bodySm" tone="subdued">
-        {variant.vendor} • {variant.productType}
-      </Text>
+      <BlockStack key={`details-${variant.id}`} gap="100">
+        <Text as="span" variant="bodyMd" fontWeight="semibold">
+          {variant.title}
+        </Text>
+        <Text as="span" variant="bodySm" tone="subdued">
+          {variant.vendor} • {variant.productType}
+        </Text>
+        <Text
+          as="span"
+          variant="bodySm"
+          fontWeight="medium"
+          fontFamily="monospace"
+        >
+          ID: {variant.id.split("/").pop()}
+        </Text>
+      </BlockStack>,
+
+      <Box key={`desc-${variant.id}`} maxWidth="300px">
+        <div
+          style={{
+            maxHeight: "80px",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical",
+            fontSize: "13px",
+            lineHeight: "1.4",
+          }}
+          dangerouslySetInnerHTML={{
+            __html:
+              variant.descriptionHtml ||
+              "<em>No description available</em>",
+          }}
+        />
+      </Box>,
+
+      <InlineStack key={`tags-${variant.id}`} gap="100" wrap>
+        {variant.tags?.length > 0 ? (
+          variant.tags.map((tag) => (
+            <Tag key={tag}>
+              {tag}
+            </Tag>
+          ))
+        ) : (
+          <Text as="span" tone="subdued" variant="bodySm">
+            No tags
+          </Text>
+        )}
+      </InlineStack>,
+
       <Text
+        key={`handle-${variant.id}`}
         as="span"
         variant="bodySm"
-        fontWeight="medium"
-        fontFamily="monospace"
+        tone="subdued"
+        breakWord
       >
-        ID: {variant.id.split("/").pop()}
-      </Text>
-    </BlockStack>,
-
-    <Box key={`desc-${variant.id}`} maxWidth="300px">
-      <div
-        style={{
-          maxHeight: "80px",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          display: "-webkit-box",
-          WebkitLineClamp: 3,
-          WebkitBoxOrient: "vertical",
-          fontSize: "13px",
-          lineHeight: "1.4",
-        }}
-        dangerouslySetInnerHTML={{
-          __html:
-            variant.descriptionHtml ||
-            "<em>No description available</em>",
-        }}
-      />
-    </Box>,
-
-    <InlineStack key={`tags-${variant.id}`} gap="100" wrap>
-      {variant.tags?.length > 0 ? (
-        variant.tags.map((tag) => (
-          <Tag key={tag}>
-            {tag}
-          </Tag>
-        ))
-      ) : (
-        <Text as="span" tone="subdued" variant="bodySm">
-          No tags
-        </Text>
-      )}
-    </InlineStack>,
-
-    <Text
-      key={`handle-${variant.id}`}
-      as="span"
-      variant="bodySm"
-      tone="subdued"
-      breakWord
-    >
-      /{variant.handle}
-    </Text>,
-  ]);
-}, [filteredRows, isSelected, handleSelectRow]);
+        /{variant.handle}
+      </Text>,
+    ]);
+  }, [filteredRows, isSelected, handleSelectRow]);
   // Empty state
   if (rows.length === 0 && !isLoading) {
     return (
@@ -985,7 +985,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const response = await admin.graphql(query, { variables: { cursor } });
   const res = await response.json();
   // console.log('res is her ',res.data)
-  console.log('res is her ',res.data.products.edges[0].node.variants.edges[0].node)
+  console.log('res is her ', res.data.products.edges[0].node.variants.edges[0].node)
   const productsdescreption = {
     variants: res?.data.products.edges.map((e: any) => e.node),
     pageInfo: res?.data.products.pageInfo,
