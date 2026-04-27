@@ -31,20 +31,20 @@ console.log('shop', session?.shop);
   const shop = url.searchParams.get("shop");
   console.log('shop is her ',shop)
   
-  if (!shop) {
-    return Response.json({ error: "Shop parameter missing" }, { status: 400 });
-  }
+  // if (!shop) {
+  //   return Response.json({ error: "Shop parameter missing" }, { status: 400 });
+  // }
 
   // Recupera la session dal database
-  const sessionData = await prisma(context.cloudflare.env.DATABASE_URL).session.findUnique({
-    where: { shop }
-  });
+  // const sessionData = await prisma(context.cloudflare.env.DATABASE_URL).session.findUnique({
+  //   where: { shop }
+  // });
 
-  console.log('database is her embabde',sessionData)
+  // console.log('database is her embabde',sessionData)
 
-  if (!sessionData || !sessionData.accessToken) {
-    return Response.json({ error: "Shop not authenticated" }, { status: 401 });
-  }
+  // if (!sessionData || !sessionData.accessToken) {
+  //   return Response.json({ error: "Shop not authenticated" }, { status: 401 });
+  // }
 
   // Crea un client GraphQL con l'access token
   // const client = new shopifyApi.clients.Graphql({
