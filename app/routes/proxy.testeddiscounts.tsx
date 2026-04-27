@@ -19,8 +19,9 @@ import prisma from "../db.server"; // Il tuo Prisma client
 
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const { session, admin, storefront } =
-  await shopify(context).authenticate.public.appProxy(request);
+  // const { session, admin, storefront } =
+  // await shopify(context).authenticate.public.appProxy(request);
+    const { session, admin } = await shopify(context).authenticate.admin(request);
 
   console.log(JSON.stringify(session, null, 2));
 console.log('admin', admin);
