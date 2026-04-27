@@ -11,8 +11,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
   const env = context.cloudflare?.env as any;
 
-  if (!env?.PRODUCT_KV) {
-    throw new Error('PRODUCT_KV binding is missing in Cloudflare env');
+  if (!env?.DB) {
+    throw new Error('DB binding is missing in Cloudflare env');
   }
 
   const cacheKey = `product:${handle}`;
@@ -20,12 +20,12 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   // =========================
   // 1. KV CACHE CHECK
   // =========================
-  const cached = await env.PRODUCT_KV.get(cacheKey, {
+  const cached = await env.DB.get(cacheKey, {
     type: 'json',
   });
 
   if (cached) {
-    context.waitUntil(refreshProduct(context, handle, env));
+    (context as any).waitUntil(refreshProduct(context, handle, env));
 
     return json(cached, {
       headers: {
@@ -45,8 +45,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   // =========================
   // 3. WRITE TO KV (ASYNC)
   // =========================
-  context.waitUntil(
-    env.PRODUCT_KV.put(cacheKey, JSON.stringify(product), {
+  (context as any).waitUntil(
+    env.DB.put(cacheKey, JSON.stringify(product), {
       expirationTtl: 3600,
     })
   );
@@ -112,7 +112,7 @@ async function fetchShopifyProduct(storefront: any, handle: string) {
 
 async function refreshProduct(context: any, handle: string, env: any) {
   try {
-    if (!env?.PRODUCT_KV) return;
+    if (!env?.DB) return;
 
     const { storefront } = await shopify(context).authenticate.public.appProxy(
       new Request('https://dummy')
@@ -120,7 +120,7 @@ async function refreshProduct(context: any, handle: string, env: any) {
 
     const product = await fetchShopifyProduct(storefront, handle);
 
-    await env.PRODUCT_KV.put(`product:${handle}`, JSON.stringify(product), {
+    await env.DB.put(`product:${handle}`, JSON.stringify(product), {
       expirationTtl: 3600,
     });
   } catch {
