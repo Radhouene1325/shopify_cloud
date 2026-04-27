@@ -175,6 +175,37 @@ export async function action({ request, context }: ActionFunctionArgs) {
 
     return json({ ok: true, warmed: jobs.length });
   }
+  if (intent === 'track') {
+    const ctx = context as unknown as CloudflareContext;
 
+    const rawDomain = ctx.cloudflare.env.SHOPIFY_APP_URL || '';
+
+    // ✅ normalize domain
+    const DOMAIN = rawDomain
+      .replace(/^https?:\/\//, '')
+      .replace(/\/$/, '');
+
+    const analyticsUrl = `https://analytics.${DOMAIN}/track`;
+
+    const payload = {
+      event: 'mega_menu_hover',
+      categoryId: data.categoryId ?? null,
+      menu: data.menu ?? null,
+      t: Date.now(),
+    };
+
+    // ✅ safe waitUntil
+    if (ctx.waitUntil) {
+      ctx.waitUntil(
+        fetch(analyticsUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        }).catch(() => { })
+      );
+    }
+
+    return json({ ok: true });
+  }
   return json({ ok: false }, { status: 400 });
 }
