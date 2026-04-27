@@ -60,33 +60,37 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
 
 async function fetchShopifyProduct(storefront: any, handle: string) {
-  const response = await storefront.graphql(
-    `
-    query ProductByHandle($handle: String!) {
-      productByHandle(handle: $handle) {
-        id
-        title
-        handle
+ const response = await storefront.graphql(
+  `
+  query ProductByHandle($handle: String!) {
+    productByHandle(handle: $handle) {
+      id
+      title
+      handle
 
-        featuredImage {
-          url
+      featuredImage {
+        url
+      }
+
+      priceRange {
+        minVariantPrice {
+          amount
+          currencyCode
         }
+      }
 
-        priceRange {
-          minVariantPrice {
-            amount
-            currencyCode
-          }
+      variants(first: 1) {
+        nodes {
+          availableForSale
         }
-
-        availableForSale
       }
     }
-    `,
-    {
-      variables: { handle },
-    }
-  );
+  }
+  `,
+  {
+    variables: { handle },
+  }
+);
 
   const data = await response.json();
   const p = data?.data?.productByHandle;
@@ -95,14 +99,14 @@ async function fetchShopifyProduct(storefront: any, handle: string) {
     throw new Response('Not Found', { status: 404 });
   }
 
-  return {
-    id: p.id,
-    title: p.title,
-    handle: p.handle,
-    image: p.featuredImage?.url || null,
-    available: p.availableForSale,
-    price: `${p.priceRange.minVariantPrice.amount} ${p.priceRange.minVariantPrice.currencyCode}`,
-  };
+ return {
+  id: p.id,
+  title: p.title,
+  handle: p.handle,
+  image: p.featuredImage?.url ?? null,
+  available: p.variants?.nodes?.[0]?.availableForSale ?? false,
+  price: `${p.priceRange.minVariantPrice.amount} ${p.priceRange.minVariantPrice.currencyCode}`,
+};
 }
 
 
