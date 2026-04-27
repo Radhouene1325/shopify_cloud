@@ -6,11 +6,11 @@
 
 
 
-import {  type LoaderFunctionArgs } from "@remix-run/node";
+import {  type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
 import { shopify } from "../shopify.server";
 import prisma from "../db.server"; // Il tuo Prisma client
 
-export async function action({request,context}:LoaderFunctionArgs) {
+export async function action({request,context}:ActionFunctionArgs) {
   const { admin } = await shopify(context).authenticate.admin(request);
 console.log('hello admin im her bonsoir and radhoun bbbb',admin)
 }
