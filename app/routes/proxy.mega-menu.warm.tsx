@@ -44,34 +44,114 @@
 //   return json({ ok: false }, { status: 400 });
 // }
 
-import { json, type ActionFunctionArgs } from '@remix-run/cloudflare';
+
+
+
+
+
+// import { json, type ActionFunctionArgs } from '@remix-run/cloudflare';
+
+// export async function action({ request, context }: ActionFunctionArgs) {
+//   const contentType = request.headers.get('content-type') || '';
+
+//   let intent: string | null = null;
+//   let data: any = {};
+
+//   // ✅ SAFE parsing
+//   if (contentType.includes('application/json')) {
+//     data = await request.json();
+//     intent = data.intent;
+//   } else if (
+//     contentType.includes('multipart/form-data') ||
+//     contentType.includes('application/x-www-form-urlencoded')
+//   ) {
+//     const formData = await request.formData();
+//     intent = formData.get('intent');
+//     data = Object.fromEntries(formData);
+//   } else {
+//     return json({ error: 'Unsupported Content-Type' }, { status: 415 });
+//   }
+
+//   const DOMAIN = ((context as any).cloudflare.env.SHOPIFY_APP_URL || '')
+//     .replace(/^https?:\/\//, '')
+//     .replace(/\/$/, '');
+
+//   // ─── WARM CACHE ───
+//   if (intent === 'warm') {
+//     const menus = data.menu
+//       ? Array.isArray(data.menu)
+//         ? data.menu
+//         : [data.menu]
+//       : ['main-menu'];
+
+//     const jobs = menus.flatMap((menu: string) =>
+//       [0, 1, 2, 3, 4].map((parent) => {
+//         const url = `${new URL(request.url).origin}/proxy-1/mega-menu?menu=${menu}&parent=${parent}`;
+
+//         return fetch(url, {
+//           headers: { 'X-Warm-Cache': '1' },
+//           cf: { cacheTtl: 3600, cacheEverything: true },
+//         }).catch(() => null);
+//       })
+//     );
+
+//     context.waitUntil(Promise.all(jobs));
+
+//     return json({ ok: true, warmed: jobs.length });
+//   }
+
+//   // ─── TRACK ───
+//   if (intent === 'track') {
+//     (context as any).waitUntil(
+//       fetch(`https://analytics.${DOMAIN}/track`, {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify({
+//           event: 'mega_menu_hover',
+//           categoryId: data.categoryId,
+//           menu: data.menu,
+//           t: Date.now(),
+//         }),
+//       }).catch(() => {})
+//     );
+
+//     return json({ ok: true });
+//   }
+
+//   return json({ error: 'Invalid intent' }, { status: 400 });
+// }
+
+
+
+
+import { json, type ActionFunctionArgs } from '@remix-run/node';
+
+type CloudflareContext = {
+  waitUntil: (promise: Promise<any>) => void;
+  cloudflare: {
+    env: {
+      SHOPIFY_APP_URL: string;
+    };
+  };
+};
 
 export async function action({ request, context }: ActionFunctionArgs) {
+  const ctx = context as unknown as CloudflareContext;
+
   const contentType = request.headers.get('content-type') || '';
 
-  let intent: string | null = null;
   let data: any = {};
+  let intent: string | null = null;
 
-  // ✅ SAFE parsing
   if (contentType.includes('application/json')) {
     data = await request.json();
     intent = data.intent;
-  } else if (
-    contentType.includes('multipart/form-data') ||
-    contentType.includes('application/x-www-form-urlencoded')
-  ) {
-    const formData = await request.formData();
-    intent = formData.get('intent');
-    data = Object.fromEntries(formData);
   } else {
-    return json({ error: 'Unsupported Content-Type' }, { status: 415 });
+    const formData = await request.formData();
+    intent = formData.get('intent') as string | null;
+    data = Object.fromEntries(formData);
   }
 
-  const DOMAIN = ((context as any).cloudflare.env.SHOPIFY_APP_URL || '')
-    .replace(/^https?:\/\//, '')
-    .replace(/\/$/, '');
-
-  // ─── WARM CACHE ───
   if (intent === 'warm') {
     const menus = data.menu
       ? Array.isArray(data.menu)
@@ -90,28 +170,11 @@ export async function action({ request, context }: ActionFunctionArgs) {
       })
     );
 
-    (context as any).waitUntil(Promise.all(jobs));
+    // ✅ Correct + typed
+    ctx.waitUntil(Promise.all(jobs));
 
     return json({ ok: true, warmed: jobs.length });
   }
 
-  // ─── TRACK ───
-  if (intent === 'track') {
-    (context as any).waitUntil(
-      fetch(`https://analytics.${DOMAIN}/track`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event: 'mega_menu_hover',
-          categoryId: data.categoryId,
-          menu: data.menu,
-          t: Date.now(),
-        }),
-      }).catch(() => {})
-    );
-
-    return json({ ok: true });
-  }
-
-  return json({ error: 'Invalid intent' }, { status: 400 });
+  return json({ ok: false }, { status: 400 });
 }
