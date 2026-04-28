@@ -30,8 +30,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   // =========================
   // 2. SHOPIFY FETCH
   // =========================
-  const { admin } = await shopify(context).authenticate.admin(request);
-
+const { session, admin, storefront } =
+  await shopify(context).authenticate.public.appProxy(request);
   const product = await fetchProduct(admin, handle);
 
   // =========================
@@ -73,9 +73,11 @@ async function fetchProduct(storefront: any, handle: string) {
 // =============================
 async function refresh(context: any, handle: string, env: any) {
   try {
-    const { admin } = await shopify(context).authenticate.admin(
-      new Request('https://dummy')
-    );
+    const { session, admin, storefront } =
+  await shopify(context).authenticate.public.appProxy( new Request('https://dummy'));
+    // const { admin } = await shopify(context).authenticate.admin(
+    //   new Request('https://dummy')
+    // );
 
     const product = await fetchProduct(admin, handle);
 

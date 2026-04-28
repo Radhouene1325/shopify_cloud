@@ -42,7 +42,9 @@ export default {
       if (request.method === "OPTIONS") {
         return new Response(null, {
           headers: {
-            "Access-Control-Allow-Origin": "*",
+            'Cache-Control': 'public, max-age=60, stale-while-revalidate=600',
+
+            "Access-Control-Allow-Origin": "https://platinumshop.it",
             "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
             "Access-Control-Allow-Headers": "Content-Type",
           },
