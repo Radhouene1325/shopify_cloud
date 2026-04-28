@@ -10,39 +10,32 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   }
 
   const env = context.cloudflare?.env as any;
-
-  if (!env?.KV_PRODUCT) {
-    throw new Error('KV_PRODUCT binding is missing');
-  }
-
-  const cacheKey = `product:${handle}`;
+  const cacheKey = `p:${handle}`;
 
   // =========================
-  // 1. KV CACHE (FAST)
+  // 1. KV HIT (10–30ms)
   // =========================
   const cached = await env.KV_PRODUCT.get(cacheKey, { type: 'json' });
 
   if (cached) {
-    // 🔥 background refresh
-    context.waitUntil(refreshProduct(context, handle, env));
+    context.waitUntil(refresh(context, handle, env));
 
     return json(cached, {
       headers: {
-        'X-Cache': 'HIT',
         'Cache-Control': 'public, max-age=60, stale-while-revalidate=600',
       },
     });
   }
 
   // =========================
-  // 2. FETCH FROM SHOPIFY
+  // 2. SHOPIFY FETCH
   // =========================
   const { admin } = await shopify(context).authenticate.admin(request);
 
-  const product = await fetchShopifyProduct(admin, handle);
+  const product = await fetchProduct(admin, handle);
 
   // =========================
-  // 3. STORE IN KV (ASYNC)
+  // 3. WRITE KV (ASYNC)
   // =========================
   context.waitUntil(
     env.KV_PRODUCT.put(cacheKey, JSON.stringify(product), {
@@ -52,80 +45,42 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
   return json(product, {
     headers: {
-      'X-Cache': 'MISS',
       'Cache-Control': 'public, max-age=60, stale-while-revalidate=600',
     },
   });
 }
 
 // =============================
-// SHOPIFY GRAPHQL
+// GRAPHQL
 // =============================
-async function fetchShopifyProduct(storefront: any, handle: string) {
-  const response = await storefront.graphql(
-    `
-    query ProductByHandle($handle: String!) {
+async function fetchProduct(storefront: any, handle: string) {
+  const res = await storefront.graphql(`
+    query ($handle: String!) {
       productByHandle(handle: $handle) {
-        id
         title
         handle
-
-        featuredImage {
-          url
-        }
-
-        priceRange {
-          minVariantPrice {
-            amount
-            currencyCode
-          }
-        }
-
-        variants(first: 1) {
-          nodes {
-            availableForSale
-          }
-        }
       }
     }
-    `,
-    { variables: { handle } }
-  );
+  `, { variables: { handle } });
 
-  const data = await response.json();
-  const p = data?.data?.productByHandle;
+  const data = await res.json();
 
-  if (!p) {
-    throw new Response('Not Found', { status: 404 });
-  }
-
-  return {
-    id: p.id,
-    title: p.title,
-    handle: p.handle,
-    image: p.featuredImage?.url ?? null,
-    available: p.variants?.nodes?.[0]?.availableForSale ?? false,
-    price: `${p.priceRange.minVariantPrice.amount} ${p.priceRange.minVariantPrice.currencyCode}`,
-  };
+  return data.data.productByHandle;
 }
 
 // =============================
 // BACKGROUND REFRESH
 // =============================
-async function refreshProduct(context: any, handle: string, env: any) {
+async function refresh(context: any, handle: string, env: any) {
   try {
-    if (!env?.KV_PRODUCT) return;
-
     const { admin } = await shopify(context).authenticate.admin(
       new Request('https://dummy')
     );
 
-    const product = await fetchShopifyProduct(admin, handle);
+    const product = await fetchProduct(admin, handle);
 
-    await env.KV_PRODUCT.put(`product:${handle}`, JSON.stringify(product), {
+    await env.KV_PRODUCT.put(`p:${handle}`, JSON.stringify(product), {
       expirationTtl: 3600,
     });
-  } catch {
-    // silent fail
-  }
+  } catch {}
 }
