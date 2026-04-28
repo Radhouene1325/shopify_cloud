@@ -3,7 +3,21 @@ import { shopify } from "../shopify.server";
 
 const SHOP_DOMAIN = "platinumshop.it";
 
-// simple concurrency limiter (no external deps)
+// ─────────────────────────────
+// small utils
+// ─────────────────────────────
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+const retry = async (fn: any, retries = 3) => {
+  try {
+    return await fn();
+  } catch (e) {
+    if (retries <= 0) throw e;
+    await sleep(500);
+    return retry(fn, retries - 1);
+  }
+};
+
 const asyncPool = async (limit: number, array: any[], iteratorFn: any) => {
   const ret: any[] = [];
   const executing: any[] = [];
@@ -24,17 +38,9 @@ const asyncPool = async (limit: number, array: any[], iteratorFn: any) => {
   return Promise.allSettled(ret);
 };
 
-// retry helper
-const retry = async (fn: any, retries = 3) => {
-  try {
-    return await fn();
-  } catch (err) {
-    if (retries <= 0) throw err;
-    await new Promise((r) => setTimeout(r, 500));
-    return retry(fn, retries - 1);
-  }
-};
-
+// ─────────────────────────────
+// action
+// ─────────────────────────────
 export const action = async ({ request, context }: ActionFunctionArgs) => {
   if (request.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
@@ -50,9 +56,9 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
   const numericId = String(productId).replace(/\D/g, "");
   const gid = `gid://shopify/Product/${numericId}`;
 
-  // ─────────────────────────────────────────────
-  // 1. FETCH PRODUCT + METAFIELD (IDEMPOTENCY)
-  // ─────────────────────────────────────────────
+  // ─────────────────────────────
+  // 1) fetch product (with metafield for idempotency)
+  // ─────────────────────────────
   const query = `
     query getProduct($id: ID!) {
       product(id: $id) {
@@ -69,6 +75,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
               ... on MediaImage {
                 id
                 image { url }
+                alt
               }
             }
           }
@@ -77,6 +84,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
         variants(first: 100) {
           edges {
             node {
+              id
               image { url id }
             }
           }
@@ -93,40 +101,42 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
     return new Response("Product not found", { status: 404 });
   }
 
-  // ✅ SKIP if already processed
+  // skip if already processed
   if (product.metafield?.value === "true") {
     return Response.json({ success: true, skipped: true });
   }
 
-  // ─────────────────────────────────────────────
-  // 2. DEDUPLICATE IMAGES
-  // ─────────────────────────────────────────────
+  // ─────────────────────────────
+  // 2) dedupe images
+  // ─────────────────────────────
   const seen = new Set<string>();
   const images: { url: string }[] = [];
 
-  product.media?.edges?.forEach(({ node }: any) => {
+  product.media.edges.forEach(({ node }: any) => {
     if (node.image?.url && !seen.has(node.image.url)) {
       seen.add(node.image.url);
       images.push({ url: node.image.url });
     }
   });
 
-  product.variants?.edges?.forEach(({ node }: any) => {
+  product.variants.edges.forEach(({ node }: any) => {
     if (node.image?.url && !seen.has(node.image.url)) {
       seen.add(node.image.url);
       images.push({ url: node.image.url });
     }
   });
 
-  // ─────────────────────────────────────────────
-  // 3. PROCESS IMAGES (CONCURRENT + SAFE)
-  // ─────────────────────────────────────────────
+  // mapping old → new
+  const replacements: { oldUrl: string; newId: string }[] = [];
+
+  // ─────────────────────────────
+  // 3) process images
+  // ─────────────────────────────
   const processImage = async (img: { url: string }) => {
     const cfUrl = `https://${SHOP_DOMAIN}/cdn-cgi/image/format=avif,quality=60,metadata=none/${encodeURIComponent(img.url)}`;
 
-    // fetch AVIF
     const cfRes = await retry(() => fetch(cfUrl));
-    if (!cfRes.ok) throw new Error(`CF failed ${cfRes.status}`);
+    if (!cfRes.ok) throw new Error("Cloudflare failed");
 
     const buffer = Buffer.from(await cfRes.arrayBuffer());
     const filename = `avif-${numericId}-${Math.random().toString(36).slice(2)}.avif`;
@@ -134,7 +144,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
     // staged upload
     const stagedRes = await retry(() =>
       admin.graphql(
-        `mutation stagedUploadsCreate($input: [StagedUploadInput!]!) {
+        `mutation ($input: [StagedUploadInput!]!) {
           stagedUploadsCreate(input: $input) {
             stagedTargets {
               url
@@ -162,29 +172,22 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
 
     const stagedJson = await stagedRes.json();
     const target = stagedJson.data?.stagedUploadsCreate?.stagedTargets?.[0];
-    if (!target) throw new Error("Staged upload failed");
+    if (!target) throw new Error("staged upload failed");
 
-    // upload file
+    // upload bytes
     const form = new FormData();
     target.parameters.forEach((p: any) => form.append(p.name, p.value));
     form.append("file", new Blob([buffer], { type: "image/avif" }));
 
-    await retry(() =>
-      fetch(target.url, {
-        method: "POST",
-        body: form,
-      })
-    );
+    await retry(() => fetch(target.url, { method: "POST", body: form }));
 
-    // attach to product
+    // attach media
     const mediaRes = await retry(() =>
       admin.graphql(
-        `mutation productCreateMedia($productId: ID!, $media: [CreateMediaInput!]!) {
+        `mutation ($productId: ID!, $media: [CreateMediaInput!]!) {
           productCreateMedia(productId: $productId, media: $media) {
             media {
-              ... on MediaImage {
-                id
-              }
+              ... on MediaImage { id }
             }
             userErrors { message }
           }
@@ -196,7 +199,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
               {
                 originalSource: target.resourceUrl,
                 mediaContentType: "IMAGE",
-                alt: `${product.title} AVIF`,
+                alt: `${product.title} [AVIF]`,
               },
             ],
           },
@@ -205,19 +208,67 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
     );
 
     const mediaJson = await mediaRes.json();
-    if (mediaJson.data?.productCreateMedia?.userErrors?.length) {
-      throw new Error("Media creation failed");
-    }
+    const newId = mediaJson.data?.productCreateMedia?.media?.[0]?.id;
+    if (!newId) throw new Error("media create failed");
 
-    return true;
+    replacements.push({
+      oldUrl: img.url,
+      newId,
+    });
   };
 
-  // limit concurrency (IMPORTANT)
   await asyncPool(3, images, processImage);
 
-  // ─────────────────────────────────────────────
-  // 4. MARK AS DONE (IDEMPOTENCY FLAG)
-  // ─────────────────────────────────────────────
+  // ─────────────────────────────
+  // 4) reassign variant images
+  // ─────────────────────────────
+  for (const v of product.variants.edges) {
+    const variant = v.node;
+    if (!variant.image?.url) continue;
+
+    const match = replacements.find(r => r.oldUrl === variant.image.url);
+    if (!match) continue;
+
+    await retry(() =>
+      admin.graphql(
+        `mutation ($input: ProductVariantInput!) {
+          productVariantUpdate(input: $input) {
+            productVariant { id }
+            userErrors { message }
+          }
+        }`,
+        {
+          variables: {
+            input: {
+              id: variant.id,
+              imageId: match.newId,
+            },
+          },
+        }
+      )
+    );
+  }
+
+  // ─────────────────────────────
+  // 5) reorder (put AVIF first)
+  // ─────────────────────────────
+  await admin.graphql(
+    `mutation ($id: ID!, $mediaIds: [ID!]!) {
+      productReorderMedia(id: $id, mediaIds: $mediaIds) {
+        userErrors { message }
+      }
+    }`,
+    {
+      variables: {
+        id: gid,
+        mediaIds: replacements.map(r => r.newId),
+      },
+    }
+  );
+
+  // ─────────────────────────────
+  // 6) mark done
+  // ─────────────────────────────
   await admin.graphql(
     `mutation {
       metafieldsSet(metafields: [{
