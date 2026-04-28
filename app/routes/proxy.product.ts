@@ -17,7 +17,7 @@ export async function loader({ request, context }: any) {
   const cached = await env?.KV_PRODUCT?.get(cacheKey);
 
   if (cached) {
-    context.waitUntil(refresh(context, handle, env));
+    context.waitUntil(refresh(context, handle, env,request));
 
     return new Response(cached, {
       headers: {
@@ -106,12 +106,10 @@ function renderHTML(p: any) {
 // =========================
 // BACKGROUND REFRESH
 // =========================
-async function refresh(context: any, handle: string, env: any) {
+async function refresh(context: any, handle: string, env: any, request) {
   try {
     const { admin } =
-      await shopify(context).authenticate.admin(
-        new Request('https://dummy')
-      );
+      await shopify(context).authenticate.admin(request);
 
     const product = await fetchProduct(admin, handle);
     const html = renderHTML(product);
