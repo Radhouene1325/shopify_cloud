@@ -1,90 +1,74 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { shopify } from '../shopify.server';
 
-export async function loader({ request, context }: LoaderFunctionArgs) {
+export async function loader({ request, context }: any) {
   const url = new URL(request.url);
   const handle = url.searchParams.get('handle');
 
   if (!handle) {
-    return json({ error: 'Missing handle' }, { status: 400 });
+    return new Response('Missing handle', { status: 400 });
   }
 
-  const env = context.cloudflare?.env as any;
-
-  if (!env?.KV_PRODUCT) {
-    throw new Error('KV_PRODUCT binding is missing in Cloudflare env');
-  }
-
-  const cacheKey = `product:${handle}`;
+  const env = context.cloudflare?.env;
+  const cacheKey = `html:${handle}`;
 
   // =========================
-  // 1. KV CACHE CHECK
+  // 1. KV CACHE
   // =========================
-  const cached = await env.KV_PRODUCT.get(cacheKey, {
-    type: 'json',
-  });
+  const cached = await env?.KV_PRODUCT?.get(cacheKey);
 
   if (cached) {
-    (context as any).waitUntil(refreshProduct(context, handle, env));
+    context.waitUntil(refresh(context, handle, env));
 
-    return json(cached, {
+    return new Response(cached, {
       headers: {
+        'Content-Type': 'text/html',
+        'Cache-Control': 'public, max-age=0, s-maxage=3600, stale-while-revalidate=600',
         'X-Cache': 'HIT',
-        'Cache-Control': 'public, max-age=60, stale-while-revalidate=600',
       },
     });
   }
 
   // =========================
-  // 2. SHOPIFY FETCH (APP PROXY SAFE)
+  // 2. SHOPIFY (APP PROXY SAFE)
   // =========================
-  const { storefront } = await shopify(context).authenticate.public.appProxy(request);
+  const { admin } =
+    await shopify(context).authenticate.admin(request);
 
-  const product = await fetchShopifyProduct(storefront, handle);
+  const product = await fetchProduct(admin, handle);
+
+  const html = renderHTML(product);
 
   // =========================
-  // 3. WRITE TO KV (ASYNC)
+  // 3. STORE KV (ASYNC)
   // =========================
-  (context as any).waitUntil(
-    env.KV_PRODUCT.put(cacheKey, JSON.stringify(product), {
+  context.waitUntil(
+    env.KV_PRODUCT.put(cacheKey, html, {
       expirationTtl: 3600,
     })
   );
 
-  return json(product, {
+  return new Response(html, {
     headers: {
+      'Content-Type': 'text/html',
+      'Cache-Control': 'public, max-age=0, s-maxage=3600, stale-while-revalidate=600',
       'X-Cache': 'MISS',
-      'Cache-Control': 'public, max-age=60, stale-while-revalidate=600',
     },
   });
 }
 
-
-
-async function fetchShopifyProduct(storefront: any, handle: string) {
-  const response = await storefront.graphql(
+// =========================
+// FETCH SHOPIFY
+// =========================
+async function fetchProduct(storefront: any, handle: string) {
+  const res = await storefront.graphql(
     `
-    query ProductByHandle($handle: String!) {
+    query ($handle: String!) {
       productByHandle(handle: $handle) {
-        id
         title
         handle
-
-        featuredImage {
-          url
-        }
-
+        featuredImage { url }
         priceRange {
-          minVariantPrice {
-            amount
-            currencyCode
-          }
-        }
-
-        variants(first: 1) {
-          nodes {
-            availableForSale
-          }
+          minVariantPrice { amount currencyCode }
         }
       }
     }
@@ -92,38 +76,48 @@ async function fetchShopifyProduct(storefront: any, handle: string) {
     { variables: { handle } }
   );
 
-  const data = await response.json();
+  const data = await res.json();
   const p = data?.data?.productByHandle;
 
-  if (!p) {
-    throw new Response('Not Found', { status: 404 });
-  }
+  if (!p) throw new Response('Not Found', { status: 404 });
 
   return {
-    id: p.id,
     title: p.title,
-    handle: p.handle,
-    image: p.featuredImage?.url ?? null,
-    available: p.variants?.nodes?.[0]?.availableForSale ?? false,
+    image: p.featuredImage?.url,
     price: `${p.priceRange.minVariantPrice.amount} ${p.priceRange.minVariantPrice.currencyCode}`,
   };
 }
 
+// =========================
+// HTML RENDER
+// =========================
+function renderHTML(p: any) {
+  return `
+    <div id="app">
+      <div class="product-page">
+        <h1>${p.title}</h1>
+        <img src="${p.image}" loading="eager" />
+        <p>${p.price}</p>
+      </div>
+    </div>
+  `;
+}
 
-async function refreshProduct(context: any, handle: string, env: any) {
+// =========================
+// BACKGROUND REFRESH
+// =========================
+async function refresh(context: any, handle: string, env: any) {
   try {
-    if (!env?.KV_PRODUCT) return;
+    const { storefront } =
+      await shopify(context).authenticate.public.appProxy(
+        new Request('https://dummy')
+      );
 
-    const { storefront } = await shopify(context).authenticate.public.appProxy(
-      new Request('https://dummy')
-    );
+    const product = await fetchProduct(storefront, handle);
+    const html = renderHTML(product);
 
-    const product = await fetchShopifyProduct(storefront, handle);
-
-    await env.KV_PRODUCT.put(`product:${handle}`, JSON.stringify(product), {
+    await env.KV_PRODUCT.put(`html:${handle}`, html, {
       expirationTtl: 3600,
     });
-  } catch {
-    // silent fail (edge safe)
-  }
+  } catch {}
 }
