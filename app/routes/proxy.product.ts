@@ -266,9 +266,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
     }
   );
 
-  // ─────────────────────────────
-  // 6) mark done
-  // ─────────────────────────────
+
   await admin.graphql(
     `mutation {
       metafieldsSet(metafields: [{
