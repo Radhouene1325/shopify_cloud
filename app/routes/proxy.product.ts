@@ -1,8 +1,7 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { shopify } from "../shopify.server";
 
-// Your shop domain (must be proxied through Cloudflare with Image Resizing enabled)
-const SHOP_DOMAIN = "platinumshop.it"; // change to your domain
+const SHOP_DOMAIN = "platinumshop.it"; // your domain
 
 export const action = async ({ request,context }: ActionFunctionArgs) => {
   if (request.method !== "POST") {
@@ -12,9 +11,13 @@ export const action = async ({ request,context }: ActionFunctionArgs) => {
   const { admin } = await shopify(context as any).authenticate.admin(request);
   const { productId } = await request.json();
 
-  if (!productId || !productId.startsWith("gid://shopify/Product/")) {
-    return new Response("Invalid productId", { status: 400 });
+  if (!productId) {
+    return new Response("Missing productId", { status: 400 });
   }
+
+  // Liquid sends numeric ID like "7234567890123" — convert to GID
+  const numericId = String(productId).replace("gid://shopify/Product/", "");
+  const gid = `gid://shopify/Product/${numericId}`;
 
   // ─── 1. Fetch product images ───
   const query = `
@@ -44,7 +47,7 @@ export const action = async ({ request,context }: ActionFunctionArgs) => {
     }
   `;
 
-  const res = await admin.graphql(query, { variables: { id: productId } });
+  const res = await admin.graphql(query, { variables: { id: gid } });
   const json = await res.json();
   const product = json.data?.product;
 
@@ -75,50 +78,40 @@ export const action = async ({ request,context }: ActionFunctionArgs) => {
   // ─── 2. Convert via Cloudflare Image Resizing & upload ───
   for (const img of images) {
     try {
-      // Cloudflare Image Resizing URL
+      // If you do NOT have Cloudflare Image Resizing, replace this URL with:
+      // `https://images.weserv.nl/?url=${encodeURIComponent(img.url)}&output=avif&q=75`
       const cfUrl = `https://${SHOP_DOMAIN}/cdn-cgi/image/format=avif,quality=75/${encodeURIComponent(img.url)}`;
 
       const cfRes = await fetch(cfUrl);
-      if (!cfRes.ok) throw new Error(`CF resize failed: ${cfRes.status}`);
+      if (!cfRes.ok) throw new Error(`Resize failed: ${cfRes.status}`);
 
       const avifBuffer = Buffer.from(await cfRes.arrayBuffer());
-      const filename = `avif-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.avif`;
+      const filename = `avif-${numericId}-${Math.random().toString(36).slice(2, 8)}.avif`;
 
-      // ─── 2a. Staged upload ───
+      // ─── Staged upload ───
       const stagedRes = await admin.graphql(
         `mutation stagedUploadsCreate($input: [StagedUploadInput!]!) {
           stagedUploadsCreate(input: $input) {
-            stagedTargets {
-              url
-              resourceUrl
-              parameters { name value }
-            }
+            stagedTargets { url resourceUrl parameters { name value } }
             userErrors { field message }
           }
         }`,
         {
           variables: {
-            input: [
-              {
-                filename,
-                mimeType: "image/avif",
-                resource: "IMAGE",
-                httpMethod: "POST",
-                fileSize: avifBuffer.byteLength.toString(),
-              },
-            ],
+            input: [{
+              filename,
+              mimeType: "image/avif",
+              resource: "IMAGE",
+              httpMethod: "POST",
+              fileSize: avifBuffer.byteLength.toString(),
+            }],
           },
         }
       );
 
       const stagedJson = await stagedRes.json();
       const target = stagedJson.data?.stagedUploadsCreate?.stagedTargets?.[0];
-
-      if (!target) {
-        throw new Error(
-          `Staged upload failed: ${JSON.stringify(stagedJson.data?.stagedUploadsCreate?.userErrors)}`
-        );
-      }
+      if (!target) throw new Error("Staged upload failed");
 
       // Upload bytes
       const formData = new FormData();
@@ -126,41 +119,31 @@ export const action = async ({ request,context }: ActionFunctionArgs) => {
       formData.append("file", new Blob([avifBuffer], { type: "image/avif" }));
 
       const uploadRes = await fetch(target.url, { method: "POST", body: formData });
-      if (!uploadRes.ok) throw new Error(`Upload failed: ${uploadRes.status}`);
+      if (!uploadRes.ok) throw new Error("Byte upload failed");
 
-      // ─── 2b. Attach to product ───
+      // ─── Attach to product ───
       const mediaRes = await admin.graphql(
         `mutation productCreateMedia($productId: ID!, $media: [CreateMediaInput!]!) {
           productCreateMedia(productId: $productId, media: $media) {
-            media {
-              ... on MediaImage {
-                id
-                image { url }
-              }
-            }
+            media { ... on MediaImage { id image { url } } }
             userErrors { field message }
           }
         }`,
         {
           variables: {
-            productId,
-            media: [
-              {
-                originalSource: target.resourceUrl,
-                mediaContentType: "IMAGE",
-                alt: `${product.title} (AVIF)`,
-              },
-            ],
+            productId: gid,
+            media: [{
+              originalSource: target.resourceUrl,
+              mediaContentType: "IMAGE",
+              alt: `${product.title} (AVIF)`,
+            }],
           },
         }
       );
 
       const mediaJson = await mediaRes.json();
-
       if (mediaJson.data?.productCreateMedia?.userErrors?.length > 0) {
-        throw new Error(
-          JSON.stringify(mediaJson.data.productCreateMedia.userErrors)
-        );
+        throw new Error(JSON.stringify(mediaJson.data.productCreateMedia.userErrors));
       }
 
       results.push({
