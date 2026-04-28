@@ -58,7 +58,7 @@ async function fetchProduct(storefront, handle) {
     `
     query ($handle: String!) {
       productByHandle(handle: $handle) {
-        title
+        # title
         handle
         featuredImage { url }
         priceRange {
