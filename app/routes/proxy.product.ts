@@ -108,12 +108,12 @@ function renderHTML(p: any) {
 // =========================
 async function refresh(context: any, handle: string, env: any) {
   try {
-    const { storefront } =
-      await shopify(context).authenticate.public.appProxy(
+    const { admin } =
+      await shopify(context).authenticate.admin(
         new Request('https://dummy')
       );
 
-    const product = await fetchProduct(storefront, handle);
+    const product = await fetchProduct(admin, handle);
     const html = renderHTML(product);
 
     await env.KV_PRODUCT.put(`html:${handle}`, html, {
