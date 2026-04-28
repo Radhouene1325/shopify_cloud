@@ -3,12 +3,12 @@ import { shopify } from "../shopify.server";
 
 const SHOP_DOMAIN = "platinumshop.it"; // your domain
 
-export const action = async ({ request,context }: ActionFunctionArgs) => {
+export const action = async ({ request, context }: ActionFunctionArgs) => {
   if (request.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
   }
 
-  const { admin } = await shopify(context as any).authenticate.admin(request);
+  const { admin } = await shopify(context).authenticate.admin(request);
   const { productId } = await request.json();
 
   if (!productId) {
@@ -16,10 +16,10 @@ export const action = async ({ request,context }: ActionFunctionArgs) => {
   }
 
   // Liquid sends numeric ID like "7234567890123" — convert to GID
-  const numericId = String(productId).replace("gid://shopify/Product/", "");
+  const numericId = String(productId).replace(/\D/g, "");
   const gid = `gid://shopify/Product/${numericId}`;
 
-  // ─── 1. Fetch product images ───
+  // ─── 1. Fetch only the needed images (product media + variant images) ───
   const query = `
     query getProductImages($id: ID!) {
       product(id: $id) {
@@ -55,7 +55,7 @@ export const action = async ({ request,context }: ActionFunctionArgs) => {
     return new Response("Product not found", { status: 404 });
   }
 
-  // Deduplicate URLs
+  // Deduplicate URLs — only unique images, no duplicates from variants
   const seen = new Set<string>();
   const images: { url: string; existingId?: string }[] = [];
 
@@ -75,75 +75,95 @@ export const action = async ({ request,context }: ActionFunctionArgs) => {
 
   const results: any[] = [];
 
-  // ─── 2. Convert via Cloudflare Image Resizing & upload ───
+  // ─── 2. For each unique image: get AVIF from Cloudflare → upload to Shopify ───
   for (const img of images) {
     try {
-      // If you do NOT have Cloudflare Image Resizing, replace this URL with:
-      // `https://images.weserv.nl/?url=${encodeURIComponent(img.url)}&output=avif&q=75`
+      // Your exact pattern — fetch AVIF bytes from Cloudflare
       const cfUrl = `https://${SHOP_DOMAIN}/cdn-cgi/image/format=avif,quality=75/${encodeURIComponent(img.url)}`;
 
       const cfRes = await fetch(cfUrl);
-      if (!cfRes.ok) throw new Error(`Resize failed: ${cfRes.status}`);
+      if (!cfRes.ok) throw new Error(`CF resize failed: ${cfRes.status}`);
 
       const avifBuffer = Buffer.from(await cfRes.arrayBuffer());
       const filename = `avif-${numericId}-${Math.random().toString(36).slice(2, 8)}.avif`;
 
-      // ─── Staged upload ───
+      // ─── 2a. Staged upload ───
       const stagedRes = await admin.graphql(
         `mutation stagedUploadsCreate($input: [StagedUploadInput!]!) {
           stagedUploadsCreate(input: $input) {
-            stagedTargets { url resourceUrl parameters { name value } }
+            stagedTargets {
+              url
+              resourceUrl
+              parameters { name value }
+            }
             userErrors { field message }
           }
         }`,
         {
           variables: {
-            input: [{
-              filename,
-              mimeType: "image/avif",
-              resource: "IMAGE",
-              httpMethod: "POST",
-              fileSize: avifBuffer.byteLength.toString(),
-            }],
+            input: [
+              {
+                filename,
+                mimeType: "image/avif",
+                resource: "IMAGE",
+                httpMethod: "POST",
+                fileSize: avifBuffer.byteLength.toString(),
+              },
+            ],
           },
         }
       );
 
       const stagedJson = await stagedRes.json();
       const target = stagedJson.data?.stagedUploadsCreate?.stagedTargets?.[0];
-      if (!target) throw new Error("Staged upload failed");
 
-      // Upload bytes
+      if (!target) {
+        throw new Error(
+          `Staged upload failed: ${JSON.stringify(stagedJson.data?.stagedUploadsCreate?.userErrors)}`
+        );
+      }
+
+      // Upload bytes to Shopify staged URL
       const formData = new FormData();
       target.parameters.forEach((p: any) => formData.append(p.name, p.value));
       formData.append("file", new Blob([avifBuffer], { type: "image/avif" }));
 
       const uploadRes = await fetch(target.url, { method: "POST", body: formData });
-      if (!uploadRes.ok) throw new Error("Byte upload failed");
+      if (!uploadRes.ok) throw new Error(`Byte upload failed: ${uploadRes.status}`);
 
-      // ─── Attach to product ───
+      // ─── 2b. Create file & attach to product ───
       const mediaRes = await admin.graphql(
         `mutation productCreateMedia($productId: ID!, $media: [CreateMediaInput!]!) {
           productCreateMedia(productId: $productId, media: $media) {
-            media { ... on MediaImage { id image { url } } }
+            media {
+              ... on MediaImage {
+                id
+                image { url }
+              }
+            }
             userErrors { field message }
           }
         }`,
         {
           variables: {
             productId: gid,
-            media: [{
-              originalSource: target.resourceUrl,
-              mediaContentType: "IMAGE",
-              alt: `${product.title} (AVIF)`,
-            }],
+            media: [
+              {
+                originalSource: target.resourceUrl,
+                mediaContentType: "IMAGE",
+                alt: `${product.title} (AVIF)`,
+              },
+            ],
           },
         }
       );
 
       const mediaJson = await mediaRes.json();
+
       if (mediaJson.data?.productCreateMedia?.userErrors?.length > 0) {
-        throw new Error(JSON.stringify(mediaJson.data.productCreateMedia.userErrors));
+        throw new Error(
+          JSON.stringify(mediaJson.data.productCreateMedia.userErrors)
+        );
       }
 
       results.push({
@@ -155,5 +175,5 @@ export const action = async ({ request,context }: ActionFunctionArgs) => {
     }
   }
 
-  return Response.json({ success: true, count: results.length, results });
+  return Response.json({ success: true, converted: results.length, results });
 };
