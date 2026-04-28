@@ -1,24 +1,78 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { shopify } from '../shopify.server';
 
+// export async function loader({ request, context }: LoaderFunctionArgs) {
+//   const url = new URL(request.url);
+//   const handle = url.searchParams.get('handle');
+
+//   if (!handle) {
+//     return json({ error: 'Missing handle' }, { status: 400 });
+//   }
+
+//   const env = context.cloudflare?.env as any;
+//   const cacheKey = `p:${handle}`;
+
+//   // =========================
+//   // 1. KV HIT (10–30ms)
+//   // =========================
+//   const cached = await env.KV_PRODUCT.get(cacheKey, { type: 'json' });
+
+//   if (cached) {
+//     context.waitUntil(refresh(context, handle, env));
+
+//     return json(cached, {
+//       headers: {
+//         'Cache-Control': 'public, max-age=60, stale-while-revalidate=600',
+//       },
+//     });
+//   }
+
+//   // =========================
+//   // 2. SHOPIFY FETCH
+//   // =========================
+// const { session, admin, storefront } =
+//   await shopify(context).authenticate.public.appProxy(request);
+//   const product = await fetchProduct(admin, handle);
+
+//   // =========================
+//   // 3. WRITE KV (ASYNC)
+//   // =========================
+//   context.waitUntil(
+//     env.KV_PRODUCT.put(cacheKey, JSON.stringify(product), {
+//       expirationTtl: 3600,
+//     })
+//   );
+
+//   return json(product, {
+//     headers: {
+//       'Cache-Control': 'public, max-age=60, stale-while-revalidate=600',
+//     },
+//   });
+// }
+
+// =============================
+// GRAPHQL
+// =============================
+
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const url = new URL(request.url);
-  const handle = url.searchParams.get('handle');
+  const cf = (context as any).cloudflare;
 
-  if (!handle) {
-    return json({ error: 'Missing handle' }, { status: 400 });
-  }
+  const env = cf?.env;
+  const waitUntil = cf?.waitUntil;
 
-  const env = context.cloudflare?.env as any;
+  const handle = new URL(request.url).searchParams.get('handle');
+
+  if (!handle) return json({ error: 'Missing handle' }, { status: 400 });
+
   const cacheKey = `p:${handle}`;
 
   // =========================
-  // 1. KV HIT (10–30ms)
+  // KV HIT
   // =========================
   const cached = await env.KV_PRODUCT.get(cacheKey, { type: 'json' });
 
   if (cached) {
-    context.waitUntil(refresh(context, handle, env));
+    waitUntil?.(refresh(cf, handle, env));
 
     return json(cached, {
       headers: {
@@ -28,16 +82,14 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   }
 
   // =========================
-  // 2. SHOPIFY FETCH
+  // SHOPIFY FETCH
   // =========================
-const { session, admin, storefront } =
-  await shopify(context).authenticate.public.appProxy(request);
+  const { admin } =
+    await shopify(context).authenticate.public.appProxy(request);
+
   const product = await fetchProduct(admin, handle);
 
-  // =========================
-  // 3. WRITE KV (ASYNC)
-  // =========================
-  context.waitUntil(
+  waitUntil?.(
     env.KV_PRODUCT.put(cacheKey, JSON.stringify(product), {
       expirationTtl: 3600,
     })
@@ -50,9 +102,7 @@ const { session, admin, storefront } =
   });
 }
 
-// =============================
-// GRAPHQL
-// =============================
+
 async function fetchProduct(storefront: any, handle: string) {
   const res = await storefront.graphql(`
     query ($handle: String!) {
