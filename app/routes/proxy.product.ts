@@ -1,7 +1,39 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { shopify } from "../shopify.server";
 
-const SHOP_DOMAIN = "platinumshop.it"; // your domain
+const SHOP_DOMAIN = "platinumshop.it";
+
+// simple concurrency limiter (no external deps)
+const asyncPool = async (limit: number, array: any[], iteratorFn: any) => {
+  const ret: any[] = [];
+  const executing: any[] = [];
+
+  for (const item of array) {
+    const p = Promise.resolve().then(() => iteratorFn(item));
+    ret.push(p);
+
+    if (limit <= array.length) {
+      const e: any = p.then(() => executing.splice(executing.indexOf(e), 1));
+      executing.push(e);
+      if (executing.length >= limit) {
+        await Promise.race(executing);
+      }
+    }
+  }
+
+  return Promise.allSettled(ret);
+};
+
+// retry helper
+const retry = async (fn: any, retries = 3) => {
+  try {
+    return await fn();
+  } catch (err) {
+    if (retries <= 0) throw err;
+    await new Promise((r) => setTimeout(r, 500));
+    return retry(fn, retries - 1);
+  }
+};
 
 export const action = async ({ request, context }: ActionFunctionArgs) => {
   if (request.method !== "POST") {
@@ -15,30 +47,36 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
     return new Response("Missing productId", { status: 400 });
   }
 
-  // Liquid sends numeric ID like "7234567890123" — convert to GID
   const numericId = String(productId).replace(/\D/g, "");
   const gid = `gid://shopify/Product/${numericId}`;
 
-  // ─── 1. Fetch only the needed images (product media + variant images) ───
+  // ─────────────────────────────────────────────
+  // 1. FETCH PRODUCT + METAFIELD (IDEMPOTENCY)
+  // ─────────────────────────────────────────────
   const query = `
-    query getProductImages($id: ID!) {
+    query getProduct($id: ID!) {
       product(id: $id) {
         id
         title
+
+        metafield(namespace: "custom", key: "avif_done") {
+          value
+        }
+
         media(first: 50) {
           edges {
             node {
               ... on MediaImage {
                 id
-                image { url width height }
+                image { url }
               }
             }
           }
         }
+
         variants(first: 100) {
           edges {
             node {
-              id
               image { url id }
             }
           }
@@ -55,40 +93,47 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
     return new Response("Product not found", { status: 404 });
   }
 
-  // Deduplicate URLs — only unique images, no duplicates from variants
+  // ✅ SKIP if already processed
+  if (product.metafield?.value === "true") {
+    return Response.json({ success: true, skipped: true });
+  }
+
+  // ─────────────────────────────────────────────
+  // 2. DEDUPLICATE IMAGES
+  // ─────────────────────────────────────────────
   const seen = new Set<string>();
-  const images: { url: string; existingId?: string }[] = [];
+  const images: { url: string }[] = [];
 
   product.media?.edges?.forEach(({ node }: any) => {
     if (node.image?.url && !seen.has(node.image.url)) {
       seen.add(node.image.url);
-      images.push({ url: node.image.url, existingId: node.id });
+      images.push({ url: node.image.url });
     }
   });
 
   product.variants?.edges?.forEach(({ node }: any) => {
     if (node.image?.url && !seen.has(node.image.url)) {
       seen.add(node.image.url);
-      images.push({ url: node.image.url, existingId: node.image.id });
+      images.push({ url: node.image.url });
     }
   });
 
-  const results: any[] = [];
+  // ─────────────────────────────────────────────
+  // 3. PROCESS IMAGES (CONCURRENT + SAFE)
+  // ─────────────────────────────────────────────
+  const processImage = async (img: { url: string }) => {
+    const cfUrl = `https://${SHOP_DOMAIN}/cdn-cgi/image/format=avif,quality=60,metadata=none/${encodeURIComponent(img.url)}`;
 
-  // ─── 2. For each unique image: get AVIF from Cloudflare → upload to Shopify ───
-  for (const img of images) {
-    try {
-      // Your exact pattern — fetch AVIF bytes from Cloudflare
-      const cfUrl = `https://${SHOP_DOMAIN}/cdn-cgi/image/format=avif,quality=75/${encodeURIComponent(img.url)}`;
+    // fetch AVIF
+    const cfRes = await retry(() => fetch(cfUrl));
+    if (!cfRes.ok) throw new Error(`CF failed ${cfRes.status}`);
 
-      const cfRes = await fetch(cfUrl);
-      if (!cfRes.ok) throw new Error(`CF resize failed: ${cfRes.status}`);
+    const buffer = Buffer.from(await cfRes.arrayBuffer());
+    const filename = `avif-${numericId}-${Math.random().toString(36).slice(2)}.avif`;
 
-      const avifBuffer = Buffer.from(await cfRes.arrayBuffer());
-      const filename = `avif-${numericId}-${Math.random().toString(36).slice(2, 8)}.avif`;
-
-      // ─── 2a. Staged upload ───
-      const stagedRes = await admin.graphql(
+    // staged upload
+    const stagedRes = await retry(() =>
+      admin.graphql(
         `mutation stagedUploadsCreate($input: [StagedUploadInput!]!) {
           stagedUploadsCreate(input: $input) {
             stagedTargets {
@@ -96,7 +141,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
               resourceUrl
               parameters { name value }
             }
-            userErrors { field message }
+            userErrors { message }
           }
         }`,
         {
@@ -107,41 +152,41 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
                 mimeType: "image/avif",
                 resource: "IMAGE",
                 httpMethod: "POST",
-                fileSize: avifBuffer.byteLength.toString(),
+                fileSize: buffer.byteLength.toString(),
               },
             ],
           },
         }
-      );
+      )
+    );
 
-      const stagedJson = await stagedRes.json();
-      const target = stagedJson.data?.stagedUploadsCreate?.stagedTargets?.[0];
+    const stagedJson = await stagedRes.json();
+    const target = stagedJson.data?.stagedUploadsCreate?.stagedTargets?.[0];
+    if (!target) throw new Error("Staged upload failed");
 
-      if (!target) {
-        throw new Error(
-          `Staged upload failed: ${JSON.stringify(stagedJson.data?.stagedUploadsCreate?.userErrors)}`
-        );
-      }
+    // upload file
+    const form = new FormData();
+    target.parameters.forEach((p: any) => form.append(p.name, p.value));
+    form.append("file", new Blob([buffer], { type: "image/avif" }));
 
-      // Upload bytes to Shopify staged URL
-      const formData = new FormData();
-      target.parameters.forEach((p: any) => formData.append(p.name, p.value));
-      formData.append("file", new Blob([avifBuffer], { type: "image/avif" }));
+    await retry(() =>
+      fetch(target.url, {
+        method: "POST",
+        body: form,
+      })
+    );
 
-      const uploadRes = await fetch(target.url, { method: "POST", body: formData });
-      if (!uploadRes.ok) throw new Error(`Byte upload failed: ${uploadRes.status}`);
-
-      // ─── 2b. Create file & attach to product ───
-      const mediaRes = await admin.graphql(
+    // attach to product
+    const mediaRes = await retry(() =>
+      admin.graphql(
         `mutation productCreateMedia($productId: ID!, $media: [CreateMediaInput!]!) {
           productCreateMedia(productId: $productId, media: $media) {
             media {
               ... on MediaImage {
                 id
-                image { url }
               }
             }
-            userErrors { field message }
+            userErrors { message }
           }
         }`,
         {
@@ -151,29 +196,44 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
               {
                 originalSource: target.resourceUrl,
                 mediaContentType: "IMAGE",
-                alt: `${product.title} (AVIF)`,
+                alt: `${product.title} AVIF`,
               },
             ],
           },
         }
-      );
+      )
+    );
 
-      const mediaJson = await mediaRes.json();
-
-      if (mediaJson.data?.productCreateMedia?.userErrors?.length > 0) {
-        throw new Error(
-          JSON.stringify(mediaJson.data.productCreateMedia.userErrors)
-        );
-      }
-
-      results.push({
-        original: img.url,
-        newId: mediaJson.data?.productCreateMedia?.media?.[0]?.id,
-      });
-    } catch (err: any) {
-      results.push({ original: img.url, error: err.message });
+    const mediaJson = await mediaRes.json();
+    if (mediaJson.data?.productCreateMedia?.userErrors?.length) {
+      throw new Error("Media creation failed");
     }
-  }
 
-  return Response.json({ success: true, converted: results.length, results });
+    return true;
+  };
+
+  // limit concurrency (IMPORTANT)
+  await asyncPool(3, images, processImage);
+
+  // ─────────────────────────────────────────────
+  // 4. MARK AS DONE (IDEMPOTENCY FLAG)
+  // ─────────────────────────────────────────────
+  await admin.graphql(
+    `mutation {
+      metafieldsSet(metafields: [{
+        ownerId: "${gid}",
+        namespace: "custom",
+        key: "avif_done",
+        type: "single_line_text_field",
+        value: "true"
+      }]) {
+        userErrors { message }
+      }
+    }`
+  );
+
+  return Response.json({
+    success: true,
+    processed: images.length,
+  });
 };
