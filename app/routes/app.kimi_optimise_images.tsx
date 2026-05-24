@@ -1404,10 +1404,10 @@ export async function compressImage(
 
     } catch { }
 
-    // VERY SMALL AVIF
+    // SUPER AGGRESSIVE AVIF COMPRESSION
     let optimizedUrl =
         `${cfImageDomain}/cdn-cgi/image/` +
-        `format=avif,quality=45,width=1200,fit=scale-down/` +
+        `format=avif,quality=35,width=800,fit=scale-down/` +
         encodeURIComponent(imageUrl);
 
     let response = await fetch(optimizedUrl, {
@@ -1418,9 +1418,9 @@ export async function compressImage(
 
     if (!response.ok) {
 
-        // Fallback to Shopify native CDN
+        // Fallback to Shopify native CDN with aggressive settings
         const separator = imageUrl.includes("?") ? "&" : "?";
-        optimizedUrl = `${imageUrl}${separator}format=avif&width=1200`;
+        optimizedUrl = `${imageUrl}${separator}format=avif&width=800`;
 
         response = await fetch(optimizedUrl, {
             headers: {
