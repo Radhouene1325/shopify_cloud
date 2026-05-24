@@ -14,9 +14,6 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
 
   return { apiKey: process.env.SHOPIFY_API_KEY || "" };
 };
-
-export default function App() {
-  const { apiKey } = useLoaderData<typeof loader>();
 const Menu = React.memo(() => (
  <NavMenu>
         <Link to="/app" rel="home" prefetch="intent">Home</Link>
@@ -29,6 +26,9 @@ const Menu = React.memo(() => (
         <Link to="/app/kimi_optimise_images" prefetch="intent">kimi optimise images</Link>
       </NavMenu>
 ));
+export default function App() {
+  const { apiKey } = useLoaderData<typeof loader>();
+
   return (
     <AppProvider isEmbeddedApp apiKey={apiKey}>
      
