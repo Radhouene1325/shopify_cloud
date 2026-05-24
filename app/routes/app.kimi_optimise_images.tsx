@@ -2000,7 +2000,7 @@ export default function ImageOptimizer() {
                     const media =
                         product.media.edges.filter(
                             (x: any) =>
-                                x.node.mediaContentType === "IMAGE"
+                                x.node.mediaContentType === "IMAGE" && x.node.image
                         );
 
                     return (
@@ -2043,7 +2043,7 @@ export default function ImageOptimizer() {
                                         >
 
                                             <img
-                                                src={img.url}
+                                                src={img?.url}
                                                 style={{
                                                     width: "150px",
                                                     height: "150px",
@@ -2055,9 +2055,9 @@ export default function ImageOptimizer() {
                                             <p style={{
                                                 fontSize: "12px",
                                             }}>
-                                                {img.width}
+                                                {img?.width}
                                                 x
-                                                {img.height}
+                                                {img?.height}
                                             </p>
 
                                             <Form method="post">
@@ -2083,13 +2083,13 @@ export default function ImageOptimizer() {
                                                 <input
                                                     type="hidden"
                                                     name="imageUrl"
-                                                    value={img.url}
+                                                    value={img?.url || ""}
                                                 />
 
                                                 <input
                                                     type="hidden"
                                                     name="altText"
-                                                    value={img.altText || ""}
+                                                    value={img?.altText || ""}
                                                 />
 
                                                 <button
