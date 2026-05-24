@@ -1838,33 +1838,33 @@ userErrors {
             });
         }
 
-        // DELETE OLD IMAGE
-        if (imageId) {
-            try {
-                await safeGraphql(admin, `
-mutation productDeleteMedia(
-    $productId: ID!,
-    $mediaIds: [ID!]!
-) {
-productDeleteMedia(
-    productId: $productId,
-    mediaIds: $mediaIds
-) {
-    deletedMediaIds
-    userErrors {
-        field
-        message
-    }
-}
-}
-`, {
-                    productId,
-                    mediaIds: [imageId],
-                });
-            } catch (e) {
-                console.warn("[Optimizer] Cleanup old media failed:", e);
-            }
-        }
+//         // DELETE OLD IMAGE
+//         if (imageId) {
+//             try {
+//                 await safeGraphql(admin, `
+// mutation productDeleteMedia(
+//     $productId: ID!,
+//     $mediaIds: [ID!]!
+// ) {
+// productDeleteMedia(
+//     productId: $productId,
+//     mediaIds: $mediaIds
+// ) {
+//     deletedMediaIds
+//     userErrors {
+//         field
+//         message
+//     }
+// }
+// }
+// `, {
+//                     productId,
+//                     mediaIds: [imageId],
+//                 });
+//             } catch (e) {
+//                 console.warn("[Optimizer] Cleanup old media failed:", e);
+//             }
+//         }
 
         return json<ActionData>({
             success: true,
