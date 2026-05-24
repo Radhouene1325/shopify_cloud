@@ -1405,12 +1405,12 @@ export async function compressImage(
     } catch { }
 
     // VERY SMALL AVIF
-    const optimizedUrl =
+    let optimizedUrl =
         `${cfImageDomain}/cdn-cgi/image/` +
         `format=avif,quality=45,width=1200,fit=scale-down/` +
         encodeURIComponent(imageUrl);
 
-    const response = await fetch(optimizedUrl, {
+    let response = await fetch(optimizedUrl, {
         headers: {
             Accept: "image/avif,image/webp,image/*,*/*",
         },
@@ -1418,9 +1418,21 @@ export async function compressImage(
 
     if (!response.ok) {
 
-        throw new Error(
-            `Compression failed ${response.status}`
-        );
+        // Fallback to Shopify native CDN
+        const separator = imageUrl.includes("?") ? "&" : "?";
+        optimizedUrl = `${imageUrl}${separator}format=avif&width=1200`;
+
+        response = await fetch(optimizedUrl, {
+            headers: {
+                Accept: "image/avif,image/webp,image/*,*/*",
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(
+                `Compression failed ${response.status}`
+            );
+        }
     }
 
     const contentType =
@@ -1501,7 +1513,7 @@ mutation stagedUploadsCreate($input: [StagedUploadInput!]!) {
 
     formData.append(
         "file",
-        new Blob([compressedBuffer], {
+        new Blob([compressedBuffer as any], {
             type: contentType,
         }),
         filename
