@@ -1705,7 +1705,8 @@ export const action = async ({
 
     const altText =
         (formData.get("altText") as string) || " ";
-
+console.log("altText",altText)
+console.log("imageUrl", imageUrl)
     try {
 
         const cfDomain =
@@ -1835,6 +1836,34 @@ userErrors {
                     },
                 ],
             });
+        }
+
+        // DELETE OLD IMAGE
+        if (imageId) {
+            try {
+                await safeGraphql(admin, `
+mutation productDeleteMedia(
+    $productId: ID!,
+    $mediaIds: [ID!]!
+) {
+productDeleteMedia(
+    productId: $productId,
+    mediaIds: $mediaIds
+) {
+    deletedMediaIds
+    userErrors {
+        field
+        message
+    }
+}
+}
+`, {
+                    productId,
+                    mediaIds: [imageId],
+                });
+            } catch (e) {
+                console.warn("[Optimizer] Cleanup old media failed:", e);
+            }
         }
 
         return json<ActionData>({
