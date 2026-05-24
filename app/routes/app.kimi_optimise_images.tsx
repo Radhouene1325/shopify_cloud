@@ -1404,10 +1404,10 @@ export async function compressImage(
 
     } catch { }
 
-    // SUPER AGGRESSIVE AVIF COMPRESSION
+    // 4K/HD RESOLUTION WITH EXTREME COMPRESSION (TINY SIZE)
     let optimizedUrl =
         `${cfImageDomain}/cdn-cgi/image/` +
-        `format=avif,quality=35,width=800,fit=scale-down/` +
+        `format=avif,quality=25,width=2200,fit=scale-down/` +
         encodeURIComponent(imageUrl);
 
     let response = await fetch(optimizedUrl, {
@@ -1418,9 +1418,9 @@ export async function compressImage(
 
     if (!response.ok) {
 
-        // Fallback to Shopify native CDN with aggressive settings
+        // Fallback to Shopify native CDN with 4K/HD resolution
         const separator = imageUrl.includes("?") ? "&" : "?";
-        optimizedUrl = `${imageUrl}${separator}format=avif&width=800`;
+        optimizedUrl = `${imageUrl}${separator}format=avif&width=2200`;
 
         response = await fetch(optimizedUrl, {
             headers: {
