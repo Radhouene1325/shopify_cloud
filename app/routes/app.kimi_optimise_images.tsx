@@ -1412,7 +1412,7 @@ export async function compressImage(
 
     let response = await fetch(optimizedUrl, {
         headers: {
-            Accept: "image/avif,image/webp,image/*,*/*",
+            Accept: "image/avif",
         },
     });
 
@@ -1424,7 +1424,7 @@ export async function compressImage(
 
         response = await fetch(optimizedUrl, {
             headers: {
-                Accept: "image/avif,image/webp,image/*,*/*",
+                Accept: "image/avif",
             },
         });
 
