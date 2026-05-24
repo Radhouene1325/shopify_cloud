@@ -166,11 +166,85 @@ export async function compressImage(
     };
 }
 
+// export async function uploadToShopifyCDN(
+//     admin: any,
+//     compressedBuffer: Uint8Array,
+//     contentType: string,
+//     filename?: string
+// ): Promise<string> {
+//     const ext = contentType.includes("avif")
+//         ? "avif"
+//         : contentType.includes("webp")
+//         ? "webp"
+//         : "jpg";
+
+//     const name = filename || `optimized-${Date.now()}.${ext}`;
+
+//     const stagedRes = await safeGraphql(admin, `
+//     mutation stagedUploadsCreate($input: [StagedUploadInput!]!) {
+//       stagedUploadsCreate(input: $input) {
+//         stagedTargets {
+//           url
+//           resourceUrl
+//           parameters { name value }
+//         }
+//         userErrors { field message }
+//       }
+//     }
+//   `, {
+//         input: [
+//             {
+//                 filename: name,
+//                 mimeType: contentType,
+//                 resource: "IMAGE",
+//                 fileSize: String(compressedBuffer.byteLength),
+//                 httpMethod: "POST",
+//             },
+//         ],
+//     });
+
+//     const target = stagedRes.data?.stagedUploadsCreate?.stagedTargets?.[0];
+//     const errors = stagedRes.data?.stagedUploadsCreate?.userErrors;
+
+//     if (errors?.length) {
+//         throw new Error(errors.map((e: any) => e.message).join(", "));
+//     }
+//     if (!target) {
+//         throw new Error("No target received from stagedUploadsCreate");
+//     }
+
+//     const formData = new FormData();
+//     target.parameters.forEach((param: any) => {
+//         formData.append(param.name, param.value);
+//     });
+
+//     const blob = new Blob([compressedBuffer as any], { type: contentType });
+//     formData.append("file", blob, name);
+
+//     const uploadRes = await fetch(target.url, {
+//         method: "POST",
+//         body: formData,
+//     });
+
+//     if (!uploadRes.ok) {
+//         const text = await uploadRes.text().catch(() => "Unknown error");
+//         throw new Error(`Shopify CDN upload failed: ${uploadRes.status} - ${text}`);
+//     }
+
+//     return target.resourceUrl;
+// }
+
+// ─── PAGE / GRAPHQL TYPES ─────────────────────────────────────────────────
+
+
+
+
+
 export async function uploadToShopifyCDN(
     admin: any,
     compressedBuffer: Uint8Array,
     contentType: string,
-    filename?: string
+    originalFilename?: string
 ): Promise<string> {
     const ext = contentType.includes("avif")
         ? "avif"
@@ -178,7 +252,14 @@ export async function uploadToShopifyCDN(
         ? "webp"
         : "jpg";
 
-    const name = filename || `optimized-${Date.now()}.${ext}`;
+    // Preserve original name but force correct extension for the new format
+    let name: string;
+    if (originalFilename) {
+        const baseName = originalFilename.replace(/\.[^/.]+$/, ""); // remove old extension
+        name = `${baseName || "optimized"}.${ext}`;
+    } else {
+        name = `optimized-${Date.now()}.${ext}`;
+    }
 
     const stagedRes = await safeGraphql(admin, `
     mutation stagedUploadsCreate($input: [StagedUploadInput!]!) {
@@ -203,6 +284,7 @@ export async function uploadToShopifyCDN(
         ],
     });
 
+    // ... rest of function remains identical ...
     const target = stagedRes.data?.stagedUploadsCreate?.stagedTargets?.[0];
     const errors = stagedRes.data?.stagedUploadsCreate?.userErrors;
 
@@ -233,9 +315,6 @@ export async function uploadToShopifyCDN(
 
     return target.resourceUrl;
 }
-
-// ─── PAGE / GRAPHQL TYPES ─────────────────────────────────────────────────
-
 interface ImageData {
     id?: string;
     url: string;
@@ -386,21 +465,270 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
 
 // ─── ACTION ───────────────────────────────────────────────────────────────
 
+// export const action = async ({ request, context }: ActionFunctionArgs) => {
+//     const { admin } = await shopify(context).authenticate.admin(request);
+//     const formData = await request.formData();
+
+//     const intent = formData.get("intent") as string;
+//     const imageUrl = formData.get("imageUrl") as string;
+//     const altText = (formData.get("altText") as string) || "";
+//     const productId = formData.get("productId") as string;
+
+//     const originalWidth = Number(formData.get("originalWidth")) || undefined;
+//     const originalHeight = Number(formData.get("originalHeight")) || undefined;
+//     const originalFormat = detectImageFormat(imageUrl);
+
+//     const urlObj = new URL(imageUrl);
+//     const originalFilename = urlObj.pathname.split("/").pop() || "image.avif";
+
+//     if (!intent || !imageUrl || !productId) {
+//         return json<ActionData>({ success: false, error: "Missing required fields" });
+//     }
+
+//     try {
+//         const cfDomain = (context.cloudflare.env as any).CF_IMAGE_DOMAIN as string | undefined;
+
+//         const {
+//             compressedBuffer,
+//             contentType,
+//             format: compressedFormat,
+//             originalSize,
+//             compressedSize,
+//         } = await compressImage(imageUrl, {
+//             format: "avif",
+//             quality: 75,
+//             maxWidth: 1600,
+//             cfImageDomain: cfDomain,
+//         });
+
+//         const resourceUrl = await uploadToShopifyCDN(admin, compressedBuffer, contentType, originalFilename);
+
+//         if (intent === "product_image") {
+//             const oldMediaId = formData.get("imageId") as string;
+
+//             const createRes = await safeGraphql(admin, `
+//         mutation productCreateMedia($productId: ID!, $media: [CreateMediaInput!]!) {
+//           productCreateMedia(productId: $productId, media: $media) {
+//             media {
+//               id
+//               alt
+//               ... on MediaImage {
+//                 image {
+//                   url
+//                   altText
+//                   width
+//                   height
+//                 }
+//               }
+//             }
+//             mediaUserErrors { field message }
+//           }
+//         }
+//       `, {
+//                 productId,
+//                 media: [
+//                     {
+//                         mediaContentType: "IMAGE",
+//                         originalSource: resourceUrl,
+//                         alt: altText,
+//                     },
+//                 ],
+//             });
+
+//             const newMedia = createRes.data?.productCreateMedia?.media?.[0];
+//             const errors = createRes.data?.productCreateMedia?.mediaUserErrors;
+
+//             if (errors?.length) {
+//                 return json<ActionData>({ success: false, errors });
+//             }
+//             if (!newMedia) {
+//                 return json<ActionData>({ success: false, error: "Failed to create media" });
+//             }
+
+//             if (oldMediaId) {
+//                 try {
+//                     await safeGraphql(admin, `
+//             mutation productDeleteMedia($productId: ID!, $mediaIds: [ID!]!) {
+//               productDeleteMedia(productId: $productId, mediaIds: $mediaIds) {
+//                 deletedMediaIds
+//                 userErrors { field message }
+//               }
+//             }
+//           `, { productId, mediaIds: [oldMediaId] });
+//                 } catch (e) {
+//                     console.warn("[Optimizer] Cleanup old product media failed:", e);
+//                 }
+//             }
+
+//             return json<ActionData>({
+//                 success: true,
+//                 type: "product_image",
+//                 comparison: {
+//                     before: {
+//                         url: imageUrl,
+//                         width: originalWidth,
+//                         height: originalHeight,
+//                         format: originalFormat,
+//                         size: originalSize,
+//                         sizeFormatted: formatBytes(originalSize),
+//                     },
+//                     after: {
+//                         url: newMedia.image?.url || resourceUrl,
+//                         width: newMedia.image?.width || originalWidth,
+//                         height: newMedia.image?.height || originalHeight,
+//                         format: compressedFormat,
+//                         size: compressedSize,
+//                         sizeFormatted: formatBytes(compressedSize),
+//                     },
+//                     reductionPercent: calculateReduction(originalSize, compressedSize),
+//                     reductionBytes: originalSize - compressedSize,
+//                 },
+//             });
+//         }
+
+//         if (intent === "variant_image") {
+//             const variantId = formData.get("variantId") as string;
+//             const oldMediaId = formData.get("imageId") as string;
+
+//             if (!variantId) {
+//                 return json<ActionData>({ success: false, error: "Missing variantId" });
+//             }
+
+//             const createRes = await safeGraphql(admin, `
+//         mutation productCreateMedia($productId: ID!, $media: [CreateMediaInput!]!) {
+//           productCreateMedia(productId: $productId, media: $media) {
+//             media {
+//               id
+//               ... on MediaImage {
+//                 image { url width height }
+//               }
+//             }
+//             mediaUserErrors { field message }
+//           }
+//         }
+//       `, {
+//                 productId,
+//                 media: [
+//                     {
+//                         mediaContentType: "IMAGE",
+//                         originalSource: resourceUrl,
+//                         alt: altText,
+//                     },
+//                 ],
+//             });
+
+//             const newMediaId = createRes.data?.productCreateMedia?.media?.[0]?.id;
+//             const newMediaImage = createRes.data?.productCreateMedia?.media?.[0]?.image;
+//             const errors = createRes.data?.productCreateMedia?.mediaUserErrors;
+
+//             if (errors?.length) {
+//                 return json<ActionData>({ success: false, errors });
+//             }
+//             if (!newMediaId) {
+//                 return json<ActionData>({ success: false, error: "Failed to create media" });
+//             }
+
+//             const updateRes = await safeGraphql(admin, `
+//         mutation productVariantsBulkUpdate(
+//           $productId: ID!
+//           $variants: [ProductVariantsBulkInput!]!
+//         ) {
+//           productVariantsBulkUpdate(productId: $productId, variants: $variants) {
+//             productVariants {
+//               id
+//               title
+//               image {
+//                 url
+//                 altText
+//                 width
+//                 height
+//               }
+//             }
+//             userErrors { field message }
+//           }
+//         }
+//       `, {
+//                 productId,
+//                 variants: [{ id: variantId, mediaId: [newMediaId] }],
+//             });
+
+//             const updateErrors = updateRes.data?.productVariantsBulkUpdate?.userErrors;
+//             if (updateErrors?.length) {
+//                 return json<ActionData>({ success: false, errors: updateErrors });
+//             }
+
+//             const updatedVariant = updateRes.data?.productVariantsBulkUpdate?.productVariants?.[0];
+
+//             if (oldMediaId) {
+//                 try {
+//                     await safeGraphql(admin, `
+//             mutation productDeleteMedia($productId: ID!, $mediaIds: [ID!]!) {
+//               productDeleteMedia(productId: $productId, mediaIds: $mediaIds) {
+//                 deletedMediaIds
+//                 userErrors { field message }
+//               }
+//             }
+//           `, { productId, mediaIds: [oldMediaId] });
+//                 } catch (e) {
+//                     console.warn("[Optimizer] Cleanup old variant media failed:", e);
+//                 }
+//             }
+
+//             return json<ActionData>({
+//                 success: true,
+//                 type: "variant_image",
+//                 comparison: {
+//                     before: {
+//                         url: imageUrl,
+//                         width: originalWidth,
+//                         height: originalHeight,
+//                         format: originalFormat,
+//                         size: originalSize,
+//                         sizeFormatted: formatBytes(originalSize),
+//                     },
+//                     after: {
+//                         url: updatedVariant?.image?.url || newMediaImage?.url || resourceUrl,
+//                         width: updatedVariant?.image?.width || newMediaImage?.width || originalWidth,
+//                         height: updatedVariant?.image?.height || newMediaImage?.height || originalHeight,
+//                         format: compressedFormat,
+//                         size: compressedSize,
+//                         sizeFormatted: formatBytes(compressedSize),
+//                     },
+//                     reductionPercent: calculateReduction(originalSize, compressedSize),
+//                     reductionBytes: originalSize - compressedSize,
+//                 },
+//             });
+//         }
+
+//         return json<ActionData>({ success: false, error: "Unknown intent" });
+//     } catch (err: any) {
+//         console.error("[Image Optimizer] Action error:", err);
+//         return json<ActionData>({
+//             success: false,
+//             error: err.message || "Internal server error",
+//         });
+//     }
+// };
+
 export const action = async ({ request, context }: ActionFunctionArgs) => {
     const { admin } = await shopify(context).authenticate.admin(request);
     const formData = await request.formData();
 
     const intent = formData.get("intent") as string;
     const imageUrl = formData.get("imageUrl") as string;
-    const altText = (formData.get("altText") as string) || "";
+    
+    // ✅ Preserves original "Testo alternativo"
+    const originalAltText = (formData.get("altText") as string) || "";
+    
     const productId = formData.get("productId") as string;
 
     const originalWidth = Number(formData.get("originalWidth")) || undefined;
     const originalHeight = Number(formData.get("originalHeight")) || undefined;
     const originalFormat = detectImageFormat(imageUrl);
 
+    // ✅ Extract original "nome" (filename) to preserve it
     const urlObj = new URL(imageUrl);
-    const originalFilename = urlObj.pathname.split("/").pop() || "image.avif";
+    const originalFilename = urlObj.pathname.split("/").pop() || "image";
 
     if (!intent || !imageUrl || !productId) {
         return json<ActionData>({ success: false, error: "Missing required fields" });
@@ -422,7 +750,13 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
             cfImageDomain: cfDomain,
         });
 
-        const resourceUrl = await uploadToShopifyCDN(admin, compressedBuffer, contentType, originalFilename);
+        // ✅ Pass original filename so uploadToShopifyCDN can preserve the base name
+        const resourceUrl = await uploadToShopifyCDN(
+            admin,
+            compressedBuffer,
+            contentType,
+            originalFilename
+        );
 
         if (intent === "product_image") {
             const oldMediaId = formData.get("imageId") as string;
@@ -451,11 +785,12 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
                     {
                         mediaContentType: "IMAGE",
                         originalSource: resourceUrl,
-                        alt: altText,
+                        alt: originalAltText, // ✅ Preserved alt text
                     },
                 ],
             });
 
+            // ... rest identical ...
             const newMedia = createRes.data?.productCreateMedia?.media?.[0];
             const errors = createRes.data?.productCreateMedia?.mediaUserErrors;
 
@@ -533,11 +868,12 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
                     {
                         mediaContentType: "IMAGE",
                         originalSource: resourceUrl,
-                        alt: altText,
+                        alt: originalAltText, // ✅ Preserved alt text
                     },
                 ],
             });
 
+            // ... rest identical ...
             const newMediaId = createRes.data?.productCreateMedia?.media?.[0]?.id;
             const newMediaImage = createRes.data?.productCreateMedia?.media?.[0]?.image;
             const errors = createRes.data?.productCreateMedia?.mediaUserErrors;
