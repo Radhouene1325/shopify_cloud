@@ -1381,67 +1381,124 @@ export function detectImageFormat(url: string): string {
 // COMPRESS IMAGE
 // ─────────────────────────────────────────────────────────────
 
+// export async function compressImage(
+//     imageUrl: string,
+//     options: {
+//         cfImageDomain: string;
+//     }
+// ): Promise<CompressionResult> {
+
+//     const { cfImageDomain } = options;
+
+//     let originalSize = 0;
+
+//     try {
+
+//         const head = await fetch(imageUrl, {
+//             method: "HEAD",
+//         });
+
+//         originalSize = Number(
+//             head.headers.get("content-length") || 0
+//         );
+
+//     } catch { }
+
+//     // 4K/HD RESOLUTION WITH EXTREME COMPRESSION (TINY SIZE)
+//     let optimizedUrl =
+//         `${cfImageDomain}/cdn-cgi/image/` +
+//         `format=avif,quality=25,width=2200,fit=scale-down/` +
+//         encodeURIComponent(imageUrl);
+
+//     let response = await fetch(optimizedUrl, {
+//        headers: {
+//             Accept: "image/avif,image/webp,image/*,*/*",
+//         },
+//     });
+
+//     if (!response.ok) {
+
+//         // Fallback to Shopify native CDN with 4K/HD resolution
+//         const separator = imageUrl.includes("?") ? "&" : "?";
+//         optimizedUrl = `${imageUrl}${separator}format=avif&width=2200`;
+
+//         response = await fetch(optimizedUrl, {
+//             headers: {
+//                 Accept: "image/avif,image/webp,image/*,*/*",
+//             },
+//         });
+
+//         if (!response.ok) {
+//             throw new Error(
+//                 `Compression failed ${response.status}`
+//             );
+//         }
+//     }
+
+//     const contentType =
+//         response.headers.get("content-type") ||
+//         "image/avif";
+
+//     const buffer = new Uint8Array(
+//         await response.arrayBuffer()
+//     );
+
+//     return {
+//         compressedBuffer: buffer,
+//         contentType,
+//         format: "AVIF",
+//         originalSize,
+//         compressedSize: buffer.byteLength,
+//     };
+// }
+
 export async function compressImage(
     imageUrl: string,
-    options: {
-        cfImageDomain: string;
-    }
+    options: { cfImageDomain: string }
 ): Promise<CompressionResult> {
-
     const { cfImageDomain } = options;
-
     let originalSize = 0;
 
     try {
-
-        const head = await fetch(imageUrl, {
-            method: "HEAD",
-        });
-
-        originalSize = Number(
-            head.headers.get("content-length") || 0
-        );
-
+        const head = await fetch(imageUrl, { method: "HEAD" });
+        originalSize = Number(head.headers.get("content-length") || 0);
     } catch { }
 
-    // 4K/HD RESOLUTION WITH EXTREME COMPRESSION (TINY SIZE)
+    // ── LCP-OPTIMIZED SETTINGS ──
+    // 1920px = Full HD. Covers 99% of displays without bloat.
+    // quality=60 with AVIF = ~70-80% smaller than JPEG, visually lossless.
+    // fit=scale-down prevents upscaling small images.
+    const targetWidth = 3840; 
+    
     let optimizedUrl =
         `${cfImageDomain}/cdn-cgi/image/` +
-        `format=avif,quality=25,width=2200,fit=scale-down/` +
+        `format=avif,quality=60,width=${targetWidth},fit=scale-down/` +
         encodeURIComponent(imageUrl);
 
     let response = await fetch(optimizedUrl, {
         headers: {
-            Accept: "image/avif",
+            Accept: "image/avif,image/webp,image/*,*/*",
         },
     });
 
     if (!response.ok) {
-
-        // Fallback to Shopify native CDN with 4K/HD resolution
+        // Fallback to Shopify CDN with same constraints
         const separator = imageUrl.includes("?") ? "&" : "?";
-        optimizedUrl = `${imageUrl}${separator}format=avif&width=2200`;
+        optimizedUrl = `${imageUrl}${separator}format=avif&width=${targetWidth}`;
 
         response = await fetch(optimizedUrl, {
             headers: {
-                Accept: "image/avif",
+                Accept: "image/avif,image/webp,image/*,*/*",
             },
         });
 
         if (!response.ok) {
-            throw new Error(
-                `Compression failed ${response.status}`
-            );
+            throw new Error(`Compression failed ${response.status}`);
         }
     }
 
-    const contentType =
-        response.headers.get("content-type") ||
-        "image/avif";
-
-    const buffer = new Uint8Array(
-        await response.arrayBuffer()
-    );
+    const contentType = response.headers.get("content-type") || "image/avif";
+    const buffer = new Uint8Array(await response.arrayBuffer());
 
     return {
         compressedBuffer: buffer,
@@ -1451,7 +1508,6 @@ export async function compressImage(
         compressedSize: buffer.byteLength,
     };
 }
-
 // ─────────────────────────────────────────────────────────────
 // SHOPIFY UPLOAD
 // ─────────────────────────────────────────────────────────────
