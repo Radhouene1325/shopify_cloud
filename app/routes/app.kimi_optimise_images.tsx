@@ -1481,6 +1481,7 @@ export async function compressImage(
         },
     });
 
+    console.log(response.status);
     if (!response.ok) {
         // Fallback to Shopify CDN with same constraints
         const separator = imageUrl.includes("?") ? "&" : "?";
