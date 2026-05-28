@@ -1012,15 +1012,16 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
 function transformDescriptionHtml(html: string = "") {
   if (!html) return "";
 
+  const cleanHtml = normalizeHtml(html);
+
   const regex = /size_info\s*:\s*({[\s\S]*?})/i;
 
-  return html.replace(regex, (match, jsonStr) => {
-    try {
-      const json = JSON.parse(jsonStr);
-      return jsonToTable4Col(json);
-    } catch (e) {
-      return match; // fallback safe
-    }
+  return cleanHtml.replace(regex, (full, jsonStr) => {
+    const parsed = safeJsonParse(jsonStr);
+
+    if (!parsed) return full;
+
+    return jsonToTable4Col(parsed);
   });
 }
 function jsonToTable4Col(json: any) {
@@ -1060,6 +1061,26 @@ function jsonToTable4Col(json: any) {
       </table>
     </div>
   `;
+}
+
+function safeJsonParse(str: string) {
+  try {
+    // remove HTML garbage inside JSON
+    const cleaned = str
+      .replace(/<[^>]*>/g, "")
+      .replace(/&quot;/g, '"')
+      .replace(/\n/g, "");
+
+    return JSON.parse(cleaned);
+  } catch {
+    return null;
+  }
+}
+function normalizeHtml(html: string) {
+  return html
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/&#39;/g, "'");
 }
 //  async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description:DESCREPTION) {
 //   const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
