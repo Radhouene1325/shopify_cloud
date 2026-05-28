@@ -1008,103 +1008,94 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
   });
 //   return json.data;
 }
-function extractJson(html: string) {
+
+
+function extractSizeInfoBlock(html: string) {
   if (!html) return null;
 
-  const regex = /size_info\s*:\s*({[\s\S]*?})/i;
+  const key = "size_info";
 
-  const match = html.match(regex);
-  if (!match) return null;
+  const index = html.toLowerCase().indexOf(key);
+  if (index === -1) return null;
+
+  const start = html.indexOf("{", index);
+  if (start === -1) return null;
+
+  let open = 0;
+  let end = -1;
+
+  for (let i = start; i < html.length; i++) {
+    if (html[i] === "{") open++;
+    if (html[i] === "}") open--;
+
+    if (open === 0) {
+      end = i;
+      break;
+    }
+  }
+
+  if (end === -1) return null;
+
+  const jsonStr = html.slice(start, end + 1);
 
   try {
-    const cleaned = match[1]
-      .replace(/<[^>]*>/g, "")
-      .replace(/&quot;/g, '"');
-
-    return JSON.parse(cleaned);
+    return JSON.parse(
+      jsonStr
+        .replace(/&quot;/g, '"')
+        .replace(/<[^>]*>/g, "")
+    );
   } catch {
     return null;
   }
 }
-function normalizeToRows(json: any) {
-  if (!json) return [];
 
-  // detect array source dynamically
-  const raw =
-    json.sizeInfoList ||
-    json.sizes ||
-    json.data ||
-    json.items ||
-    (Array.isArray(json) ? json : []);
+function buildDynamicTable(json: any) {
+  const list =
+    json?.sizeInfoList ||
+    json?.sizes ||
+    json?.data ||
+    json?.items ||
+    [];
 
-  if (!Array.isArray(raw)) return [];
+  if (!Array.isArray(list) || list.length === 0) return "";
 
-  return raw.map((item: any) => {
+  const rows = list.map((item: any) => {
     const flat: any = {};
 
-    for (const key in item) {
-      const value = item[key];
-
-      if (value && typeof value === "object") {
-        // flatten nested objects (length.cm, etc.)
-        for (const subKey in value) {
-          flat[`${key}_${subKey}`] = value[subKey];
+    for (const k in item) {
+      if (typeof item[k] === "object") {
+        for (const sub in item[k]) {
+          flat[`${k}_${sub}`] = item[k][sub];
         }
       } else {
-        flat[key] = value;
+        flat[k] = item[k];
       }
     }
 
     return flat;
   });
-}
-function pickColumns(rows: any[]) {
-  if (!rows.length) return [];
 
-  const keys = Object.keys(rows[0]);
-
-  // prioritize important keys if exist
-  const priority = ["size", "cm", "inch", "length_cm"];
-
-  const sorted = [
-    ...priority.filter(k => keys.includes(k)),
-    ...keys.filter(k => !priority.includes(k)),
-  ];
-
-  return sorted.slice(0, 4);
-}
-function buildDynamicTable(json: any) {
-  const rows = normalizeToRows(json);
-  if (!rows.length) return "";
-
-  const columns = pickColumns(rows);
+  const columns = Object.keys(rows[0]).slice(0, 4);
 
   return `
     <div class="w-full overflow-x-auto my-4 border rounded-lg">
       <table class="min-w-[600px] w-full text-sm">
-
         <thead class="bg-gray-100">
           <tr>
-            ${columns
-              .map(c => `<th class="p-2 text-left capitalize">${c}</th>`)
-              .join("")}
+            ${columns.map(c => `<th class="p-2 text-left">${c}</th>`).join("")}
           </tr>
         </thead>
-
         <tbody>
           ${rows
             .map(
               r => `
             <tr class="border-b hover:bg-gray-50">
-              ${columns
-                .map(c => `<td class="p-2">${r[c] ?? "-"}</td>`)
-                .join("")}
+              ${columns.map(c => `<td class="p-2">${r[c] ?? "-"}</td>`).join("")}
             </tr>
           `
             )
             .join("")}
         </tbody>
-
       </table>
     </div>
   `;
@@ -1112,19 +1103,14 @@ function buildDynamicTable(json: any) {
 function transformDescriptionHtml(html: string = "") {
   if (!html) return "";
 
-  const regex = /size_info\s*:\s*({[\s\S]*?})/i;
+  const json = extractSizeInfoBlock(html);
 
-  return html.replace(regex, (full, jsonStr) => {
-    try {
-      const json = JSON.parse(
-        jsonStr.replace(/<[^>]*>/g, "").replace(/&quot;/g, '"')
-      );
+  if (!json) return html;
 
-      return buildDynamicTable(json);
-    } catch {
-      return full;
-    }
-  });
+  const table = buildDynamicTable(json);
+
+  // IMPORTANT: remove original size_info block fully
+  return html.replace(/size_info[\s\S]*?\}/i, table);
 }
 //  async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description:DESCREPTION) {
 //   const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
