@@ -4,7 +4,7 @@
 import {type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
 import { useActionData, Form, useNavigation, useLoaderData, useFetcher, useSubmit } from "@remix-run/react";
 import { shopify } from "../shopify.server";
-import { Badge, Banner, BlockStack, Box, Button, Card, Checkbox, DataTable, Divider, EmptyState, InlineStack, Page, Pagination, Spinner, Tag, Text, Thumbnail, Tooltip, useBreakpoints } from "@shopify/polaris";
+import { Badge, Banner, BlockStack, Box, Button, Card, Checkbox, DataTable, Divider, EmptyState, InlineStack, Modal, Page, Pagination, Spinner, Tag, Text, Thumbnail, Tooltip, useBreakpoints } from "@shopify/polaris";
 import { useCallback, useEffect, useMemo, useState } from "react";
   // sk-c8552ae161ed4db684bb1268bf4ba758
   
@@ -222,6 +222,7 @@ interface SelectedVariant {
 
 export default function DescriptionManager() {
   // Hooks
+  const [activeDesc, setActiveDesc] = useState<string | null>(null);
   const initial = useLoaderData<LoaderData>();
   const fetcher = useFetcher<LoaderData>();
   const submit = useSubmit();
@@ -439,24 +440,30 @@ console.log('selected is her ',selected)
           ID: {variant.id.split("/").pop()}
         </Text>
       </BlockStack>,
+      
       <Box key={`desc-${variant.id}`} maxWidth="300px">
-        <div
-          style={{
-            maxHeight: "80px",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            display: "-webkit-box",
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: "vertical",
-            fontSize: "13px",
-            lineHeight: "1.4",
-            color: variant.descriptionHtml ? "inherit" : "#999",
-          }}
-          dangerouslySetInnerHTML={{
-            __html: variant.descriptionHtml || "<em>No description available</em>",
-          }}
-        />
-      </Box>,
+  <div
+    onClick={() => setActiveDesc(variant.descriptionHtml || "")}
+    style={{
+      maxHeight: "80px",
+      overflow: "hidden",
+      WebkitLineClamp: 3,
+      WebkitBoxOrient: "vertical",
+      display: "-webkit-box",
+      cursor: "pointer",
+      fontSize: "13px",
+      lineHeight: "1.4",
+      color: "#2563eb",
+    }}
+    dangerouslySetInnerHTML={{
+      __html: variant.descriptionHtml || "<em>No description available</em>",
+    }}
+  />
+  <Text as="span" tone="subdued" variant="bodySm">
+    Click to expand
+  </Text>
+</Box>,
+      
       <InlineStack key={`tags-${variant.id}`} gap="100" wrap>
         {variant.tags?.length > 0 ? (
           variant.tags.map((tag) => (
@@ -649,6 +656,28 @@ console.log('selected is her ',selected)
           </Box>
         )}
       </BlockStack>
+
+      {activeDesc && (
+  <Modal
+    open={true}
+    onClose={() => setActiveDesc(null)}
+    title="Product Description"
+    large
+  >
+    <Modal.Section>
+      <div
+        style={{
+          maxHeight: "70vh",
+          overflowY: "auto",
+          paddingRight: "10px",
+        }}
+        dangerouslySetInnerHTML={{
+          __html: activeDesc,
+        }}
+      />
+    </Modal.Section>
+  </Modal>
+)}
     </Page>
   );
 }
@@ -939,7 +968,13 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
           typeof product.descriptionHtml === "string" &&
           product.descriptionHtml.includes("size_info")
         );
-      });
+      })
+      .map((product: any) => ({
+    ...product,
+
+    // 👇 THIS IS THE IMPORTANT PART
+    descriptionHtml: transformDescriptionHtml(product.descriptionHtml),
+  }));
 
     if(filtered.length > 0) {
       resultData = {
@@ -974,8 +1009,58 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
 //   return json.data;
 }
 
+function transformDescriptionHtml(html: string = "") {
+  if (!html) return "";
 
+  const regex = /size_info\s*:\s*({[\s\S]*?})/i;
 
+  return html.replace(regex, (match, jsonStr) => {
+    try {
+      const json = JSON.parse(jsonStr);
+      return jsonToTable4Col(json);
+    } catch (e) {
+      return match; // fallback safe
+    }
+  });
+}
+function jsonToTable4Col(json: any) {
+  if (!json || typeof json !== "object") return "";
+
+  const rows = Array.isArray(json)
+    ? json
+    : json.sizes || json.data || json.items || [];
+
+  if (!rows.length || typeof rows[0] !== "object") return "";
+
+  const allKeys = Object.keys(rows[0]).slice(0, 4); // FORCE 4 COL MAX
+
+  const headers = allKeys
+    .map(k => `<th class="p-2 text-left capitalize">${k}</th>`)
+    .join("");
+
+  const body = rows
+    .map((row: any) => {
+      return `
+        <tr class="border-b hover:bg-gray-50">
+          ${allKeys
+            .map(k => `<td class="p-2">${row?.[k] ?? "-"}</td>`)
+            .join("")}
+        </tr>
+      `;
+    })
+    .join("");
+
+  return `
+    <div class="w-full overflow-x-auto my-4 rounded-lg border">
+      <table class="min-w-[500px] w-full text-sm">
+        <thead class="bg-gray-100">
+          <tr>${headers}</tr>
+        </thead>
+        <tbody>${body}</tbody>
+      </table>
+    </div>
+  `;
+}
 //  async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description:DESCREPTION) {
 //   const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
   
