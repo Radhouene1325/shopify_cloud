@@ -924,17 +924,15 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
   const response = await admin.graphql(query,{variables:{cursor}});
   const res = await response.json();
   // console.log('res is her ',res.data)
+    const edges = res?.data?.products?.edges ?? [];
 
-const allProducts = res?.data.products.edges.map((e: any) => e.node);
+  const filtered = edges
+      .map((e: any) => e.node)
+      .filter((node: any) => node.descriptionHtml?.includes('size_info'));
 
-// Filtra solo quelli con size_info nella descrizione
-const productsWithSizeInfo = allProducts.filter((node: any) =>
-  node.descriptionHtml?.includes('size_info') ||
-  node.descriptionHtml?.includes('sizeInfoList')
-);
 
   const productsdescreption={
-    variants: productsWithSizeInfo,
+    variants: filtered,
         pageInfo: res?.data.products.pageInfo,
         category: res?.data.products.nodes.map((e: any) => e.category)
   }
