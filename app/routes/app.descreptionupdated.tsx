@@ -659,7 +659,7 @@ console.log('selected is her ',selected)
 export const loader = async ({request,context}:LoaderFunctionArgs) => {
   const { admin } = await shopify(context).authenticate.admin(request);
   const url=new URL(request.url)
-  const cursor=url.searchParams.get('cursor')
+  let cursor=url.searchParams.get('cursor')
   console.log('cursor her ',cursor)
   let query=    `#graphql
   query GetProducts($cursor:String) {
@@ -919,31 +919,51 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
   }
   `
   // Nel loader — dopo aver ricevuto la response
+  let MAX_PAGES = 10;
+  let pageCount = 1;
+  let resultData: any = { variants: [], pageInfo: {}, category: [] };
 
+  while(pageCount <= MAX_PAGES) {
 
-  const response = await admin.graphql(query,{variables:{cursor}});
-  const res = await response.json();
-  // console.log('res is her ',res.data)
+    const response = await admin.graphql(query, { variables: { cursor } });
+    const res = await response.json();
+    
+    let pageInfo = res?.data?.products?.pageInfo || {};
     const edges = res?.data?.products?.edges ?? [];
 
-  const filtered = edges
+    const filtered = edges
       .map((e: any) => e.node)
       .filter((product: any) => {
-    console.log(product.descriptionHtml);
+        console.log(product.descriptionHtml);
+        return (
+          typeof product.descriptionHtml === "string" &&
+          product.descriptionHtml.includes("size_info")
+        );
+      });
 
-    return (
-      typeof product.descriptionHtml === "string" &&
-      product.descriptionHtml.includes("size_info")
-    );
-  });
+    if(filtered.length > 0) {
+      resultData = {
+        variants: filtered,
+        pageInfo: pageInfo,
+        category: edges.map((e: any) => e.node.category)
+      };
+      break;
+    }
 
-
-  const productsdescreption={
-    variants: filtered,
-        pageInfo: res?.data.products.pageInfo,
-        category: res?.data.products.nodes.map((e: any) => e.category)
+    if(!pageInfo.hasNextPage) {
+      resultData = {
+        variants: [],
+        pageInfo: pageInfo,
+        category: []
+      };
+      break;
+    }
+    
+    cursor = pageInfo.endCursor;
+    pageCount++;  
   }
-  return new Response(JSON.stringify(productsdescreption), {
+
+  return new Response(JSON.stringify(resultData), {
     status: 200,
     headers: {
       "Content-Type": "application/json",
