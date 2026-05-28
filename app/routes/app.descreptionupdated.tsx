@@ -1,151 +1,110 @@
 
 
 
-import {type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
+import { type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
 import { useActionData, Form, useNavigation, useLoaderData, useFetcher, useSubmit } from "@remix-run/react";
 import { shopify } from "../shopify.server";
 import { Badge, Banner, BlockStack, Box, Button, Card, Checkbox, DataTable, Divider, EmptyState, InlineStack, Modal, Page, Pagination, Spinner, Tag, Text, Thumbnail, Tooltip, useBreakpoints } from "@shopify/polaris";
 import { useCallback, useEffect, useMemo, useState } from "react";
-  // sk-c8552ae161ed4db684bb1268bf4ba758
-  
+// sk-c8552ae161ed4db684bb1268bf4ba758
+
 import { sendPrompt } from "./functions/deepseekai/deepseekai";
 import { buildPrompt } from "./functions/propmtsSEO/propmts_descreption";
 import { ultraCompress } from "./functions/uint8ToBase64/brotliCompressSync";
-  interface DESCREPTION{
-    descreption:string,
-    id:string,
-    tags:string[]
-  }
- 
- export  interface VARIBALES {
-    handle: string;
-    id: string;
-    descreption: string;
-    vendor: string;
-    title: string;
-    totalInventory: number;
-    tracksInventory: number;
-    max_amount: string;
-    currencyCode: string;
-    min_amount: string;
-  }
-  export const allResults: any[] = [];
-  export function chunkArray<T>(array: T[], size: number): T[][] {
-    const chunks: T[][] = [];
-    for (let i = 0; i < array.length; i += size) {
-      chunks.push(array.slice(i, i + size));
-    }
-    return chunks;
-  }
- 
+interface DESCREPTION {
+  descreption: string,
+  id: string,
+  tags: string[]
+}
 
-export  async function generateSeoHtml(updatedDescreptionAI:any,DEEP_SEEK_API_KEY:string) {
-// console.log("prodycts pronti in updatedDescreptionAI",updatedDescreptionAI)
-  
+export interface VARIBALES {
+  handle: string;
+  id: string;
+  descreption: string;
+  vendor: string;
+  title: string;
+  totalInventory: number;
+  tracksInventory: number;
+  max_amount: string;
+  currencyCode: string;
+  min_amount: string;
+}
+export const allResults: any[] = [];
+export function chunkArray<T>(array: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < array.length; i += size) {
+    chunks.push(array.slice(i, i + size));
+  }
+  return chunks;
+}
+
+
+export async function generateSeoHtml(updatedDescreptionAI: any, DEEP_SEEK_API_KEY: string) {
+  // console.log("prodycts pronti in updatedDescreptionAI",updatedDescreptionAI)
+
   const BATCH_SIZE = 1;
-  
+
 
 
 
   const chunks = chunkArray(updatedDescreptionAI, BATCH_SIZE);
 
- 
 
 
 
 
-    const chunkPromises = chunks.map(async (chunk, idx) => {
-      // console.log(`Processing chunk ${idx + 1}/${chunks.length} (${chunk.length} products) - split into 2 API calls`);
 
-      // Call 1: shortDescription only (keeps output under token limit)
-      const shortPrompt = buildPrompt(chunk as VARIBALES[], 'shortDescription');
-      // Call 2: detailedDescription only
-      const detailedPrompt = buildPrompt(chunk as VARIBALES[], 'detailedDescription');
+  const chunkPromises = chunks.map(async (chunk, idx) => {
+    // console.log(`Processing chunk ${idx + 1}/${chunks.length} (${chunk.length} products) - split into 2 API calls`);
 
-      let shortResults: { id: string; shortDescription?: string }[] = [];
-      let detailedResults: { id: string; detailedDescription?: string }[] = [];
+    // Call 1: shortDescription only (keeps output under token limit)
+    const shortPrompt = buildPrompt(chunk as VARIBALES[], 'shortDescription');
+    // Call 2: detailedDescription only
+    const detailedPrompt = buildPrompt(chunk as VARIBALES[], 'detailedDescription');
 
-      try {
-        [shortResults, detailedResults] = await Promise.all([
-          sendPrompt(shortPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; shortDescription?: string }[]>,
-          sendPrompt(detailedPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; detailedDescription?: string }[]>
-        ]);
-      } catch (err) {
-        console.error(`Error processing chunk ${idx + 1}:`, err);
-        throw err;
-      }
+    let shortResults: { id: string; shortDescription?: string }[] = [];
+    let detailedResults: { id: string; detailedDescription?: string }[] = [];
 
-      if (!Array.isArray(shortResults) || !Array.isArray(detailedResults)) {
-        throw new Error(`Chunk ${idx + 1} returned invalid format`);
-      }
+    try {
+      [shortResults, detailedResults] = await Promise.all([
+        sendPrompt(shortPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; shortDescription?: string }[]>,
+        sendPrompt(detailedPrompt, DEEP_SEEK_API_KEY) as Promise<{ id: string; detailedDescription?: string }[]>
+      ]);
+    } catch (err) {
+      console.error(`Error processing chunk ${idx + 1}:`, err);
+      throw err;
+    }
 
-      // Merge by id: { id, shortDescription, detailedDescription }
-      const merged = (chunk as { id: string; descreption: string }[]).map((p: { id: string; descreption: string }) => {
-        const short = shortResults.find((r) => r.id === p.id);
-        const detailed = detailedResults.find((r) => r.id === p.id);
-        return {
-          id: p.id,
-          shortDescription: short?.shortDescription ?? '',
-          detailedDescription: detailed?.detailedDescription ?? ''
-        };
-      });
+    if (!Array.isArray(shortResults) || !Array.isArray(detailedResults)) {
+      throw new Error(`Chunk ${idx + 1} returned invalid format`);
+    }
 
-      return merged;
+    // Merge by id: { id, shortDescription, detailedDescription }
+    const merged = (chunk as { id: string; descreption: string }[]).map((p: { id: string; descreption: string }) => {
+      const short = shortResults.find((r) => r.id === p.id);
+      const detailed = detailedResults.find((r) => r.id === p.id);
+      return {
+        id: p.id,
+        shortDescription: short?.shortDescription ?? '',
+        detailedDescription: detailed?.detailedDescription ?? ''
+      };
     });
 
-    // Wait for all chunks to complete
-    const results = await Promise.all(chunkPromises);
+    return merged;
+  });
 
-    // Flatten results into a single array
-    results.forEach(r => allResults.push(...r));
+  // Wait for all chunks to complete
+  const results = await Promise.all(chunkPromises);
 
-    // console.log(`Total products processed: ${allResults.length}/${updatedDescreptionAI.length}`);
+  // Flatten results into a single array
+  results.forEach(r => allResults.push(...r));
 
-    return allResults;
+  // console.log(`Total products processed: ${allResults.length}/${updatedDescreptionAI.length}`);
 
-
- 
- 
-
- 
-  }
+  return allResults;
 
 
 
-
- // 2. Remix Action (Server Side)
-export async function action({context ,request }: ActionFunctionArgs) {
- let {admin}=await shopify(context).authenticate.admin(request)
- let {session}=await shopify(context).authenticate.admin(request)
- 
- let formData=await request.formData()
- const updatedDescreptionAI:DESCREPTION = JSON.parse(formData.get('descreptionAI') as string);
- if (!Array.isArray(updatedDescreptionAI)) {
-   console.error("Invalid or missing 'descreptionAI' data");
-   return Response.json({ error: "Invalid or missing 'descreptionAI' data" }, { status: 400 });
- }
-const queue =context.cloudflare.env.SEO_QUEUE
-
-const payload = {
-  shop: session.shop,
-  sessionId: session.id,
-  accessToken: session.accessToken,
-  products: updatedDescreptionAI
-};
-const compressedBase64 = ultraCompress(payload);
-
-await queue.send({
-  body: compressedBase64
-});
-// const compressed = pako.gzip(JSON.stringify(payload));
-//  const compressedBase64 = uint8ToBase64(compressed);
-//  await queue.send({
-//   body: compressedBase64 // body must be a string according to queue type
-// });
-return Response.json({
-  status:"queued",
-  total:updatedDescreptionAI.length
-})
 
 
 
@@ -154,7 +113,48 @@ return Response.json({
 
 
 
-  
+// 2. Remix Action (Server Side)
+export async function action({ context, request }: ActionFunctionArgs) {
+  let { admin } = await shopify(context).authenticate.admin(request)
+  let { session } = await shopify(context).authenticate.admin(request)
+
+  let formData = await request.formData()
+  const updatedDescreptionAI: DESCREPTION = JSON.parse(formData.get('descreptionAI') as string);
+  if (!Array.isArray(updatedDescreptionAI)) {
+    console.error("Invalid or missing 'descreptionAI' data");
+    return Response.json({ error: "Invalid or missing 'descreptionAI' data" }, { status: 400 });
+  }
+  const queue = context.cloudflare.env.SEO_QUEUE
+
+  const payload = {
+    shop: session.shop,
+    sessionId: session.id,
+    accessToken: session.accessToken,
+    products: updatedDescreptionAI
+  };
+  const compressedBase64 = ultraCompress(payload);
+
+  await queue.send({
+    body: compressedBase64
+  });
+  // const compressed = pako.gzip(JSON.stringify(payload));
+  //  const compressedBase64 = uint8ToBase64(compressed);
+  //  await queue.send({
+  //   body: compressedBase64 // body must be a string according to queue type
+  // });
+  return Response.json({
+    status: "queued",
+    total: updatedDescreptionAI.length
+  })
+
+
+
+}
+
+
+
+
+
 interface Variant {
   id: string;
   title: string;
@@ -165,31 +165,31 @@ interface Variant {
   productType: string;
   inventoryQuantity?: number;
   inventoryPolicy?: string;
-  totalInventory?:number
-  tracksInventory?:boolean
+  totalInventory?: number
+  tracksInventory?: boolean
   featuredMedia?: {
     image?: {
       url: string;
       altText?: string;
     };
   };
-  priceRangeV2?:{
-    maxVariantPrice?:{
-      amount:string
-      currencyCode:string
+  priceRangeV2?: {
+    maxVariantPrice?: {
+      amount: string
+      currencyCode: string
     }
 
-    minVariantPrice?:{
-      amount:string
-      currencyCode:string
-     }
+    minVariantPrice?: {
+      amount: string
+      currencyCode: string
+    }
 
   }
-  media?:{
-    edges?:string[]
+  media?: {
+    edges?: string[]
   };
-  variants?:{
-    edges?:string[]
+  variants?: {
+    edges?: string[]
   }
 }
 
@@ -214,7 +214,7 @@ interface SelectedVariant {
   vendor: string;
   image: string;
   productType: string;
-  
+
 }
 
 // Loader & Action
@@ -236,9 +236,9 @@ export default function DescriptionManager() {
   const [cursorStack, setCursorStack] = useState<string[]>([]);
   const [selected, setSelected] = useState<SelectedVariant[]>([]);
   const [isSelectAllIndeterminate, setIsSelectAllIndeterminate] = useState(false);
-// console.log("rows is her see",rows)
-// console.log('intital data is her ',initial)
-// console.log("fetch is her succes",fetcher)
+  // console.log("rows is her see",rows)
+  // console.log('intital data is her ',initial)
+  // console.log("fetch is her succes",fetcher)
   const isLoading = fetcher.state === "loading";
   const isSubmitting = navigation.state === "submitting";
 
@@ -248,7 +248,7 @@ export default function DescriptionManager() {
       setRows(fetcher.data.variants);
       setPageInfo(fetcher.data.pageInfo);
       // Keep existing selections that are still in new rows, remove others
-      setSelected((prev) => 
+      setSelected((prev) =>
         prev.filter((s) => fetcher?.data?.variants.some((v: Variant) => v.id === s.id))
       );
     }
@@ -280,17 +280,17 @@ export default function DescriptionManager() {
         handel: v.handle,
         vendor: v.vendor,
         image: v.featuredMedia?.image?.url || "",
-        images:v?.media?.edges,
+        images: v?.media?.edges,
         productType: v.productType,
-        title:v.title,
-        totalInventory:v?.totalInventory,
-        tracksInventory:v?.tracksInventory,
-        max_amount:v?.priceRangeV2?.maxVariantPrice?.amount,
-        currencyCode:v?.priceRangeV2?.maxVariantPrice?.currencyCode,
-        min_amount:v.priceRangeV2?.minVariantPrice?.amount,
-        sku:v?.variants?.edges
+        title: v.title,
+        totalInventory: v?.totalInventory,
+        tracksInventory: v?.tracksInventory,
+        max_amount: v?.priceRangeV2?.maxVariantPrice?.amount,
+        currencyCode: v?.priceRangeV2?.maxVariantPrice?.currencyCode,
+        min_amount: v.priceRangeV2?.minVariantPrice?.amount,
+        sku: v?.variants?.edges
 
-       
+
 
       }));
       setSelected(allSelected);
@@ -311,17 +311,17 @@ export default function DescriptionManager() {
           handel: variant.handle,
           vendor: variant.vendor,
           image: variant.featuredMedia?.image?.url || "",
-          images:variant?.media?.edges,
+          images: variant?.media?.edges,
           productType: variant.productType,
-          title:variant.title,
-          totalInventory:variant?.totalInventory,
-          tracksInventory:variant?.tracksInventory,
-          max_amount:variant?.priceRangeV2?.maxVariantPrice?.amount,
-          currencyCode:variant?.priceRangeV2?.maxVariantPrice?.currencyCode,
-          min_amount:variant.priceRangeV2?.minVariantPrice?.amount,
-          sku:variant?.variants?.edges
-  
-         
+          title: variant.title,
+          totalInventory: variant?.totalInventory,
+          tracksInventory: variant?.tracksInventory,
+          max_amount: variant?.priceRangeV2?.maxVariantPrice?.amount,
+          currencyCode: variant?.priceRangeV2?.maxVariantPrice?.currencyCode,
+          min_amount: variant.priceRangeV2?.minVariantPrice?.amount,
+          sku: variant?.variants?.edges
+
+
         },
       ]);
     } else {
@@ -388,13 +388,13 @@ export default function DescriptionManager() {
 
     const formData = new FormData();
     formData.append("descreptionAI", JSON.stringify(selected));
-    
+
     submit(formData, {
       method: "post",
       encType: "application/x-www-form-urlencoded",
     });
   }, [selected, submit]);
-console.log('selected is her ',selected)
+  console.log('selected is her ', selected)
   // Table headings with Select All checkbox
   const headings = [
     <Checkbox
@@ -412,7 +412,7 @@ console.log('selected is her ',selected)
     "Tags",
     "Handle",
   ];
-// console.log('rows is seccesfuly her ',rows)
+  // console.log('rows is seccesfuly her ',rows)
   // Table rows
   const rowsData = useMemo(() => {
     return rows.map((variant) => [
@@ -440,30 +440,30 @@ console.log('selected is her ',selected)
           ID: {variant.id.split("/").pop()}
         </Text>
       </BlockStack>,
-      
+
       <Box key={`desc-${variant.id}`} maxWidth="300px">
-  <div
-    onClick={() => setActiveDesc(variant.descriptionHtml || "")}
-    style={{
-      maxHeight: "80px",
-      overflow: "hidden",
-      WebkitLineClamp: 3,
-      WebkitBoxOrient: "vertical",
-      display: "-webkit-box",
-      cursor: "pointer",
-      fontSize: "13px",
-      lineHeight: "1.4",
-      color: "#2563eb",
-    }}
-    dangerouslySetInnerHTML={{
-      __html: variant.descriptionHtml || "<em>No description available</em>",
-    }}
-  />
-  <Text as="span" tone="subdued" variant="bodySm">
-    Click to expand
-  </Text>
-</Box>,
-      
+        <div
+          onClick={() => setActiveDesc(variant.descriptionHtml || "")}
+          style={{
+            maxHeight: "80px",
+            overflow: "hidden",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical",
+            display: "-webkit-box",
+            cursor: "pointer",
+            fontSize: "13px",
+            lineHeight: "1.4",
+            color: "#2563eb",
+          }}
+          dangerouslySetInnerHTML={{
+            __html: variant.descriptionHtml || "<em>No description available</em>",
+          }}
+        />
+        <Text as="span" tone="subdued" variant="bodySm">
+          Click to expand
+        </Text>
+      </Box>,
+
       <InlineStack key={`tags-${variant.id}`} gap="100" wrap>
         {variant.tags?.length > 0 ? (
           variant.tags.map((tag) => (
@@ -524,7 +524,7 @@ console.log('selected is her ',selected)
       <BlockStack gap="400">
         {/* Status Banners */}
         {actionData?.success && (
-          <Banner title="Success" tone="success" onDismiss={() => {}}>
+          <Banner title="Success" tone="success" onDismiss={() => { }}>
             <p>Successfully updated {selected.length} product descriptions.</p>
           </Banner>
         )}
@@ -563,7 +563,7 @@ console.log('selected is her ',selected)
                 </Text>
               </Box>
             </InlineStack>
-            
+
             <Tooltip content="Select variants without DESC_AI tag">
               <Button
                 size="slim"
@@ -599,7 +599,7 @@ console.log('selected is her ',selected)
                 hoverable
                 truncate={false}
               />
-              
+
               {/* Pagination */}
               <Divider />
               <Box padding="400">
@@ -658,26 +658,26 @@ console.log('selected is her ',selected)
       </BlockStack>
 
       {activeDesc && (
-  <Modal
-    open={true}
-    onClose={() => setActiveDesc(null)}
-    title="Product Description"
-    large
-  >
-    <Modal.Section>
-      <div
-        style={{
-          maxHeight: "70vh",
-          overflowY: "auto",
-          paddingRight: "10px",
-        }}
-        dangerouslySetInnerHTML={{
-          __html: activeDesc,
-        }}
-      />
-    </Modal.Section>
-  </Modal>
-)}
+        <Modal
+          open={true}
+          onClose={() => setActiveDesc(null)}
+          title="Product Description"
+          large
+        >
+          <Modal.Section>
+            <div
+              style={{
+                maxHeight: "70vh",
+                overflowY: "auto",
+                paddingRight: "10px",
+              }}
+              dangerouslySetInnerHTML={{
+                __html: activeDesc,
+              }}
+            />
+          </Modal.Section>
+        </Modal>
+      )}
     </Page>
   );
 }
@@ -685,12 +685,12 @@ console.log('selected is her ',selected)
 
 
 
-export const loader = async ({request,context}:LoaderFunctionArgs) => {
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const { admin } = await shopify(context).authenticate.admin(request);
-  const url=new URL(request.url)
-  let cursor=url.searchParams.get('cursor')
-  console.log('cursor her ',cursor)
-  let query=    `#graphql
+  const url = new URL(request.url)
+  let cursor = url.searchParams.get('cursor')
+  console.log('cursor her ', cursor)
+  let query = `#graphql
   query GetProducts($cursor:String) {
     products(first: 15,after:$cursor,query:"tag_not:DESC_AI  body_html:size_info",sortKey: CREATED_AT) {
         edges{
@@ -952,11 +952,11 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
   let pageCount = 1;
   let resultData: any = { variants: [], pageInfo: {}, category: [] };
 
-  while(pageCount <= MAX_PAGES) {
+  while (pageCount <= MAX_PAGES) {
 
     const response = await admin.graphql(query, { variables: { cursor } });
     const res = await response.json();
-    
+
     let pageInfo = res?.data?.products?.pageInfo || {};
     const edges = res?.data?.products?.edges ?? [];
 
@@ -969,14 +969,14 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
           product.descriptionHtml.includes("size_info")
         );
       })
-      .map((product: any) => ({
-    ...product,
+    //     .map((product: any) => ({
+    //   ...product,
 
-    // 👇 THIS IS THE IMPORTANT PART
-    descriptionHtml: transformDescriptionHtml(product.descriptionHtml),
-  }));
+    //   // 👇 THIS IS THE IMPORTANT PART
+    //   descriptionHtml: transformDescriptionHtml(product.descriptionHtml),
+    // }));
 
-    if(filtered.length > 0) {
+    if (filtered.length > 0) {
       resultData = {
         variants: filtered,
         pageInfo: pageInfo,
@@ -985,7 +985,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
       break;
     }
 
-    if(!pageInfo.hasNextPage) {
+    if (!pageInfo.hasNextPage) {
       resultData = {
         variants: [],
         pageInfo: pageInfo,
@@ -993,9 +993,9 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
       };
       break;
     }
-    
+
     cursor = pageInfo.endCursor;
-    pageCount++;  
+    pageCount++;
   }
 
   return new Response(JSON.stringify(resultData), {
@@ -1006,300 +1006,7 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
       "Cache-Control": "public, max-age=60, s-maxage=300",
     },
   });
-//   return json.data;
+  //   return json.data;
 }
-
-
-function extractSizeInfoBlock(html: string) {
-  if (!html) return null;
-
-  const key = "size_info";
-
-  const index = html.toLowerCase().indexOf(key);
-  if (index === -1) return null;
-
-  const start = html.indexOf("{", index);
-  if (start === -1) return null;
-
-  let open = 0;
-  let end = -1;
-
-  for (let i = start; i < html.length; i++) {
-    if (html[i] === "{") open++;
-    if (html[i] === "}") open--;
-
-    if (open === 0) {
-      end = i;
-      break;
-    }
-  }
-
-  if (end === -1) return null;
-
-  const jsonStr = html.slice(start, end + 1);
-
-  try {
-    return JSON.parse(
-      jsonStr
-        .replace(/&quot;/g, '"')
-        .replace(/<[^>]*>/g, "")
-    );
-  } catch {
-    return null;
-  }
-}
-
-function buildDynamicTable(json: any) {
-  const list =
-    json?.sizeInfoList ||
-    json?.sizes ||
-    json?.data ||
-    json?.items ||
-    [];
-
-  if (!Array.isArray(list) || list.length === 0) return "";
-
-  const rows = list.map((item: any) => {
-    const flat: any = {};
-
-    for (const k in item) {
-      if (typeof item[k] === "object") {
-        for (const sub in item[k]) {
-          flat[`${k}_${sub}`] = item[k][sub];
-        }
-      } else {
-        flat[k] = item[k];
-      }
-    }
-
-    return flat;
-  });
-
-  const columns = Object.keys(rows[0]).slice(0, 4);
-
-  return `
-    <div class="w-full overflow-x-auto my-4 border rounded-lg">
-      <table class="min-w-[600px] w-full text-sm">
-        <thead class="bg-gray-100">
-          <tr>
-            ${columns.map(c => `<th class="p-2 text-left">${c}</th>`).join("")}
-          </tr>
-        </thead>
-        <tbody>
-          ${rows
-            .map(
-              r => `
-            <tr class="border-b hover:bg-gray-50">
-              ${columns.map(c => `<td class="p-2">${r[c] ?? "-"}</td>`).join("")}
-            </tr>
-          `
-            )
-            .join("")}
-        </tbody>
-      </table>
-    </div>
-  `;
-}
-function transformDescriptionHtml(html: string = "") {
-  if (!html) return "";
-
-  const json = extractSizeInfoBlock(html);
-
-  if (!json) return html;
-
-  const table = buildDynamicTable(json);
-
-  // IMPORTANT: remove original size_info block fully
-  return html.replace(/size_info[\s\S]*?\}/i, table);
-}
-//  async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description:DESCREPTION) {
-//   const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-  
-//   // Using Gemini 3 Flash for speed and intelligence
-//   const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" ,
-//     generationConfig: {
-//       responseMimeType: "application/json",
-//         temperature: 0.7,
-//        maxOutputTokens: 8192,
-//       // topP:0.9
-//     },
-//   });
-
-//   const prompt = `You are a JSON API. Process ALL ${Array.isArray(description) ? description.length : 0} products and return a JSON array.
-
-//   PROMPT TEMPLATE FOR EACH PRODUCT:
-//   {
-//     "role": "Senior E-commerce SEO Specialist & UX Copywriter with expertise in luxury branding and color psychology",
-//     "objective": "Transform raw technical data into a visually stunning, high-converting Amazon listing that uses professional HTML structure and strategic color psychology to drive emotional engagement and sales.",
-//     "outputFormat": {
-//       "shortDescription": "PROFESSIONAL_HTML_STRING (SEO-Optimized Bullet Points with strategic color accents)",
-//       "detailedDescription": "PROFESSIONAL_HTML_STRING (A+ Content with complete HTML5 structure, color psychology, and responsive design)"
-//     },
-//     "stylingGuidelines": {
-//       "tone": "Luxury, sophisticated, authoritative, yet emotionally resonant. Use elevated vocabulary that conveys exclusivity and quality.",
-//       "colorPsychology": {
-//         "general": "Apply color psychology strategically to evoke desired emotions:",
-//         "colorMeanings": {
-//           "Deep Midnight Blue": "Conveys trust, stability, sophistication, and premium quality. Ideal for technology, finance, and luxury products.",
-//           "Rich Burgundy": "Evokes luxury, passion, confidence, and timeless elegance. Perfect for premium fashion and accessories.",
-//           "Forest Green": "Represents growth, harmony, nature, and wealth. Excellent for organic, eco-friendly, and wellness products.",
-//           "Charcoal Gray": "Communicates authority, practicality, timelessness, and modern minimalism. Great for professional attire and tech gadgets.",
-//           "Champagne Gold": "Signifies premium quality, success, celebration, and exclusivity. Use sparingly for accent elements.",
-//           "Crimson Red": "Creates urgency, excitement, passion, and energy. Effective for calls-to-action and limited offers.",
-//           "Royal Purple": "Associated with royalty, wisdom, creativity, and luxury. Suitable for premium and artistic products.",
-//           "Cream White": "Evokes purity, simplicity, elegance, and clarity. Perfect for backgrounds and minimalist designs."
-//         },
-//         "application": "Use these colors strategically in headings, accents, and key elements. Never use bright neon or saturated primary colors which appear cheap. Maintain sophisticated, muted luxury tones."
-//       },
-//       "typography": {
-//         "headings": "Use elegant font stacks with proper hierarchy: 'Playfair Display', 'Cormorant Garamond', or 'Georgia' for serif elegance; 'Montserrat', 'Helvetica Neue', or 'Open Sans' for clean sans-serif.",
-//         "body": "Use highly readable fonts like 'Lato', 'Roboto', or 'Avenir' with proper line-height (1.6) and letter-spacing for luxury feel.",
-//         "accent": "Use subtle uppercase with letter-spacing for premium badges and highlights."
-//       },
-//       "visualHierarchy": {
-//         "primary": "Bold, emotive headline that captures attention and positions the product as a solution to an aspirational desire.",
-//         "secondary": "Supporting elements that build credibility and highlight transformation.",
-//         "tertiary": "Technical details presented in an organized, scannable format."
-//       },
-//       "seoStrategy": "Integrate primary keywords naturally into headings, first 100 words, and image alt text. Use semantic HTML for SEO ranking."
-//     },
-//     "responsiveDesign": {
-//       "mobileFirst": "Design mobile-first, then enhance for larger screens. All layouts must be fully responsive and work perfectly on phones (320px+), tablets (768px+), and desktops (1024px+).",
-//       "flexibleLayouts": "Use flexible units (%, vw, vh, rem, em) instead of fixed pixels. Use CSS Grid and Flexbox for responsive layouts that adapt automatically.",
-//       "typography": {
-//         "mobile": "Font sizes must scale: h1: 24-28px, h2: 20-22px, body: 14-16px on mobile. Use rem units for scalability.",
-//         "tablet": "Font sizes: h1: 28-32px, h2: 24-26px, body: 16-17px on tablets.",
-//         "desktop": "Font sizes: h1: 32-36px, h2: 26-28px, body: 16-17px on desktop."
-//       },
-//       "images": "All images must use max-width: 100%, height: auto, and display: block. Include srcset for responsive images when possible. Images must never overflow containers.",
-//       "tables": "Tables must be horizontally scrollable on mobile using overflow-x: auto wrapper. Consider converting to card layout on mobile (under 768px) for better UX.",
-//       "grids": "Feature grids: 1 column on mobile, 2 columns on tablet (768px+), 3-4 columns on desktop (1024px+). Use CSS Grid with auto-fit/auto-fill.",
-//       "spacing": "Use responsive padding/margins: smaller on mobile (8-12px), medium on tablet (16-20px), larger on desktop (24-30px). Use clamp() for fluid spacing.",
-//       "touchTargets": "All interactive elements (buttons, links) must be at least 44x44px on mobile for easy touch interaction.",
-//       "mediaQueries": "Include inline media queries using @media in style attributes or use CSS custom properties. Breakpoints: mobile (<768px), tablet (768px-1023px), desktop (1024px+).",
-//       "viewport": "Ensure content never exceeds viewport width. Use box-sizing: border-box on all elements. Prevent horizontal scrolling."
-//     },
-//     "designElements": {
-//       "badges": "Include premium badges like '🏆 PREMIUM QUALITY', '✨ EXCLUSIVE DESIGN', '🌟 BESTSELLER', '🎁 PERFECT GIFT' where appropriate using subtle emoji or CSS pseudo-elements.",
-//       "testimonials": "Include subtle customer satisfaction indicators where space allows (e.g., '⭐ 4.9/5 ⭐ from 500+ reviews').",
-//       "guarantees": "Prominently display satisfaction guarantees or warranty information if mentioned in specs."
-//     },
-//     "constraints": {
-//       "shortDescription": [
-//         "5-6 Bullets maximum.",
-//         "Start each bullet with a bolded [CAPITALIZED KEY BENEFIT] in a sophisticated color (#8B7355, #2C3E50, or #4A4A4A).",
-//         "Use a subtle emoji or symbol (●, ▶, ◆) before each bullet for visual appeal.",
-//         "Focus on the 'Transformation' - how does the customer's life improve?",
-//         "End with a clear, emotionally resonant Call to Action (CTA) in a contrasting but elegant color.",
-//         "Include subtle trust signals like '⭐ SATISFACTION GUARANTEED' or '🔒 SECURE CHECKOUT'."
-//       ],
-//       "detailedDescription": [
-//         "Use <h1> for a punchy, benefit-driven title with sophisticated color (#1A1A1A or #2C1810).",
-//         "Use <h2> for feature-specific storytelling sections with elegant border-bottom or subtle background.",
-//         "Create visually appealing feature grids using <div class='feature-grid'> with 2-3 columns on desktop.",
-//         "Mandatory: Convert all JSON spec data into a professionally styled 4-column <table> with:",
-//         "  - Light gray header background (#F5F5F7)",
-//         "  - Alternating row colors (#FFFFFF and #FAFAFC)",
-//         "  - Subtle borders (#E0E0E0)",
-//         "  - cellpadding='12' for comfortable spacing",
-//         "  - Proper <thead> with bold, slightly uppercase text",
-//         "Retention: All <img> tags from the source must be preserved in their original sequence.",
-//         "Style images with subtle border-radius (4px) and light box-shadow for depth.",
-//         "Semantic HTML: Use <section>, <article>, <header>, and <strong> for accessibility and SEO ranking.",
-//         "Add subtle hover effects on interactive elements.",
-//         "Include a comparison section highlighting what makes this product unique.",
-//         "End with a compelling summary and final call-to-action."
-//       ],
-//       "colorPalette": {
-//         "primary": "#2C3E50 (Deep Midnight Blue) - For main headings and key accents",
-//         "secondary": "#8B7355 (Rich Taupe) - For subheadings and supporting elements",
-//         "accent": "#C4A484 (Champagne Gold) - For calls-to-action and premium badges",
-//         "background": "#F9F9F9 (Off-white) - Main background for readability",
-//         "text": "#333333 (Dark Gray) - Body text for comfortable reading",
-//         "highlight": "#E8D5C4 (Warm Beige) - For highlighting important information",
-//         "tableHeader": "#F0E9E2 (Elegant Cream) - For table headers",
-//         "tableBorder": "#D4C4B5 (Soft Brown) - For table borders"
-//       }
-//     },
-//     "htmlStructure": {
-//       shortDescription: "<ul class='premium-bullets' style='list-style: none; padding: 0; margin: 0; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; line-height: 1.6;'>\n  <li style='margin-bottom: 12px; padding-left: 28px; position: relative;'>\n    <span style='position: absolute; left: 0; color: #8B7355; font-size: 17px;'>●</span>\n    <strong style='color: #2C3E50;'>[PREMIUM MATERIAL]</strong> Description text here...\n  </li>\n  <!-- More list items -->\n  <li style='margin-top: 16px; text-align: center;'>\n    <span style='background: #2C3E50; color: white; padding: 10px 20px; border-radius: 30px; display: inline-block; font-weight: 500; letter-spacing: 0.5px;'>✨ ELEVATE YOUR EXPERIENCE TODAY ✨</span>\n  </li>\n</ul>",
-//       detailedDescription: "<article style='max-width: 1200px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: #333;'>\n  <header style='margin-bottom: 40px;'>\n    <h1 style='font-size: 32px; font-weight: 400; font-family: \"Playfair Display\", Georgia, serif; color: #2C3E50; border-bottom: 2px solid #8B7355; padding-bottom: 15px;'>Experience Unparalleled Luxury</h1>\n  </header>\n  \n  <section style='margin-bottom: 40px;'>\n    <h2 style='font-size: 24px; font-weight: 400; color: #8B7355; letter-spacing: 0.5px; margin-bottom: 20px;'>Where Craftsmanship Meets Elegance</h2>\n    <div style='display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px;'>\n      <div style='background: #F9F9F9; padding: 25px; border-radius: 8px;'>\n        <h3 style='color: #2C3E50; margin-top: 0;'>Exceptional Quality</h3>\n        <p>Detailed description with emotional resonance...</p>\n      </div>\n      <!-- More feature blocks -->\n    </div>\n  </section>\n\n  <section style='margin-bottom: 40px;'>\n    <h2 style='font-size: 24px; font-weight: 400; color: #8B7355;'>Technical Excellence</h2>\n    <table style='width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.05);'>\n      <thead style='background: #F0E9E2;'>\n        <tr>\n          <th style='padding: 12px; text-align: left; color: #2C3E50; font-weight: 500; border: 1px solid #D4C4B5;'>Specification</th>\n          <th style='padding: 12px; text-align: left; color: #2C3E50; font-weight: 500; border: 1px solid #D4C4B5;'>Detail</th>\n          <th style='padding: 12px; text-align: left; color: #2C3E50; font-weight: 500; border: 1px solid #D4C4B5;'>Benefit</th>\n          <th style='padding: 12px; text-align: left; color: #2C3E50; font-weight: 500; border: 1px solid #D4C4B5;'>Certification</th>\n        </tr>\n      </thead>\n      <tbody>\n        <tr style='background: white;'>\n          <td style='padding: 12px; border: 1px solid #D4C4B5;'>Material</td>\n          <td style='padding: 12px; border: 1px solid #D4C4B5;'>Premium Cotton</td>\n          <td style='padding: 12px; border: 1px solid #D4C4B5;'>Breathable & Comfortable</td>\n          <td style='padding: 12px; border: 1px solid #D4C4B5;'>OEKO-TEX®</td>\n        </tr>\n        <tr style='background: #FAFAFC;'>\n          <td style='padding: 12px; border: 1px solid #D4C4B5;'>Dimensions</td>\n          <td style='padding: 12px; border: 1px solid #D4C4B5;'>Size specifications</td>\n          <td style='padding: 12px; border: 1px solid #D4C4B5;'>Perfect fit</td>\n          <td style='padding: 12px; border: 1px solid #D4C4B5;'>ISO Certified</td>\n        </tr>\n      </tbody>\n    </table>\n  </section>\n\n  <footer style='text-align: center; margin-top: 40px; padding: 30px; background: linear-gradient(135deg, #F9F9F9 0%, #FFFFFF 100%); border-radius: 12px;'>\n    <h3 style='color: #2C3E50; margin-bottom: 15px;'>Experience the Difference</h3>\n    <p style='margin-bottom: 20px;'>Join thousands of satisfied customers who have elevated their daily experience.</p>\n    <a href='#' style='background: #C4A484; color: white; padding: 15px 40px; text-decoration: none; border-radius: 40px; font-weight: 500; letter-spacing: 1px; display: inline-block;'>DISCOVER LUXURY NOW</a>\n  </footer>\n</article>"
-//     }
-//   }
-  
-//   PRODUCTS TO PROCESS:
-//   ${description.map((p, index) => `
-//   --- PRODUCT ${index + 1} (ID: ${p.id}) ---
-//   ${p.descreption}
-//   `).join('\n')}
-  
-//   IMPORTANT INSTRUCTIONS:
-//   1. Process EACH product individually using the complete prompt template above
-//   2. Apply the color psychology guidelines based on the product type and target audience
-//   3. Use the provided HTML structure as a foundation, adapting it to each product's unique features
-//   4. Return a JSON array with EXACTLY ${Array.isArray(description) ? description.length : 0} objects
-//   5. Each object MUST have this structure:
-//      {
-//        "id": "original_product_id",
-//        "shortDescription": "PROFESSIONAL_HTML_STRING with bullet points and elegant styling",
-//        "detailedDescription": "COMPLETE_HTML5_ARTICLE with proper semantic structure, color psychology, and responsive design"
-       
-//        }
-//   6. Do NOT include any other text, explanations, or markdown
-//   7. Return ONLY the JSON array
-//   8. Preserve ALL original image tags in their exact sequence
-//   9. Ensure all HTML is properly formatted and escaped for JSON
-//   10. CRITICAL RESPONSIVE REQUIREMENTS:
-//       - All layouts must be mobile-first and work on phones (320px+), tablets (768px+), and desktops (1024px+)
-//       - Use clamp() for fluid typography and spacing
-//       - Use CSS Grid with auto-fit/auto-fill for responsive columns
-//       - Tables must be horizontally scrollable on mobile with overflow-x: auto wrapper
-//       - All images must use max-width: 100%, height: auto
-//       - Buttons/CTAs must be minimum 44x44px for touch-friendly mobile interaction
-//       - Use box-sizing: border-box on all elements
-//       - Prevent horizontal scrolling with max-width: 100vw
-//       - Font sizes must scale responsively using clamp() or rem units
-//     11. SIZE INFORMATION HANDLING:
-//    - Detect any size-related information (Size, Dimensions, Measurements, Chest, Length, Sleeve, Waist, Fit, Height, Width, Weight, etc.)
-//    - If size data exists, create a dedicated <section> titled "Size & Fit Guide"
-//    - Convert all size data into a professionally styled responsive HTML table
-//    - The table must:
-//        • Be wrapped inside a <div style="overflow-x:auto; width:100%;"> for mobile scrolling
-//        • Use 4 columns if possible: Measurement | Value | Fit Guidance | Notes
-//        • Use table header background #F5F5F7
-//        • Alternate row colors #FFFFFF and #FAFAFC
-//        • Use border color #E0E0E0
-//        • Use cellpadding="12"
-//        • Use proper <thead> and <tbody>
-//    - If only simple size info exists (e.g., "Available in S-XXL"), still create a structured 2-column table
-//    - If no size information exists, do NOT create a size section
-//    - Do NOT duplicate size info elsewhere in the article
-
-//    - If size data appears in a table, convert each row into label/value pairs
-//    - If no size information exists, return: "sizeInfo": []
-//    - Do NOT include size information inside HTML tables if already extracted — avoid duplication
-
-//   Example response format:
-//   [
-//     {
-//       "id": "gid://shopify/Product/123",
-//       "shortDescription": "<ul class='premium-bullets' style='list-style: none; padding: 0;'><li style='margin-bottom: 12px; padding-left: 28px; position: relative;'><span style='position: absolute; left: 0; color: #8B7355;'>●</span><strong style='color: #2C3E50;'>[PREMIUM CRAFTSMANSHIP]</strong> Exquisitely tailored...</li></ul>",
-//       "detailedDescription": "<article style='max-width: 1200px; margin: 0 auto;'><header><h1 style='color: #2C3E50; font-family: \"Playfair Display\", serif;'>Masterful Design Meets Uncompromising Quality</h1></header><section>...</section></article>"
-
-//       }
-//   ]`;
-
-//   try {
-//     const result = await model.generateContent(prompt);
-//     return JSON.parse(result.response.text());
-//   } catch (error: any) {
-//     console.error("Gemini Error:", error.message);
-//     throw new Error("Failed to optimize SEO content.");
-//   }
-// }
-
-
-// prompts/productContentPrompt.js
-
 
 
