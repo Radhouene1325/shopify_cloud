@@ -918,11 +918,23 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
   
   }
   `
+  // Nel loader — dopo aver ricevuto la response
+
+
   const response = await admin.graphql(query,{variables:{cursor}});
   const res = await response.json();
   // console.log('res is her ',res.data)
+
+const allProducts = res?.data.products.edges.map((e: any) => e.node);
+
+// Filtra solo quelli con size_info nella descrizione
+const productsWithSizeInfo = allProducts.filter((node: any) =>
+  node.descriptionHtml?.includes('size_info') ||
+  node.descriptionHtml?.includes('sizeInfoList')
+);
+
   const productsdescreption={
-    variants: res?.data.products.edges.map((e: any) => e.node),
+    variants: productsWithSizeInfo,
         pageInfo: res?.data.products.pageInfo,
         category: res?.data.products.nodes.map((e: any) => e.category)
   }
