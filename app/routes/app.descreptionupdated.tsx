@@ -1008,79 +1008,123 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
   });
 //   return json.data;
 }
-
-function transformDescriptionHtml(html: string = "") {
-  if (!html) return "";
-
-  const cleanHtml = normalizeHtml(html);
+function extractJson(html: string) {
+  if (!html) return null;
 
   const regex = /size_info\s*:\s*({[\s\S]*?})/i;
 
-  return cleanHtml.replace(regex, (full, jsonStr) => {
-    const parsed = safeJsonParse(jsonStr);
+  const match = html.match(regex);
+  if (!match) return null;
 
-    if (!parsed) return full;
-
-    return jsonToTable4Col(parsed);
-  });
-}
-function jsonToTable4Col(json: any) {
-  if (!json || typeof json !== "object") return "";
-
-  const rows = Array.isArray(json)
-    ? json
-    : json.sizes || json.data || json.items || [];
-
-  if (!rows.length || typeof rows[0] !== "object") return "";
-
-  const allKeys = Object.keys(rows[0]).slice(0, 4); // FORCE 4 COL MAX
-
-  const headers = allKeys
-    .map(k => `<th class="p-2 text-left capitalize">${k}</th>`)
-    .join("");
-
-  const body = rows
-    .map((row: any) => {
-      return `
-        <tr class="border-b hover:bg-gray-50">
-          ${allKeys
-            .map(k => `<td class="p-2">${row?.[k] ?? "-"}</td>`)
-            .join("")}
-        </tr>
-      `;
-    })
-    .join("");
-
-  return `
-    <div class="w-full overflow-x-auto my-4 rounded-lg border">
-      <table class="min-w-[500px] w-full text-sm">
-        <thead class="bg-gray-100">
-          <tr>${headers}</tr>
-        </thead>
-        <tbody>${body}</tbody>
-      </table>
-    </div>
-  `;
-}
-
-function safeJsonParse(str: string) {
   try {
-    // remove HTML garbage inside JSON
-    const cleaned = str
+    const cleaned = match[1]
       .replace(/<[^>]*>/g, "")
-      .replace(/&quot;/g, '"')
-      .replace(/\n/g, "");
+      .replace(/&quot;/g, '"');
 
     return JSON.parse(cleaned);
   } catch {
     return null;
   }
 }
-function normalizeHtml(html: string) {
-  return html
-    .replace(/&quot;/g, '"')
-    .replace(/&amp;/g, '&')
-    .replace(/&#39;/g, "'");
+function normalizeToRows(json: any) {
+  if (!json) return [];
+
+  // detect array source dynamically
+  const raw =
+    json.sizeInfoList ||
+    json.sizes ||
+    json.data ||
+    json.items ||
+    (Array.isArray(json) ? json : []);
+
+  if (!Array.isArray(raw)) return [];
+
+  return raw.map((item: any) => {
+    const flat: any = {};
+
+    for (const key in item) {
+      const value = item[key];
+
+      if (value && typeof value === "object") {
+        // flatten nested objects (length.cm, etc.)
+        for (const subKey in value) {
+          flat[`${key}_${subKey}`] = value[subKey];
+        }
+      } else {
+        flat[key] = value;
+      }
+    }
+
+    return flat;
+  });
+}
+function pickColumns(rows: any[]) {
+  if (!rows.length) return [];
+
+  const keys = Object.keys(rows[0]);
+
+  // prioritize important keys if exist
+  const priority = ["size", "cm", "inch", "length_cm"];
+
+  const sorted = [
+    ...priority.filter(k => keys.includes(k)),
+    ...keys.filter(k => !priority.includes(k)),
+  ];
+
+  return sorted.slice(0, 4);
+}
+function buildDynamicTable(json: any) {
+  const rows = normalizeToRows(json);
+  if (!rows.length) return "";
+
+  const columns = pickColumns(rows);
+
+  return `
+    <div class="w-full overflow-x-auto my-4 border rounded-lg">
+      <table class="min-w-[600px] w-full text-sm">
+
+        <thead class="bg-gray-100">
+          <tr>
+            ${columns
+              .map(c => `<th class="p-2 text-left capitalize">${c}</th>`)
+              .join("")}
+          </tr>
+        </thead>
+
+        <tbody>
+          ${rows
+            .map(
+              r => `
+            <tr class="border-b hover:bg-gray-50">
+              ${columns
+                .map(c => `<td class="p-2">${r[c] ?? "-"}</td>`)
+                .join("")}
+            </tr>
+          `
+            )
+            .join("")}
+        </tbody>
+
+      </table>
+    </div>
+  `;
+}
+function transformDescriptionHtml(html: string = "") {
+  if (!html) return "";
+
+  const regex = /size_info\s*:\s*({[\s\S]*?})/i;
+
+  return html.replace(regex, (full, jsonStr) => {
+    try {
+      const json = JSON.parse(
+        jsonStr.replace(/<[^>]*>/g, "").replace(/&quot;/g, '"')
+      );
+
+      return buildDynamicTable(json);
+    } catch {
+      return full;
+    }
+  });
 }
 //  async function generateSeoHtmlgimini(GEMINI_API_KEY:string,description:DESCREPTION) {
 //   const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
