@@ -928,7 +928,14 @@ export const loader = async ({request,context}:LoaderFunctionArgs) => {
 
   const filtered = edges
       .map((e: any) => e.node)
-      .filter((node: any) => node.descriptionHtml?.includes('size_info'));
+      .filter((product: any) => {
+    console.log(product.descriptionHtml);
+
+    return (
+      typeof product.descriptionHtml === "string" &&
+      product.descriptionHtml.includes("size_info")
+    );
+  });
 
 
   const productsdescreption={
