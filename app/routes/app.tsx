@@ -24,6 +24,7 @@ const Menu = React.memo(() => (
         <Link to="/app/updated_qyality_images" prefetch="intent">updated qyality images</Link>
         <Link to="/app/images_defrence" prefetch="intent">images defrence</Link>
         <Link to="/app/kimi_optimise_images" prefetch="intent">kimi optimise images</Link>
+        <Link to="/app/relatedproducts" prefetch="intent">related products</Link>
       </NavMenu>
 ));
 export default function App() {
