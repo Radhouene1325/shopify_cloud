@@ -56,6 +56,14 @@ async function generateRelatedProducts(admin:any) {
                   }
                 }
               }
+              metafields(namespace: "custom", first: 10) {
+                edges {
+                  node {
+                    id
+                    key
+                  }
+                }
+              }
             }
           }
           pageInfo {
@@ -106,15 +114,40 @@ async function generateRelatedProducts(admin:any) {
                 relatedProductsArray.slice(60, 80),
             ];
 
-            const metafields = metafieldChunks.map((chunk, index) => ({
-                namespace: METAFIELD_NAMESPACE,
-                key: RELATED_METAFIELDS[index],
-                type: "list.product_reference",
-                ownerId: product.id,
-                value: JSON.stringify(chunk),
-            }));
+            const existingMetafields = product.metafields?.edges || [];
+            const metafieldsToDelete = existingMetafields
+                .filter((edge: any) => RELATED_METAFIELDS.includes(edge.node.key))
+                .map((edge: any) => edge.node.id);
 
-            await admin.graphql(`
+            // Clean first if has something
+            if (metafieldsToDelete.length > 0) {
+                console.log(`Cleaning ${metafieldsToDelete.length} existing metafields for ${product.title}`);
+                for (const id of metafieldsToDelete) {
+                    await admin.graphql(`
+                        mutation metafieldDelete($input: MetafieldDeleteInput!) {
+                            metafieldDelete(input: $input) {
+                                deletedId
+                            }
+                        }
+                    `, { variables: { input: { id } } });
+                }
+            }
+
+            const metafields: any[] = [];
+            metafieldChunks.forEach((chunk, index) => {
+                if (chunk.length > 0) {
+                    metafields.push({
+                        namespace: METAFIELD_NAMESPACE,
+                        key: RELATED_METAFIELDS[index],
+                        type: "list.product_reference",
+                        ownerId: product.id,
+                        value: JSON.stringify(chunk),
+                    });
+                }
+            });
+
+            if (metafields.length > 0) {
+                await admin.graphql(`
         mutation SetMetafields($metafields: [MetafieldsSetInput!]!) {
           metafieldsSet(metafields: $metafields) {
             metafields {
@@ -128,12 +161,14 @@ async function generateRelatedProducts(admin:any) {
           }
         }
       `, {
-                variables: {
-                    metafields,
-                },
-            });
-
-            console.log(`Updated metafields for ${product.title}`);
+                    variables: {
+                        metafields,
+                    },
+                });
+                console.log(`Updated metafields for ${product.title}`);
+            } else {
+                console.log(`No related products to update for ${product.title}`);
+            }
         }
 
         hasNextPage =
