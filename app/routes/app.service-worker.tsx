@@ -192,7 +192,7 @@ export async function action({ request ,context}: ActionFunctionArgs) {
   const themeId = activeTheme.id; // e.g., "gid://shopify/OnlineStoreTheme/123456789"
   
   // Upsert the Service Worker file into theme assets
-  const upsertMutation = `
+ const upsertMutation = `
     mutation themeFilesUpsert($files: [OnlineStoreThemeFilesUpsertFileInput!]!, $themeId: ID!) {
       themeFilesUpsert(files: $files, themeId: $themeId) {
         upsertedThemeFiles {
@@ -213,7 +213,7 @@ export async function action({ request ,context}: ActionFunctionArgs) {
         filename: "assets/platinumshop-sw.js",
         body: {
           contentType: "TEXT",
-          encoding: "UTF8",
+          // encoding: "UTF8",
           // The actual JS code
           content: SERVICE_WORKER_CODE
         }
