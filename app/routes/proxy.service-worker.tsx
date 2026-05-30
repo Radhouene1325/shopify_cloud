@@ -4,6 +4,32 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const swCode = `
 const CACHE_NAME = 'platinumshop-v1';
 
+// Helpers to identify third-party domains we must NEVER intercept
+const isThirdParty = (hostname) => {
+  const blocked = [
+    'cdn.shopify.com',
+    'monorail-edge.shopifysvc.com',
+    'shopifysvc.com',
+    'stripe.com',
+    'paypal.com',
+    'google-analytics.com',
+    'googletagmanager.com',
+  ];
+  return blocked.some(d => hostname === d || hostname.endsWith('.' + d));
+};
+
+// Paths that must always go to network (admin, checkout, pay, wallets)
+const isSensitivePath = (pathname) => {
+  return (
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/checkout') ||
+    pathname.includes('/pay') ||
+    pathname.includes('/wallets') ||
+    pathname.startsWith('/cart') ||
+    pathname.startsWith('/account')
+  );
+};
+
 self.addEventListener('install', event => {
   self.skipWaiting();
 });
@@ -25,39 +51,42 @@ self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Only handle GET requests
   if (request.method !== 'GET') return;
-  if (
-    url.pathname.startsWith('/admin') ||
-    url.pathname.startsWith('/checkout') ||
-    url.pathname.includes('/pay') ||
-    url.pathname.includes('/wallets') ||
-    url.hostname.includes('shopify.com') ||
-    url.hostname.includes('shopifysvc.com') ||
-    url.hostname.includes('stripe.com') ||
-    url.hostname.includes('paypal.com')
-  ) return;
 
-  if (['style', 'script', 'font', 'image'].includes(request.destination)) {
-    event.respondWith(
-      caches.match(request).then(cached => {
-        if (cached) return cached;
-        return fetch(request).then(response => {
-          // Do not cache opaque responses or errors
-          if (!response || response.status !== 200 || response.type === 'opaque') {
-            return response;
-          }
-          const clone = response.clone();
-          caches.open(CACHE_NAME)
-            .then(cache => cache.put(request, clone))
-            .catch(err => console.error('SW Cache Error:', err));
+  // Never intercept sensitive paths or third-party analytics/payment domains
+  if (isSensitivePath(url.pathname)) return;
+  if (isThirdParty(url.hostname)) return;
+
+  // Only cache static assets: style, script, font, image
+  const allowedDestinations = ['style', 'script', 'font', 'image'];
+  if (!allowedDestinations.includes(request.destination)) return;
+
+  event.respondWith(
+    caches.match(request).then(cached => {
+      // Return cached version immediately if found
+      if (cached) return cached;
+
+      return fetch(request).then(response => {
+        // Don't cache opaque responses, errors, or redirects
+        if (!response || response.status !== 200 || response.type === 'opaque') {
           return response;
-        }).catch(err => {
-          console.error('SW Fetch Error:', err);
-          throw err;
-        });
-      })
-    );
-  }
+        }
+
+        // Cache the new valid response in the background
+        const clone = response.clone();
+        caches.open(CACHE_NAME)
+          .then(cache => cache.put(request, clone))
+          .catch(err => console.error('SW Cache Error:', err));
+
+        return response;
+      }).catch(err => {
+        // Network failed and nothing in cache — let the browser handle the error
+        console.error('SW Fetch Error:', err);
+        throw err;
+      });
+    })
+  );
 });
   `;
 
@@ -66,7 +95,7 @@ self.addEventListener('fetch', event => {
     headers: {
       "Content-Type": "application/javascript",
       "Cache-Control": "no-cache, no-store, must-revalidate",
-      "Service-Worker-Allowed": "/",
+      "Service-Worker-Allowed": "/",  // Allows site-wide scope if you choose '/'
     },
   });
 }
