@@ -212,7 +212,7 @@ export async function action({ request ,context}: ActionFunctionArgs) {
       {
         filename: "assets/platinumshop-sw.js",
         body: {
-          contentType: "TEXT",
+          type: "TEXT",
           // encoding: "UTF8",
           // The actual JS code
           content: SERVICE_WORKER_CODE
