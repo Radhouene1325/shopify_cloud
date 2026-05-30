@@ -60,7 +60,7 @@
 
   "vars": {
     "SHOPIFY_APP_URL": "https://cloudflare-workers-app.radhouenekhalfa.workers.dev",
-    "SCOPES": "write_app_proxy,read_app_proxy,read_discounts,write_discounts,read_price_rules,write_price_rules,read_products,write_products,read_customers,write_customers,read_orders,write_orders,read_analytics,read_inventory,read_locations,read_metaobjects,write_metaobjects",
+    "SCOPES": "read_themes,write_themes,write_app_proxy,read_app_proxy,read_discounts,write_discounts,read_price_rules,write_price_rules,read_products,write_products,read_customers,write_customers,read_orders,write_orders,read_analytics,read_inventory,read_locations,read_metaobjects,write_metaobjects",
     "CF_IMAGE_DOMAIN": "https://platinumshop.it"
 
   }
