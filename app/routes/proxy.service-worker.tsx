@@ -29,7 +29,12 @@ self.addEventListener('fetch', event => {
   if (
     url.pathname.startsWith('/admin') ||
     url.pathname.startsWith('/checkout') ||
-    url.hostname.includes('shopify.com')
+    url.pathname.includes('/pay') ||
+    url.pathname.includes('/wallets') ||
+    url.hostname.includes('shopify.com') ||
+    url.hostname.includes('shopifysvc.com') ||
+    url.hostname.includes('stripe.com') ||
+    url.hostname.includes('paypal.com')
   ) return;
 
   if (['style', 'script', 'font', 'image'].includes(request.destination)) {
@@ -37,9 +42,18 @@ self.addEventListener('fetch', event => {
       caches.match(request).then(cached => {
         if (cached) return cached;
         return fetch(request).then(response => {
+          // Do not cache opaque responses or errors
+          if (!response || response.status !== 200 || response.type === 'opaque') {
+            return response;
+          }
           const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
+          caches.open(CACHE_NAME)
+            .then(cache => cache.put(request, clone))
+            .catch(err => console.error('SW Cache Error:', err));
           return response;
+        }).catch(err => {
+          console.error('SW Fetch Error:', err);
+          throw err;
         });
       })
     );
