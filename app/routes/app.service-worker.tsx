@@ -215,7 +215,7 @@ export async function action({ request ,context}: ActionFunctionArgs) {
           type: "TEXT",
           // encoding: "UTF8",
           // The actual JS code
-          content: SERVICE_WORKER_CODE
+          value: SERVICE_WORKER_CODE
         }
       }
     ]
