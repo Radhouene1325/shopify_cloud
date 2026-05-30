@@ -251,7 +251,7 @@ export default function ServiceWorkerManager() {
 
   const handleDeploy = () => {
     setStatus("Deploying...");
-    submit(null, { method: "POST", encType: "application/x-www-form-urlencoded", });
+    submit(null, { method: "POST" });
   };
 
   return (
