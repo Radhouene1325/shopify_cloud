@@ -8,7 +8,7 @@ export function getTikTokSessionStorage(context: AppLoadContext) {
       sameSite: "lax",
       path: "/",
       httpOnly: true,
-      secrets: [context.cloudflare.env.SHOPIFY_API_SECRET || "default_tiktok_secret"],
+      secrets: [context.cloudflare.env.TIKTOK_CLIENT_SECRET || "default_tiktok_secret"],
       secure: process.env.NODE_ENV === "production",
     },
   });

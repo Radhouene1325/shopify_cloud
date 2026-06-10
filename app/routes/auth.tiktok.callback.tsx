@@ -24,7 +24,10 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   if (state !== sessionState.get("tiktok_state")) {
     return json({ error: "Invalid state" }, { status: 400 });
   }
-
+console.log('client_key',context.cloudflare.env.TIKTOK_CLIENT_KEY)
+console.log('client_secret',context.cloudflare.env.TIKTOK_CLIENT_SECRET)
+console.log('code',code)
+console.log('redirect_uri',"https://platinumshop.it/auth/tiktok/callback")
   try {
     // SCAMBIA IL CODE PER ACCESS TOKEN
     const tokenResponse = await fetch("https://open.tiktokapis.com/v2/oauth/token/", {

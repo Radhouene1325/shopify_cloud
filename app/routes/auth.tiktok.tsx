@@ -9,7 +9,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const sessionStorage = getTikTokSessionStorage(context);
   const session = await sessionStorage.getSession();
   session.set("tiktok_state", state);
-  
+  console.log('client_key',context.cloudflare.env.TIKTOK_CLIENT_KEY)
+  )
   const params = new URLSearchParams({
     client_key: context.cloudflare.env.TIKTOK_CLIENT_KEY!,
     redirect_uri: "https://platinumshop.it/auth/tiktok/callback",
