@@ -1,24 +1,12 @@
-import { useState } from "react";
-import { useSearchParams } from "@remix-run/react";
-
 export default function TikTokConnect() {
-  const [searchParams] = useSearchParams();
-  const success = searchParams.get("success");
-  const error = searchParams.get("error");
+  const handleConnect = () => {
+    // Apri in una nuova finestra (App Bridge v4 compatibile)
+    window.open("/auth/tiktok", "_blank");
+  };
 
   return (
-    <div>
-      {success === "tiktok_connected" && (
-        <div style={{ color: "green" }}>✅ Account TikTok connesso!</div>
-      )}
-      
-      {error === "tiktok_denied" && (
-        <div style={{ color: "red" }}>❌ Autorizzazione negata da TikTok</div>
-      )}
-
-      <a href="/auth/tiktok">
-        <button>Connetti con TikTok</button>
-      </a>
-    </div>
+    <button onClick={handleConnect}>
+      Connetti con TikTok
+    </button>
   );
 }

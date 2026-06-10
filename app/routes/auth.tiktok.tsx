@@ -18,7 +18,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     state: state,
   });
 
-  // Aggiungi questi se usi Login Kit
+  // Aggiungi questi se usi Login Kitwww.tiktok.com n'autorise pas la connexion.
   // params.append("scope", "user.info.basic");
   
   const authUrl = `https://www.tiktok.com/v2/auth/authorize/?${params.toString()}`;
