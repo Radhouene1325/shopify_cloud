@@ -1,7 +1,8 @@
-import { json, redirect } from "@remix-run/node";
-import type { LoaderFunctionArgs } from "@remix-run/node";
+import { json, redirect } from "@remix-run/cloudflare";
+import type { LoaderFunctionArgs } from "@remix-run/cloudflare";
+import { getTikTokSessionStorage } from "../tiktokSession.server";
 
-export async function loader({ request,context }: LoaderFunctionArgs) {
+export async function loader({ request, context }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
@@ -18,10 +19,11 @@ export async function loader({ request,context }: LoaderFunctionArgs) {
   }
 
   // Verifica state (anti-CSRF) - opzionale ma consigliato
-  // const sessionState = await sessionStorage.getSession(request.headers.get("Cookie"));
-  // if (state !== sessionState.get("tiktok_state")) {
-  //   return json({ error: "Invalid state" }, { status: 400 });
-  // }
+  const sessionStorage = getTikTokSessionStorage(context);
+  const sessionState = await sessionStorage.getSession(request.headers.get("Cookie"));
+  if (state !== sessionState.get("tiktok_state")) {
+    return json({ error: "Invalid state" }, { status: 400 });
+  }
 
   try {
     // SCAMBIA IL CODE PER ACCESS TOKEN

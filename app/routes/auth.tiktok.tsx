@@ -1,10 +1,12 @@
-import { redirect } from "@remix-run/node";
-import type { LoaderFunctionArgs } from "@remix-run/node";
+import { redirect } from "@remix-run/cloudflare";
+import type { LoaderFunctionArgs } from "@remix-run/cloudflare";
+import { getTikTokSessionStorage } from "../tiktokSession.server";
 
-export async function loader({ request,context }: LoaderFunctionArgs) {
+export async function loader({ request, context }: LoaderFunctionArgs) {
   const state = crypto.randomUUID(); // Genera state anti-CSRF
   
   // Salva state in session (opzionale ma consigliato)
+  const sessionStorage = getTikTokSessionStorage(context);
   const session = await sessionStorage.getSession();
   session.set("tiktok_state", state);
   
