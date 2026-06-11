@@ -14,7 +14,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const params = new URLSearchParams({
     client_key: context.cloudflare.env.TIKTOK_CLIENT_KEY!,
     redirect_uri: "https://platinumshop.it/auth/tiktok/callback",
-    scope: "user.info.basic", // 👈 Solo questo per test
+    scope: "user.info.basic,video.publish,video.upload",
     response_type: "code",
     state: state,
   });
