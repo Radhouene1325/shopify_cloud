@@ -29,7 +29,7 @@ console.log('client_secret',context.cloudflare.env.TIKTOK_CLIENT_SECRET)
 console.log('code',code)
 console.log('redirect_uri',"https://platinumshop.it/auth/tiktok/callback")
   try {
-    // SCAMBIA IL CODE PER ACCESS TOKEN
+    // SCAMBIA IL CODE PER ACCESS TOKEN       https://open.tiktokapis.com/v2/oauth/token/
     const tokenResponse = await fetch("https://open.tiktokapis.com/v2/oauth/token/", {
       method: "POST",
       headers: {
@@ -39,8 +39,8 @@ console.log('redirect_uri',"https://platinumshop.it/auth/tiktok/callback")
       body: new URLSearchParams({
         client_key: context.cloudflare.env.TIKTOK_CLIENT_KEY!,
         client_secret: context.cloudflare.env.TIKTOK_CLIENT_SECRET!,
+        grant_type:"client_credentials",
         code: code,
-        grant_type: "authorization_code",
         redirect_uri: "https://platinumshop.it/auth/tiktok/callback",
       }),
     });
