@@ -54,6 +54,6 @@
     "CF_IMAGE_DOMAIN": "https://platinumshop.it",
     "TIKTOK_CLIENT_KEY": "sbawxmpbt7hhyiqhbn",
     "TIKTOK_CLIENT_SECRET":"zBjqorT0xNcomqQIo79vKGxRFAlnNpce",
-    "TIKTOK_REDIRECT_URI": "https://cloudflare-workers-app.radhouenekhalfa.workers.dev/auth/tiktok/callback"
+    "TIKTOK_REDIRECT_URI": "https://platinumshop.it/auth/tiktok/callback"
   }
 }
