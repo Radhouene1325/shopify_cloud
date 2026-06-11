@@ -108,7 +108,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         client_key: "awmwf66t2r6mvans",
         client_secret: "Uv0PwnjeoFC6fdj3eMpYAkPUs9zbY5fR",
         code: code,
-        grant_type: "client_credentials",
+        grant_type:"authorization_code",
         redirect_uri: "https://0g5p1w-50.myshopify.com/auth/tiktok/callback",
       }),
     });
