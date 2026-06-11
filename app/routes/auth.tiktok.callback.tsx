@@ -105,8 +105,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         "Cache-Control": "no-cache",
       },
       body: new URLSearchParams({
-        client_key: context.cloudflare.env.TIKTOK_CLIENT_KEY!,
-        client_secret: context.cloudflare.env.TIKTOK_CLIENT_SECRET!,
+        client_key: "awmwf66t2r6mvans",
+        client_secret: "Uv0PwnjeoFC6fdj3eMpYAkPUs9zbY5fR",
         code: code,
         grant_type: "client_credentials",
         redirect_uri: "https://0g5p1w-50.myshopify.com/auth/tiktok/callback",

@@ -15,9 +15,9 @@ export async function loader({ context }: LoaderFunctionArgs) {
   session.set("tiktok_state", state);
 
   const params = new URLSearchParams({
-    client_key: clientKey,
+    client_key: "awmwf66t2r6mvans",
     redirect_uri: "https://0g5p1w-50.myshopify.com/auth/tiktok/callback",
-    scope: "user.info.basic,video.publish,video.upload",
+    scope: "user.info.basic,user.info.profile,user.info.stats,video.publish,video.upload",
     response_type: "code",
     state,
   });
