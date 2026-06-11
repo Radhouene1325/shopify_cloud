@@ -1,27 +1,27 @@
-import { redirect } from "@remix-run/cloudflare";
-import type { LoaderFunctionArgs } from "@remix-run/cloudflare";
-import { getTikTokSessionStorage } from "../tiktokSession.server";
+import { getTikTokSessionStorage } from "@/tiktokSession.server";
+import { LoaderFunctionArgs, redirect } from "@remix-run/node";
 
-export async function loader({ request, context }: LoaderFunctionArgs) {
-  const state = crypto.randomUUID(); // Genera state anti-CSRF
-  
-  // Salva state in session (opzionale ma consigliato)
+export async function loader({ context }: LoaderFunctionArgs) {
+  const clientKey = context.cloudflare.env.TIKTOK_CLIENT_KEY;
+
+  if (!clientKey) {
+    throw new Error("Missing TIKTOK_CLIENT_KEY");
+  }
+
+  const state = crypto.randomUUID();
+
   const sessionStorage = getTikTokSessionStorage(context);
   const session = await sessionStorage.getSession();
   session.set("tiktok_state", state);
-  console.log('client_key',context.cloudflare.env.TIKTOK_CLIENT_KEY)
-  
+
   const params = new URLSearchParams({
-    client_key: context.cloudflare.env.TIKTOK_CLIENT_KEY!,
+    client_key: clientKey,
     redirect_uri: "https://platinumshop.it/auth/tiktok/callback",
     scope: "user.info.basic,video.publish,video.upload",
     response_type: "code",
-    state: state,
+    state,
   });
 
-  // Aggiungi questi se usi Login Kitwww.tiktok.com n'autorise pas la connexion.
-  // params.append("scope", "user.info.basic");
-  
   const authUrl = `https://www.tiktok.com/v2/auth/authorize/?${params.toString()}`;
 
   return redirect(authUrl, {
