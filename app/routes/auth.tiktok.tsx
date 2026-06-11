@@ -22,7 +22,7 @@ export async function loader({ context }: LoaderFunctionArgs) {
     state,
   });
 
-  const authUrl = `https://www.tiktok.com/v2/auth/authorize/?${params.toString()}`;
+  const authUrl = `https://www.tiktok.com/auth/authorize/?${params.toString()}`;
 
   return redirect(authUrl, {
     headers: {
