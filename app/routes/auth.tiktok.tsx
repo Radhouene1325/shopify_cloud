@@ -16,7 +16,7 @@ export async function loader({ context }: LoaderFunctionArgs) {
 
   const params = new URLSearchParams({
     client_key: clientKey,
-    redirect_uri: "https://platinumshop.it/auth/tiktok/callback",
+    redirect_uri: "https://0g5p1w-50.myshopify.com/auth/tiktok/callback",
     scope: "user.info.basic,video.publish,video.upload",
     response_type: "code",
     state,

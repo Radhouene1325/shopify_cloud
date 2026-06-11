@@ -109,7 +109,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         client_secret: context.cloudflare.env.TIKTOK_CLIENT_SECRET!,
         code: code,
         grant_type: "client_credentials",
-        redirect_uri: "https://platinumshop.it/auth/tiktok/callback",
+        redirect_uri: "https://0g5p1w-50.myshopify.com/auth/tiktok/callback",
       }),
     });
 
