@@ -102,12 +102,13 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
+        "Cache-Control": "no-cache",
       },
       body: new URLSearchParams({
         client_key: context.cloudflare.env.TIKTOK_CLIENT_KEY!,
         client_secret: context.cloudflare.env.TIKTOK_CLIENT_SECRET!,
         code: code,
-        grant_type: "authorization_code",
+        grant_type: "client_credentials",
         redirect_uri: "https://platinumshop.it/auth/tiktok/callback",
       }),
     });
