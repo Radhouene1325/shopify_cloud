@@ -37,7 +37,7 @@ import { LoaderFunctionArgs, redirect } from "@remix-run/node";
 export async function loader({ context }: LoaderFunctionArgs) {
   const clientKey = context.cloudflare.env.TIKTOK_CLIENT_KEY;
   const redirectUri = context.cloudflare.env.TIKTOK_REDIRECT_URI;
-
+console.log("redirectUri",redirectUri)
   if (!clientKey || !redirectUri) {
     throw new Error("Missing TIKTOK_CLIENT_KEY or TIKTOK_REDIRECT_URI");
   }
