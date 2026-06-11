@@ -86,6 +86,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const error = url.searchParams.get("error");
+  const redirectUri = context.cloudflare.env.TIKTOK_REDIRECT_URI;
 
   if (error) {
     console.error("TikTok OAuth error:", error);
@@ -109,7 +110,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         client_secret: "Uv0PwnjeoFC6fdj3eMpYAkPUs9zbY5fR",
         code: code,
         grant_type:"authorization_code",
-        redirect_uri: "https://0g5p1w-50.myshopify.com/auth/tiktok/callback",
+        redirect_uri: redirectUri,
       }),
     });
 
