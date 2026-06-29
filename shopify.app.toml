@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "be8fbd46789e733020c3ec9f207d51bc"
-name = "shop_cloud"
+client_id = "216fb19c4d7de34e050391c7e2d08fde"
+name = "kitchen_cloud"
 api_version = "2026-01"
 application_url = "https://cloudflare-workers-app.radhouenekhalfa.workers.dev"
 embedded = true
