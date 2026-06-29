@@ -1,6 +1,3 @@
-
-
-
 import { type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
 import { useActionData, Form, useNavigation, useLoaderData, useFetcher, useSubmit } from "@remix-run/react";
 import { shopify } from "../shopify.server";
@@ -692,7 +689,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   console.log('cursor her ', cursor)
   let query = `#graphql
   query GetProducts($cursor:String) {
-    products(first: 15,after:$cursor,query:"tag_not:DESC_AI",sortKey: PUBLISHED_AT,reverse: true) {
+    products(first: 15,after:$cursor,sortKey: PUBLISHED_AT,reverse: true) {
         edges{
             node{
               
@@ -976,28 +973,34 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     //   descriptionHtml: transformDescriptionHtml(product.descriptionHtml),
     // }));
 
-    if (filtered.length > 0) {
-      resultData = {
-        variants: filtered,
-        pageInfo: pageInfo,
-        category: edges.map((e: any) => e.node.category)
-      };
-      break;
-    }
+    // if (filtered.length > 0) {
+    //   resultData = {
+    //     // variants: filtered,
+    //     varients:edges,
+    //     pageInfo: pageInfo,
+    //     category: edges.map((e: any) => e.node.category)
+    //   };
+    //   break;
+    // }
 
-    if (!pageInfo.hasNextPage) {
-      resultData = {
-        variants: [],
-        pageInfo: pageInfo,
-        category: []
-      };
-      break;
-    }
-
+    // if (!pageInfo.hasNextPage) {
+    //   resultData = {
+    //     variants: [],
+    //     pageInfo: pageInfo,
+    //     category: []
+    //   };
+    //   break;
+    // }
+    resultData = {
+      // variants: filtered,
+      varients: edges,
+      pageInfo: pageInfo,
+      category: edges.map((e: any) => e.node.category)
+    };
     cursor = pageInfo.endCursor;
     pageCount++;
   }
-
+//hello
   return new Response(JSON.stringify(resultData), {
     status: 200,
     headers: {
@@ -1008,5 +1011,3 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   });
   //   return json.data;
 }
-
-
