@@ -9,7 +9,6 @@ const UPDATED_TAG = "DESC_AI";
 const HISTORY_NAMESPACE = "custom";
 const HISTORY_TITLE_KEY = "history_title";
 const HISTORY_DESCRIPTION_KEY = "history_description";
-const MAX_PRODUCTS_PER_ACTION = 15;
 
 export async function generateSeoHtml(
   updatedDescreptionAI: any,
@@ -74,17 +73,6 @@ export async function action({ context, request }: ActionFunctionArgs) {
 
   if (!Array.isArray(products)) {
     return Response.json({ error: "Invalid or missing 'descreptionAI' data" }, { status: 400 });
-  }
-
-  if (products.length > MAX_PRODUCTS_PER_ACTION) {
-    return Response.json(
-      {
-        error: `Too many products selected. Please send max ${MAX_PRODUCTS_PER_ACTION} products per request.`,
-        maxProducts: MAX_PRODUCTS_PER_ACTION,
-        received: products.length,
-      },
-      { status: 400 }
-    );
   }
 
   const deepSeekApiKey = (context.cloudflare.env as Record<string, string | undefined>)

@@ -240,7 +240,6 @@ export default function DescriptionManager() {
   const [pageInfo, setPageInfo] = useState<PageInfo | null>(initial?.pageInfo || null);
   const [cursorStack, setCursorStack] = useState<string[]>([]);
   const [selected, setSelected] = useState<SelectedVariant[]>([]);
-  const [submitProgress, setSubmitProgress] = useState<{ done: number; total: number } | null>(null);
   const [isSelectAllIndeterminate, setIsSelectAllIndeterminate] = useState(false);
   // console.log("rows is her see",rows)
   // console.log('intital data is her ',initial)
@@ -357,26 +356,12 @@ export default function DescriptionManager() {
   const handleSubmit = useCallback(() => {
     if (selected.length === 0) return;
 
-    const batchSize = 15;
-    const batches: SelectedVariant[][] = [];
-    for (let i = 0; i < selected.length; i += batchSize) {
-      batches.push(selected.slice(i, i + batchSize));
-    }
+    const formData = new FormData();
+    formData.append("descreptionAI", JSON.stringify(selected));
 
-    setSubmitProgress({ done: 0, total: batches.length });
-
-    batches.forEach((batch, index) => {
-      window.setTimeout(() => {
-        const formData = new FormData();
-        formData.append("descreptionAI", JSON.stringify(batch));
-
-        submit(formData, {
-          method: "post",
-          encType: "application/x-www-form-urlencoded",
-        });
-
-        setSubmitProgress({ done: index + 1, total: batches.length });
-      }, index * 1500);
+    submit(formData, {
+      method: "post",
+      encType: "application/x-www-form-urlencoded",
     });
   }, [selected, submit]);
   console.log('selected is her ', selected)
@@ -392,7 +377,6 @@ export default function DescriptionManager() {
     const text = html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
     return text || "No description available";
   }, []);
-  const isBatchSubmitting = Boolean(submitProgress && submitProgress.done < submitProgress.total);
 
   // console.log('rows is seccesfuly her ',rows)
   // Table rows
@@ -489,12 +473,10 @@ export default function DescriptionManager() {
         <Button
           variant="primary"
           onClick={handleSubmit}
-          loading={isSubmitting || isBatchSubmitting}
+          loading={isSubmitting}
           disabled={selected.length === 0}
         >
-          {submitProgress && submitProgress.total > 1
-            ? `Updating batch ${Math.min(submitProgress.done + 1, submitProgress.total)}/${submitProgress.total}`
-            : "Update Descriptions"}
+          Update Descriptions
         </Button>
       }
       secondaryActions={[
@@ -509,14 +491,7 @@ export default function DescriptionManager() {
         {/* Status Banners */}
         {actionData?.success && (
           <Banner title="Success" tone="success" onDismiss={() => { }}>
-            <p>Successfully updated a batch of product descriptions.</p>
-          </Banner>
-        )}
-        {submitProgress && submitProgress.total > 1 && (
-          <Banner title="Batch update" tone="info">
-            <p>
-              Sent {submitProgress.done} of {submitProgress.total} batches. Each batch contains up to 15 products.
-            </p>
+            <p>Successfully updated {selected.length} product descriptions.</p>
           </Banner>
         )}
         {actionData?.error && (
@@ -797,11 +772,9 @@ export default function DescriptionManager() {
               variant="primary"
               fullWidth
               onClick={handleSubmit}
-              loading={isSubmitting || isBatchSubmitting}
+              loading={isSubmitting}
             >
-              {submitProgress && submitProgress.total > 1
-                ? `Updating batch ${Math.min(submitProgress.done + 1, submitProgress.total)}/${submitProgress.total}`
-                : `Update ${selected.length} Descriptions`}
+              {`Update ${selected.length} Descriptions`}
             </Button>
           </Box>
         )}
