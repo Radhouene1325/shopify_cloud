@@ -9,6 +9,7 @@ const UPDATED_TAG = "DESC_AI";
 const HISTORY_NAMESPACE = "custom";
 const HISTORY_TITLE_KEY = "history_title";
 const HISTORY_DESCRIPTION_KEY = "history_description";
+const MAX_PRODUCTS_PER_ACTION = 15;
 
 export async function generateSeoHtml(
   updatedDescreptionAI: any,
@@ -75,6 +76,17 @@ export async function action({ context, request }: ActionFunctionArgs) {
     return Response.json({ error: "Invalid or missing 'descreptionAI' data" }, { status: 400 });
   }
 
+  if (products.length > MAX_PRODUCTS_PER_ACTION) {
+    return Response.json(
+      {
+        error: `Too many products selected. Please send max ${MAX_PRODUCTS_PER_ACTION} products per request.`,
+        maxProducts: MAX_PRODUCTS_PER_ACTION,
+        received: products.length,
+      },
+      { status: 400 }
+    );
+  }
+
   const deepSeekApiKey = (context.cloudflare.env as Record<string, string | undefined>)
     .DEEP_SEEK_API_KEY;
 
@@ -85,23 +97,34 @@ export async function action({ context, request }: ActionFunctionArgs) {
   const result = await generateSeoHtml(products, deepSeekApiKey);
   const updatedData: any[] = [];
   const historyMetafieldsQuery = `#graphql
-    query GetTikTokHistoryMetafields($id: ID!) {
-      product(id: $id) {
-        id
-        title
-        descriptionHtml
-        tags
-        historyTitle: metafield(namespace: "custom", key: "history_title") {
+    query GetTikTokHistoryMetafields($ids: [ID!]!) {
+      nodes(ids: $ids) {
+        ... on Product {
           id
-          value
-        }
-        historyDescription: metafield(namespace: "custom", key: "history_description") {
-          id
-          value
+          title
+          descriptionHtml
+          tags
+          historyTitle: metafield(namespace: "custom", key: "history_title") {
+            id
+            value
+          }
+          historyDescription: metafield(namespace: "custom", key: "history_description") {
+            id
+            value
+          }
         }
       }
     }
   `;
+  const historyResponse = await admin.graphql(historyMetafieldsQuery, {
+    variables: { ids: result.data.map((product) => product.id) },
+  });
+  const historyJson = await historyResponse.json() as any;
+  const shopifyProductsById = new Map(
+    (historyJson?.data?.nodes || [])
+      .filter(Boolean)
+      .map((product: any) => [product.id, product])
+  );
 
   for (const product of result.data) {
     const originalProduct = products.find((item: any) => item.id === product.id);
@@ -128,11 +151,7 @@ export async function action({ context, request }: ActionFunctionArgs) {
       );
     }
 
-    const historyResponse = await admin.graphql(historyMetafieldsQuery, {
-      variables: { id: product.id },
-    });
-    const historyJson = await historyResponse.json() as any;
-    const shopifyProduct = historyJson?.data?.product;
+    const shopifyProduct = shopifyProductsById.get(product.id) as any;
 
     if (!shopifyProduct) {
       return Response.json(
