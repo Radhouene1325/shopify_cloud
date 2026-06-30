@@ -1,6 +1,3 @@
-
-
-
 import { type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
 import { useActionData, Form, useNavigation, useLoaderData, useFetcher, useSubmit } from "@remix-run/react";
 import { shopify } from "../shopify.server";
@@ -1014,5 +1011,3 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   });
   //   return json.data;
 }
-
-
