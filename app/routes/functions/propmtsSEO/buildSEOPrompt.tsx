@@ -897,7 +897,7 @@ const data = await this.client.execute(
     "socialOptimization": {
       "facebookTitle": "80-100 chars, engagement focused",
       "facebookDescription": "200-300 chars, social proof, emojis allowed",
-      "tiktokTitle": "100-150 chars, hashtag-friendly, trend-aware",
+      "tiktokTitle": "60-120 chars, factual TikTok Shop title, no emojis, no hashtags, no unsupported claims",
       "pinterestTitle": "100-500 chars, descriptive, keyword-rich",
       "pinterestDescription": "500 chars max, SEO keywords, call to action"
     },
@@ -931,9 +931,16 @@ const data = await this.client.execute(
   • Title: 80-100 chars, social proof, emotional connection
   • Description: 200-300 chars, lifestyle focus, benefits over features
   
-  TIKTOK SHOP (Video-commerce):
-  • Title: 100-150 chars, hashtag-friendly, trend-jacking
-  • Description: Short, punchy, video-context aware
+  TIKTOK SHOP (Marketplace search - policy-safe):
+  • tiktokTitle: 60-120 chars, factual, clear, product-type first
+  • Use only verified input data: product type, brand if present, color, material, size/model, main feature
+  • Do NOT use emojis, hashtags, viral/trending language, "best seller", "TikTok made me buy it", "link in bio", fake urgency, unsupported guarantees, medical/health claims, or competitor/platform mentions
+  • Do NOT use risky counterfeit or misleading terms: fake, dupe, replica, knockoff, copy, 1:1, inspired by, lookalike, style [brand]
+  • Do NOT use unsupported trust/promotional claims: official, authentic, certified, guaranteed, 100%, best price, instant result, miracle, perfect, unbeatable, trending
+  • Do NOT include external links, phone numbers, emails, WhatsApp, social handles, or off-platform contact instructions
+  • Do NOT mention TikTok Shop inside the generated title
+  • Prefer conservative, neutral wording. If unsure, remove the risky word
+  • Description: short, factual, compliant, based only on product data
   
   PINTEREST (Visual search engine):
   • Title: 100-500 chars, highly descriptive, keyword-stuffed naturally
@@ -1823,9 +1830,11 @@ const data = await this.client.execute(
   Title: "🔥 [Product] - [Benefit] | [Social Proof]"
   Description: "Adora questo [product]! ❤️ [Benefit 1], [Benefit 2]. Perfetto per [use case]. Tagga un amico! 👇"
   
-  TIKTOK:
-  Title: "[Trend] [Product] che [benefit] ✨ #[category] #[viral]"
-  Description: "POV: Hai trovato il [product] che [risolve problema] 😍 Link in bio! #TikTokMadeMeBuyIt"
+  TIKTOK SHOP:
+  Title: "[Product Type] [Brand if authorized/present] [Model/Color/Material/Size if present]"
+  Example: "Sandali Donna Birkenstock Arizona Con Plantare Anatomico"
+  Description: factual, concise, based only on product data.
+  Rules: no emojis, no hashtags, no viral/trending/best seller wording, no "link in bio", no external links, no fake urgency, no unsupported guarantees, no medical/health claims, no competitor/platform mentions, no fake/dupe/replica/knockoff/copy/1:1/lookalike terms.
   
   PINTEREST:
   Title: "[Style] [Product] per [Occasion] | [Color] [Material]"
@@ -1858,7 +1867,7 @@ const data = await this.client.execute(
     "socialOptimization": {
       "facebookTitle": "🔥 Tacchi Neri 10cm - Eleganza & Stile | Best Seller",
       "facebookDescription": "L'eleganza è nei dettagli! ✨ Questi tacchi neri da 10cm sono pura classe. Chi altro li vuole? 👇",
-      "tiktokTitle": "I tacchi che ti fanno sentire REGINA 👠✨ #Tacchi #Eleganza #Shoes",
+      "tiktokTitle": "Tacchi donna neri 10cm in pelle",
       "pinterestTitle": "Tacchi Donna Neri 10cm Eleganti | Scarpe Cerimonia Pelle",
       "pinterestDescription": "Tacchi donna neri da 10cm in pelle, perfetti per cerimonie e serate eleganti. Suola antiscivolo, tacco stabile. #Tacchi #ScarpeDonna #Eleganza #Cerimonia"
     },
@@ -1898,7 +1907,7 @@ const data = await this.client.execute(
     "socialOptimization": {
       "facebookTitle": "👶 Scarpine Primi Passi - Delicate & Sicure | Neonati",
       "facebookDescription": "I primi passi meritano il meglio! 🍼 Suola morbida e materiali sicuri. Tagga una mamma! 👇",
-      "tiktokTitle": "Le scarpine perfette per i primi passi 👶✨ #BabyShoes #PrimiPassi #Mamma",
+      "tiktokTitle": "Scarpine primi passi bambino bianche",
       "pinterestTitle": "Scarpine Primi Passi Bambino Bianche | Suola Morbida Sicura",
       "pinterestDescription": "Scarpine primi passi bambino bianche, suola morbida e flessibile. Ideali per i primi passi, materiali anallergici e traspiranti. #BabyShoes #PrimiPassi #Neonato"
     },
@@ -1938,7 +1947,7 @@ const data = await this.client.execute(
     "socialOptimization": {
       "facebookTitle": "🚁 Drone DJI Mini 4 Pro - Riprese Aeree 4K | Best Seller",
       "facebookDescription": "Cattura il mondo dall'alto! 🌍 Drone DJI Mini 4 Pro con video 4K. Chi sogna di volare? 👇",
-      "tiktokTitle": "Il drone che trasforma le tue riprese 😱✨ #Drone #DJI #Tech",
+      "tiktokTitle": "Drone DJI Mini 4 Pro con telecamera 4K",
       "pinterestTitle": "Drone DJI Mini 4 Pro 4K | Fotografia Aerea Professionale",
       "pinterestDescription": "Drone DJI Mini 4 Pro con telecamera 4K, leggero e compatto. Autonomia 34 minuti, trasmissione video fino a 20km. Perfetto per content creator. #Drone #DJI #Fotografia #Tech"
     },
@@ -1978,7 +1987,7 @@ const data = await this.client.execute(
     "socialOptimization": {
       "facebookTitle": "🌱 Toyota Prius Hybrid - Eco & Tecnologia | 2026",
       "facebookDescription": "Guida il futuro! 🚗 Hybrid technology per un mondo più green. Chi ama l'ambiente? 👇",
-      "tiktokTitle": "L'auto ibrida che cambia tutto 🔋✨ #Hybrid #Toyota #EcoFriendly",
+      "tiktokTitle": "Toyota Prius Hybrid 2026",
       "pinterestTitle": "Toyota Prius Hybrid 2026 | Auto Ecologica Tecnologica",
       "pinterestDescription": "Toyota Prius Hybrid 2026, massima efficienza energetica e tecnologia avanzata. Perfetta per chi cerca un'auto eco-friendly senza compromessi. #Hybrid #Toyota #AutoIbrida #Green"
     },
@@ -2018,7 +2027,7 @@ const data = await this.client.execute(
     "socialOptimization": {
       "facebookTitle": "🕯️ Candela Vaniglia - Fatta a Mano | Relax",
       "facebookDescription": "Profumo di casa! 🏠 Candela alla vaniglia fatta a mano con amore. Chi ama le candele? 👇",
-      "tiktokTitle": "La candela che profuma tutta casa 😍✨ #Candele #Vaniglia #HomeDecor",
+      "tiktokTitle": "Candela profumata vaniglia fatta a mano",
       "pinterestTitle": "Candela Profumata Vaniglia Fatta a Mano | Cera Naturale",
       "pinterestDescription": "Candela profumata alla vaniglia fatta a mano con cera naturale e stoppino in cotone. Durata 40 ore, profumazione intensa. Ideale per regalo o arredo casa. #Candele #HomeDecor #FattoAMano #Vaniglia"
     },
@@ -2079,7 +2088,9 @@ const data = await this.client.execute(
   
   6. seoDescription: 150-160 chars, compelling CTA, NO emojis
   
-  7. socialOptimization: Platform-appropriate with emojis allowed
+  7. socialOptimization:
+     • facebookTitle/facebookDescription may be social-friendly
+     • tiktokTitle MUST be TikTok Shop policy-safe: factual, no emojis, no hashtags, no viral/trending/best seller wording, no external links, no unsupported claims, no fake/dupe/replica/knockoff/copy/1:1/lookalike terms
   
   8. attributes: Extract from input data, use null if not found
   
@@ -2095,6 +2106,13 @@ const data = await this.client.execute(
   
   14. 2026 TAXONOMY UPDATES: Use updated category names (Baby & Children's instead of Baby & Toddler) but GIDs remain stable
   
+  15. TikTok Shop title compliance:
+     • Generate tiktokTitle as a clean product listing title, not an ad slogan
+     • Use natural SEO keywords without keyword stuffing
+     • Use brand only if present in input data
+     • Do not invent model, material, color, size, certification, authenticity, warranty, discount, shipping promise, or stock urgency
+     • If the original product title contains risky words, remove or rewrite them neutrally
+
   ═══════════════════════════════════════════════════════════════
   BEGIN PROCESSING:`;
   }
