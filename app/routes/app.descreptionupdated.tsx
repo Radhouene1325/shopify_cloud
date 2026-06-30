@@ -1,7 +1,7 @@
 import { type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
 import { useActionData, Form, useNavigation, useLoaderData, useFetcher, useSubmit } from "@remix-run/react";
 import { shopify } from "../shopify.server";
-import { Badge, Banner, BlockStack, Box, Button, Card, Checkbox, DataTable, Divider, EmptyState, InlineStack, Modal, Page, Pagination, Spinner, Tag, Text, Thumbnail, Tooltip, useBreakpoints } from "@shopify/polaris";
+import { Badge, Banner, BlockStack, Box, Button, Card, Checkbox, EmptyState, InlineStack, Modal, Page, Pagination, Spinner, Tag, Text, Thumbnail, Tooltip, useBreakpoints } from "@shopify/polaris";
 import { useCallback, useEffect, useMemo, useState } from "react";
 // sk-c8552ae161ed4db684bb1268bf4ba758
 
@@ -210,7 +210,15 @@ interface SelectedVariant {
   handel: string;       // Note: matches your spelling
   vendor: string;
   image: string;
+  images?: any;
   productType: string;
+  title?: string;
+  totalInventory?: number;
+  tracksInventory?: boolean;
+  max_amount?: string;
+  currencyCode?: string;
+  min_amount?: string;
+  sku?: any;
 
 }
 
@@ -267,64 +275,45 @@ export default function DescriptionManager() {
     return selected.some((s) => s.id === id);
   }, [selected]);
 
+  const buildSelectedVariant = useCallback((variant: Variant): SelectedVariant => ({
+    id: variant.id,
+    descreption: variant.descriptionHtml || "",
+    tags: variant.tags || [],
+    handel: variant.handle,
+    vendor: variant.vendor,
+    image: variant.featuredMedia?.image?.url || "",
+    images: variant?.media?.edges,
+    productType: variant.productType,
+    title: variant.title,
+    totalInventory: variant?.totalInventory,
+    tracksInventory: variant?.tracksInventory,
+    max_amount: variant?.priceRangeV2?.maxVariantPrice?.amount,
+    currencyCode: variant?.priceRangeV2?.maxVariantPrice?.currencyCode,
+    min_amount: variant.priceRangeV2?.minVariantPrice?.amount,
+    sku: variant?.variants?.edges,
+  }), []);
+
   // Handle select all
   const handleSelectAll = useCallback((checked: boolean) => {
     if (checked) {
-      const allSelected: SelectedVariant[] = rows.map((v) => ({
-        id: v.id,
-        descreption: v.descriptionHtml || "",
-        tags: v.tags || [],
-        handel: v.handle,
-        vendor: v.vendor,
-        image: v.featuredMedia?.image?.url || "",
-        images: v?.media?.edges,
-        productType: v.productType,
-        title: v.title,
-        totalInventory: v?.totalInventory,
-        tracksInventory: v?.tracksInventory,
-        max_amount: v?.priceRangeV2?.maxVariantPrice?.amount,
-        currencyCode: v?.priceRangeV2?.maxVariantPrice?.currencyCode,
-        min_amount: v.priceRangeV2?.minVariantPrice?.amount,
-        sku: v?.variants?.edges
-
-
-
-      }));
+      const allSelected: SelectedVariant[] = rows.map(buildSelectedVariant);
       setSelected(allSelected);
     } else {
       setSelected([]);
     }
-  }, [rows]);
+  }, [buildSelectedVariant, rows]);
 
   // Handle individual row selection
   const handleSelectRow = useCallback((variant: Variant, checked: boolean) => {
     if (checked) {
       setSelected((prev) => [
         ...prev,
-        {
-          id: variant.id,
-          descreption: variant.descriptionHtml || "",
-          tags: variant.tags || [],
-          handel: variant.handle,
-          vendor: variant.vendor,
-          image: variant.featuredMedia?.image?.url || "",
-          images: variant?.media?.edges,
-          productType: variant.productType,
-          title: variant.title,
-          totalInventory: variant?.totalInventory,
-          tracksInventory: variant?.tracksInventory,
-          max_amount: variant?.priceRangeV2?.maxVariantPrice?.amount,
-          currencyCode: variant?.priceRangeV2?.maxVariantPrice?.currencyCode,
-          min_amount: variant.priceRangeV2?.minVariantPrice?.amount,
-          sku: variant?.variants?.edges
-
-
-        },
+        buildSelectedVariant(variant),
       ]);
     } else {
       setSelected((prev) => prev.filter((s) => s.id !== variant.id));
     }
-  }, []);
+  }, [buildSelectedVariant]);
 
   // Toggle row selection (add if not exists, remove if exists)
   const toggleSelection = useCallback((variant: Variant) => {
@@ -334,33 +323,17 @@ export default function DescriptionManager() {
     } else {
       setSelected((prev) => [
         ...prev,
-        {
-          id: variant.id,
-          descreption: variant.descriptionHtml || "",
-          tags: variant.tags || [],
-          handel: variant.handle,
-          vendor: variant.vendor,
-          image: variant.featuredMedia?.image?.url || "",
-          productType: variant.productType,
-        },
+        buildSelectedVariant(variant),
       ]);
     }
-  }, [selected]);
+  }, [buildSelectedVariant, selected]);
   // Auto-select variants without DESC_AI tag
   const handleAutoSelect = useCallback(() => {
     const newSelected: SelectedVariant[] = rows
       .filter((v) => !v.tags?.includes("DESC_AI"))
-      .map((v) => ({
-        id: v.id,
-        descreption: v.descriptionHtml || "",
-        tags: v.tags || [],
-        handel: v.handle,
-        vendor: v.vendor,
-        image: v.featuredMedia?.image?.url || "",
-        productType: v.productType,
-      }));
+      .map(buildSelectedVariant);
     setSelected(newSelected);
-  }, [rows]);
+  }, [buildSelectedVariant, rows]);
 
   // Pagination handlers
   const handleNextPage = useCallback(() => {
@@ -392,23 +365,19 @@ export default function DescriptionManager() {
     });
   }, [selected, submit]);
   console.log('selected is her ', selected)
-  // Table headings with Select All checkbox
-  const headings = [
-    <Checkbox
-      key="select-all"
-      label="Select all variants"
-      labelHidden
-      checked={rows.length > 0 && rows.every((v) => isSelected(v.id))}
-      indeterminate={isSelectAllIndeterminate}
-      onChange={handleSelectAll}
-      disabled={rows.length === 0}
-    />,
-    "Image",
-    "Product Details",
-    "Description",
-    "Tags",
-    "Handle",
-  ];
+  const processedCount = useMemo(
+    () => rows.filter((v) => v.tags?.includes("DESC_AI")).length,
+    [rows]
+  );
+  const pendingCount = Math.max(rows.length - processedCount, 0);
+  const selectAllChecked = isSelectAllIndeterminate
+    ? "indeterminate"
+    : rows.length > 0 && rows.every((v) => isSelected(v.id));
+  const getDescriptionPreview = useCallback((html = "") => {
+    const text = html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+    return text || "No description available";
+  }, []);
+
   // console.log('rows is seccesfuly her ',rows)
   // Table rows
   const rowsData = useMemo(() => {
@@ -433,7 +402,7 @@ export default function DescriptionManager() {
         <Text as="span" variant="bodySm" tone="subdued">
           {variant.vendor} • {variant.productType}
         </Text>
-        <Text as="span" variant="bodySm" fontWeight="medium" fontFamily="monospace">
+        <Text as="span" variant="bodySm" fontWeight="medium">
           ID: {variant.id.split("/").pop()}
         </Text>
       </BlockStack>,
@@ -464,7 +433,7 @@ export default function DescriptionManager() {
       <InlineStack key={`tags-${variant.id}`} gap="100" wrap>
         {variant.tags?.length > 0 ? (
           variant.tags.map((tag) => (
-            <Tag key={tag} tone={tag === "DESC_AI" ? "success" : "neutral"}>
+            <Tag key={tag}>
               {tag}
             </Tag>
           ))
@@ -533,83 +502,240 @@ export default function DescriptionManager() {
 
         {/* Stats Bar */}
         <Card padding="400">
-          <InlineStack gap="400" align="space-between" blockAlign="center" wrap={false}>
-            <InlineStack gap="400">
-              <Box>
-                <Text as="p" variant="bodySm" tone="subdued">
-                  Total on Page
-                </Text>
-                <Text as="p" variant="headingMd">
-                  {rows.length}
-                </Text>
-              </Box>
-              <Box>
-                <Text as="p" variant="bodySm" tone="subdued">
-                  Selected
-                </Text>
-                <Text as="p" variant="headingMd" tone="success">
-                  {selected.length}
-                </Text>
-              </Box>
-              <Box>
-                <Text as="p" variant="bodySm" tone="subdued">
-                  Already Processed
-                </Text>
-                <Text as="p" variant="headingMd">
-                  {rows.filter((v) => v.tags?.includes("DESC_AI")).length}
-                </Text>
-              </Box>
-            </InlineStack>
+          <InlineStack gap="400" align="space-between" blockAlign="center" wrap>
+            <BlockStack gap="100">
+              <Text as="h2" variant="headingMd">
+                TikTok Shop policy update
+              </Text>
+              <Text as="p" variant="bodySm" tone="subdued">
+                Review products, select clean listings, then update title and description.
+              </Text>
+            </BlockStack>
 
-            <Tooltip content="Select variants without DESC_AI tag">
-              <Button
-                size="slim"
-                onClick={handleAutoSelect}
-                disabled={rows.filter((v) => !v.tags?.includes("DESC_AI")).length === 0}
-              >
-                Auto-select New
-              </Button>
-            </Tooltip>
+            <InlineStack gap="300" blockAlign="center" wrap>
+              {[
+                { label: "Total", value: rows.length },
+                { label: "To update", value: pendingCount },
+                { label: "Selected", value: selected.length },
+                { label: "Done", value: processedCount },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  style={{
+                    minWidth: "88px",
+                    padding: "10px 12px",
+                    border: "1px solid #e3e3e3",
+                    borderRadius: "8px",
+                    background: "#fafafa",
+                  }}
+                >
+                  <Text as="p" variant="bodySm" tone="subdued">
+                    {stat.label}
+                  </Text>
+                  <Text as="p" variant="headingMd">
+                    {stat.value}
+                  </Text>
+                </div>
+              ))}
+
+              <Tooltip content="Select products without DESC_AI tag">
+                <Button
+                  onClick={handleAutoSelect}
+                  disabled={pendingCount === 0}
+                >
+                  Auto-select new
+                </Button>
+              </Tooltip>
+            </InlineStack>
           </InlineStack>
         </Card>
 
-        {/* Data Table */}
+        {/* Product Table */}
         <Card padding="0">
           {isLoading ? (
-            <Box padding="600" alignItems="center" display="flex" justifyContent="center">
+            <div
+              style={{
+                minHeight: "280px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <Spinner size="large" />
-            </Box>
+            </div>
           ) : (
             <>
-              <DataTable
-                columnContentTypes={[
-                  "text", // Checkbox
-                  "text", // Image
-                  "text", // Details
-                  "text", // Description
-                  "text", // Tags
-                  "text", // Handle
-                ]}
-                headings={headings}
-                rows={rowsData}
-                verticalAlign="middle"
-                hoverable
-                truncate={false}
-              />
+              <div
+                style={{
+                  padding: "16px 20px",
+                  borderBottom: "1px solid #ebebeb",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: "16px",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                <BlockStack gap="100">
+                  <Text as="h3" variant="headingSm">
+                    Product queue
+                  </Text>
+                  <Text as="p" variant="bodySm" tone="subdued">
+                    Products without the DESC_AI tag appear first for review.
+                  </Text>
+                </BlockStack>
+                <Badge tone={pendingCount > 0 ? "attention" : "success"}>
+                  {pendingCount > 0 ? `${pendingCount} pending` : "All clear"}
+                </Badge>
+              </div>
+
+              <div style={{ overflowX: "auto" }}>
+                <table
+                  style={{
+                    width: "100%",
+                    minWidth: "920px",
+                    borderCollapse: "separate",
+                    borderSpacing: 0,
+                    tableLayout: "fixed",
+                  }}
+                >
+                  <thead>
+                    <tr>
+                      <th style={{ width: "48px", padding: "12px 14px", textAlign: "left", borderBottom: "1px solid #ebebeb", background: "#fafafa" }}>
+                        <Checkbox
+                          label="Select all products"
+                          labelHidden
+                          checked={selectAllChecked}
+                          onChange={handleSelectAll}
+                          disabled={rows.length === 0}
+                        />
+                      </th>
+                      <th style={{ width: "82px", padding: "12px 10px", textAlign: "left", borderBottom: "1px solid #ebebeb", background: "#fafafa" }}>
+                        <Text as="span" variant="bodySm" tone="subdued">Image</Text>
+                      </th>
+                      <th style={{ width: "36%", padding: "12px 10px", textAlign: "left", borderBottom: "1px solid #ebebeb", background: "#fafafa" }}>
+                        <Text as="span" variant="bodySm" tone="subdued">Product</Text>
+                      </th>
+                      <th style={{ width: "34%", padding: "12px 10px", textAlign: "left", borderBottom: "1px solid #ebebeb", background: "#fafafa" }}>
+                        <Text as="span" variant="bodySm" tone="subdued">Current description</Text>
+                      </th>
+                      <th style={{ width: "170px", padding: "12px 16px", textAlign: "left", borderBottom: "1px solid #ebebeb", background: "#fafafa" }}>
+                        <Text as="span" variant="bodySm" tone="subdued">Status</Text>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((variant) => {
+                      const alreadyProcessed = variant.tags?.includes("DESC_AI");
+                      const preview = getDescriptionPreview(variant.descriptionHtml);
+
+                      return (
+                        <tr key={variant.id}>
+                          <td style={{ padding: "14px", borderBottom: "1px solid #f0f0f0", verticalAlign: "top" }}>
+                            <Checkbox
+                              label={`Select ${variant.title}`}
+                              labelHidden
+                              checked={isSelected(variant.id)}
+                              onChange={(checked) => handleSelectRow(variant, checked)}
+                            />
+                          </td>
+                          <td style={{ padding: "14px 10px", borderBottom: "1px solid #f0f0f0", verticalAlign: "top" }}>
+                            <Thumbnail
+                              source={variant.featuredMedia?.image?.url || ""}
+                              alt={variant.featuredMedia?.image?.altText || variant.title}
+                              size="medium"
+                            />
+                          </td>
+                          <td style={{ padding: "14px 10px", borderBottom: "1px solid #f0f0f0", verticalAlign: "top" }}>
+                            <BlockStack gap="150">
+                              <div
+                                style={{
+                                  maxWidth: "100%",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  display: "-webkit-box",
+                                  WebkitLineClamp: 2,
+                                  WebkitBoxOrient: "vertical",
+                                }}
+                              >
+                                <Text as="span" variant="bodyMd" fontWeight="semibold">
+                                  {variant.title}
+                                </Text>
+                              </div>
+                              <InlineStack gap="150" blockAlign="center" wrap>
+                                {variant.vendor && <Badge>{variant.vendor}</Badge>}
+                                {variant.productType && <Text as="span" variant="bodySm" tone="subdued">{variant.productType}</Text>}
+                              </InlineStack>
+                              <Text as="span" variant="bodySm" tone="subdued">
+                                ID {variant.id.split("/").pop()} · /{variant.handle}
+                              </Text>
+                            </BlockStack>
+                          </td>
+                          <td style={{ padding: "14px 10px", borderBottom: "1px solid #f0f0f0", verticalAlign: "top" }}>
+                            <button
+                              type="button"
+                              onClick={() => setActiveDesc(variant.descriptionHtml || "")}
+                              style={{
+                                width: "100%",
+                                border: "1px solid #e3e3e3",
+                                borderRadius: "8px",
+                                background: "#ffffff",
+                                padding: "10px 12px",
+                                textAlign: "left",
+                                cursor: "pointer",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  color: "#303030",
+                                  fontSize: "13px",
+                                  lineHeight: "18px",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  display: "-webkit-box",
+                                  WebkitLineClamp: 3,
+                                  WebkitBoxOrient: "vertical",
+                                }}
+                              >
+                                {preview}
+                              </span>
+                              <span style={{ color: "#6d7175", fontSize: "12px", marginTop: "6px", display: "block" }}>
+                                Click to preview
+                              </span>
+                            </button>
+                          </td>
+                          <td style={{ padding: "14px 16px", borderBottom: "1px solid #f0f0f0", verticalAlign: "top" }}>
+                            <BlockStack gap="200">
+                              <Badge tone={alreadyProcessed ? "success" : "attention"}>
+                                {alreadyProcessed ? "Updated" : "New"}
+                              </Badge>
+                              <InlineStack gap="100" wrap>
+                                {(variant.tags || []).slice(0, 2).map((tag) => (
+                                  <Badge key={tag}>{String(tag)}</Badge>
+                                ))}
+                                {(variant.tags || []).length > 2 && (
+                                  <Badge>{`+${variant.tags.length - 2}`}</Badge>
+                                )}
+                              </InlineStack>
+                            </BlockStack>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
 
               {/* Pagination */}
-              <Divider />
-              <Box padding="400">
-                <InlineStack align="center">
-                  <Pagination
-                    hasPrevious={cursorStack.length > 0}
-                    onPrevious={handlePreviousPage}
-                    hasNext={pageInfo?.hasNextPage || false}
-                    onNext={handleNextPage}
-                    label={`Page ${cursorStack.length + 1}`}
-                  />
-                </InlineStack>
-              </Box>
+              <div style={{ padding: "16px", borderTop: "1px solid #ebebeb", display: "flex", justifyContent: "center" }}>
+                <Pagination
+                  hasPrevious={cursorStack.length > 0}
+                  onPrevious={handlePreviousPage}
+                  hasNext={pageInfo?.hasNextPage || false}
+                  onNext={handleNextPage}
+                  label={`Page ${cursorStack.length + 1}`}
+                />
+              </div>
             </>
           )}
         </Card>
@@ -648,7 +774,7 @@ export default function DescriptionManager() {
               onClick={handleSubmit}
               loading={isSubmitting}
             >
-              Update {selected?.length} Descriptions
+              {`Update ${selected.length} Descriptions`}
             </Button>
           </Box>
         )}
@@ -659,7 +785,6 @@ export default function DescriptionManager() {
           open={true}
           onClose={() => setActiveDesc(null)}
           title="Product Description"
-          large
         >
           <Modal.Section>
             <div
