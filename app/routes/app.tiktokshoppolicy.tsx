@@ -1,14 +1,14 @@
 import { type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
-import DescriptionManager, { chunkArray } from "./app.descreptionupdated";
+import DescriptionManager from "./app.descreptionupdated";
 import { shopify } from "../shopify.server";
 import { sendPrompt } from "./functions/deepseekai/deepseekai";
 import { buildPrompt } from "./functions/propmtsSEO/propmts_descreption";
+import { productsupdated } from "./functions/query/updateprooductquery";
 
 export async function generateSeoHtml(
   updatedDescreptionAI: any,
   DEEP_SEEK_API_KEY: string
 ) {
-  const BATCH_SIZE = 1;
   const products = updatedDescreptionAI.map((product: any) => ({
     ...product,
     id: product.id || "",
@@ -23,34 +23,33 @@ export async function generateSeoHtml(
     min_amount: product.min_amount || "",
   }));
 
-  const chunks = chunkArray(products, BATCH_SIZE);
+  const data: any[] = [];
 
-  const results = await Promise.all(
-    chunks.map(async (chunk, idx) => {
-      const prompt = buildPrompt(chunk, "shortDescription");
-      const promptResults = await sendPrompt(prompt, DEEP_SEEK_API_KEY) as any[];
+  for (const [idx, product] of products.entries()) {
+    const prompt = buildPrompt(product, "shortDescription");
+    const promptResults = await sendPrompt(prompt, DEEP_SEEK_API_KEY) as any[];
 
-      if (!Array.isArray(promptResults)) {
-        throw new Error(`Chunk ${idx + 1} returned invalid TikTok description format`);
-      }
+    if (!Array.isArray(promptResults)) {
+      throw new Error(`Product ${idx + 1} returned invalid TikTok description format`);
+    }
 
-      return chunk.map((product) => {
-        const generated = promptResults.find((item) => item.id === product.id);
+    const generated = promptResults.find((item) => item.id === product.id);
 
-        return {
-          id: product.id,
-          title: generated?.title || product.title,
-          description: generated?.shortDescription || generated?.description || "",
-        };
-      });
-    })
-  );
+    data.push({
+      id: product.id,
+      title: product.title,
+      descriptionHtml: generated?.shortDescription || generated?.description || "",
+    });
+  }
 
-  return results.flat();
+  return {
+    total: data.length,
+    data,
+  };
 }
 
 export async function action({ context, request }: ActionFunctionArgs) {
-  await shopify(context).authenticate.admin(request);
+  const { admin } = await shopify(context).authenticate.admin(request);
 
   const formData = await request.formData();
   const rawProducts = formData.get("descreptionAI");
@@ -78,12 +77,70 @@ export async function action({ context, request }: ActionFunctionArgs) {
     return Response.json({ error: "Missing DEEP_SEEK_API_KEY" }, { status: 500 });
   }
 
-  const data = await generateSeoHtml(products, deepSeekApiKey);
+  const result = await generateSeoHtml(products, deepSeekApiKey);
+  const updatedData: any[] = [];
+
+  for (const product of result.data) {
+    const originalProduct = products.find((item: any) => item.id === product.id);
+
+    if (!originalProduct) {
+      return Response.json(
+        {
+          error: "Generated product does not match original selected product",
+          productId: product.id,
+          data: result.data,
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!product.descriptionHtml) {
+      return Response.json(
+        {
+          error: "AI returned empty TikTok Shop description",
+          productId: product.id,
+          data: result.data,
+        },
+        { status: 400 }
+      );
+    }
+
+    const response = await admin.graphql(productsupdated, {
+      variables: {
+        product: {
+          id: product.id,
+          title: product.title,
+          descriptionHtml: product.descriptionHtml,
+        },
+      },
+    });
+
+    const json = await response.json() as any;
+    const userErrors = json?.data?.productUpdate?.userErrors || [];
+
+    if (userErrors.length > 0) {
+      return Response.json(
+        {
+          error: "Failed to update TikTok Shop description",
+          productId: product.id,
+          userErrors,
+          data: result.data,
+        },
+        { status: 400 }
+      );
+    }
+
+    updatedData.push({
+      id: product.id,
+      title: product.title,
+      descriptionHtml: product.descriptionHtml,
+    });
+  }
 
   return Response.json({
     success: true,
-    total: data.length,
-    data,
+    total: updatedData.length,
+    data: updatedData,
   });
 }
 
@@ -182,7 +239,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const data = variants.map((product: any) => ({
     id: product.id,
     title: product.title,
-    description: product.descriptionHtml || "",
+    descriptionHtml: product.descriptionHtml || "",
   }));
 
   return Response.json({

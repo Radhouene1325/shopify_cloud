@@ -1,8 +1,10 @@
 import { type VARIBALES } from "@/routes/app.descreptionupdated";
 
 type OutputField = "shortDescription";
+type PromptInput = VARIBALES | VARIBALES[];
 
-export function buildPrompt(chunk: VARIBALES[], _outputField: OutputField = "shortDescription"): string {
+export function buildPrompt(input: PromptInput, _outputField: OutputField = "shortDescription"): string {
+  const products = Array.isArray(input) ? input : [input];
   const outputStructure =
     '{ "id": "original_product_id", "title": "PRODUCT_TITLE", "shortDescription": "TIKTOK_SAFE_SIMPLE_HTML" }';
 
@@ -49,7 +51,7 @@ STRUTTURA DELLA shortDescription:
 
 DATI DA ELABORARE:
 ${JSON.stringify(
-    chunk.map((product) => ({
+    products.map((product) => ({
       id: product.id,
       title: product.title,
       vendor: product.vendor,
@@ -69,7 +71,7 @@ ISTRUZIONI:
 7. Se la descrizione originale contiene link, contatti esterni, script, meta tag, recensioni, claim non verificati o parole vietate, non copiarli.
 8. Non produrre altri campi di descrizione in nessun caso.
 
-Restituisci un array JSON con ESATTAMENTE ${chunk.length} oggetti.
+Restituisci un array JSON con ESATTAMENTE ${products.length} oggetti.
 Restituisci SOLO JSON puro.
 Niente markdown.
 Nessuna spiegazione.`;
