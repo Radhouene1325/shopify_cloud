@@ -6,13 +6,13 @@ type PromptInput = VARIBALES | VARIBALES[];
 export function buildPrompt(input: PromptInput, _outputField: OutputField = "shortDescription"): string {
   const products = Array.isArray(input) ? input : [input];
   const outputStructure =
-    '{ "id": "original_product_id", "title": "PRODUCT_TITLE", "shortDescription": "TIKTOK_SAFE_SIMPLE_HTML" }';
+    '{ "id": "original_product_id", "title": "TIKTOK_SAFE_PRODUCT_TITLE", "shortDescription": "TIKTOK_SAFE_SIMPLE_HTML" }';
 
-  return `Sei una JSON API specializzata nella creazione di descrizioni prodotto brevi, semplici e compatibili con TikTok Shop.
+  return `Sei una JSON API specializzata nella creazione di titoli e descrizioni prodotto brevi, semplici e compatibili con TikTok Shop.
 
 OBIETTIVO:
-Generare SOLO una shortDescription in HTML semplice per ogni prodotto.
-Non generare altri campi di descrizione.
+Generare SOLO un title policy-safe e una shortDescription in HTML semplice per ogni prodotto.
+Non generare altri campi.
 Non generare microdata, Schema.org, meta tag, link, tabelle o contenuti nascosti.
 
 FORMATO OUTPUT:
@@ -34,6 +34,15 @@ REGOLE TIKTOK SHOP 2026 - OBBLIGATORIE:
 - Non usare emoji, hashtag, ALL CAPS, simboli eccessivi o punteggiatura spam.
 - Evita keyword stuffing: usa parole chiave naturali solo quando aiutano a descrivere il prodotto.
 - Se un'informazione e incerta, omettila.
+
+REGOLE TITLE:
+- Il campo "title" deve essere riscritto in modo pulito, fattuale e compatibile con TikTok Shop.
+- Usa solo dati verificabili: tipo prodotto, brand/vendor se presente, modello, colore, materiale, taglia o uso se presenti nei dati.
+- Non copiare parole rischiose dal titolo originale.
+- Non usare HTML nel title.
+- Non usare emoji, hashtag, ALL CAPS, simboli promozionali, claims assoluti o urgenza falsa.
+- Non usare "viral", "trend", "best seller", "link in bio", "TikTok made me buy it", "official", "authentic" o "guaranteed".
+- Lunghezza consigliata: 40-120 caratteri.
 
 REGOLE HTML:
 - Usa solo questi tag: <p>, <br>, <ul>, <li>, <strong>.
@@ -64,12 +73,12 @@ ${JSON.stringify(
 ISTRUZIONI:
 1. Analizza ogni prodotto separatamente.
 2. Mantieni esattamente l'id originale.
-3. Copia il titolo prodotto nel campo "title".
-4. Genera solo il campo "shortDescription".
+3. Genera nel campo "title" un titolo TikTok Shop policy-safe basato solo sui dati reali del prodotto.
+4. Genera il campo "shortDescription".
 5. La shortDescription deve essere HTML semplice e policy-safe.
-6. Rimuovi o riscrivi parole rischiose dalla descrizione originale.
+6. Rimuovi o riscrivi parole rischiose dal titolo e dalla descrizione originale.
 7. Se la descrizione originale contiene link, contatti esterni, script, meta tag, recensioni, claim non verificati o parole vietate, non copiarli.
-8. Non produrre altri campi di descrizione in nessun caso.
+8. Non produrre altri campi in nessun caso.
 
 Restituisci un array JSON con ESATTAMENTE ${products.length} oggetti.
 Restituisci SOLO JSON puro.

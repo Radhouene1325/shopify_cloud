@@ -5,6 +5,11 @@ import { sendPrompt } from "./functions/deepseekai/deepseekai";
 import { buildPrompt } from "./functions/propmtsSEO/propmts_descreption";
 import { productsupdated } from "./functions/query/updateprooductquery";
 
+const UPDATED_TAG = "DESC_AI";
+const HISTORY_NAMESPACE = "custom";
+const HISTORY_TITLE_KEY = "history_title";
+const HISTORY_DESCRIPTION_KEY = "history_description";
+
 export async function generateSeoHtml(
   updatedDescreptionAI: any,
   DEEP_SEEK_API_KEY: string
@@ -79,6 +84,24 @@ export async function action({ context, request }: ActionFunctionArgs) {
 
   const result = await generateSeoHtml(products, deepSeekApiKey);
   const updatedData: any[] = [];
+  const historyMetafieldsQuery = `#graphql
+    query GetTikTokHistoryMetafields($id: ID!) {
+      product(id: $id) {
+        id
+        title
+        descriptionHtml
+        tags
+        historyTitle: metafield(namespace: "custom", key: "history_title") {
+          id
+          value
+        }
+        historyDescription: metafield(namespace: "custom", key: "history_description") {
+          id
+          value
+        }
+      }
+    }
+  `;
 
   for (const product of result.data) {
     const originalProduct = products.find((item: any) => item.id === product.id);
@@ -105,13 +128,66 @@ export async function action({ context, request }: ActionFunctionArgs) {
       );
     }
 
+    const historyResponse = await admin.graphql(historyMetafieldsQuery, {
+      variables: { id: product.id },
+    });
+    const historyJson = await historyResponse.json() as any;
+    const shopifyProduct = historyJson?.data?.product;
+
+    if (!shopifyProduct) {
+      return Response.json(
+        {
+          error: "Product not found before TikTok Shop update",
+          productId: product.id,
+          data: result.data,
+        },
+        { status: 400 }
+      );
+    }
+
+    const metafields = [];
+    const oldTitle = shopifyProduct.title || originalProduct.title || "";
+    const oldDescriptionHtml =
+      shopifyProduct.descriptionHtml ||
+      originalProduct.descriptionHtml ||
+      originalProduct.descreption ||
+      "";
+
+    if (!shopifyProduct.historyTitle?.value) {
+      metafields.push({
+        namespace: HISTORY_NAMESPACE,
+        key: HISTORY_TITLE_KEY,
+        type: "single_line_text_field",
+        value: oldTitle,
+      });
+    }
+
+    if (!shopifyProduct.historyDescription?.value) {
+      metafields.push({
+        namespace: HISTORY_NAMESPACE,
+        key: HISTORY_DESCRIPTION_KEY,
+        type: "multi_line_text_field",
+        value: oldDescriptionHtml,
+      });
+    }
+
+    const tags = Array.from(
+      new Set([...(shopifyProduct.tags || originalProduct.tags || []), UPDATED_TAG].filter(Boolean))
+    );
+    const productUpdate: any = {
+      id: product.id,
+      title: product.title,
+      descriptionHtml: product.descriptionHtml,
+      tags,
+    };
+
+    if (metafields.length > 0) {
+      productUpdate.metafields = metafields;
+    }
+
     const response = await admin.graphql(productsupdated, {
       variables: {
-        product: {
-          id: product.id,
-          title: product.title,
-          descriptionHtml: product.descriptionHtml,
-        },
+        product: productUpdate,
       },
     });
 
@@ -134,6 +210,7 @@ export async function action({ context, request }: ActionFunctionArgs) {
       id: product.id,
       title: product.title,
       descriptionHtml: product.descriptionHtml,
+      tags,
     });
   }
 
@@ -151,7 +228,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
 
   const query = `#graphql
     query GetTikTokPolicyProducts($cursor: String) {
-      products(first: 15, after: $cursor, sortKey: PUBLISHED_AT, reverse: true) {
+      products(first: 15, after: $cursor, query: "tag_not:DESC_AI", sortKey: PUBLISHED_AT, reverse: true) {
         edges {
           node {
             id
