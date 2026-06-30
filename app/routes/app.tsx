@@ -27,6 +27,7 @@ const Menu = React.memo(() => (
         <Link to="/app/relatedproducts" prefetch="intent">related products</Link>
         <Link to="/app/service-worker" prefetch="intent">Service Worker Manager</Link>
         <Link to="/app/authentication" prefetch="intent">Tiktok authentication</Link>
+        <Link to="/app/tiktokshoppolicy" prefetch="intent">tiktokshoppolicy</Link>
       </NavMenu>
 ));
 export default function App() {
