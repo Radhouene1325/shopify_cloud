@@ -573,6 +573,15 @@ function DescriptionManager() {
           >
             <p>There are no products to display.</p>
           </EmptyState>
+               <div style={{ padding: "16px", borderTop: "1px solid #ebebeb", display: "flex", justifyContent: "center" }}>
+                <Pagination
+                  hasPrevious={cursorStack.length > 0}
+                  onPrevious={handlePreviousPage}
+                  hasNext={pageInfo?.hasNextPage || false}
+                  onNext={handleNextPage}
+                  label={`Page ${cursorStack.length + 1}`}
+                />
+              </div>
         </Card>
       </Page>
     );
