@@ -423,12 +423,23 @@ interface SelectedVariant {
   sku?: unknown[];
 }
 
+type ActionData = {
+  success?: boolean;
+  error?: string;
+  data?: Array<{
+    id: string;
+    title?: string;
+    descriptionHtml?: string;
+    tags?: string[];
+  }>;
+};
+
 function DescriptionManager() {
   const [activeDesc, setActiveDesc] = useState<string | null>(null);
   const initial = useLoaderData<LoaderData>();
   const fetcher = useFetcher<LoaderData>();
   const submit = useSubmit();
-  const actionData = useActionData<{ success?: boolean; error?: string }>();
+  const actionData = useActionData<ActionData>();
   const navigation = useNavigation();
   const { smDown } = useBreakpoints();
 
@@ -458,6 +469,11 @@ function DescriptionManager() {
     );
   }, [rows, selectedTagFilters]);
 
+  const eligibleRows = useMemo(
+    () => filteredRows.filter((variant) => !variant.tags?.includes(UPDATED_TAG)),
+    [filteredRows]
+  );
+
   useEffect(() => {
     if (!fetcher.data) return;
 
@@ -469,24 +485,58 @@ function DescriptionManager() {
   }, [fetcher.data]);
 
   useEffect(() => {
-    if (rows.length === 0) {
+    if (!actionData?.success || !Array.isArray(actionData.data)) return;
+
+    const updatedProductsById = new Map(
+      actionData.data.map((product) => [product.id, product])
+    );
+
+    setRows((prev) =>
+      prev.map((variant) => {
+        const updatedProduct = updatedProductsById.get(variant.id);
+        if (!updatedProduct) return variant;
+
+        return {
+          ...variant,
+          title: updatedProduct.title || variant.title,
+          descriptionHtml: updatedProduct.descriptionHtml || variant.descriptionHtml,
+          tags: updatedProduct.tags || Array.from(new Set([...(variant.tags || []), UPDATED_TAG])),
+        };
+      })
+    );
+
+    setSelected((prev) =>
+      prev.filter((item) => !updatedProductsById.has(item.id))
+    );
+  }, [actionData]);
+
+  useEffect(() => {
+    if (eligibleRows.length === 0) {
       setIsSelectAllIndeterminate(false);
       return;
     }
 
-    const allSelected = filteredRows.every((variant) =>
+    const allSelected = eligibleRows.every((variant) =>
       selected.some((item) => item.id === variant.id)
     );
-    const someSelected = filteredRows.some((variant) =>
+    const someSelected = eligibleRows.some((variant) =>
       selected.some((item) => item.id === variant.id)
     );
 
     setIsSelectAllIndeterminate(someSelected && !allSelected);
-  }, [filteredRows, selected]);
+  }, [eligibleRows, selected]);
 
   const isSelected = useCallback(
     (id: string) => selected.some((item) => item.id === id),
     [selected]
+  );
+
+  const selectedVisibleProducts = useMemo(
+    () =>
+      selected.filter((item) =>
+        eligibleRows.some((variant) => variant.id === item.id)
+      ),
+    [eligibleRows, selected]
   );
 
   const buildSelectedVariant = useCallback(
@@ -514,7 +564,7 @@ function DescriptionManager() {
     (checked: boolean) => {
       if (checked) {
         const nextSelected = new Map(selected.map((item) => [item.id, item]));
-        filteredRows.forEach((variant) => {
+        eligibleRows.forEach((variant) => {
           nextSelected.set(variant.id, buildSelectedVariant(variant));
         });
         setSelected(Array.from(nextSelected.values()));
@@ -522,14 +572,19 @@ function DescriptionManager() {
       }
 
       setSelected((prev) =>
-        prev.filter((item) => !filteredRows.some((variant) => variant.id === item.id))
+        prev.filter((item) => !eligibleRows.some((variant) => variant.id === item.id))
       );
     },
-    [buildSelectedVariant, filteredRows, selected]
+    [buildSelectedVariant, eligibleRows, selected]
   );
 
   const handleSelectRow = useCallback(
     (variant: Variant, checked: boolean) => {
+      if (variant.tags?.includes(UPDATED_TAG)) {
+        setSelected((prev) => prev.filter((item) => item.id !== variant.id));
+        return;
+      }
+
       if (checked) {
         setSelected((prev) => [...prev, buildSelectedVariant(variant)]);
         return;
@@ -541,12 +596,8 @@ function DescriptionManager() {
   );
 
   const handleAutoSelect = useCallback(() => {
-    setSelected(
-      filteredRows
-        .filter((variant) => !variant.tags?.includes(UPDATED_TAG))
-        .map(buildSelectedVariant)
-    );
-  }, [buildSelectedVariant, filteredRows]);
+    setSelected(eligibleRows.map(buildSelectedVariant));
+  }, [buildSelectedVariant, eligibleRows]);
 
   const handleTagFilterChange = useCallback((tag: string, checked: boolean) => {
     setSelectedTagFilters((prev) => {
@@ -576,25 +627,25 @@ function DescriptionManager() {
   }, [cursorStack, fetcher]);
 
   const handleSubmit = useCallback(() => {
-    if (selected.length === 0) return;
+    if (selectedVisibleProducts.length === 0) return;
 
     const formData = new FormData();
-    formData.append("descreptionAI", JSON.stringify(selected));
+    formData.append("descreptionAI", JSON.stringify(selectedVisibleProducts));
 
     submit(formData, {
       method: "post",
       encType: "application/x-www-form-urlencoded",
     });
-  }, [selected, submit]);
+  }, [selectedVisibleProducts, submit]);
 
   const processedCount = useMemo(
     () => filteredRows.filter((variant) => variant.tags?.includes(UPDATED_TAG)).length,
     [filteredRows]
   );
-  const pendingCount = Math.max(filteredRows.length - processedCount, 0);
+  const pendingCount = eligibleRows.length;
   const selectAllChecked: boolean | "indeterminate" = isSelectAllIndeterminate
     ? "indeterminate"
-    : filteredRows.length > 0 && filteredRows.every((variant) => isSelected(variant.id));
+    : eligibleRows.length > 0 && eligibleRows.every((variant) => isSelected(variant.id));
 
   const getDescriptionPreview = useCallback((html = "") => {
     const text = html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
@@ -628,13 +679,13 @@ function DescriptionManager() {
   return (
     <Page
       title="Description Manager"
-      subtitle={`${selected.length} products selected for update`}
+      subtitle={`${selectedVisibleProducts.length} visible products selected for update`}
       primaryAction={
         <Button
           variant="primary"
           onClick={handleSubmit}
           loading={isSubmitting}
-          disabled={selected.length === 0}
+          disabled={selectedVisibleProducts.length === 0}
         >
           Update Descriptions
         </Button>
@@ -676,7 +727,7 @@ function DescriptionManager() {
                 { label: "Total", value: rows.length },
                 { label: "Visible", value: filteredRows.length },
                 { label: "To update", value: pendingCount },
-                { label: "Selected", value: selected.length },
+                { label: "Selected", value: selectedVisibleProducts.length },
                 { label: "Done", value: processedCount },
               ].map((stat) => (
                 <div
@@ -810,7 +861,7 @@ function DescriptionManager() {
                           labelHidden
                           checked={selectAllChecked}
                           onChange={handleSelectAll}
-                          disabled={filteredRows.length === 0}
+                          disabled={eligibleRows.length === 0}
                         />
                       </th>
                       <th style={{ width: "82px", padding: "12px 10px", textAlign: "left", borderBottom: "1px solid #ebebeb", background: "#fafafa" }}>
@@ -871,8 +922,9 @@ function DescriptionManager() {
                             <Checkbox
                               label={`Select ${variant.title}`}
                               labelHidden
-                              checked={isSelected(variant.id)}
+                              checked={!alreadyProcessed && isSelected(variant.id)}
                               onChange={(checked) => handleSelectRow(variant, checked)}
+                              disabled={alreadyProcessed}
                             />
                           </td>
                           <td style={{ padding: "14px 10px", borderBottom: "1px solid #f0f0f0", verticalAlign: "top" }}>
@@ -979,23 +1031,24 @@ function DescriptionManager() {
           )}
         </Card>
 
-        {process.env.NODE_ENV === "development" && selected.length > 0 && (
+        {process.env.NODE_ENV === "development" && selectedVisibleProducts.length > 0 && (
           <Card>
             <Box padding="400">
               <Text as="h3" variant="headingSm">
-                Debug: Selected Data Structure
+                Debug: Selected Visible Data Structure
               </Text>
               <Box padding="200" background="bg-surface-secondary" borderRadius="200">
                 <pre style={{ fontSize: "11px", overflow: "auto" }}>
-                  {JSON.stringify(selected.slice(0, 2), null, 2)}
-                  {selected.length > 2 && `\n... and ${selected.length - 2} more`}
+                  {JSON.stringify(selectedVisibleProducts.slice(0, 2), null, 2)}
+                  {selectedVisibleProducts.length > 2 &&
+                    `\n... and ${selectedVisibleProducts.length - 2} more`}
                 </pre>
               </Box>
             </Box>
           </Card>
         )}
 
-        {smDown && selected.length > 0 && (
+        {smDown && selectedVisibleProducts.length > 0 && (
           <Box
             position="fixed"
             insetBlockEnd="0"
@@ -1008,7 +1061,7 @@ function DescriptionManager() {
             zIndex="100"
           >
             <Button variant="primary" fullWidth onClick={handleSubmit} loading={isSubmitting}>
-              {`Update ${selected.length} Descriptions`}
+              {`Update ${selectedVisibleProducts.length} Descriptions`}
             </Button>
           </Box>
         )}
