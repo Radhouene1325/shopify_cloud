@@ -261,7 +261,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
 
   const query = `#graphql
     query GetTikTokPolicyProducts($cursor: String) {
-      products(first: 15, after: $cursor, query: "tag:VENTOLA", sortKey: PUBLISHED_AT, reverse: true) {
+      products(first: 15, after: $cursor, query: "tag:VENTOLA AND tag_not:DESC_AI", sortKey: PUBLISHED_AT, reverse: true) {
         edges {
           node {
             id
