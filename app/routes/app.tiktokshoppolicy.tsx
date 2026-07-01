@@ -436,10 +436,27 @@ function DescriptionManager() {
   const [pageInfo, setPageInfo] = useState<PageInfo | null>(initial?.pageInfo || null);
   const [cursorStack, setCursorStack] = useState<string[]>([]);
   const [selected, setSelected] = useState<SelectedVariant[]>([]);
+  const [selectedTagFilters, setSelectedTagFilters] = useState<string[]>([]);
   const [isSelectAllIndeterminate, setIsSelectAllIndeterminate] = useState(false);
 
   const isLoading = fetcher.state === "loading";
   const isSubmitting = navigation.state === "submitting";
+
+  const availableTags = useMemo(
+    () =>
+      Array.from(
+        new Set(rows.flatMap((variant) => variant.tags || []).filter(Boolean))
+      ).sort((a, b) => a.localeCompare(b)),
+    [rows]
+  );
+
+  const filteredRows = useMemo(() => {
+    if (selectedTagFilters.length === 0) return rows;
+
+    return rows.filter((variant) =>
+      selectedTagFilters.every((tag) => variant.tags?.includes(tag))
+    );
+  }, [rows, selectedTagFilters]);
 
   useEffect(() => {
     if (!fetcher.data) return;
@@ -457,15 +474,15 @@ function DescriptionManager() {
       return;
     }
 
-    const allSelected = rows.every((variant) =>
+    const allSelected = filteredRows.every((variant) =>
       selected.some((item) => item.id === variant.id)
     );
-    const someSelected = rows.some((variant) =>
+    const someSelected = filteredRows.some((variant) =>
       selected.some((item) => item.id === variant.id)
     );
 
     setIsSelectAllIndeterminate(someSelected && !allSelected);
-  }, [rows, selected]);
+  }, [filteredRows, selected]);
 
   const isSelected = useCallback(
     (id: string) => selected.some((item) => item.id === id),
@@ -495,9 +512,20 @@ function DescriptionManager() {
 
   const handleSelectAll = useCallback(
     (checked: boolean) => {
-      setSelected(checked ? rows.map(buildSelectedVariant) : []);
+      if (checked) {
+        const nextSelected = new Map(selected.map((item) => [item.id, item]));
+        filteredRows.forEach((variant) => {
+          nextSelected.set(variant.id, buildSelectedVariant(variant));
+        });
+        setSelected(Array.from(nextSelected.values()));
+        return;
+      }
+
+      setSelected((prev) =>
+        prev.filter((item) => !filteredRows.some((variant) => variant.id === item.id))
+      );
     },
-    [buildSelectedVariant, rows]
+    [buildSelectedVariant, filteredRows, selected]
   );
 
   const handleSelectRow = useCallback(
@@ -514,11 +542,21 @@ function DescriptionManager() {
 
   const handleAutoSelect = useCallback(() => {
     setSelected(
-      rows
+      filteredRows
         .filter((variant) => !variant.tags?.includes(UPDATED_TAG))
         .map(buildSelectedVariant)
     );
-  }, [buildSelectedVariant, rows]);
+  }, [buildSelectedVariant, filteredRows]);
+
+  const handleTagFilterChange = useCallback((tag: string, checked: boolean) => {
+    setSelectedTagFilters((prev) => {
+      if (checked) {
+        return prev.includes(tag) ? prev : [...prev, tag].sort((a, b) => a.localeCompare(b));
+      }
+
+      return prev.filter((item) => item !== tag);
+    });
+  }, []);
 
   const handleNextPage = useCallback(() => {
     if (!pageInfo?.endCursor) return;
@@ -550,13 +588,13 @@ function DescriptionManager() {
   }, [selected, submit]);
 
   const processedCount = useMemo(
-    () => rows.filter((variant) => variant.tags?.includes(UPDATED_TAG)).length,
-    [rows]
+    () => filteredRows.filter((variant) => variant.tags?.includes(UPDATED_TAG)).length,
+    [filteredRows]
   );
-  const pendingCount = Math.max(rows.length - processedCount, 0);
+  const pendingCount = Math.max(filteredRows.length - processedCount, 0);
   const selectAllChecked: boolean | "indeterminate" = isSelectAllIndeterminate
     ? "indeterminate"
-    : rows.length > 0 && rows.every((variant) => isSelected(variant.id));
+    : filteredRows.length > 0 && filteredRows.every((variant) => isSelected(variant.id));
 
   const getDescriptionPreview = useCallback((html = "") => {
     const text = html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
@@ -636,6 +674,7 @@ function DescriptionManager() {
             <InlineStack gap="300" blockAlign="center" wrap>
               {[
                 { label: "Total", value: rows.length },
+                { label: "Visible", value: filteredRows.length },
                 { label: "To update", value: pendingCount },
                 { label: "Selected", value: selected.length },
                 { label: "Done", value: processedCount },
@@ -666,6 +705,53 @@ function DescriptionManager() {
               </Tooltip>
             </InlineStack>
           </InlineStack>
+        </Card>
+
+        <Card padding="400">
+          <BlockStack gap="300">
+            <InlineStack align="space-between" blockAlign="center" gap="300" wrap>
+              <BlockStack gap="100">
+                <Text as="h3" variant="headingSm">
+                  Tag filters
+                </Text>
+                <Text as="p" variant="bodySm" tone="subdued">
+                  Select one or more tags to show products that contain all selected tags.
+                </Text>
+              </BlockStack>
+
+              {selectedTagFilters.length > 0 && (
+                <Button onClick={() => setSelectedTagFilters([])}>
+                  Clear tag filters
+                </Button>
+              )}
+            </InlineStack>
+
+            {availableTags.length > 0 ? (
+              <InlineStack gap="200" wrap>
+                {availableTags.map((tag) => (
+                  <div
+                    key={tag}
+                    style={{
+                      padding: "6px 10px",
+                      border: "1px solid #e3e3e3",
+                      borderRadius: "8px",
+                      background: selectedTagFilters.includes(tag) ? "#f1f8ff" : "#ffffff",
+                    }}
+                  >
+                    <Checkbox
+                      label={tag}
+                      checked={selectedTagFilters.includes(tag)}
+                      onChange={(checked) => handleTagFilterChange(tag, checked)}
+                    />
+                  </div>
+                ))}
+              </InlineStack>
+            ) : (
+              <Text as="p" variant="bodySm" tone="subdued">
+                No tags found on this page.
+              </Text>
+            )}
+          </BlockStack>
         </Card>
 
         <Card padding="0">
@@ -724,7 +810,7 @@ function DescriptionManager() {
                           labelHidden
                           checked={selectAllChecked}
                           onChange={handleSelectAll}
-                          disabled={rows.length === 0}
+                          disabled={filteredRows.length === 0}
                         />
                       </th>
                       <th style={{ width: "82px", padding: "12px 10px", textAlign: "left", borderBottom: "1px solid #ebebeb", background: "#fafafa" }}>
@@ -750,7 +836,32 @@ function DescriptionManager() {
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.map((variant) => {
+                    {filteredRows.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={5}
+                          style={{
+                            padding: "40px 20px",
+                            borderBottom: "1px solid #f0f0f0",
+                            textAlign: "center",
+                          }}
+                        >
+                          <BlockStack gap="200" inlineAlign="center">
+                            <Text as="p" variant="headingSm">
+                              No products match the selected tags
+                            </Text>
+                            <Text as="p" variant="bodySm" tone="subdued">
+                              Clear tag filters or choose a different tag combination.
+                            </Text>
+                            {selectedTagFilters.length > 0 && (
+                              <Button onClick={() => setSelectedTagFilters([])}>
+                                Clear tag filters
+                              </Button>
+                            )}
+                          </BlockStack>
+                        </td>
+                      </tr>
+                    ) : filteredRows.map((variant) => {
                       const alreadyProcessed = variant.tags?.includes(UPDATED_TAG);
                       const preview = getDescriptionPreview(variant.descriptionHtml);
 
