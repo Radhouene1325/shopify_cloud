@@ -227,17 +227,17 @@ export async function action({ context, request }: ActionFunctionArgs) {
     const json = await response.json() as any;
     const userErrors = json?.data?.productUpdate?.userErrors || [];
 
-    if (userErrors.length > 0) {
-      return Response.json(
-        {
-          error: "Failed to update TikTok Shop description",
-          productId: product.id,
-          userErrors,
-          data: result.data,
-        },
-        { status: 400 }
-      );
-    }
+    // if (userErrors.length > 0) {
+    //   return Response.json(
+    //     {
+    //       error: "Failed to update TikTok Shop description",
+    //       productId: product.id,
+    //       userErrors,
+    //       data: result.data,
+    //     },
+    //     { status: 400 }
+    //   );
+    // }
 
     updatedData.push({
       id: product.id,
