@@ -36,6 +36,29 @@ const HISTORY_NAMESPACE = "custom";
 const HISTORY_TITLE_KEY = "history_title";
 const HISTORY_DESCRIPTION_KEY = "history_description";
 
+function uniqueTags(tags: string[]) {
+  return Array.from(new Set(tags.map((tag) => tag.trim()).filter(Boolean))).sort((a, b) =>
+    a.localeCompare(b)
+  );
+}
+
+function escapeShopifySearchValue(value: string) {
+  const escaped = value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+  return /[\s:()]/.test(escaped) ? `'${escaped}'` : escaped;
+}
+
+function buildProductSearchQuery(selectedTags: string[]) {
+  const clauses = [`tag_not:${escapeShopifySearchValue(UPDATED_TAG)}`];
+
+  selectedTags
+    .filter((tag) => tag !== UPDATED_TAG)
+    .forEach((tag) => {
+      clauses.push(`tag:${escapeShopifySearchValue(tag)}`);
+    });
+
+  return clauses.join(" ");
+}
+
 export async function generateSeoHtml(
   updatedDescreptionAI: any,
   DEEP_SEEK_API_KEY: string
@@ -258,10 +281,14 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const { admin } = await shopify(context).authenticate.admin(request);
   const url = new URL(request.url);
   const cursor = url.searchParams.get("cursor");
+  const selectedTags = uniqueTags(url.searchParams.getAll("tag")).filter(
+    (tag) => tag !== UPDATED_TAG
+  );
+  const productQuery = buildProductSearchQuery(selectedTags);
 
   const query = `#graphql
-    query GetTikTokPolicyProducts($cursor: String) {
-      products(first: 15, after: $cursor, query: "tag_not:DESC_AI", sortKey: PUBLISHED_AT, reverse: true) {
+    query GetTikTokPolicyProducts($cursor: String, $productQuery: String!) {
+      products(first: 15, after: $cursor, query: $productQuery, sortKey: PUBLISHED_AT, reverse: true) {
         edges {
           node {
             id
@@ -334,7 +361,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     }
   `;
 
-  const response = await admin.graphql(query, { variables: { cursor } });
+  const response = await admin.graphql(query, { variables: { cursor, productQuery } });
   const json = (await response.json()) as {
     data?: {
       products?: {
@@ -356,6 +383,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     variants,
     data,
     pageInfo,
+    selectedTags,
   });
 };
 
@@ -403,6 +431,7 @@ interface PageInfo {
 interface LoaderData {
   variants: Variant[];
   pageInfo: PageInfo;
+  selectedTags?: string[];
 }
 
 interface SelectedVariant {
@@ -447,7 +476,9 @@ function DescriptionManager() {
   const [pageInfo, setPageInfo] = useState<PageInfo | null>(initial?.pageInfo || null);
   const [cursorStack, setCursorStack] = useState<string[]>([]);
   const [selected, setSelected] = useState<SelectedVariant[]>([]);
-  const [selectedTagFilters, setSelectedTagFilters] = useState<string[]>([]);
+  const [selectedTagFilters, setSelectedTagFilters] = useState<string[]>(
+    initial?.selectedTags || []
+  );
   const [isSelectAllIndeterminate, setIsSelectAllIndeterminate] = useState(false);
 
   const isLoading = fetcher.state === "loading";
@@ -456,18 +487,16 @@ function DescriptionManager() {
   const availableTags = useMemo(
     () =>
       Array.from(
-        new Set(rows.flatMap((variant) => variant.tags || []).filter(Boolean))
+        new Set(
+          rows
+            .flatMap((variant) => variant.tags || [])
+            .filter((tag) => Boolean(tag) && tag !== UPDATED_TAG)
+        )
       ).sort((a, b) => a.localeCompare(b)),
     [rows]
   );
 
-  const filteredRows = useMemo(() => {
-    if (selectedTagFilters.length === 0) return rows;
-
-    return rows.filter((variant) =>
-      selectedTagFilters.every((tag) => variant.tags?.includes(tag))
-    );
-  }, [rows, selectedTagFilters]);
+  const filteredRows = rows;
 
   const eligibleRows = useMemo(
     () => filteredRows.filter((variant) => !variant.tags?.includes(UPDATED_TAG)),
@@ -479,6 +508,7 @@ function DescriptionManager() {
 
     setRows(fetcher.data.variants);
     setPageInfo(fetcher.data.pageInfo);
+    setSelectedTagFilters(fetcher.data.selectedTags || []);
     setSelected((prev) =>
       prev.filter((item) => fetcher.data?.variants.some((variant) => variant.id === item.id))
     );
@@ -599,22 +629,53 @@ function DescriptionManager() {
     setSelected(eligibleRows.map(buildSelectedVariant));
   }, [buildSelectedVariant, eligibleRows]);
 
-  const handleTagFilterChange = useCallback((tag: string, checked: boolean) => {
-    setSelectedTagFilters((prev) => {
-      if (checked) {
-        return prev.includes(tag) ? prev : [...prev, tag].sort((a, b) => a.localeCompare(b));
-      }
+  const buildLoaderPath = useCallback((cursor?: string | null, tags = selectedTagFilters) => {
+    const params = new URLSearchParams();
 
-      return prev.filter((item) => item !== tag);
+    if (cursor) {
+      params.set("cursor", cursor);
+    }
+
+    tags.forEach((tag) => {
+      params.append("tag", tag);
     });
-  }, []);
+
+    const search = params.toString();
+    return search ? `?${search}` : "?";
+  }, [selectedTagFilters]);
+
+  const loadProducts = useCallback((path: string) => {
+    if (typeof window !== "undefined") {
+      window.history.replaceState(null, "", path);
+    }
+
+    fetcher.load(path);
+  }, [fetcher]);
+
+  const handleClearTagFilters = useCallback(() => {
+    setSelectedTagFilters([]);
+    setCursorStack([]);
+    setSelected([]);
+    loadProducts(buildLoaderPath(null, []));
+  }, [buildLoaderPath, loadProducts]);
+
+  const handleTagFilterChange = useCallback((tag: string, checked: boolean) => {
+    const nextTags = checked
+      ? uniqueTags([...selectedTagFilters, tag])
+      : selectedTagFilters.filter((item) => item !== tag);
+
+    setSelectedTagFilters(nextTags);
+    setCursorStack([]);
+    setSelected([]);
+    loadProducts(buildLoaderPath(null, nextTags));
+  }, [buildLoaderPath, loadProducts, selectedTagFilters]);
 
   const handleNextPage = useCallback(() => {
     if (!pageInfo?.endCursor) return;
 
     setCursorStack((prev) => [...prev, pageInfo.endCursor]);
-    fetcher.load(`?cursor=${pageInfo.endCursor}`);
-  }, [fetcher, pageInfo]);
+    loadProducts(buildLoaderPath(pageInfo.endCursor));
+  }, [buildLoaderPath, loadProducts, pageInfo]);
 
   const handlePreviousPage = useCallback(() => {
     if (cursorStack.length === 0) return;
@@ -623,8 +684,8 @@ function DescriptionManager() {
     const prevCursor = newStack[newStack.length - 1];
 
     setCursorStack(newStack);
-    fetcher.load(prevCursor ? `?cursor=${prevCursor}` : "?cursor=");
-  }, [cursorStack, fetcher]);
+    loadProducts(buildLoaderPath(prevCursor || null));
+  }, [buildLoaderPath, cursorStack, loadProducts]);
 
   const handleSubmit = useCallback(() => {
     if (selectedVisibleProducts.length === 0) return;
@@ -693,7 +754,7 @@ function DescriptionManager() {
       secondaryActions={[
         {
           content: "Refresh",
-          onAction: () => fetcher.load(window.location.search),
+          onAction: () => loadProducts(window.location.search || "?"),
           loading: isLoading,
         },
       ]}
@@ -771,7 +832,7 @@ function DescriptionManager() {
               </BlockStack>
 
               {selectedTagFilters.length > 0 && (
-                <Button onClick={() => setSelectedTagFilters([])}>
+                <Button onClick={handleClearTagFilters}>
                   Clear tag filters
                 </Button>
               )}
@@ -905,7 +966,7 @@ function DescriptionManager() {
                               Clear tag filters or choose a different tag combination.
                             </Text>
                             {selectedTagFilters.length > 0 && (
-                              <Button onClick={() => setSelectedTagFilters([])}>
+                              <Button onClick={handleClearTagFilters}>
                                 Clear tag filters
                               </Button>
                             )}
