@@ -1,5 +1,6 @@
 
 
+import JSON5 from "json5";
 
 import { type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
 import { useActionData, Form, useNavigation, useLoaderData, useFetcher, useSubmit } from "@remix-run/react";
@@ -11,6 +12,7 @@ import * as cheerio from "cheerio";
 import { productsupdated } from "./functions/query/updateprooductquery";
 import { franc } from 'franc'
 import { detect, detectAll } from 'tinyld';
+import { parserData } from "@/parser/parser_data";
 //commenter fonction translateHtmlDeepL
 // app/utils/translate.server.js
 // async function translateHtmlDeepL(html, DEEPL_API_KEY) {
@@ -121,8 +123,8 @@ Rules:
 
   const data = await response.json();
 
-  //return JSON.parse(data.message.content);
-  console.log('data is here ', JSON.parse(data.message.content)) 
+  return JSON.parse(data.message.content);
+
 }
 
 
@@ -155,8 +157,19 @@ export async function action({ context, request }: ActionFunctionArgs) {
     }
     if (!translatedText) continue;
     // console.log("Translated Text:", translatedText);
-
-
+    let res = translatedText.description
+    if (typeof res === 'string') {
+      // Remove markdown code fences (```json ... ``` or ``` ... ```)
+      res = res.trim();
+      res = res.replace(/^```(?:json)?\s*/i, ''); // Remove opening fence
+      res = res.replace(/\s*```$/i, ''); // Remove closing fence
+      res = res.trim();
+    }
+    let parsed: any = null;
+    const resultdescription = parserData(res, parsed, JSON5)
+    parsed = resultdescription
+console.log(parsed)
+    return
     updateProducts.push({
       id: translatedText.id,
       title: translatedText.title,
@@ -607,7 +620,7 @@ export default function DescriptionManager() {
         key={`checkbox-${variant.id}`}
         label={`Select ${variant.title}`}
         labelHidden
-        checked={isSelected(variant.id)} 
+        checked={isSelected(variant.id)}
         onChange={(checked) => handleSelectRow(variant, checked)}
       />,
 
