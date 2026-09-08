@@ -107,8 +107,7 @@ async function translateProduct(
   const verifiedTitle = detect(title);
   const verifiedDescription = detect(descriptionText);
 
-  console.log("title lang:", verifiedTitle);
-  console.log("description lang:", verifiedDescription);
+ 
 
   // If already English, skip
   if (
@@ -118,10 +117,7 @@ async function translateProduct(
     return null;
   }
 
-  // Show pure HTML in terminal
-  console.log("----- HTML SENT TO OLLAMA -----");
-  console.log(cleanDescription);
-  console.log("--------------------------------");
+ 
 
   const response = await fetch("https://ollama.com/api/chat", {
     method: "POST",
