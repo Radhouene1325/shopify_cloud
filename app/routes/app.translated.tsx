@@ -226,7 +226,7 @@ export async function action({ context, request }: ActionFunctionArgs) {
     if (!translatedText) continue;
     // console.log("Translated Text:", translatedText);
 
-    return 
+     
 
     updateProducts.push({
       id: translatedText.id,
