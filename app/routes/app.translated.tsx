@@ -82,7 +82,7 @@ interface OllamaChatResponse {
 
 async function translateProduct(html, apikey) {
   const verifiedTitle = detect(html.title);
-  const verifiedDescription = detect(html.description);
+  const verifiedDescription = detect(html.descreption);
   if (verifiedTitle === 'en' && verifiedDescription === 'en') return;
   const response = await fetch("https://ollama.com/api/chat", {
     method: "POST",
@@ -99,7 +99,7 @@ async function translateProduct(html, apikey) {
 You are a professional e-commerce translator.
 Translate from Italian to English.
 Rules:
-- Translate both ${html.title} and ${html.description}.
+- Translate both ${html.title} and ${html.descreption}.
 - Return ONLY valid JSON.
 `
         },
@@ -107,7 +107,7 @@ Rules:
           role: "user",
           content: JSON.stringify({
             title: html.title,
-            description: html.description
+            description: html.descreption
           })
         }
       ],
