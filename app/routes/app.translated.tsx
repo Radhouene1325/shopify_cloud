@@ -11,57 +11,120 @@ import * as cheerio from "cheerio";
 import { productsupdated } from "./functions/query/updateprooductquery";
 import { franc } from 'franc'
 import { detect, detectAll } from 'tinyld';
-
+//commenter fonction translateHtmlDeepL
 // app/utils/translate.server.js
-async function translateHtmlDeepL(html, DEEPL_API_KEY) {
-  const authKey = DEEPL_API_KEY;
+// async function translateHtmlDeepL(html, DEEPL_API_KEY) {
+//   const authKey = DEEPL_API_KEY;
 
-  // Free tier uses api-free.deepl.com, paid uses api.deepl.com
-  const baseUrl = authKey?.endsWith(':fx')
-    ? 'https://api-free.deepl.com/v2/translate'
-    : 'https://api.deepl.com/v2/translate';
+//   // Free tier uses api-free.deepl.com, paid uses api.deepl.com
+//   const baseUrl = authKey?.endsWith(':fx')
+//     ? 'https://api-free.deepl.com/v2/translate'
+//     : 'https://api.deepl.com/v2/translate';
 
-  const params = new URLSearchParams();
+//   const params = new URLSearchParams();
 
-  const lang1 = detect(html.title)
-  console.log('lang is her1 ', lang1)
-  const lang2 = detect(html.descreption)
-  console.log('lang is her2 ', lang2)
+//   const lang1 = detect(html.title)
+//   console.log('lang is her1 ', lang1)
+//   const lang2 = detect(html.descreption)
+//   console.log('lang is her2 ', lang2)
 
-  if (lang2 === 'it') return
-  console.log('is oky verivied ok')
-  // params.append('text', html.title);
-  params.append('text', html.descreption);
+//   if (lang2 === 'it') return
+//   console.log('is oky verivied ok')
+//   // params.append('text', html.title);
+//   params.append('text', html.descreption);
 
-  params.append('target_lang', 'IT');
-  // params.append('source_lang', 'EN');
-  params.append('tag_handling', 'html');
-  params.append('ignore_tags', 'code,img');
+//   params.append('target_lang', 'IT');
+//   // params.append('source_lang', 'EN');
+//   params.append('tag_handling', 'html');
+//   params.append('ignore_tags', 'code,img');
 
-  const response = await fetch(baseUrl, {
-    method: 'POST',
+//   const response = await fetch(baseUrl, {
+//     method: 'POST',
+//     headers: {
+//       'Authorization': `DeepL-Auth-Key ${authKey}`,
+//       'Content-Type': 'application/x-www-form-urlencoded',
+//     },
+//     body: params
+//   });
+
+//   if (!response.ok) {
+//     const error = await response.text();
+//     throw new Error(`DeepL Error: ${error}`);
+//   }
+
+//   const data = await response.json();
+//   // console.log('data is her ', data.translations)
+//   return {
+//     id: html.id,
+//     translatedText: data?.translations[0]?.text,
+//     // translatedTitle: data?.translations[1]?.text,
+
+
+//   };
+// }
+// title 
+interface TranslateInput {
+  id: string;
+  title?: string;
+  descreption?: string;
+}
+
+interface TranslateResult {
+  id: string;
+  title: string;
+  description: string;
+}
+
+interface OllamaChatResponse {
+  message?: { content?: string };
+  error?: string;
+}
+
+async function translateProduct(html, apikey) {
+  const verifiedTitle = detect(html.title);
+  const verifiedDescription = detect(html.description);
+  if (verifiedTitle === 'en' && verifiedDescription === 'en') return;
+  const response = await fetch("https://ollama.com/api/chat", {
+    method: "POST",
     headers: {
-      'Authorization': `DeepL-Auth-Key ${authKey}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
+      "Authorization": `Bearer ${apikey}`,
+      "Content-Type": "application/json"
     },
-    body: params
+    body: JSON.stringify({
+      model: "gpt-oss:120b",
+      messages: [
+        {
+          role: "system",
+          content: `
+You are a professional e-commerce translator.
+Translate from Italian to English.
+Rules:
+- Translate both ${html.title} and ${html.description}.
+- Return ONLY valid JSON.
+`
+        },
+        {
+          role: "user",
+          content: JSON.stringify({
+            title: html.title,
+            description: html.description
+          })
+        }
+      ],
+      stream: false,
+      format: "json"
+    })
   });
-
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`DeepL Error: ${error}`);
+    throw new Error(`Ollama API error: ${response.status}`);
   }
 
   const data = await response.json();
-  // console.log('data is her ', data.translations)
-  return {
-    id: html.id,
-    translatedText: data?.translations[0]?.text,
-    // translatedTitle: data?.translations[1]?.text,
 
-
-  };
+  //return JSON.parse(data.message.content);
+  console.log('data is here ', JSON.parse(data.message.content)) 
 }
+
 
 
 export async function action({ context, request }: ActionFunctionArgs) {
@@ -74,7 +137,7 @@ export async function action({ context, request }: ActionFunctionArgs) {
     console.error("Invalid or missing 'descreptionAI' data");
     return Response.json({ error: "Invalid or missing 'descreptionAI' data" }, { status: 400 });
   }
-  let apikey = context.cloudflare.env.DEEPL_API_KEY
+  let apikey = context.cloudflare.env.OLLAMA_API_KEY
   let updateProducts = []
   // console.log('updatedDescreptionAI is her ', updatedDescreptionAI)
   for (const OLD_DESC of updatedDescreptionAI) {
@@ -84,13 +147,20 @@ export async function action({ context, request }: ActionFunctionArgs) {
       title: OLD_DESC.title,
 
     }
-    const translatedText = await translateHtmlDeepL(data, apikey);
+    let translatedText: TranslateResult | null = null;
+    try {
+      translatedText = await translateProduct(data, apikey);
+    } catch (err) {
+      console.error(`Translation failed for product ${OLD_DESC.id}`, err);
+    }
+    if (!translatedText) continue;
     // console.log("Translated Text:", translatedText);
 
 
     updateProducts.push({
-      id: translatedText?.id,
-      descriptionHtml: translatedText?.translatedText,
+      id: translatedText.id,
+      title: translatedText.title,
+      descriptionHtml: translatedText.description,
       // tags: mergedTags,
       // category: SEO.category?.id,
       // handle: OLD_DESC.handle || OLD_DESC.handel,

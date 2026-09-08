@@ -7,6 +7,8 @@ type Env = {
   DATABASE_URL?: string;
   SCOPES?: string;
   GEMINI_API_KEY?:string
+  DEEPL_API_KEY?: string;
+  OLLAMA_API_KEY?: string;
 }
 
 type GetLoadContextArgs = {
