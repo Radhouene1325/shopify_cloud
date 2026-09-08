@@ -168,7 +168,17 @@ export async function action({ context, request }: ActionFunctionArgs) {
     let parsed: any = null;
     const resultdescription = parserData(res, parsed, JSON5)
     parsed = resultdescription
-console.log(parsed)
+    console.log(parsed)
+    if (Array.isArray(parsed)) {
+      // console.log(`Successfully parsed ${parsed.length} items`);
+      return parsed;
+    } else if (parsed && typeof parsed === 'object') {
+      // If it's an object, wrap it in an array
+      // console.log('Wrapped single object in array');
+      return [parsed];
+    } else {
+      throw new Error('Parsed result is not a valid object or array');
+    }
     return
     updateProducts.push({
       id: translatedText.id,
