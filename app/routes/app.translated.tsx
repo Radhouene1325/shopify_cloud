@@ -225,7 +225,7 @@ export async function action({ context, request }: ActionFunctionArgs) {
     }
     console.log("translated is oky ",translatedText)
 
-    console.log("translated is oky ",translatedText)
+    
 
     if (!translatedText) continue;
     // console.log("Translated Text:", translatedText);
