@@ -219,7 +219,7 @@ export async function action({ context, request }: ActionFunctionArgs) {
     } catch (err) {
       console.error(`Translation failed for product ${OLD_DESC.id}`, err);
     }
-    console.log("translated is oky ",translatedText)
+    //console.log("translated is oky ",translatedText)
 
     
 
