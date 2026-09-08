@@ -232,25 +232,7 @@ export async function action({ context, request }: ActionFunctionArgs) {
       id: translatedText.id,
       title: translatedText.title,
       descriptionHtml: translatedText.description,
-      // tags: mergedTags,
-      // category: SEO.category?.id,
-      // handle: OLD_DESC.handle || OLD_DESC.handel,
-      // productType: SEO.productType,
-      // seo: { description: SEO.seoDescription, title: SEO.seoTitle },
-      // metafields: [
-      // //  { namespace: "custom", key: "descriptionsai", type: "json", value: JSON.stringify(DESC_AI.shortDescription) },
-      // //   { namespace: "custom", key: "seo_title", type: "json", value: JSON.stringify(SEO.seoTitle) },
-      // //   { namespace: "custom", key: "seo_descreption", type: "json", value: JSON.stringify(SEO.seoDescription) },
-      //   // { namespace: "seo", key: "schema_org", type: "json", value: JSON.stringify(productSchema(SEO,collections,OLD_DESC,offers,aggregateRating__,aggregateRating,review)) },
-
-      //   // { namespace: "custom", key: "facebookTitle", type: "json", value:JSON.stringify(   SEO?.socialOptimization.facebookTitle) },
-      //   // { namespace: "custom", key: "facebookDescription", type: "json", value: JSON.stringify( SEO?.socialOptimization.facebookDescription ) },
-      //   // { namespace: "custom", key: "tiktokTitle", type: "json", value:JSON.stringify(   SEO?.socialOptimization.tiktokTitle) },
-      //   // { namespace: "custom", key: "pinterestTitle", type: "json", value:JSON.stringify(  SEO?.socialOptimization.pinterestTitle) },
-      //   // { namespace: "custom", key: "pinterestDescription", type: "json", value:JSON.stringify(SEO?.socialOptimization.pinterestDescription)    },
-
-
-      // ]
+     
     });
   }
 
@@ -287,24 +269,7 @@ export async function action({ context, request }: ActionFunctionArgs) {
   // 4️⃣ Run throttled updates
   await throttledUpdates(updateProducts, 2, 500);
 
-  // const queue =context.cloudflare.env.SEO_QUEUE
-
-  // const payload = {
-  //   shop: session.shop,
-  //   sessionId: session.id,
-  //   accessToken: session.accessToken,
-  //   products: updatedDescreptionAI
-  // };
-  // const compressedBase64 = ultraCompress(payload);
-
-  // await queue.send({
-  //   body: compressedBase64
-  // });
-  // const compressed = pako.gzip(JSON.stringify(payload));
-  //  const compressedBase64 = uint8ToBase64(compressed);
-  //  await queue.send({
-  //   body: compressedBase64 // body must be a string according to queue type
-  // });
+ 
 
 
 
