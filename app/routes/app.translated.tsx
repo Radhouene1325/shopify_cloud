@@ -11,7 +11,7 @@ import * as cheerio from "cheerio";
 import { productsupdated } from "./functions/query/updateprooductquery";
 import { franc } from 'franc'
 import { detect, detectAll } from 'tinyld';
-//commenter fonction translateHtmlDeepL
+
 // app/utils/translate.server.js
 // async function translateHtmlDeepL(html, DEEPL_API_KEY) {
 //   const authKey = DEEPL_API_KEY;
@@ -80,18 +80,59 @@ interface OllamaChatResponse {
   error?: string;
 }
 
-async function translateProduct(html, apikey) {
-  const verifiedTitle = detect(html.title);
-  const verifiedDescription = detect(html.descreption);
-  if (verifiedTitle === 'en' && verifiedDescription === 'en') return;
+async function translateProduct(
+  html: {
+    id: string;
+    title?: string;
+    descreption?: string;
+  },
+  apikey: string
+): Promise<TranslateResult | null> {
+
+  const title = html.title?.trim() || "";
+  const rawDescription = html.descreption || "";
+
+  // Normalize HTML
+  const $ = cheerio.load(rawDescription, null, false);
+
+  const cleanDescription = $.html()
+    .replace(/>\s+</g, "><")
+    .trim();
+
+  // Detect language using text only
+  const descriptionText = $.text()
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const verifiedTitle = detect(title);
+  const verifiedDescription = detect(descriptionText);
+
+  console.log("title lang:", verifiedTitle);
+  console.log("description lang:", verifiedDescription);
+
+  // If already English, skip
+  if (
+    verifiedTitle === "en" &&
+    verifiedDescription === "en"
+  ) {
+    return null;
+  }
+
+  // Show pure HTML in terminal
+  console.log("----- HTML SENT TO OLLAMA -----");
+  console.log(cleanDescription);
+  console.log("--------------------------------");
+
   const response = await fetch("https://ollama.com/api/chat", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${apikey}`,
-      "Content-Type": "application/json"
+      Authorization: `Bearer ${apikey}`,
+      "Content-Type": "application/json",
     },
+
     body: JSON.stringify({
       model: "gpt-oss:120b",
+
       messages: [
         {
           role: "system",
@@ -99,30 +140,59 @@ async function translateProduct(html, apikey) {
 You are a professional e-commerce translator.
 Translate from Italian to English.
 Rules:
-- Translate both ${html.title} and ${html.descreption}.
+- Translate both title and description.
+- Preserve the HTML.
 - Return ONLY valid JSON.
-`
+          `.trim(),
         },
+
         {
           role: "user",
           content: JSON.stringify({
-            title: html.title,
-            description: html.descreption
-          })
-        }
+            title: html.title || "",
+            description: cleanDescription,
+          }),
+        },
       ],
+
       stream: false,
-      format: "json"
-    })
+      format: "json",
+    }),
   });
+
   if (!response.ok) {
-    throw new Error(`Ollama API error: ${response.status}`);
+    const errorText = await response.text();
+
+    throw new Error(
+      `Ollama API error ${response.status}: ${errorText}`
+    );
   }
 
-  const data = await response.json();
+  const data: OllamaChatResponse = await response.json();
 
-  return JSON.parse(data.message.content);
+  if (!data.message?.content) {
+    throw new Error("Ollama returned empty content");
+  }
 
+  let translated;
+
+  try {
+    translated = JSON.parse(data.message.content);
+  } catch (error) {
+    console.error("Invalid JSON from Ollama:");
+    console.error(data.message.content);
+    throw error;
+  }
+
+  console.log("----- TRANSLATED HTML -----");
+  console.log(translated.description);
+  console.log("---------------------------");
+
+  return {
+    id: html.id,
+    title: translated.title,
+    description: translated.description,
+  };
 }
 
 
@@ -155,10 +225,13 @@ export async function action({ context, request }: ActionFunctionArgs) {
     }
     console.log("translated is oky ",translatedText)
 
+    console.log("translated is oky ",translatedText)
+
     if (!translatedText) continue;
     // console.log("Translated Text:", translatedText);
 
-return
+    return 
+
     updateProducts.push({
       id: translatedText.id,
       title: translatedText.title,
