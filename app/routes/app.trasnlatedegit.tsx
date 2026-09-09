@@ -237,7 +237,7 @@ export async function action({ context, request }: ActionFunctionArgs) {
     const selectedTypes: string[] = JSON.parse(
         formData.get("resourceTypes") as string
     )
-
+console.log("data is her",selectedTypes)
     let completed = 0
     let failed = 0
     let skipped = 0
