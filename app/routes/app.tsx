@@ -18,6 +18,7 @@ const Menu = React.memo(() => (
  <NavMenu>
         <Link to="/app" rel="home" prefetch="intent">Home</Link>
         <Link to="/app/discounts" prefetch="intent">Additional page</Link>
+        <Link to="/app/trasnlatedegit" prefetch="intent">IA_TRANSLATED</Link>
         <Link to="/app/descreptionupdated" prefetch="intent">descreption updated page</Link>
         <Link to="/app/translated" prefetch="intent">translated descreption</Link>
         <Link to="/app/images_optimise" prefetch="intent">images optimise</Link>
