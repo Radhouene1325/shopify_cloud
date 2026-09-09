@@ -250,6 +250,232 @@ export async function loader({ context, request }: any) {
 }
 
 // ─── UI ───────────────────────────────────────────────────
+// export default function TranslatePage() {
+//     const [selected, setSelected] = useState<string[]>([])
+//     const [running, setRunning] = useState(false)
+//     const [done, setDone] = useState(false)
+//     const [completed, setCompleted] = useState(0)
+//     const [failed, setFailed] = useState(0)
+//     const [currentType, setCurrentType] = useState("")
+//     const [errors, setErrors] = useState<any[]>([])
+//     const [fatalError, setFatalError] = useState("")
+//     const readerRef = useRef<ReadableStreamDefaultReader | null>(null)
+
+//     function toggleType(value: string) {
+//         setSelected(prev =>
+//             prev.includes(value)
+//                 ? prev.filter(v => v !== value)
+//                 : [...prev, value]
+//         )
+//     }
+
+//     function selectAll() {
+//         setSelected(RESOURCE_TYPES.map(t => t.value))
+//     }
+
+//     function reset() {
+//         setSelected([])
+//         setRunning(false)
+//         setDone(false)
+//         setCompleted(0)
+//         setFailed(0)
+//         setCurrentType("")
+//         setErrors([])
+//         setFatalError("")
+//     }
+
+//     async function handleStart() {
+//         if (selected.length === 0) return
+
+//         setRunning(true)
+//         setDone(false)
+//         setCompleted(0)
+//         setFailed(0)
+//         setErrors([])
+//         setFatalError("")
+
+//         const formData = new FormData()
+//         formData.append("resourceTypes", JSON.stringify(selected))
+
+//         const response = await fetch("/app/trasnlatedegit", {
+//             method: "POST",
+//             body: formData,
+//         })
+
+//         if (!response.body) {
+//             setFatalError("Stream non disponibile")
+//             setRunning(false)
+//             return
+//         }
+
+//         const reader = response.body
+//             .pipeThrough(new TextDecoderStream())
+//             .getReader()
+
+//         readerRef.current = reader as any
+
+//         while (true) {
+//             const { done: streamDone, value } = await reader.read()
+//             if (streamDone) break
+
+//             // Parsa eventi SSE
+//             const lines = value.split("\n").filter(l => l.startsWith("data:"))
+//             for (const line of lines) {
+//                 try {
+//                     const event = JSON.parse(line.replace("data: ", ""))
+//                     handleEvent(event)
+//                 } catch { }
+//             }
+//         }
+
+//         setRunning(false)
+//     }
+
+//     function handleEvent(event: any) {
+//         switch (event.event) {
+//             case "type_start":
+//                 setCurrentType(event.resourceType)
+//                 break
+//             case "progress":
+//                 setCompleted(event.completed)
+//                 setFailed(event.failed)
+//                 break
+//             case "error":
+//                 setCompleted(event.completed)
+//                 setFailed(event.failed)
+//                 setErrors(prev => [...prev, event])
+//                 break
+//             case "done":
+//                 setCompleted(event.completed)
+//                 setFailed(event.failed)
+//                 setErrors(event.errors)
+//                 setDone(true)
+//                 setCurrentType("")
+//                 break
+//             case "fatal_error":
+//                 setFatalError(event.error)
+//                 setDone(true)
+//                 break
+//         }
+//     }
+
+//     const total = completed + failed
+//     const percent = total > 0 ? Math.min(100, Math.round((total / total) * 100)) : 0
+
+//     return (
+//         <Page title="Traduzione Negozio → Inglese">
+//             <BlockStack gap="500">
+
+//                 {/* Selezione */}
+//                 {!running && !done && (
+//                     <Card>
+//                         <BlockStack gap="400">
+//                             <Text variant="headingMd" as="h2">
+//                                 Seleziona cosa tradurre
+//                             </Text>
+
+//                             <InlineStack gap="400" wrap>
+//                                 {RESOURCE_TYPES.map(type => (
+//                                     <Checkbox
+//                                         key={type.value}
+//                                         label={type.label}
+//                                         checked={selected.includes(type.value)}
+//                                         onChange={() => toggleType(type.value)}
+//                                     />
+//                                 ))}
+//                             </InlineStack>
+
+//                             <Divider />
+
+//                             <InlineStack gap="300">
+//                                 <Button onClick={selectAll}>
+//                                     Seleziona tutto
+//                                 </Button>
+//                                 <Button
+//                                     variant="primary"
+//                                     onClick={handleStart}
+//                                     disabled={selected.length === 0}
+//                                 >
+//                                     Avvia traduzione ({selected.length} selezionati)
+//                                 </Button>
+//                             </InlineStack>
+//                         </BlockStack>
+//                     </Card>
+//                 )}
+
+//                 {/* Progress in tempo reale */}
+//                 {(running || done) && (
+//                     <Card>
+//                         <BlockStack gap="400">
+//                             <Text variant="headingMd" as="h2">
+//                                 {done ? "Traduzione completata" : "Traduzione in corso..."}
+//                             </Text>
+
+//                             {running && currentType && (
+//                                 <Text as="p" tone="subdued">
+//                                     Elaborazione: <strong>{currentType}</strong>
+//                                 </Text>
+//                             )}
+
+//                             <ProgressBar
+//                                 progress={done ? 100 : Math.min(99, (completed + failed) * 2)}
+//                                 size="large"
+//                                 tone={fatalError ? "critical" : "success"}
+//                             />
+
+//                             <InlineStack gap="400">
+//                                 <Badge tone="success">✅ {completed} completati</Badge>
+//                                 {failed > 0 && (
+//                                     <Badge tone="warning">⚠️ {failed} errori</Badge>
+//                                 )}
+//                             </InlineStack>
+
+//                             {/* Completato */}
+//                             {done && !fatalError && (
+//                                 <Banner tone="success">
+//                                     Traduzione completata! {completed} risorse tradotte
+//                                     {failed > 0 ? `, ${failed} errori` : ""}.
+//                                 </Banner>
+//                             )}
+
+//                             {/* Errore fatale */}
+//                             {fatalError && (
+//                                 <Banner tone="critical">
+//                                     Errore: {fatalError}
+//                                 </Banner>
+//                             )}
+
+//                             {/* Lista errori */}
+//                             {errors.length > 0 && (
+//                                 <BlockStack gap="200">
+//                                     <Text variant="headingSm" as="h3">
+//                                         Dettaglio errori:
+//                                     </Text>
+//                                     <List type="bullet">
+//                                         {errors.map((e, i) => (
+//                                             <List.Item key={i}>
+//                                                 [{e.type}] {e.resourceId}: {e.error}
+//                                             </List.Item>
+//                                         ))}
+//                                     </List>
+//                                 </BlockStack>
+//                             )}
+
+//                             {done && (
+//                                 <Button onClick={reset}>
+//                                     Nuova traduzione
+//                                 </Button>
+//                             )}
+//                         </BlockStack>
+//                     </Card>
+//                 )}
+
+//             </BlockStack>
+//         </Page>
+//     )
+// }
+
+
 export default function TranslatePage() {
     const [selected, setSelected] = useState<string[]>([])
     const [running, setRunning] = useState(false)
@@ -297,38 +523,54 @@ export default function TranslatePage() {
         const formData = new FormData()
         formData.append("resourceTypes", JSON.stringify(selected))
 
-        const response = await fetch("/api/translate-stream", {
-            method: "POST",
-            body: formData,
-        })
+        try {
+            // FIX: Target the current route URL instead of hardcoded '/api/translate-stream'
+            const response = await fetch(window.location.pathname, {
+                method: "POST",
+                body: formData,
+            })
 
-        if (!response.body) {
-            setFatalError("Stream non disponibile")
-            setRunning(false)
-            return
-        }
-
-        const reader = response.body
-            .pipeThrough(new TextDecoderStream())
-            .getReader()
-
-        readerRef.current = reader as any
-
-        while (true) {
-            const { done: streamDone, value } = await reader.read()
-            if (streamDone) break
-
-            // Parsa eventi SSE
-            const lines = value.split("\n").filter(l => l.startsWith("data:"))
-            for (const line of lines) {
-                try {
-                    const event = JSON.parse(line.replace("data: ", ""))
-                    handleEvent(event)
-                } catch { }
+            if (!response.body) {
+                setFatalError("Stream non disponibile")
+                setRunning(false)
+                return
             }
-        }
 
-        setRunning(false)
+            const reader = response.body
+                .pipeThrough(new TextDecoderStream())
+                .getReader()
+
+            readerRef.current = reader as any
+
+            let buffer = ""
+
+            while (true) {
+                const { done: streamDone, value } = await reader.read()
+                if (streamDone) break
+
+                // Safe line buffering for SSE stream
+                buffer += value
+                const lines = buffer.split("\n")
+                buffer = lines.pop() || ""
+
+                for (const line of lines) {
+                    const trimmed = line.trim()
+                    if (trimmed.startsWith("data:")) {
+                        try {
+                            const jsonString = trimmed.replace(/^data:\s*/, "")
+                            const event = JSON.parse(jsonString)
+                            handleEvent(event)
+                        } catch (e) {
+                            console.error("Errore di parsing SSE:", e)
+                        }
+                    }
+                }
+            }
+        } catch (err: any) {
+            setFatalError(err.message || "Errore durante la connessione allo stream")
+        } finally {
+            setRunning(false)
+        }
     }
 
     function handleEvent(event: any) {
@@ -358,9 +600,6 @@ export default function TranslatePage() {
                 break
         }
     }
-
-    const total = completed + failed
-    const percent = total > 0 ? Math.min(100, Math.round((total / total) * 100)) : 0
 
     return (
         <Page title="Traduzione Negozio → Inglese">
