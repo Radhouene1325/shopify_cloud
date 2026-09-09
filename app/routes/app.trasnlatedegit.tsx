@@ -3,11 +3,10 @@ import { shopify } from "../shopify.server"
 
 export const RESOURCE_TYPES = [
     { label: "Prodotti", value: "PRODUCT" },
-    { label: "Varianti", value: "PRODUCT_VARIANT" },
     { label: "Collezioni", value: "COLLECTION" },
-    { label: "Pagine", value: "ONLINE_STORE_PAGE" },
-    { label: "Articoli blog", value: "ONLINE_STORE_ARTICLE" },
-    { label: "Menu", value: "ONLINE_STORE_MENU" },
+    { label: "Pagine", value: "PAGE" },
+    { label: "Articoli blog", value: "ARTICLE" },
+    { label: "Menu", value: "MENU" },
     { label: "Metaobject", value: "METAOBJECT" },
     { label: "Tema", value: "ONLINE_STORE_THEME_LOCALE_CONTENT" },
     { label: "Notifiche", value: "EMAIL_TEMPLATE" },
