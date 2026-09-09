@@ -101,134 +101,237 @@ export function sleep(ms: number) {
 
 
 
+// export async function action({ context, request }: ActionFunctionArgs) {
+//     const { admin } = await shopify(context).authenticate.admin(request)
+//     const { OLLAMA_API_KEY } = context.cloudflare.env
+//     let OLLAMA_BASE_URL = "https://ollama.com/api/chat"
+//     const formData = await request.formData()
+//     const selectedTypes: string[] = JSON.parse(
+//         formData.get("resourceTypes") as string
+//     )
+
+//     // SSE stream
+//     const encoder = new TextEncoder()
+//     const stream = new ReadableStream({
+//         async start(controller) {
+//             function send(data: object) {
+//                 controller.enqueue(
+//                     encoder.encode(`data: ${JSON.stringify(data)}\n\n`)
+//                 )
+//             }
+
+//             let completed = 0
+//             let failed = 0
+//             const errors: { resourceId: string; type: string; error: string }[] = []
+
+//             try {
+//                 for (const resourceType of selectedTypes) {
+//                     send({ event: "type_start", resourceType })
+
+//                     let cursor: string | null = null
+//                     let hasNextPage = true
+
+//                     while (hasNextPage) {
+//                         // const json = await shopifyGraphQL(
+//                         //   session.shop,
+//                         //   session.accessToken!,
+//                         //   GET_TRANSLATABLE_RESOURCES,
+//                         //   { type: resourceType, after: cursor }
+//                         // )
+//                         const json = await admin.graphql(GET_TRANSLATABLE_RESOURCES, { variables: { type: resourceType, after: cursor } })
+//                         const { edges, pageInfo } = json.data.translatableResources
+
+//                         for (const { node } of edges) {
+//                             const { resourceId, translatableContent } = node
+
+//                             const fieldsToTranslate = translatableContent.filter(
+//                                 (f: any) => f.value?.trim() && f.locale !== "en"
+//                             )
+
+//                             if (fieldsToTranslate.length === 0) {
+//                                 send({ event: "skipped", resourceId, resourceType })
+//                                 continue
+//                             }
+
+//                             try {
+//                                 // Traduci con Ollama
+//                                 const translated = await translateWithOllama(
+//                                     fieldsToTranslate,
+//                                     OLLAMA_BASE_URL,
+//                                     OLLAMA_API_KEY
+//                                 )
+
+//                                 // Salva su Shopify
+//                                 const result = await admin.graphql(
+
+//                                     REGISTER_TRANSLATIONS,
+//                                     {
+//                                         variables: {
+//                                             resourceId,
+//                                             translations: translated.map((t, i) => ({
+//                                                 locale: "en",
+//                                                 key: fieldsToTranslate[i].key,
+//                                                 value: t.translated,
+//                                                 translatableContentDigest: fieldsToTranslate[i].digest,
+//                                             })),
+//                                         }
+
+//                                     }
+//                                 )
+
+//                                 const userErrors =
+//                                     result.data?.translationsRegister?.userErrors ?? []
+
+//                                 if (userErrors.length > 0) {
+//                                     throw new Error(JSON.stringify(userErrors))
+//                                 }
+
+//                                 completed++
+//                                 send({ event: "progress", completed, failed, resourceId, resourceType })
+
+//                             } catch (err: any) {
+//                                 failed++
+//                                 errors.push({ resourceId, type: resourceType, error: err.message })
+//                                 send({ event: "error", resourceId, resourceType, error: err.message, completed, failed })
+//                             }
+
+//                             // Rate limit protection
+//                             await sleep(200)
+//                         }
+
+//                         hasNextPage = pageInfo.hasNextPage
+//                         cursor = pageInfo.endCursor
+
+//                         if (hasNextPage) await sleep(300)
+//                     }
+
+//                     send({ event: "type_done", resourceType })
+//                 }
+
+//                 // Fine
+//                 send({ event: "done", completed, failed, errors })
+
+//             } catch (err: any) {
+//                 send({ event: "fatal_error", error: err.message })
+//             } finally {
+//                 controller.close()
+//             }
+//         },
+//     })
+
+//     return new Response(stream, {
+//         headers: {
+//             "Content-Type": "text/event-stream",
+//             "Cache-Control": "no-cache",
+//             Connection: "keep-alive",
+//         },
+//     })
+// }
+
 export async function action({ context, request }: ActionFunctionArgs) {
     const { admin } = await shopify(context).authenticate.admin(request)
     const { OLLAMA_API_KEY } = context.cloudflare.env
-    let OLLAMA_BASE_URL = "https://ollama.com/api/chat"
+    const OLLAMA_BASE_URL = "https://ollama.com/api/chat"
+    
     const formData = await request.formData()
     const selectedTypes: string[] = JSON.parse(
         formData.get("resourceTypes") as string
     )
 
-    // SSE stream
-    const encoder = new TextEncoder()
-    const stream = new ReadableStream({
-        async start(controller) {
-            function send(data: object) {
-                controller.enqueue(
-                    encoder.encode(`data: ${JSON.stringify(data)}\n\n`)
-                )
-            }
+    let completed = 0
+    let failed = 0
+    let skipped = 0
+    const errors: { resourceId: string; type: string; error: string }[] = []
 
-            let completed = 0
-            let failed = 0
-            const errors: { resourceId: string; type: string; error: string }[] = []
+    try {
+        for (const resourceType of selectedTypes) {
+            let cursor: string | null = null
+            let hasNextPage = true
 
-            try {
-                for (const resourceType of selectedTypes) {
-                    send({ event: "type_start", resourceType })
+            while (hasNextPage) {
+                const response = await admin.graphql(GET_TRANSLATABLE_RESOURCES, { 
+                    variables: { type: resourceType, after: cursor } 
+                })
+                
+                const json = await response.json()
+                const { edges, pageInfo } = json.data.translatableResources
 
-                    let cursor: string | null = null
-                    let hasNextPage = true
+                for (const { node } of edges) {
+                    const { resourceId, translatableContent } = node
 
-                    while (hasNextPage) {
-                        // const json = await shopifyGraphQL(
-                        //   session.shop,
-                        //   session.accessToken!,
-                        //   GET_TRANSLATABLE_RESOURCES,
-                        //   { type: resourceType, after: cursor }
-                        // )
-                        const json = await admin.graphql(GET_TRANSLATABLE_RESOURCES, { variables: { type: resourceType, after: cursor } })
-                        const { edges, pageInfo } = json.data.translatableResources
+                    const fieldsToTranslate = translatableContent.filter(
+                        (f: any) => f.value?.trim() && f.locale !== "en"
+                    )
 
-                        for (const { node } of edges) {
-                            const { resourceId, translatableContent } = node
-
-                            const fieldsToTranslate = translatableContent.filter(
-                                (f: any) => f.value?.trim() && f.locale !== "en"
-                            )
-
-                            if (fieldsToTranslate.length === 0) {
-                                send({ event: "skipped", resourceId, resourceType })
-                                continue
-                            }
-
-                            try {
-                                // Traduci con Ollama
-                                const translated = await translateWithOllama(
-                                    fieldsToTranslate,
-                                    OLLAMA_BASE_URL,
-                                    OLLAMA_API_KEY
-                                )
-
-                                // Salva su Shopify
-                                const result = await admin.graphql(
-
-                                    REGISTER_TRANSLATIONS,
-                                    {
-                                        variables: {
-                                            resourceId,
-                                            translations: translated.map((t, i) => ({
-                                                locale: "en",
-                                                key: fieldsToTranslate[i].key,
-                                                value: t.translated,
-                                                translatableContentDigest: fieldsToTranslate[i].digest,
-                                            })),
-                                        }
-
-                                    }
-                                )
-
-                                const userErrors =
-                                    result.data?.translationsRegister?.userErrors ?? []
-
-                                if (userErrors.length > 0) {
-                                    throw new Error(JSON.stringify(userErrors))
-                                }
-
-                                completed++
-                                send({ event: "progress", completed, failed, resourceId, resourceType })
-
-                            } catch (err: any) {
-                                failed++
-                                errors.push({ resourceId, type: resourceType, error: err.message })
-                                send({ event: "error", resourceId, resourceType, error: err.message, completed, failed })
-                            }
-
-                            // Rate limit protection
-                            await sleep(200)
-                        }
-
-                        hasNextPage = pageInfo.hasNextPage
-                        cursor = pageInfo.endCursor
-
-                        if (hasNextPage) await sleep(300)
+                    if (fieldsToTranslate.length === 0) {
+                        skipped++
+                        continue
                     }
 
-                    send({ event: "type_done", resourceType })
+                    try {
+                        // Translate with Ollama
+                        const translated = await translateWithOllama(
+                            fieldsToTranslate,
+                            OLLAMA_BASE_URL,
+                            OLLAMA_API_KEY
+                        )
+
+                        // Register translations on Shopify
+                        const regResponse = await admin.graphql(REGISTER_TRANSLATIONS, {
+                            variables: {
+                                resourceId,
+                                translations: translated.map((t: any, i: number) => ({
+                                    locale: "en",
+                                    key: fieldsToTranslate[i].key,
+                                    value: t.translated,
+                                    translatableContentDigest: fieldsToTranslate[i].digest,
+                                })),
+                            }
+                        })
+
+                        const regJson = await regResponse.json()
+                        const userErrors = regJson.data?.translationsRegister?.userErrors ?? []
+
+                        if (userErrors.length > 0) {
+                            throw new Error(JSON.stringify(userErrors))
+                        }
+
+                        completed++
+                    } catch (err: any) {
+                        failed++
+                        errors.push({ 
+                            resourceId, 
+                            type: resourceType, 
+                            error: err.message || "Translation failed" 
+                        })
+                    }
+
+                    // Rate limiting delay
+                    await sleep(200)
                 }
 
-                // Fine
-                send({ event: "done", completed, failed, errors })
+                hasNextPage = pageInfo.hasNextPage
+                cursor = pageInfo.endCursor
 
-            } catch (err: any) {
-                send({ event: "fatal_error", error: err.message })
-            } finally {
-                controller.close()
+                if (hasNextPage) await sleep(300)
             }
-        },
-    })
+        }
 
-    return new Response(stream, {
-        headers: {
-            "Content-Type": "text/event-stream",
-            "Cache-Control": "no-cache",
-            Connection: "keep-alive",
-        },
-    })
+        return Response.json({
+            success: true,
+            completed,
+            failed,
+            skipped,
+            errors,
+        })
+
+    } catch (err: any) {
+        return Response.json(
+            { success: false, error: err.message },
+            { status: 500 }
+        )
+    }
 }
-
-
 
 
 
